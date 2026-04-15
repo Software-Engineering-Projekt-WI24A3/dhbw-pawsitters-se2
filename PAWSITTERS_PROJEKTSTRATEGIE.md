@@ -376,7 +376,7 @@ void getRegisterPage_returns200() { ... }
 void postInvalidRegistration_returns400() { ... }
 // Typ: Edge Case | Testet: Validierungs-Feedback
 
-// Test 10: RequestController – Unauthentizierter Zugriff wird geblockt
+// Test 10: RequestController – Unauthentifizierter Zugriff wird geblockt
 @Test
 @WithAnonymousUser
 void createRequest_unauthenticated_redirectsToLogin() { ... }
