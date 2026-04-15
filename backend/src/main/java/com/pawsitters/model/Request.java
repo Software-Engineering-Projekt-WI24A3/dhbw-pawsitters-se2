@@ -74,6 +74,7 @@ public class Request {
     public void setSpecialNeeds(String specialNeeds) { this.specialNeeds = specialNeeds; }
     public void setPrice(String price) { this.price = price; }
     public void setStatus(RequestStatus status) { this.status = status; }
+    public void setStatus(RequestStatus status) { this.status = status; }
 
     public Request() {};
 
