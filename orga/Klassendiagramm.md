@@ -3,58 +3,70 @@
 ```mermaid
 classDiagram
     class User {
-        +UUID id
-        +String name
+        +Long id
         +String email
         +String passwordHash
-        +login()
-        +register()
-    }
-
-    class PetOwner {
-        +String address
-        +String phoneNumber
-    }
-
-    class PetSitter {
-        +Float hourlyRate
-        +String experience
-        +String description
-        +acceptBooking()
-        +declineBooking()
+        +String firstName
+        +String lastName
+        +String phone
+        +LocalDate birthDate
+        +String emergencyContact
+        +String profilePicture
+        +String bio
+        +UserRole role
+        +List~Pet~ pets
+        +getId() Long
+        +getEmail() String
+        +getRole() UserRole
+        +getPets() List~Pet~
     }
 
     class Pet {
-        +UUID id
+        +Long id
         +String name
         +String species
         +String breed
-        +Int age
+        +int age
+        +String specialNeeds
+        +User owner
+        +getId() Long
+        +getName() String
+        +getOwner() User
+    }
+
+    class Request {
+        +Long id
+        +User petOwner
+        +Pet pet
+        +LocalDate startDate
+        +LocalDate endDate
         +String description
+        +String location
+        +String housingType
+        +String extras
+        +String specialNeeds
+        +String price
+        +RequestStatus status
+        +getId() Long
+        +getStatus() RequestStatus
     }
 
-    class Booking {
-        +UUID id
-        +DateTime startDate
-        +DateTime endDate
-        +String status
-        +Float totalPrice
-        +cancelBooking()
+    class UserRole {
+        <<enumeration>>
+        PET_OWNER
+        HOST
     }
 
-    class Review {
-        +UUID id
-        +Int rating
-        +String comment
-        +DateTime createdAt
+    class RequestStatus {
+        <<enumeration>>
+        OPEN
+        FULFILLED
+        CANCELLED
     }
 
-    User <|-- PetOwner
-    User <|-- PetSitter
-
-    PetOwner "1" -- "*" Pet : owns >
-    PetOwner "1" -- "*" Booking : makes >
-    PetSitter "1" -- "*" Booking : receives >
-    Booking "1" -- "0..1" Review : has >
-    Booking "*" -- "1..*" Pet : includes >
+    User "1" --> "*" Pet : owns
+    User "1" --> "*" Request : creates (petOwner)
+    Request "*" --> "1" Pet : concerns
+    User --> UserRole : has role
+    Request --> RequestStatus : has status
 ```
