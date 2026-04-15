@@ -3,8 +3,6 @@ package com.pawsitters.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 public class Request {
@@ -73,7 +71,6 @@ public class Request {
     public void setExtras(String extras) { this.extras = extras; }
     public void setSpecialNeeds(String specialNeeds) { this.specialNeeds = specialNeeds; }
     public void setPrice(String price) { this.price = price; }
-    public void setStatus(RequestStatus status) { this.status = status; }
     public void setStatus(RequestStatus status) { this.status = status; }
 
     public Request() {};

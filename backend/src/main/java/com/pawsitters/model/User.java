@@ -2,6 +2,7 @@ package com.pawsitters.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class User {
     private String phone;
 
     @Column(nullable = false)
-    private String birthDate;
+    private LocalDate birthDate;
 
     @Column(nullable = false)
     private String emergencyContact;
@@ -60,7 +61,7 @@ public class User {
 
     public String getPhone() { return phone; }
 
-    public String getBirthDate() { return birthDate; }
+    public LocalDate getBirthDate() { return birthDate; }
 
     public String getEmergencyContact() { return emergencyContact; }
 
@@ -86,7 +87,7 @@ public class User {
 
     public void setPhone(String phone) { this.phone = phone; }
 
-    public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
 
     public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
 

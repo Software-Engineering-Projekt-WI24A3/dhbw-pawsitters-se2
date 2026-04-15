@@ -1,0 +1,6 @@
+com/pawsitters/model/User.class
+com/pawsitters/model/UserRole.class
+com/pawsitters/model/Pet.class
+com/pawsitters/PawsittersApplication.class
+com/pawsitters/model/Request.class
+com/pawsitters/model/RequestStatus.class
