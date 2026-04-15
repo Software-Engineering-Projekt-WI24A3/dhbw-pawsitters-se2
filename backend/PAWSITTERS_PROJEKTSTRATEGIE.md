@@ -771,7 +771,7 @@ target/
 *.class
 
 # IDE
-.idea/
+../.idea/
 *.iml
 .vscode/
 
