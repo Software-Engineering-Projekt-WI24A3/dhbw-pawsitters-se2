@@ -49,7 +49,6 @@ public class Request {
     private RequestStatus status;
 
     // Getter & Setter
-    // Getter & setter noch anpassen
     public Long getId() { return id; }
     public User getPetOwner() { return petOwner; }
     public Pet getPet() { return pet; }
@@ -74,6 +73,7 @@ public class Request {
     public void setExtras(String extras) { this.extras = extras; }
     public void setSpecialNeeds(String specialNeeds) { this.specialNeeds = specialNeeds; }
     public void setPrice(String price) { this.price = price; }
+    public void setStatus(RequestStatus status) { this.status = status; }
 
     public Request() {};
 
