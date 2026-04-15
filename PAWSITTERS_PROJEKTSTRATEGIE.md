@@ -55,7 +55,7 @@ Sprint 4 (Woche 4):   Dokumentation, Bugfixes, Präsentation
 
 ```bash
 # 1. Repository anlegen (GitHub empfohlen für gratis CI)
-# 2. Dozentin als Contributor hinzufügen: ana.nicolaescu@heilbronn.dhbw.de
+# 2. Dozentin als Contributor über den vereinbarten Einladungsweg bzw. GitHub-Username hinzufügen
 # 3. Spring Boot Projekt initialisieren
 # 4. Folgende Dateien SOFORT anlegen:
 touch README.md
