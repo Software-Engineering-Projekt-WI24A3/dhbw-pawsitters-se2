@@ -618,13 +618,19 @@ jobs:
 
       - name: ✅ Check Test Count
         run: |
-          TESTS=$(grep -r "@Test" src/test --include="*.java" | wc -l)
-          echo "Gefundene Tests: $TESTS"
-          if [ "$TESTS" -lt 10 ]; then
-            echo "❌ FEHLER: Weniger als 10 Tests! Aktuell: $TESTS"
+          REPORT_FILES=$(find target/surefire-reports -name "*.xml" -type f 2>/dev/null)
+          if [ -z "$REPORT_FILES" ]; then
+            echo "❌ FEHLER: Keine Surefire-Reports gefunden. Testanzahl kann nicht verlässlich geprüft werden."
             exit 1
           fi
-          echo "✅ Testanzahl OK: $TESTS Tests gefunden"
+
+          TESTS=$(grep -h -o 'tests="[0-9]\+"' $REPORT_FILES | grep -o '[0-9]\+' | awk '{sum += $1} END {print sum + 0}')
+          echo "Aus Surefire-Reports ermittelte Tests: $TESTS"
+          if [ "$TESTS" -lt 10 ]; then
+            echo "❌ FEHLER: Weniger als 10 ausgeführte Tests! Aktuell: $TESTS"
+            exit 1
+          fi
+          echo "✅ Testanzahl OK: $TESTS Tests ausgeführt"
 ```
 
 **Warum diese Pipeline?**
