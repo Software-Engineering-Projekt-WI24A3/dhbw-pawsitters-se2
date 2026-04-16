@@ -7,25 +7,10 @@
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/login/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/login/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/playwright.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/playwright.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/fr.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/fr.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/readme.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/home.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/home.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/home.spec.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +59,7 @@
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__show-e2e(playwright)-tests-on-our-website-for-live-testing",
+    "git-widget-placeholder": "n__feature__fixing-e2e-tests-and-bugs",
     "javascript.preferred.runtime.type.id": "node",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

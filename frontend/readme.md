@@ -6,7 +6,8 @@ Structure:
 - `src/tailwind/` design system source
 - `src/js/` Vue behavior
 - `assets/` built CSS, JS, vendor files, and media
-- `tests/` Playwright E2E checks
+- `tests/e2e/` Playwright E2E checks
+- `tests/*.test.mjs` data/snapshot validation checks
 
 Start local development with `npm i` and `npm run dev`.
 Create production-ready static files with `npm run build`.
