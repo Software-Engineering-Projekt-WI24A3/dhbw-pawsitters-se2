@@ -177,19 +177,19 @@
 
                     <div class="playwright_metrics">
                         <article class="playwright_metric">
-                            <span class="playwright_metric__value" v-text="playwrightSummary.total"></span>
+                            <span class="playwright_metric__value" v-text="animatedMetrics.playwright.total"></span>
                             <span class="playwright_metric__label">Gesamt</span>
                         </article>
                         <article class="playwright_metric">
-                            <span class="playwright_metric__value" v-text="playwrightSummary.passed"></span>
+                            <span class="playwright_metric__value" v-text="animatedMetrics.playwright.passed"></span>
                             <span class="playwright_metric__label">Bestanden</span>
                         </article>
                         <article class="playwright_metric">
-                            <span class="playwright_metric__value" v-text="playwrightSummary.failed"></span>
+                            <span class="playwright_metric__value" v-text="animatedMetrics.playwright.failed"></span>
                             <span class="playwright_metric__label">Fehlgeschlagen</span>
                         </article>
                         <article class="playwright_metric">
-                            <span class="playwright_metric__value" v-text="playwrightSummary.pending"></span>
+                            <span class="playwright_metric__value" v-text="animatedMetrics.playwright.pending"></span>
                             <span class="playwright_metric__label">Ausstehend</span>
                         </article>
                     </div>
@@ -209,7 +209,7 @@
                         <section class="playwright_tests_panel">
                             <header class="playwright_tests_panel__header">
                                 <h2 class="playwright_panel__title">Alle E2E-Tests</h2>
-                                <span class="playwright_tests_panel__count" v-text="playwrightSummary.total"></span>
+                                <span class="playwright_tests_panel__count" v-text="animatedMetrics.playwright.total"></span>
                             </header>
 
                             <ol class="playwright_tests_list">

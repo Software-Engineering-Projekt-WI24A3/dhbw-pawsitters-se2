@@ -174,19 +174,19 @@
 
                 <div class="git_metrics">
                     <article class="git_metric">
-                        <span class="git_metric__value" v-text="repository.git.totalCommits"></span>
+                        <span class="git_metric__value" v-text="animatedMetrics.git.totalCommits"></span>
                         <span class="git_metric__label">Commits</span>
                     </article>
                     <article class="git_metric">
-                        <span class="git_metric__value" v-text="repository.git.mergeCommits"></span>
+                        <span class="git_metric__value" v-text="animatedMetrics.git.mergeCommits"></span>
                         <span class="git_metric__label">Fusionen</span>
                     </article>
                     <article class="git_metric">
-                        <span class="git_metric__value" v-text="repository.git.contributorCount"></span>
+                        <span class="git_metric__value" v-text="animatedMetrics.git.contributorCount"></span>
                         <span class="git_metric__label">Mitwirkende</span>
                     </article>
                     <article class="git_metric">
-                        <span class="git_metric__value" v-text="repository.git.branchCount"></span>
+                        <span class="git_metric__value" v-text="animatedMetrics.git.branchCount"></span>
                         <span class="git_metric__label">Branches</span>
                     </article>
                 </div>
@@ -320,7 +320,7 @@
                                 <div class="git_author__meta">
                                     <div class="git_author__line">
                                         <span class="git_author__name" v-text="author.name"></span>
-                                        <span class="git_author__count" v-text="author.count"></span>
+                                        <span class="git_author__count" v-text="author.count + ' Commits | ' + (author.linesContributed ?? 0) + ' Zeilen beigetragen'"></span>
                                     </div>
                                     <span class="git_author__bar" :style="author.toneStyle"></span>
                                 </div>

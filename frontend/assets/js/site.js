@@ -5,6 +5,17 @@ const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
 const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
+const METRIC_ANIMATION_DURATION_MS = 2200;
+const METRIC_GROUP_FIELDS = {
+    git: ['totalCommits', 'mergeCommits', 'contributorCount', 'branchCount'],
+    board: ['openCount', 'assignedCount', 'ownerCount', 'criteriaCount'],
+    playwright: ['total', 'passed', 'failed', 'pending']
+};
+const METRIC_GROUP_SELECTORS = {
+    git: '.git_metrics',
+    board: '.board_metrics',
+    playwright: '.playwright_metrics'
+};
 
 function createEmptyRepository() {
     return {
@@ -63,6 +74,24 @@ function createEmptyRepository() {
             emptyText: ''
         }
     };
+}
+
+function createMetricAnimationState() {
+    return Object.fromEntries(
+        Object.entries(METRIC_GROUP_FIELDS).map(([group, fields]) => [
+            group,
+            Object.fromEntries(fields.map((field) => [field, 0]))
+        ])
+    );
+}
+
+function normalizeMetricNumber(value) {
+    const normalized = Number(value);
+    if (!Number.isFinite(normalized)) {
+        return 0;
+    }
+
+    return Math.max(0, Math.round(normalized));
 }
 
 function normalizeRepository(repository) {
@@ -411,6 +440,18 @@ createApp({
                 pending: 0,
                 status: 'idle'
             },
+            animatedMetrics: createMetricAnimationState(),
+            metricAnimationFrames: {
+                git: 0,
+                board: 0,
+                playwright: 0
+            },
+            metricAnimationTargets: createMetricAnimationState(),
+            metricAnimationHasPlayed: {
+                git: false,
+                board: false,
+                playwright: false
+            },
             playwrightTests: [],
             playwrightLogs: [],
             playwrightNextLogIndex: 0,
@@ -524,6 +565,7 @@ createApp({
         this.ensureRepositoryState();
         this.syncScrollState();
         this.handleResize();
+        this.animateVisibleMetricGroups({ fromZero: true });
         this.refreshRepositoryData();
         this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
@@ -538,9 +580,155 @@ createApp({
         document.removeEventListener('keydown', this.handleDocumentKeydown);
         this.closeAllDropdowns({ immediate: true });
         this.stopPlaywrightPolling();
+        this.stopAllMetricAnimations();
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        prefersReducedMotion() {
+            if (typeof window.matchMedia !== 'function') {
+                return false;
+            }
+
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        },
+        hasMetricGroupContainer(group) {
+            const selector = METRIC_GROUP_SELECTORS[group];
+            if (!selector) {
+                return false;
+            }
+
+            return Boolean(document.querySelector(selector));
+        },
+        normalizeMetricGroup(group, values = {}) {
+            const fields = METRIC_GROUP_FIELDS[group] || [];
+            return Object.fromEntries(fields.map((field) => [field, normalizeMetricNumber(values[field])]));
+        },
+        setAnimatedMetricGroup(group, values = {}) {
+            const targetGroup = this.animatedMetrics[group];
+            if (!targetGroup) {
+                return;
+            }
+
+            const normalizedValues = this.normalizeMetricGroup(group, values);
+            Object.entries(normalizedValues).forEach(([field, value]) => {
+                targetGroup[field] = value;
+            });
+        },
+        areMetricGroupsEqual(group, leftValues = {}, rightValues = {}) {
+            const fields = METRIC_GROUP_FIELDS[group] || [];
+            return fields.every((field) => normalizeMetricNumber(leftValues[field]) === normalizeMetricNumber(rightValues[field]));
+        },
+        stopMetricAnimation(group) {
+            const frameId = this.metricAnimationFrames[group];
+            if (typeof frameId === 'number' && frameId > 0) {
+                window.cancelAnimationFrame(frameId);
+            }
+            this.metricAnimationFrames[group] = 0;
+        },
+        stopAllMetricAnimations() {
+            Object.keys(METRIC_GROUP_FIELDS).forEach((group) => {
+                this.stopMetricAnimation(group);
+            });
+        },
+        getMetricGroupTargets(group) {
+            if (group === 'git') {
+                return {
+                    totalCommits: this.repository.git.totalCommits,
+                    mergeCommits: this.repository.git.mergeCommits,
+                    contributorCount: this.repository.git.contributorCount,
+                    branchCount: this.repository.git.branchCount
+                };
+            }
+
+            if (group === 'board') {
+                return {
+                    openCount: this.repository.board.summary.openCount,
+                    assignedCount: this.repository.board.summary.assignedCount,
+                    ownerCount: this.repository.board.summary.ownerCount,
+                    criteriaCount: this.repository.board.summary.criteriaCount
+                };
+            }
+
+            if (group === 'playwright') {
+                return {
+                    total: this.playwrightSummary.total,
+                    passed: this.playwrightSummary.passed,
+                    failed: this.playwrightSummary.failed,
+                    pending: this.playwrightSummary.pending
+                };
+            }
+
+            return {};
+        },
+        animateMetricGroup(group, options = {}) {
+            if (!this.hasMetricGroupContainer(group)) {
+                return;
+            }
+
+            const nextTargets = this.normalizeMetricGroup(group, this.getMetricGroupTargets(group));
+            const previousTargets = this.metricAnimationTargets[group] || {};
+            const currentValues = this.normalizeMetricGroup(group, this.animatedMetrics[group] || {});
+            const firstAnimation = !this.metricAnimationHasPlayed[group];
+            const fromZero = options.fromZero === true || firstAnimation;
+            const startValues = fromZero
+                ? this.normalizeMetricGroup(group, {})
+                : currentValues;
+
+            this.metricAnimationTargets[group] = { ...nextTargets };
+
+            if (options.immediate === true || this.prefersReducedMotion()) {
+                this.stopMetricAnimation(group);
+                this.setAnimatedMetricGroup(group, nextTargets);
+                this.metricAnimationHasPlayed[group] = true;
+                return;
+            }
+
+            if (!firstAnimation && this.areMetricGroupsEqual(group, previousTargets, nextTargets)) {
+                return;
+            }
+
+            if (this.areMetricGroupsEqual(group, startValues, nextTargets)) {
+                this.stopMetricAnimation(group);
+                this.setAnimatedMetricGroup(group, nextTargets);
+                this.metricAnimationHasPlayed[group] = true;
+                return;
+            }
+
+            this.stopMetricAnimation(group);
+            this.setAnimatedMetricGroup(group, startValues);
+
+            const startedAt = performance.now();
+            const tick = (timestamp) => {
+                const elapsed = Math.max(0, timestamp - startedAt);
+                const progress = Math.min(1, elapsed / METRIC_ANIMATION_DURATION_MS);
+                const easedProgress = 1 - ((1 - progress) ** 3);
+                const frameValues = {};
+
+                (METRIC_GROUP_FIELDS[group] || []).forEach((field) => {
+                    const fromValue = normalizeMetricNumber(startValues[field]);
+                    const toValue = normalizeMetricNumber(nextTargets[field]);
+                    frameValues[field] = Math.round(fromValue + ((toValue - fromValue) * easedProgress));
+                });
+
+                this.setAnimatedMetricGroup(group, frameValues);
+
+                if (progress < 1) {
+                    this.metricAnimationFrames[group] = window.requestAnimationFrame(tick);
+                    return;
+                }
+
+                this.metricAnimationFrames[group] = 0;
+                this.setAnimatedMetricGroup(group, nextTargets);
+            };
+
+            this.metricAnimationHasPlayed[group] = true;
+            this.metricAnimationFrames[group] = window.requestAnimationFrame(tick);
+        },
+        animateVisibleMetricGroups(options = {}) {
+            Object.keys(METRIC_GROUP_FIELDS).forEach((group) => {
+                this.animateMetricGroup(group, options);
+            });
+        },
         initializePlaywrightRunner() {
             if (!this.playwrightRunnerEnabled) {
                 return;
@@ -663,6 +851,7 @@ createApp({
             this.playwrightFinishedAt = normalized.finishedAt;
             this.playwrightExitCode = normalized.exitCode;
             this.playwrightSummary = normalized.summary;
+            this.animateMetricGroup('playwright');
             this.playwrightTests = normalized.tests;
             this.playwrightNextLogIndex = normalized.nextLogIndex;
             this.playwrightLogs = mergedLogs.slice(-1400);
@@ -1073,6 +1262,8 @@ createApp({
                 this.repository = normalizeRepository(data);
                 this.repositoryError = '';
                 this.ensureRepositoryState();
+                this.animateMetricGroup('git');
+                this.animateMetricGroup('board');
             } catch (error) {
                 if (error?.name === 'AbortError') {
                     return;
