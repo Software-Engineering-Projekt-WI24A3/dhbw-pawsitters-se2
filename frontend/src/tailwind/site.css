@@ -22,11 +22,13 @@
 
     html {
         @apply scroll-smooth;
+        scrollbar-gutter: stable;
     }
 
     body {
         @apply min-h-screen bg-white font-sans text-zinc-950 antialiased;
         background: #ffffff;
+        overflow-y: scroll;
     }
 
     body.body--modal-open {
@@ -143,6 +145,56 @@
         @apply relative z-10 pb-20 pt-5 md:pt-6;
     }
 
+    .site_notifications {
+        @apply pointer-events-none fixed left-1/2 top-4 z-[90] grid w-[min(94vw,34rem)] -translate-x-1/2 gap-2;
+    }
+
+    .site_notification {
+        @apply pointer-events-auto rounded-[1.2rem] border px-4 py-3 text-center shadow-soft backdrop-blur-xl;
+        border-color: rgba(17, 17, 19, 0.12);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(244, 248, 253, 0.96) 100%),
+            radial-gradient(circle at top, rgba(118, 189, 255, 0.2) 0%, rgba(118, 189, 255, 0) 62%);
+    }
+
+    .site_notification--success {
+        border-color: rgba(22, 101, 52, 0.24);
+        background:
+            linear-gradient(180deg, rgba(245, 255, 249, 0.97) 0%, rgba(237, 252, 244, 0.94) 100%),
+            radial-gradient(circle at top, rgba(34, 197, 94, 0.16) 0%, rgba(34, 197, 94, 0) 64%);
+    }
+
+    .site_notification--warning {
+        border-color: rgba(146, 64, 14, 0.25);
+        background:
+            linear-gradient(180deg, rgba(255, 250, 241, 0.97) 0%, rgba(254, 243, 220, 0.94) 100%),
+            radial-gradient(circle at top, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0) 64%);
+    }
+
+    .site_notification__title {
+        @apply text-sm font-semibold tracking-[-0.02em] text-black;
+    }
+
+    .site_notification__message {
+        @apply mt-1 text-[0.8rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .site_notification_stack-enter-active,
+    .site_notification_stack-leave-active {
+        transition: transform 220ms ease, opacity 220ms ease;
+    }
+
+    .site_notification_stack-enter-from,
+    .site_notification_stack-leave-to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+
+    .site_notification_stack-move {
+        transition: transform 220ms ease;
+    }
+
     .site_footer {
         @apply relative z-10 border-t border-black/10 pb-10 pt-6;
     }
@@ -253,7 +305,8 @@
         @apply flex min-w-[9.5rem] cursor-pointer items-center justify-center rounded-full border border-black bg-transparent px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-px;
     }
 
-    .repo_menu.is-open .repo_menu__summary {
+    .repo_menu.is-open .repo_menu__summary,
+    .repo_menu[open] .repo_menu__summary {
         box-shadow: 0 12px 24px rgba(17, 17, 19, 0.08);
     }
 
@@ -269,7 +322,8 @@
         transform: translateY(-1px);
     }
 
-    .header_center .repo_menu.is-open .repo_menu__summary {
+    .header_center .repo_menu.is-open .repo_menu__summary,
+    .header_center .repo_menu[open] .repo_menu__summary {
         box-shadow: none;
     }
 
@@ -324,17 +378,20 @@
     }
 
     .header_center .repo_menu__summary:hover .repo_menu__icon,
-    .header_center .repo_menu.is-open .repo_menu__icon {
+    .header_center .repo_menu.is-open .repo_menu__icon,
+    .header_center .repo_menu[open] .repo_menu__icon {
         opacity: 1;
         transform: translateY(-1px);
     }
 
     .header_center .repo_menu__summary:hover .repo_menu__chevron,
-    .header_center .repo_menu.is-open .repo_menu__chevron {
+    .header_center .repo_menu.is-open .repo_menu__chevron,
+    .header_center .repo_menu[open] .repo_menu__chevron {
         opacity: 1;
     }
 
-    .header_center .repo_menu.is-open .repo_menu__chevron {
+    .header_center .repo_menu.is-open .repo_menu__chevron,
+    .header_center .repo_menu[open] .repo_menu__chevron {
         transform: rotate(180deg);
     }
 
@@ -353,7 +410,8 @@
             visibility 0s linear var(--dropdown-duration);
     }
 
-    .repo_menu.is-open .repo_menu__panel {
+    .repo_menu.is-open .repo_menu__panel,
+    .repo_menu[open] .repo_menu__panel {
         opacity: 1;
         pointer-events: auto;
         transform: translateY(0) scale(1);
@@ -370,7 +428,8 @@
         transform: translateX(-50%) translateY(-0.55rem) scale(0.98);
     }
 
-    .header_center .repo_menu.is-open .repo_menu__panel {
+    .header_center .repo_menu.is-open .repo_menu__panel,
+    .header_center .repo_menu[open] .repo_menu__panel {
         transform: translateX(-50%) translateY(0) scale(1);
     }
 
@@ -381,7 +440,8 @@
         transform-origin: top center;
     }
 
-    .repo_menu--mobile.is-open .repo_menu__panel {
+    .repo_menu--mobile.is-open .repo_menu__panel,
+    .repo_menu--mobile[open] .repo_menu__panel {
         transform: translateY(0) scale(1);
     }
 
@@ -402,7 +462,8 @@
         transform: translateY(-1px);
     }
 
-    .repo_menu--surface.is-open .repo_menu__summary {
+    .repo_menu--surface.is-open .repo_menu__summary,
+    .repo_menu--surface[open] .repo_menu__summary {
         box-shadow: 0 16px 32px rgba(17, 17, 19, 0.08);
     }
 
@@ -425,7 +486,8 @@
         stroke-linejoin: round;
     }
 
-    .repo_menu--surface.is-open .repo_menu__chevron {
+    .repo_menu--surface.is-open .repo_menu__chevron,
+    .repo_menu--surface[open] .repo_menu__chevron {
         opacity: 1;
         transform: rotate(180deg);
     }
@@ -487,7 +549,8 @@
     }
 
     .locale_menu__summary:hover .locale_menu__summary-code,
-    .locale_menu.is-open .locale_menu__summary .locale_menu__summary-code {
+    .locale_menu.is-open .locale_menu__summary .locale_menu__summary-code,
+    .locale_menu[open] .locale_menu__summary .locale_menu__summary-code {
         color: black;
     }
 
@@ -525,7 +588,8 @@
             visibility 0s linear var(--dropdown-duration);
     }
 
-    .locale_menu.is-open .locale_menu__panel {
+    .locale_menu.is-open .locale_menu__panel,
+    .locale_menu[open] .locale_menu__panel {
         opacity: 1;
         pointer-events: auto;
         transform: translateY(0) scale(1);
@@ -542,7 +606,8 @@
         transform-origin: top center;
     }
 
-    .locale_menu--mobile.is-open .locale_menu__panel {
+    .locale_menu--mobile.is-open .locale_menu__panel,
+    .locale_menu--mobile[open] .locale_menu__panel {
         transform: translateY(0) scale(1);
     }
 
@@ -943,11 +1008,6 @@
         text-wrap: balance;
     }
 
-    .playwright_runner__text {
-        @apply mt-3 max-w-[42rem] text-sm leading-7 sm:text-base;
-        color: var(--text-secondary);
-    }
-
     .playwright_runner__actions {
         @apply flex items-start justify-start xl:justify-end;
     }
@@ -956,152 +1016,23 @@
         @apply min-w-[13.5rem] gap-2;
     }
 
-    .playwright_metrics {
-        @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
-    }
-
-    .playwright_metric {
-        @apply rounded-[1.7rem] border border-black/10 px-4 py-4;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(246, 248, 251, 0.88) 100%),
-            radial-gradient(circle at top right, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0) 56%);
-    }
-
-    .playwright_metric__value {
-        @apply block text-3xl font-semibold tracking-[-0.06em] text-black;
-    }
-
-    .playwright_metric__label {
-        @apply mt-2 block text-[0.68rem] font-semibold uppercase tracking-[0.24em];
-        color: var(--text-tertiary);
-    }
-
-    .playwright_statusline {
-        @apply flex flex-wrap items-center gap-3;
-    }
-
-    .playwright_statusline__meta {
-        @apply inline-flex items-center rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[0.74rem] font-medium;
-        color: var(--text-secondary);
-    }
-
-    .playwright_status_badge {
-        @apply inline-flex items-center rounded-full border px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em];
-    }
-
-    .playwright_status_badge--small {
-        @apply text-[0.64rem] tracking-[0.1em];
-    }
-
-    .playwright_status_badge--idle {
-        @apply border-black/10 bg-zinc-50 text-zinc-700;
-    }
-
-    .playwright_status_badge--pending {
-        border-color: rgba(146, 64, 14, 0.2);
-        background: rgba(251, 191, 36, 0.16);
-        color: #92400e;
-    }
-
-    .playwright_status_badge--running {
-        border-color: rgba(3, 105, 161, 0.24);
-        background: rgba(56, 189, 248, 0.18);
-        color: #0369a1;
-    }
-
-    .playwright_status_badge--passed {
-        border-color: rgba(22, 101, 52, 0.2);
-        background: rgba(74, 222, 128, 0.15);
-        color: #166534;
-    }
-
-    .playwright_status_badge--failed {
-        border-color: rgba(153, 27, 27, 0.22);
-        background: rgba(248, 113, 113, 0.17);
-        color: #991b1b;
-    }
-
-    .playwright_status_badge--skipped {
-        border-color: rgba(75, 85, 99, 0.2);
-        background: rgba(209, 213, 219, 0.24);
-        color: #4b5563;
-    }
-
     .playwright_error {
         @apply rounded-[1.1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700;
     }
 
-    .playwright_workspace {
-        @apply grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.92fr)];
+    .playwright_run_surface {
+        @apply grid gap-4;
     }
 
-    .playwright_tests_panel,
-    .playwright_logs_panel {
-        @apply rounded-[2rem] border border-black/10 p-4 sm:p-5;
-        background: rgba(255, 255, 255, 0.76);
+    .playwright_live_loading {
+        @apply mt-0;
     }
 
-    .playwright_tests_panel__header,
-    .playwright_logs_panel__header {
-        @apply flex items-center justify-between gap-3 border-b border-black/10 pb-3;
-    }
-
-    .playwright_panel__title {
-        @apply text-sm font-semibold uppercase tracking-[0.2em];
-        color: var(--text-tertiary);
-    }
-
-    .playwright_tests_panel__count,
-    .playwright_logs_panel__cursor {
-        @apply inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold;
-    }
-
-    .playwright_tests_list {
-        @apply mt-4 grid gap-2;
-        max-height: 30rem;
-        overflow-y: auto;
-        padding-right: 0.2rem;
-    }
-
-    .playwright_tests_card {
-        @apply rounded-[1.3rem] border border-black/10 px-3 py-3;
-        background: rgba(255, 255, 255, 0.82);
-    }
-
-    .playwright_tests_card--passed {
-        border-color: rgba(22, 101, 52, 0.16);
-    }
-
-    .playwright_tests_card--failed {
-        border-color: rgba(153, 27, 27, 0.2);
-    }
-
-    .playwright_tests_card--running {
-        border-color: rgba(3, 105, 161, 0.24);
-    }
-
-    .playwright_tests_card__topline {
-        @apply flex items-center justify-between gap-2;
-    }
-
-    .playwright_tests_card__duration {
-        @apply text-[0.72rem] font-medium;
-        color: var(--text-secondary);
-    }
-
-    .playwright_tests_card__title {
-        @apply mt-3 text-base font-semibold tracking-[-0.02em] text-black;
-        text-wrap: balance;
-    }
-
-    .playwright_tests_card__meta {
-        @apply mt-2 text-[0.72rem] font-medium leading-6;
-        color: var(--text-secondary);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
-    }
-
-    .playwright_logs_panel {
-        @apply grid grid-rows-[auto_minmax(0,1fr)] gap-3;
+    .playwright_console_panel {
+        @apply mx-auto grid w-full max-w-[72rem] place-items-center rounded-[2rem] border border-black/10 p-4 sm:p-5;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(245, 247, 250, 0.82) 100%),
+            radial-gradient(circle at top, rgba(92, 147, 235, 0.1) 0%, rgba(92, 147, 235, 0) 64%);
     }
 
     .playwright_logs_console {
@@ -1109,15 +1040,17 @@
         background: linear-gradient(180deg, #111114 0%, #1c1c20 100%);
         color: rgba(240, 244, 250, 0.92);
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
-        height: 30rem;
+        width: 100%;
+        max-width: 66rem;
+        height: 26rem;
         overflow: auto;
         white-space: pre-wrap;
         word-break: break-word;
     }
 
     .playwright_logs_empty {
-        @apply text-sm leading-6;
-        color: rgba(240, 244, 250, 0.72);
+        @apply mt-3 text-center text-sm leading-6;
+        color: var(--text-secondary);
     }
 
     .repository_segmented {
@@ -1290,7 +1223,9 @@
         box-shadow: 0 24px 60px rgba(15, 15, 17, 0.08);
         height: var(--git-graph-panel-height);
         min-height: var(--git-graph-panel-height);
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-gutter: stable;
     }
 
     .git_graph_canvas_panel::before {
@@ -1304,16 +1239,34 @@
         pointer-events: none;
     }
 
+    .git_graph_canvas_panel::-webkit-scrollbar {
+        height: 0.62rem;
+    }
+
+    .git_graph_canvas_panel::-webkit-scrollbar-track {
+        background: rgba(17, 17, 19, 0.08);
+        border-radius: 999px;
+    }
+
+    .git_graph_canvas_panel::-webkit-scrollbar-thumb {
+        background: rgba(17, 17, 19, 0.28);
+        border-radius: 999px;
+    }
+
     .git_graph_canvas {
         @apply relative z-[1];
         overflow: visible;
+        width: max-content;
+        min-width: 100%;
         min-height: 0;
         height: auto;
-        padding: 1rem 6.4rem 1rem 0.45rem;
+        padding: 1rem 10rem 1rem 0.45rem;
     }
 
     .git_graph_branch_labels {
-        @apply pointer-events-none absolute inset-0 z-[2];
+        @apply pointer-events-none absolute left-0 top-0 z-[2];
+        height: 100%;
+        min-width: 100%;
     }
 
     .git_graph_branch_label {
@@ -2010,16 +1963,16 @@
             @apply p-5;
         }
 
+        .site_notifications {
+            top: 0.85rem;
+        }
+
         .playwright_runner__run {
             @apply w-full;
         }
 
-        .playwright_tests_list {
-            max-height: 22rem;
-        }
-
         .playwright_logs_console {
-            height: 20rem;
+            height: 18rem;
         }
 
         .git_graph__row {

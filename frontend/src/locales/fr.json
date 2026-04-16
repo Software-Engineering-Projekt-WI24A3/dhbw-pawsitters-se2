@@ -107,6 +107,8 @@
       "description": "Lancez la suite E2E depuis le navigateur, suivez les logs en direct et vérifiez le statut de chaque test.",
       "run": "Lancer les tests",
       "running": "Tests en cours...",
+      "loading": "Les tests Playwright sont en cours d'exécution",
+      "notificationTitle": "Tests Playwright terminés",
       "lastRun": "Dernière exécution",
       "never": "Aucune exécution",
       "testsTitle": "Tous les tests E2E",

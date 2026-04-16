@@ -107,6 +107,8 @@
       "description": "Starte eure E2E-Suite direkt im Browser, verfolge Live-Logs und prüfe den Status jedes einzelnen Tests.",
       "run": "Tests starten",
       "running": "Tests laufen...",
+      "loading": "Playwright-Tests werden ausgeführt",
+      "notificationTitle": "Playwright-Tests abgeschlossen",
       "lastRun": "Letzter Lauf",
       "never": "Noch kein Lauf",
       "testsTitle": "Alle E2E-Tests",
