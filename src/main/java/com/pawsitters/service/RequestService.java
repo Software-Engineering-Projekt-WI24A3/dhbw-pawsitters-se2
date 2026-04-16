@@ -59,7 +59,9 @@ public class RequestService {
     }
 
     /**
-     * Gibt alle offenen Anfragen zurück (für Hosts sichtbar).
+     * Gibt alle Anfragen mit dem angegebenen Status zurück.
+     *
+     * @param status der Status, nach dem die Anfragen gefiltert werden
      */
     public List<Request> getRequests(RequestStatus status) {
         return requestRepository.findByStatus(status);
