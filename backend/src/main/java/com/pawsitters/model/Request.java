@@ -3,8 +3,6 @@ package com.pawsitters.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 public class Request {
@@ -49,7 +47,6 @@ public class Request {
     private RequestStatus status;
 
     // Getter & Setter
-    // Getter & setter noch anpassen
     public Long getId() { return id; }
     public User getPetOwner() { return petOwner; }
     public Pet getPet() { return pet; }
