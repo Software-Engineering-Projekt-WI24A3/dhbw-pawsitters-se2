@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "home": {
+      "title": "Pawsitters",
+      "description": "Reduced landing page with direct entry points to repository and sign in."
+    },
+    "repositoryGit": {
+      "title": "Pawsitters | Repository | Git",
+      "description": "Clean Git page with merge graph, activity and contributors."
+    },
+    "repositoryKanban": {
+      "title": "Pawsitters | Repository | Kanban",
+      "description": "Reduced kanban page with color-coded owners and issue details."
+    },
+    "login": {
+      "title": "Pawsitters | Sign in",
+      "description": "Monochrome sign-in page for the localized Pawsitters frontend."
+    },
+    "register": {
+      "title": "Pawsitters | Create account",
+      "description": "Monochrome registration page for the localized Pawsitters frontend."
+    }
+  },
+  "brand": {
+    "name": "Pawsitters"
+  },
+  "locale": {
+    "de": {
+      "code": "DE",
+      "label": "Deutsch",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg"
+    },
+    "en": {
+      "code": "EN",
+      "label": "English",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E7.svg"
+    },
+    "fr": {
+      "code": "FR",
+      "label": "Français",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F7.svg"
+    }
+  },
+  "nav": {
+    "ariaRepository": "Repository navigation",
+    "repository": "Repository",
+    "repositoryGit": "Git",
+    "repositoryBoard": "Kanban Board",
+    "ariaLocale": "Locale switcher",
+    "login": "Sign in",
+    "menu": "Menu",
+    "close": "Close menu"
+  },
+  "repository": {
+    "liveLoading": "Live data is loading from GitHub... :)",
+    "git": {
+      "label": "Git",
+      "commits": "Commits",
+      "merges": "Merges",
+      "contributors": "Contributors",
+      "branches": "Branches",
+      "activity": "Activity",
+      "timeline": "Graph",
+      "range": {
+        "week": "This week",
+        "month": "This month"
+      },
+      "recent": "Latest commits"
+    },
+    "board": {
+      "label": "Kanban Board",
+      "open": "Open",
+      "assigned": "Assigned",
+      "owners": "Owners",
+      "criteriaCount": "Criteria",
+      "empty": "No open tickets in this category.",
+      "endpoints": "Endpoints",
+      "criteria": "Criteria",
+      "created": "Created",
+      "updated": "Updated",
+      "column": {
+        "frontend": "Frontend",
+        "api": "API",
+        "data": "Data",
+        "docs": "Documentation",
+        "misc": "Open"
+      },
+      "state": {
+        "open": "Open",
+        "closed": "Closed"
+      },
+      "labels": {
+        "documentation": "Documentation"
+      }
+    }
+  },
+  "auth": {
+    "shared": {
+      "eyebrow": "New appearance",
+      "title": "Calm access to the most important flows.",
+      "text": "The interface relies on clear typography, soft grayscale and direct orientation instead of heavy effects and blue surfaces.",
+      "point": {
+        "one": "Clear readability in every section",
+        "two": "Focused inputs without visual distraction",
+        "three": "Consistent navigation across all localized pages"
+      }
+    },
+    "login": {
+      "title": "Sign in",
+      "text": "Your access point to the new monochrome Pawsitters interface.",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign in",
+      "alt": {
+        "eyebrow": "New here",
+        "title": "Create account",
+        "text": "Set up your owner or host account for the next screens.",
+        "cta": "Register"
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "text": "Prepare your access for the next frontend flows.",
+      "name": "Name",
+      "namePlaceholder": "Pawsitters User",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Register",
+      "alt": {
+        "eyebrow": "Already registered",
+        "title": "Sign in",
+        "text": "Open the existing account and continue directly.",
+        "cta": "Back to sign in"
+      }
+    }
+  },
+  "footer": {
+    "text": "Pawsitters. Calm interface for modern pet care."
+  }
+}

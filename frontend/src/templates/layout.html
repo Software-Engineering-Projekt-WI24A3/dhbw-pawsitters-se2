@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="shell(pageTitle, pageDescription, currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, loginPath, pageClass, mainContent)"
+      th:lang="${currentLocale}">
+<head th:replace="~{fragments/head :: siteHead(${pageTitle}, ${pageDescription})}"></head>
+<body class="page_surface" th:classappend="${pageClass}">
+<div id="app-shell" class="site_frame" v-cloak>
+    <div class="site_background" aria-hidden="true">
+        <svg class="site_background__threads" viewBox="0 0 1600 2400" preserveAspectRatio="none">
+            <g class="site_background__glow">
+                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
+                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
+                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
+            </g>
+            <g class="site_background__lines">
+                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
+                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
+                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
+                <path d="M 528 560 C 592 642 668 720 780 820 C 854 886 904 952 960 1032"></path>
+                <path d="M 664 1124 C 748 1076 858 1044 960 1032 C 1088 1016 1194 1044 1308 1112"></path>
+                <path d="M 724 1048 C 822 1158 948 1312 1100 1492 C 1144 1544 1186 1610 1224 1704"></path>
+                <path d="M 342 1696 C 498 1644 648 1632 822 1652 C 984 1672 1114 1690 1224 1704"></path>
+            </g>
+            <g class="site_background__nodes">
+                <circle cx="360" cy="620" r="8"></circle>
+                <circle cx="528" cy="560" r="7"></circle>
+                <circle cx="724" cy="1048" r="8"></circle>
+                <circle cx="960" cy="1032" r="10"></circle>
+                <circle cx="664" cy="1124" r="7"></circle>
+                <circle cx="1224" cy="1704" r="9"></circle>
+                <circle cx="342" cy="1696" r="7"></circle>
+            </g>
+        </svg>
+    </div>
+    <div th:replace="~{partials/header :: siteHeader(${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, ${loginPath})}"></div>
+
+    <main id="main-content" class="main_container site_main">
+        <th:block th:replace="${mainContent}"></th:block>
+    </main>
+
+    <footer class="main_container site_footer" th:unless="${pageClass == 'page-home'}">
+        <p class="site_footer__text" th:text="#{footer.text}">footer.text</p>
+    </footer>
+</div>
+<script type="module" th:src="@{/assets/js/site.js}"></script>
+</body>
+</html>

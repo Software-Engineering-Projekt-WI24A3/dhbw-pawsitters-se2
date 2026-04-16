@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header id="site-shell-header" class="header_shell" th:fragment="siteHeader(currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, loginPath)">
+    <div class="main_container">
+        <div :class="scrolled ? 'header_surface header_surface--scrolled' : 'header_surface'">
+            <a class="brand_mark" href="/" th:href="${homePath}" th:attr="aria-label=#{brand.name}" @click="closeMenu()">
+                <span class="brand_mark__tile" aria-hidden="true">
+                    <img class="brand_mark__icon" th:src="@{/assets/media/favicon.png}" src="/assets/media/favicon.png" alt="">
+                </span>
+            </a>
+
+            <div class="header_center hidden lg:flex">
+                <details class="repo_menu" th:attr="aria-label=#{nav.ariaRepository}">
+                    <summary class="repo_menu__summary">
+                        <img class="repo_menu__icon"
+                             src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
+                             alt=""
+                             aria-hidden="true">
+                        <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
+                        <span class="repo_menu__chevron" aria-hidden="true">
+                            <svg viewBox="0 0 16 16" focusable="false">
+                                <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="repo_menu__panel">
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryGitPath}">
+                            <img class="repo_menu__item-icon"
+                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
+                        </a>
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryBoardPath}">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
+                        </a>
+                    </div>
+                </details>
+            </div>
+
+            <div class="header_actions hidden lg:flex">
+                <details class="locale_menu" th:attr="aria-label=#{nav.ariaLocale}">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" th:src="${currentLocaleFlagPath}" alt="">
+                        <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a th:each="localeOption : ${localeLinks}"
+                           class="locale_menu__item"
+                           th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
+                           th:href="${localeOption.path}"
+                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
+                            <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
+                            <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
+                        </a>
+                    </div>
+                </details>
+                <a class="button button--secondary" th:href="${loginPath}" th:text="#{nav.login}">nav.login</a>
+            </div>
+
+            <button class="menu_button lg:hidden"
+                    type="button"
+                    :aria-expanded="menuOpen.toString()"
+                    @click="toggleMenu()">
+                <span v-if="!menuOpen" th:text="#{nav.menu}">nav.menu</span>
+                <span v-else th:text="#{nav.close}">nav.close</span>
+            </button>
+        </div>
+
+        <div v-show="menuOpen" class="mobile_drawer lg:hidden" @click.self="closeMenu()">
+            <div class="mobile_drawer__surface">
+                <details class="repo_menu repo_menu--mobile" th:attr="aria-label=#{nav.ariaRepository}">
+                    <summary class="repo_menu__summary">
+                        <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
+                    </summary>
+                    <div class="repo_menu__panel">
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryGitPath}"
+                           @click="closeMenu()">
+                            <img class="repo_menu__item-icon"
+                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
+                        </a>
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryBoardPath}"
+                           @click="closeMenu()">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
+                        </a>
+                    </div>
+                </details>
+                <details class="locale_menu locale_menu--mobile" th:attr="aria-label=#{nav.ariaLocale}">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" th:src="${currentLocaleFlagPath}" alt="">
+                        <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a th:each="localeOption : ${localeLinks}"
+                           class="locale_menu__item"
+                           th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
+                           th:href="${localeOption.path}"
+                           @click="closeMenu()"
+                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
+                            <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
+                            <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
+                        </a>
+                    </div>
+                </details>
+                <a class="button button--secondary w-full" th:href="${loginPath}" @click="closeMenu()" th:text="#{nav.login}">nav.login</a>
+            </div>
+        </div>
+    </div>
+</header>
+</body>
+</html>

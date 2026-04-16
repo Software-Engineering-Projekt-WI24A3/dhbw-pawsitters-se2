@@ -1,0 +1,25 @@
+{
+  "name": "pawsitters-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "node ./scripts/dev.mjs",
+    "dev:test": "NO_WATCH=1 node ./scripts/dev.mjs",
+    "build": "npm run build:css && npm run thymeleaf:build",
+    "build:css": "mkdir -p ./assets/css && tailwindcss -c tailwind.config.js -i ./src/tailwind/site.css -o ./assets/css/site.css --minify",
+    "serve": "python3 -m http.server 4173 --bind 127.0.0.1",
+    "thymeleaf:build": "node ./scripts/build-site.mjs",
+    "thymeleaf:check": "node ./scripts/check-thymeleaf.mjs",
+    "test": "npm run thymeleaf:check && npm run test:data && npm run test:e2e",
+    "test:data": "node --test ./tests/repository-live.test.mjs ./tests/repository-graph-data.test.mjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@gitgraph/js": "^1.4.0",
+    "cheerio": "^1.0.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "tailwindcss": "^3.4.17"
+  }
+}

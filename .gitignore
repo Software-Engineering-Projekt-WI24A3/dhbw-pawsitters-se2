@@ -1,0 +1,42 @@
+node_modules/
+frontend/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Frontend build/test artifacts
+coverage/
+dist/
+build/
+.next/
+.nuxt/
+.svelte-kit/
+storybook-static/
+frontend/playwright-report/
+frontend/test-results/
+
+# Tool caches
+.vite/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+playwright-report/
+test-results/
+.DS_Store
+
+**/.idea/shelf/
+**/.idea/workspace.xml
+**/.idea/httpRequests/
+**/.idea/queries/
+**/.idea/dataSources/
+**/.idea/dataSources.local.xml
