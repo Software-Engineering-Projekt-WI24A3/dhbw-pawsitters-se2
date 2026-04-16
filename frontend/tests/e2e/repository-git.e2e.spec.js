@@ -2,6 +2,42 @@ const { test, expect } = require('@playwright/test');
 const { token } = require('./support/i18n');
 const { loadLiveRepository } = require('./support/repository');
 
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function overwriteFirstGraphMessage(snapshot, message) {
+  if (!snapshot || typeof snapshot !== 'object') {
+    return false;
+  }
+
+  const graphs = [];
+  if (snapshot.git?.projectGraph && typeof snapshot.git.projectGraph === 'object') {
+    graphs.push(snapshot.git.projectGraph);
+  }
+  if (snapshot.git?.branchGraphs && typeof snapshot.git.branchGraphs === 'object') {
+    Object.values(snapshot.git.branchGraphs).forEach((graph) => {
+      if (graph && typeof graph === 'object') {
+        graphs.push(graph);
+      }
+    });
+  }
+
+  let updated = false;
+  graphs.forEach((graph) => {
+    if (Array.isArray(graph.recentCommits) && graph.recentCommits[0]) {
+      graph.recentCommits[0].message = message;
+      updated = true;
+    }
+    if (Array.isArray(graph.graphImport) && graph.graphImport[0]) {
+      graph.graphImport[0].subject = message;
+      updated = true;
+    }
+  });
+
+  return updated;
+}
+
 test.describe('Repository git view', () => {
   test('should render git activity and timeline interactions from live data', async ({ page }) => {
     const snapshot = await loadLiveRepository(page, 'de');
@@ -48,12 +84,105 @@ test.describe('Repository git view', () => {
     await expect(activityMenuSummary).toContainText(snapshot.git.activityRanges.month);
     await expect(activityPanel.locator('[data-activity-day]')).toHaveCount(snapshot.git.activity.month.length);
 
+    const pickPreferredBranch = () => {
+      const branches = Array.isArray(snapshot.git?.branches) ? snapshot.git.branches : [];
+      if (branches.some((branch) => branch?.name === 'develop')) {
+        return 'develop';
+      }
+      return snapshot.git?.defaultBranch || branches[0]?.name || '';
+    };
+    const graphImportSource = Array.isArray(snapshot.git?.projectGraph?.graphImport) && snapshot.git.projectGraph.graphImport.length > 0
+      ? snapshot.git.projectGraph.graphImport
+      : (snapshot.git?.branchGraphs?.[pickPreferredBranch()]?.graphImport || []);
+    const mergeHashesFromSnapshot = graphImportSource
+      .filter((commit) => Array.isArray(commit?.refs) && commit.refs.some((ref) => typeof ref === 'string' && ref.toLowerCase().startsWith('merge:')))
+      .map((commit) => commit.hash)
+      .filter((hash) => typeof hash === 'string' && hash.trim());
+    const graphHashesForEdgeGap = mergeHashesFromSnapshot.length > 0
+      ? mergeHashesFromSnapshot
+      : graphImportSource
+        .map((commit) => commit?.hash)
+        .filter((hash) => typeof hash === 'string' && hash.trim());
+
     await page.getByRole('button', { name: token('de', 'repository.git.timeline') }).click();
 
     const graphPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="graph"]');
     const graphSummary = graphPanel.locator('.repo_menu__summary').first();
     await expect(page.locator('[data-segmented="gitView"] .repository_segmented__button--active')).toContainText(token('de', 'repository.git.timeline'));
     await expect(page.locator('[data-gitgraph-container] svg')).toBeVisible();
+    await expect.poll(async () => {
+      return page.locator('.git_graph_branch_label').count();
+    }, { timeout: 20000 }).toBeGreaterThan(0);
+    const graphLayout = await page.locator('.git_graph_canvas_panel').evaluate((panel, edgeHashes) => {
+      const container = panel.querySelector('[data-gitgraph-container]');
+      const labels = Array.from(panel.querySelectorAll('.git_graph_branch_label'));
+      const topLabel = labels.reduce((best, label) => (!best || label.offsetTop < best.offsetTop ? label : best), null);
+      const svg = container?.querySelector('svg');
+      const svgBBox = typeof svg?.getBBox === 'function' ? svg.getBBox() : null;
+      const panelRect = panel.getBoundingClientRect();
+
+      const readNodeCenter = (hash) => {
+        if (!hash || !container) {
+          return null;
+        }
+
+        const escaped = window.CSS?.escape ? window.CSS.escape(hash) : hash;
+        const useNode = Array.from(container.querySelectorAll(`use[href="#${escaped}"], use[xlink\\:href="#${escaped}"]`))
+          .find((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+          });
+        const node = useNode || Array.from(container.querySelectorAll(`circle[id="${escaped}"]`))
+          .find((circle) => {
+            const rect = circle.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+          });
+        if (!node) {
+          return null;
+        }
+        const rect = node.getBoundingClientRect();
+        return rect.left - panelRect.left + panel.scrollLeft + (rect.width / 2);
+      };
+
+      const maxLabelRight = labels.reduce((max, label) => Math.max(max, label.offsetLeft + label.offsetWidth), 0);
+      const maxContentRight = Math.max(maxLabelRight, svgBBox ? Math.ceil(svgBBox.x + svgBBox.width) : 0);
+      const contentWidth = Math.round(container?.getBoundingClientRect().width || 0);
+      const edgeCenters = Array.isArray(edgeHashes)
+        ? edgeHashes.map((hash) => readNodeCenter(hash)).filter((x) => Number.isFinite(x))
+        : [];
+      const allNodeCenters = Array.from(container?.querySelectorAll('use[href], use[xlink\\:href], circle[id]') ?? [])
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) {
+            return null;
+          }
+          return rect.left - panelRect.left + panel.scrollLeft + (rect.width / 2);
+        })
+        .filter((x) => Number.isFinite(x));
+      const leftEdgeGap = edgeCenters.length > 0
+        ? Math.min(...edgeCenters)
+        : (allNodeCenters.length > 0 ? Math.min(...allNodeCenters) : 0);
+      const topLabelCenter = topLabel ? topLabel.offsetLeft + (topLabel.offsetWidth / 2) : null;
+      const topNodeCenter = topLabel ? readNodeCenter(topLabel.dataset.commitHash || '') : null;
+      const topAnchorCenter = Number.isFinite(topLabelCenter) && Number.isFinite(topNodeCenter)
+        ? (topLabelCenter + topNodeCenter) / 2
+        : topLabelCenter;
+      const viewportCenter = panel.scrollLeft + (panel.clientWidth / 2);
+
+      return {
+        overflowX: window.getComputedStyle(panel).overflowX,
+        scrollWidth: Math.round(panel.scrollWidth || 0),
+        clientWidth: Math.round(panel.clientWidth || 0),
+        rightGap: contentWidth - maxContentRight,
+        leftGap: Number.isFinite(leftEdgeGap) ? leftEdgeGap : 0,
+        topAnchorCenter,
+        viewportCenter
+      };
+    }, graphHashesForEdgeGap);
+    expect(graphLayout.overflowX).toBe('auto');
+    expect(graphLayout.scrollWidth).toBeGreaterThanOrEqual(graphLayout.clientWidth);
+    expect(Math.abs(graphLayout.rightGap - graphLayout.leftGap)).toBeLessThanOrEqual(2);
+    expect(Math.abs((graphLayout.topAnchorCenter ?? 0) - graphLayout.viewportCenter)).toBeLessThanOrEqual(2);
     const graphSummaryCount = await graphSummary.count();
     if (graphSummaryCount > 0) {
       await expect(graphSummary).toContainText(snapshot.git.defaultBranch);
@@ -107,5 +236,43 @@ test.describe('Repository git view', () => {
         await expect(graphPanel.locator('.git_commit__sha').first()).toContainText(firstCommit.shortSha);
       }
     }
+  });
+
+  test('should reload timeline after manual repository refresh', async ({ page }) => {
+    const snapshot = await loadLiveRepository(page, 'de');
+    const firstSnapshot = cloneJson(snapshot);
+    const secondSnapshot = cloneJson(snapshot);
+    const beforeMessage = `E2E Verlauf Vorher ${Date.now().toString(36)}`;
+    const afterMessage = `E2E Verlauf Nachher ${Date.now().toString(36)}`;
+    const firstHasGraph = overwriteFirstGraphMessage(firstSnapshot, beforeMessage);
+    const secondHasGraph = overwriteFirstGraphMessage(secondSnapshot, afterMessage);
+
+    test.skip(!(firstHasGraph && secondHasGraph), 'Snapshot has no graph commits to validate refresh rendering.');
+
+    let requestCount = 0;
+    await page.route('**/api/repository/live.json**', async (route) => {
+      requestCount += 1;
+      const payload = requestCount === 1 ? firstSnapshot : secondSnapshot;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(payload)
+      });
+    });
+
+    await page.goto('/git');
+    await page.getByRole('button', { name: token('de', 'repository.git.timeline') }).click();
+
+    const graphPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="graph"]');
+    const firstCommitMessage = graphPanel.locator('.git_graph__card .git_commit__message').first();
+    await expect(firstCommitMessage).toContainText(beforeMessage);
+
+    await page.locator('.repository_switch__refresh').click();
+    await expect.poll(() => requestCount, { timeout: 20000 }).toBeGreaterThanOrEqual(2);
+
+    await expect(page.locator('[data-segmented="gitView"] .repository_segmented__button--active')).toContainText(token('de', 'repository.git.timeline'));
+    await expect(page.locator('[data-gitgraph-container] svg')).toBeVisible();
+    await expect(firstCommitMessage).toContainText(afterMessage, { timeout: 20000 });
+    expect(requestCount).toBeGreaterThanOrEqual(2);
   });
 });

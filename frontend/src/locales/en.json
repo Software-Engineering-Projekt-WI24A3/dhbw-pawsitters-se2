@@ -107,6 +107,8 @@
       "description": "Run your E2E suite directly from the browser, follow live logs, and inspect each test result.",
       "run": "Run tests",
       "running": "Running tests...",
+      "loading": "Playwright tests are running",
+      "notificationTitle": "Playwright tests completed",
       "lastRun": "Last run",
       "never": "No run yet",
       "testsTitle": "All E2E tests",
