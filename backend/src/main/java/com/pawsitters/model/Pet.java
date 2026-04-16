@@ -12,8 +12,8 @@ public class Pet {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String species; // z.B. "Hund", "Katze"
+    @Enumerated(EnumType.STRING)
+    private PetChoice species;
 
     @Column(nullable = false)
     private String breed;
@@ -38,7 +38,7 @@ public class Pet {
         return name;
     }
 
-    public String getSpecies() {
+    public PetChoice getSpecies() {
         return species;
     }
 
@@ -66,7 +66,7 @@ public class Pet {
         this.name = name;
     }
 
-    public void setSpecies(String species) {
+    public void setSpecies(PetChoice species) {
         this.species = species;
     }
 
