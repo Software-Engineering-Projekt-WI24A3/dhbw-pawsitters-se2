@@ -30,21 +30,62 @@ public class Pet {
 
     // ===== GETTER & SETTER =====
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public String getSpecies() { return species; }
-    public String getBreed() { return breed; }
-    public int getAge() { return age; }
-    public String getSpecialNeeds() { return specialNeeds; }
-    public User getOwner() { return owner; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setId(Long id) { this.id = id; }
-    public void setName(String name) { this.name = name; }
-    public void setSpecies(String species) { this.species = species; }
-    public void setBreed(String breed) { this.breed = breed; }
-    public void setAge(int age) { this.age = age; }
-    public void setSpecialNeeds(String specialNeeds) { this.specialNeeds = specialNeeds; }
-    public void setOwner(User owner) { this.owner = owner; }
+    public String getName() {
+        return name;
+    }
 
-    public Pet() {}
+    public String getSpecies() {
+        return species;
+    }
+
+    public String getBreed() {
+        return breed;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public String getSpecialNeeds() {
+        return specialNeeds;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSpecies(String species) {
+        this.species = species;
+    }
+
+    public void setBreed(String breed) {
+        this.breed = breed;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setSpecialNeeds(String specialNeeds) {
+        this.specialNeeds = specialNeeds;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public Pet() {
+    }
 }

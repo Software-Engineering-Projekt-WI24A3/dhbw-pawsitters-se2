@@ -6,67 +6,111 @@ classDiagram
         +Long id
         +String email
         +String passwordHash
-        +String firstName
-        +String lastName
-        +String phone
-        +LocalDate birthDate
-        +String emergencyContact
-        +String profilePicture
-        +String bio
         +UserRole role
         +List~Pet~ pets
-        +getId() Long
-        +getEmail() String
-        +getRole() UserRole
-        +getPets() List~Pet~
+        +HostProfile hostProfile
     }
+
+    class HostProfile {
+        +Long id
+        +String description
+        +double pricePerDay
+        +String housingType
+        +List~String~ galleryImages
+    }
+    note for HostProfile "Zusatzprofil für den Marketplace: \nTrennt öffentliche Hosting-Details (Unterkunft, Preise) \nvon privaten Benutzerdaten."
 
     class Pet {
         +Long id
         +String name
-        +String species
-        +String breed
-        +int age
-        +String specialNeeds
+        +Spezies species
         +User owner
-        +getId() Long
-        +getName() String
-        +getOwner() User
     }
 
-    class Request {
+    class BookingRequest {
         +Long id
-        +User petOwner
-        +Pet pet
         +LocalDate startDate
         +LocalDate endDate
-        +String description
-        +String location
-        +String housingType
-        +String extras
-        +String specialNeeds
-        +String price
         +RequestStatus status
-        +getId() Long
-        +getStatus() RequestStatus
+        +Pet pet
+    }
+
+    class Booking {
+        +Long id
+        +DateTime confirmedAt
+        +BookingStatus status
+        +BookingRequest sourceRequest
+    }
+
+    class Chat {
+        +Long id
+        +User participantA
+        +User participantB
+    }
+
+    class Message {
+        +Long id
+        +String content
+        +DateTime sentAt
+        +String attachmentUrl
+    }
+
+    class Review {
+        +Long id
+        +int rating
+        +String comment
     }
 
     class UserRole {
         <<enumeration>>
         PET_OWNER
         HOST
+        BOTH
     }
 
     class RequestStatus {
         <<enumeration>>
-        OPEN
-        FULFILLED
+        PENDING
+        ACCEPTED
+        REJECTED
         CANCELLED
     }
 
-    User "1" --> "*" Pet : owns
-    User "1" --> "*" Request : creates (petOwner)
-    Request "*" --> "1" Pet : concerns
-    User --> UserRole : has role
-    Request --> RequestStatus : has status
+    class BookingStatus {
+        <<enumeration>>
+        UPCOMING
+        ACTIVE
+        COMPLETED
+        CANCELLED
+    }
+
+    class Spezies {
+        <<enumeration>>
+        HUND
+        KATZE
+        VOGEL
+        KANINCHEN
+        HAMSTER
+        MEERSCHWEINCHEN
+        SCHILDKROETE
+        FISCH
+        SCHLANGE
+        ANDERE
+    }
+
+    %% Verknüpfungen (Beziehungen)
+    User "1" --> "1" UserRole : besitzt Rolle
+    User "1" -- "0..1" HostProfile : verwaltet
+    User "1" -- "*" Pet : besitzt
+    User "1" -- "*" BookingRequest : ist Gegenstand von
+    User "2" -- "*" Chat : führen
+    
+    BookingRequest "1" -- "0..1" Booking : wird zu
+    BookingRequest "1" --> "1" RequestStatus : hat aktuellen
+    
+    Booking "1" --> "1" BookingStatus : hat aktuellen
+    Booking "1" -- "0..1" Review : wird bewertet durch
+    
+    Chat "1" -- "*" Message : enthält
+    Pet "*" --> "1" Spezies : ist von
 ```
