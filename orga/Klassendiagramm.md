@@ -23,7 +23,7 @@ classDiagram
     class Pet {
         +Long id
         +String name
-        +String species
+        +Spezies species
         +User owner
     }
 
@@ -84,6 +84,20 @@ classDiagram
         CANCELLED
     }
 
+    class Spezies {
+        <<enumeration>>
+        HUND
+        KATZE
+        VOGEL
+        KANINCHEN
+        HAMSTER
+        MEERSCHWEINCHEN
+        SCHILDKROETE
+        FISCH
+        SCHLANGE
+        ANDERE
+    }
+
     %% Verknüpfungen (Beziehungen)
     User "1" --> "1" UserRole : besitzt Rolle
     User "1" -- "0..1" HostProfile : verwaltet
@@ -98,4 +112,5 @@ classDiagram
     Booking "1" -- "0..1" Review : wird bewertet durch
     
     Chat "1" -- "*" Message : enthält
+    Pet "*" --> "1" Spezies : ist von
 ```
