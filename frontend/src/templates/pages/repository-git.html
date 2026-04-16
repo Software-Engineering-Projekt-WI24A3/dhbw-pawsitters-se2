@@ -50,22 +50,22 @@
                 <div class="git_metrics">
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.totalCommits"></span>
+                              v-text="animatedMetrics.git.totalCommits"></span>
                         <span class="git_metric__label" th:text="#{repository.git.commits}">repository.git.commits</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.mergeCommits"></span>
+                              v-text="animatedMetrics.git.mergeCommits"></span>
                         <span class="git_metric__label" th:text="#{repository.git.merges}">repository.git.merges</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.contributorCount"></span>
+                              v-text="animatedMetrics.git.contributorCount"></span>
                         <span class="git_metric__label" th:text="#{repository.git.contributors}">repository.git.contributors</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.branchCount"></span>
+                              v-text="animatedMetrics.git.branchCount"></span>
                         <span class="git_metric__label" th:text="#{repository.git.branches}">repository.git.branches</span>
                     </article>
                 </div>
@@ -283,7 +283,8 @@
                                 <div class="git_author__meta">
                                     <div class="git_author__line">
                                         <span class="git_author__name" v-text="author.name"></span>
-                                        <span class="git_author__count" v-text="author.count"></span>
+                                        <span class="git_author__count"
+                                              v-text="author.count + ' Commits | ' + (author.linesContributed ?? 0) + ' Zeilen beigetragen'"></span>
                                     </div>
                                     <span class="git_author__bar" :style="author.toneStyle"></span>
                                 </div>

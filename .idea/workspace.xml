@@ -7,10 +7,16 @@
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/playwright.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/playwright.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/home.spec.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/repository-graph-data.test.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/repository-graph-data.test.mjs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +65,7 @@
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__fixing-e2e-tests-and-bugs",
+    "git-widget-placeholder": "n__feature__show-how-many-lines-of-code-everyone-has-contributed",
     "javascript.preferred.runtime.type.id": "node",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -118,6 +124,15 @@
       <workItem from="1776260005699" duration="13912000" />
       <workItem from="1776341609724" duration="5718000" />
     </task>
+    <task id="LOCAL-00001" summary="reviewed and updated all e2e tests">
+      <option name="closed" value="true" />
+      <created>1776356612637</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776356612637</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -133,6 +148,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="reviewed and updated all e2e tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="reviewed and updated all e2e tests" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

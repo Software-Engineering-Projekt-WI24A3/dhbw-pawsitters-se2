@@ -588,31 +588,53 @@ async function resolveAuthorIdentity(authorName, authorEmail, identityIndex, wor
   return null;
 }
 
-function parseAuthorCounts(logOutput) {
-  const counts = logOutput
-    .split('\n')
-    .map((line) => line.trim())
+function parseAuthorContributionStats(logOutput) {
+  const stats = new Map();
+
+  logOutput
+    .split('\x1e')
+    .map((entry) => entry.trim())
     .filter(Boolean)
-    .reduce((map, line) => {
-      const [name = '', email = ''] = line.split('\x1f');
-      if (!name) {
-        return map;
+    .forEach((entry) => {
+      const [authorLine = '', ...numstatLines] = entry
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const [authorName = '', authorEmail = ''] = authorLine.split('\x1f');
+
+      if (!authorName) {
+        return;
       }
 
-      const key = `${name}\x1f${email}`;
-      map.set(key, (map.get(key) ?? 0) + 1);
-      return map;
-    }, new Map());
-
-  return [...counts.entries()]
-    .map(([key, count]) => {
-      const [authorName = '', authorEmail = ''] = key.split('\x1f');
-      return {
-        count,
+      const key = `${authorName}\x1f${authorEmail}`;
+      const current = stats.get(key) ?? {
+        count: 0,
         authorName,
-        authorEmail
+        authorEmail,
+        additions: 0,
+        deletions: 0,
+        linesContributed: 0
       };
-    })
+
+      current.count += 1;
+
+      for (const line of numstatLines) {
+        const match = line.match(/^(\d+|-)\t(\d+|-)\t/);
+        if (!match) {
+          continue;
+        }
+
+        const additions = match[1] === '-' ? 0 : Number.parseInt(match[1], 10);
+        const deletions = match[2] === '-' ? 0 : Number.parseInt(match[2], 10);
+        current.additions += additions;
+        current.deletions += deletions;
+      }
+
+      current.linesContributed = current.additions + current.deletions;
+      stats.set(key, current);
+    });
+
+  return [...stats.values()]
     .sort((left, right) => right.count - left.count || left.authorName.localeCompare(right.authorName));
 }
 
@@ -708,7 +730,7 @@ async function buildGitSnapshot(workspaceRoot) {
     lastCommitDate,
     headHash,
     activityLog,
-    authorLog,
+    authorContributionLog,
     branchOutput,
     localHeadsOutput,
     remoteHeadsOutput,
@@ -721,7 +743,7 @@ async function buildGitSnapshot(workspaceRoot) {
     runOptional('git', ['log', '-1', '--all', '--date=iso-strict', '--pretty=%ad'], workspaceRoot),
     runOptional('git', ['rev-parse', 'HEAD'], workspaceRoot),
     runOptional('git', ['log', '--all', '--date=short', '--pretty=%ad'], workspaceRoot),
-    runOptional('git', ['log', '--all', '--format=%an%x1f%ae'], workspaceRoot),
+    runOptional('git', ['log', '--all', '--numstat', '--format=%x1e%an%x1f%ae'], workspaceRoot),
     runOptional(
       'git',
       ['for-each-ref', '--format=%(refname:short)\t%(objectname)\t%(committerdate:iso-strict)', 'refs/heads', 'refs/remotes/origin'],
@@ -745,8 +767,8 @@ async function buildGitSnapshot(workspaceRoot) {
 
   githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
 
-  const authorCounts = parseAuthorCounts(authorLog);
-  const commitEmails = [...new Set(authorCounts
+  const authorStats = parseAuthorContributionStats(authorContributionLog);
+  const commitEmails = [...new Set(authorStats
     .map((author) => normalizeWhitespace(author.authorEmail))
     .filter(Boolean))];
   const commitEmailIdentities = await Promise.all(commitEmails.map((email) => {
@@ -756,7 +778,7 @@ async function buildGitSnapshot(workspaceRoot) {
     .filter(Boolean)
     .forEach((identity) => indexIdentity(identityIndex, identity));
 
-  await Promise.all(authorCounts.map(async (author) => {
+  await Promise.all(authorStats.map(async (author) => {
     const identity = await resolveAuthorIdentity(author.authorName, author.authorEmail, identityIndex, workspaceRoot);
     indexIdentity(identityIndex, identity);
   }));
@@ -845,15 +867,15 @@ async function buildGitSnapshot(workspaceRoot) {
   };
 
   const paletteMap = buildPaletteMap([
-    ...authorCounts.map((author) => {
+    ...authorStats.map((author) => {
       const identity = identityIndex.get(normalizeIdentityKey(author.authorEmail))
         ?? null;
       return identity?.login || identity?.name || author.authorName;
     })
   ]);
 
-  const maxCount = Math.max(...authorCounts.map((author) => author.count), 1);
-  const authors = authorCounts
+  const maxCount = Math.max(...authorStats.map((author) => author.count), 1);
+  const authors = authorStats
     .map((author) => {
       const identity = identityIndex.get(normalizeIdentityKey(author.authorEmail))
         ?? null;
@@ -862,6 +884,9 @@ async function buildGitSnapshot(workspaceRoot) {
 
       return {
         count: author.count,
+        linesContributed: author.linesContributed,
+        additions: author.additions,
+        deletions: author.deletions,
         name: resolveIdentityName(identity, author.authorName),
         login: identity?.login || author.authorName,
         avatarUrl: identity?.avatarUrl || '',
@@ -1177,5 +1202,6 @@ export async function loadRepositorySnapshot(rootDir, options = {}) {
 export { localizeRepositorySnapshot };
 export const __repositorySnapshotInternals = {
   parseCommitImport,
-  parseBranchCommits
+  parseBranchCommits,
+  parseAuthorContributionStats
 };
