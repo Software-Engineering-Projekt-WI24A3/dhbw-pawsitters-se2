@@ -1,0 +1,1853 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        color-scheme: light;
+        --surface-base: #ffffff;
+        --surface-panel: rgba(255, 255, 255, 0.76);
+        --surface-panel-strong: rgba(255, 255, 255, 0.92);
+        --line-soft: rgba(17, 17, 19, 0.08);
+        --line-strong: rgba(17, 17, 19, 0.14);
+        --text-primary: #111114;
+        --text-secondary: rgba(17, 17, 19, 0.68);
+        --text-tertiary: rgba(17, 17, 19, 0.46);
+        --thread-line-strong: rgba(118, 189, 255, 0.24);
+        --thread-line-soft: rgba(158, 210, 255, 0.12);
+        --thread-node: rgba(130, 196, 255, 0.18);
+        --dropdown-duration: 340ms;
+        --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html {
+        @apply scroll-smooth;
+    }
+
+    body {
+        @apply min-h-screen bg-white font-sans text-zinc-950 antialiased;
+        background: #ffffff;
+    }
+
+    body.body--modal-open {
+        overflow: hidden;
+    }
+
+    img {
+        @apply block max-w-full;
+    }
+
+    summary {
+        list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+
+    a {
+        color: inherit;
+    }
+
+    ::selection {
+        background: rgba(17, 17, 19, 0.14);
+        color: #111114;
+    }
+}
+
+@layer components {
+    [v-cloak] {
+        display: none;
+    }
+
+    .page_surface {
+        @apply relative overflow-x-clip;
+        background: #ffffff;
+    }
+
+    .site_frame {
+        @apply relative isolate min-h-screen;
+    }
+
+    .site_background {
+        @apply pointer-events-none absolute inset-0 overflow-hidden;
+        z-index: 0;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #ffffff 12%, #ffffff 100%);
+    }
+
+    .site_background::before {
+        @apply absolute inset-0;
+        content: '';
+        background:
+            radial-gradient(circle at 12% 8%, rgba(212, 236, 255, 0.36) 0%, rgba(212, 236, 255, 0) 24%),
+            radial-gradient(circle at 84% 18%, rgba(220, 241, 255, 0.28) 0%, rgba(220, 241, 255, 0) 24%),
+            radial-gradient(circle at 28% 62%, rgba(225, 244, 255, 0.18) 0%, rgba(225, 244, 255, 0) 22%),
+            radial-gradient(circle at 78% 78%, rgba(214, 238, 255, 0.16) 0%, rgba(214, 238, 255, 0) 24%);
+    }
+
+    .site_background::after {
+        @apply absolute inset-0;
+        content: '';
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.28) 14%, rgba(255, 255, 255, 0.28) 86%, rgba(255, 255, 255, 0.7) 100%);
+    }
+
+    .site_background__threads {
+        @apply absolute inset-0 h-full w-full;
+        opacity: 0.64;
+    }
+
+    .site_background__glow path {
+        fill: none;
+        stroke: rgba(184, 223, 255, 0.12);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 14;
+        filter: blur(14px);
+    }
+
+    .site_background__lines path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .site_background__lines path:nth-child(odd) {
+        stroke: var(--thread-line-strong);
+        stroke-width: 1.65;
+    }
+
+    .site_background__lines path:nth-child(even) {
+        stroke: var(--thread-line-soft);
+        stroke-width: 1.15;
+    }
+
+    .site_background__nodes circle {
+        fill: var(--thread-node);
+        vector-effect: non-scaling-stroke;
+    }
+
+    .site_background__nodes circle:nth-child(4),
+    .site_background__nodes circle:nth-child(6) {
+        fill: rgba(118, 189, 255, 0.22);
+    }
+
+    .main_container {
+        width: min(1240px, calc(100% - 2rem));
+        margin-inline: auto;
+    }
+
+    .site_main {
+        @apply relative z-10 pb-20 pt-5 md:pt-6;
+    }
+
+    .site_footer {
+        @apply relative z-10 border-t border-black/10 pb-10 pt-6;
+    }
+
+    .site_footer__text {
+        @apply text-center text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-black/40;
+    }
+
+    .header_shell {
+        @apply sticky top-0 z-50 pt-3 md:pt-4;
+    }
+
+    .header_surface {
+        @apply flex items-center justify-between gap-4 rounded-full border border-black/10 px-4 py-3 backdrop-blur-xl transition duration-300 md:px-6;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 14px 36px rgba(15, 15, 17, 0.06);
+    }
+
+    @media (min-width: 1024px) {
+        .header_surface {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        }
+    }
+
+    .header_surface--scrolled {
+        background: rgba(255, 255, 255, 0.995);
+        box-shadow: 0 18px 44px rgba(15, 15, 17, 0.08);
+    }
+
+    .brand_mark {
+        @apply inline-flex min-w-0 items-center justify-center rounded-full no-underline;
+        position: relative;
+        isolation: isolate;
+        transition: transform 300ms ease, filter 300ms ease;
+        justify-self: start;
+    }
+
+    .brand_mark:hover {
+        transform: translateY(-1px) scale(1.02);
+    }
+
+    .brand_mark:focus-visible {
+        outline: none;
+    }
+
+    .brand_mark__tile {
+        @apply relative inline-flex items-center justify-center overflow-hidden rounded-full;
+        width: 3.15rem;
+        height: 3.15rem;
+        background: #ffffff;
+        border: 1px solid rgba(17, 17, 19, 0.12);
+        box-shadow:
+            0 10px 24px rgba(17, 17, 19, 0.12),
+            0 0 0 1px rgba(17, 17, 19, 0.06);
+    }
+
+    .brand_mark:focus-visible .brand_mark__tile {
+        box-shadow:
+            0 0 0 6px rgba(158, 210, 255, 0.18),
+            0 18px 34px rgba(17, 17, 19, 0.18),
+            0 0 0 1px rgba(17, 17, 19, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24),
+            inset 0 -12px 18px rgba(0, 0, 0, 0.34);
+    }
+
+    .brand_mark__icon {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 9999px;
+        object-fit: cover;
+        transform: scale(1.15);
+        transform-origin: center;
+        filter: none;
+    }
+
+    .home_hero__eyebrow,
+    .section_heading__eyebrow,
+    .home_detail__eyebrow,
+    .home_cta__eyebrow,
+    .auth_intro__eyebrow,
+    .auth_card__eyebrow,
+    .auth_link_card__eyebrow,
+    .locale_menu__label,
+    .hero_visual__label,
+    .home_detail__item-index {
+        @apply text-[0.7rem] font-semibold uppercase tracking-[0.28em];
+        color: var(--text-tertiary);
+    }
+
+    .header_actions {
+        @apply items-center justify-end gap-5;
+    }
+
+    .header_center {
+        @apply items-center justify-center;
+        justify-self: center;
+    }
+
+    .repo_menu {
+        @apply relative;
+    }
+
+    .repo_menu__summary {
+        @apply flex min-w-[9.5rem] cursor-pointer items-center justify-center rounded-full border border-black bg-transparent px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-px;
+    }
+
+    .repo_menu.is-open .repo_menu__summary {
+        box-shadow: 0 12px 24px rgba(17, 17, 19, 0.08);
+    }
+
+    .header_center .repo_menu__summary {
+        @apply relative gap-3 rounded-none border-none px-0 py-2 hover:-translate-y-0;
+        min-width: auto;
+        letter-spacing: -0.02em;
+        transform-origin: center;
+        box-shadow: none;
+    }
+
+    .header_center .repo_menu__summary:hover {
+        transform: translateY(-1px);
+    }
+
+    .header_center .repo_menu.is-open .repo_menu__summary {
+        box-shadow: none;
+    }
+
+    .header_center .repo_menu__summary:focus-visible {
+        outline: none;
+        border-radius: 999px;
+        box-shadow: 0 0 0 4px rgba(17, 17, 19, 0.08);
+    }
+
+    .header_center .repo_menu__summary {
+        list-style: none;
+    }
+
+    .header_center .repo_menu__summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .header_center .repo_menu__summary::marker {
+        content: '';
+    }
+
+    .repo_menu__label {
+        @apply tracking-[-0.03em];
+    }
+
+    .header_center .repo_menu__icon {
+        width: 1.05rem;
+        height: 1.05rem;
+        flex-shrink: 0;
+        opacity: 0.78;
+        filter: grayscale(1) contrast(1.2);
+        transition: opacity 280ms ease, transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .header_center .repo_menu__chevron {
+        @apply inline-flex items-center justify-center;
+        width: 0.95rem;
+        height: 0.95rem;
+        opacity: 0.72;
+        transform-origin: center;
+        transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease;
+    }
+
+    .header_center .repo_menu__chevron svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .header_center .repo_menu__summary:hover .repo_menu__icon,
+    .header_center .repo_menu.is-open .repo_menu__icon {
+        opacity: 1;
+        transform: translateY(-1px);
+    }
+
+    .header_center .repo_menu__summary:hover .repo_menu__chevron,
+    .header_center .repo_menu.is-open .repo_menu__chevron {
+        opacity: 1;
+    }
+
+    .header_center .repo_menu.is-open .repo_menu__chevron {
+        transform: rotate(180deg);
+    }
+
+    .repo_menu__panel {
+        @apply absolute right-0 top-[calc(100%+0.8rem)] z-20 min-w-[14rem] overflow-hidden rounded-[1.5rem] border border-black/10 p-2 shadow-soft backdrop-blur-xl;
+        background: rgba(255, 255, 255, 0.96);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-0.55rem) scale(0.98);
+        transform-origin: top center;
+        visibility: hidden;
+        will-change: opacity, transform;
+        transition:
+            opacity var(--dropdown-duration) ease,
+            transform var(--dropdown-duration) var(--dropdown-ease),
+            visibility 0s linear var(--dropdown-duration);
+    }
+
+    .repo_menu.is-open .repo_menu__panel {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+        visibility: visible;
+        transition:
+            opacity var(--dropdown-duration) ease,
+            transform var(--dropdown-duration) var(--dropdown-ease),
+            visibility 0s linear 0s;
+    }
+
+    .header_center .repo_menu__panel {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%) translateY(-0.55rem) scale(0.98);
+    }
+
+    .header_center .repo_menu.is-open .repo_menu__panel {
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    .repo_menu--mobile .repo_menu__panel {
+        @apply relative right-auto top-3 min-w-0;
+        left: auto;
+        transform: translateY(-0.45rem) scale(0.985);
+        transform-origin: top center;
+    }
+
+    .repo_menu--mobile.is-open .repo_menu__panel {
+        transform: translateY(0) scale(1);
+    }
+
+    .repo_menu__item {
+        @apply flex items-center gap-3 rounded-[1.1rem] px-4 py-3 text-sm font-medium no-underline transition duration-300 hover:bg-zinc-100;
+    }
+
+    .repo_menu__item--button {
+        @apply w-full border-0 bg-transparent text-left;
+    }
+
+    .repo_menu--surface .repo_menu__summary {
+        @apply min-w-[11rem] justify-between rounded-full border border-black/10 bg-white/80 px-4 py-3 text-sm font-semibold text-black backdrop-blur-xl;
+        box-shadow: 0 12px 24px rgba(17, 17, 19, 0.05);
+    }
+
+    .repo_menu--surface .repo_menu__summary:hover {
+        transform: translateY(-1px);
+    }
+
+    .repo_menu--surface.is-open .repo_menu__summary {
+        box-shadow: 0 16px 32px rgba(17, 17, 19, 0.08);
+    }
+
+    .repo_menu--surface .repo_menu__chevron {
+        @apply inline-flex items-center justify-center;
+        width: 0.95rem;
+        height: 0.95rem;
+        opacity: 0.72;
+        transform-origin: center;
+        transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease;
+    }
+
+    .repo_menu--surface .repo_menu__chevron svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .repo_menu--surface.is-open .repo_menu__chevron {
+        opacity: 1;
+        transform: rotate(180deg);
+    }
+
+    .repo_menu--surface .repo_menu__panel {
+        @apply top-[calc(100%+0.7rem)] min-w-[11rem] rounded-[1.4rem] border border-black/10 bg-white/95 p-2 backdrop-blur-xl;
+        box-shadow: 0 20px 44px rgba(15, 15, 17, 0.08);
+    }
+
+    .repo_menu__item-icon {
+        @apply h-4 w-4 shrink-0;
+        object-fit: contain;
+    }
+
+    .repo_menu__item-label {
+        @apply tracking-[-0.02em];
+    }
+
+    .button {
+        @apply inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm font-semibold transition duration-300;
+    }
+
+    .button--primary {
+        @apply border-transparent bg-black text-white hover:-translate-y-px;
+        box-shadow: 0 12px 28px rgba(17, 17, 19, 0.16);
+    }
+
+    .button--secondary {
+        @apply border-black bg-transparent text-black hover:-translate-y-px;
+    }
+
+    .menu_button {
+        @apply inline-flex rounded-full border border-black bg-transparent px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-px;
+    }
+
+    .mobile_drawer {
+        @apply mt-3;
+    }
+
+    .mobile_drawer__surface {
+        @apply space-y-4 rounded-[2rem] border border-black/10 p-5 shadow-soft backdrop-blur-xl;
+        background: rgba(255, 255, 255, 0.98);
+    }
+
+    .locale_menu {
+        @apply relative;
+    }
+
+    .locale_menu__summary {
+        @apply inline-flex cursor-pointer items-center gap-1.5 text-left leading-none;
+    }
+
+    .header_actions .locale_menu {
+        @apply flex items-center;
+    }
+
+    .header_actions .locale_menu__summary {
+        @apply min-h-[2.75rem] justify-center;
+    }
+
+    .locale_menu__summary:hover .locale_menu__summary-code,
+    .locale_menu.is-open .locale_menu__summary .locale_menu__summary-code {
+        color: black;
+    }
+
+    .locale_menu__flag {
+        @apply shrink-0 object-cover block;
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .locale_menu__flag--summary {
+        @apply h-5 w-8 rounded-[0.35rem];
+    }
+
+    .locale_menu__flag--item {
+        @apply h-6 w-9 rounded-[0.45rem];
+    }
+
+    .locale_menu__summary-code {
+        @apply text-[0.68rem] font-medium uppercase tracking-[0.12em] leading-none text-black/55;
+    }
+
+    .locale_menu__panel {
+        @apply absolute right-0 top-[calc(100%+0.8rem)] z-20 min-w-[14rem] overflow-hidden rounded-[1.7rem] border border-black/10 p-2 shadow-soft backdrop-blur-xl;
+        background: rgba(255, 255, 255, 0.995);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-0.55rem) scale(0.98);
+        transform-origin: top right;
+        visibility: hidden;
+        will-change: opacity, transform;
+        transition:
+            opacity var(--dropdown-duration) ease,
+            transform var(--dropdown-duration) var(--dropdown-ease),
+            visibility 0s linear var(--dropdown-duration);
+    }
+
+    .locale_menu.is-open .locale_menu__panel {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+        visibility: visible;
+        transition:
+            opacity var(--dropdown-duration) ease,
+            transform var(--dropdown-duration) var(--dropdown-ease),
+            visibility 0s linear 0s;
+    }
+
+    .locale_menu--mobile .locale_menu__panel {
+        @apply relative right-auto top-3 min-w-0;
+        transform: translateY(-0.45rem) scale(0.985);
+        transform-origin: top center;
+    }
+
+    .locale_menu--mobile.is-open .locale_menu__panel {
+        transform: translateY(0) scale(1);
+    }
+
+    .locale_menu__item {
+        @apply flex items-center gap-3 rounded-[1.2rem] px-4 py-3 no-underline transition duration-300 hover:bg-zinc-100;
+    }
+
+    .locale_menu__item--active {
+        @apply bg-zinc-100;
+    }
+
+    .locale_menu__item-label {
+        @apply text-sm font-medium text-black;
+    }
+
+    .page-home .site_main {
+        @apply flex min-h-[calc(100svh-7rem)] items-center justify-center pb-24 pt-4 md:pt-6;
+    }
+
+    .page-home .site_footer {
+        @apply hidden;
+    }
+
+    .home_stage {
+        @apply py-8 md:py-12;
+    }
+
+    .home_stage--minimal {
+        @apply w-full text-center;
+    }
+
+    .home_stack {
+        @apply grid gap-14 md:gap-16;
+    }
+
+    .home_hero {
+        @apply grid gap-10 lg:min-h-[calc(100svh-10rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center;
+    }
+
+    .home_hero__copy {
+        @apply max-w-[39rem];
+    }
+
+    .home_wordmark {
+        @apply mt-4 font-display text-[clamp(4.4rem,14vw,10.5rem)] font-semibold leading-[0.9] tracking-[-0.09em] text-black animate-rise;
+    }
+
+    .home_stage--minimal .home_wordmark {
+        @apply mt-0;
+    }
+
+    .home_hero__lede {
+        @apply mt-5 max-w-[32rem] text-xl font-medium leading-8 tracking-[-0.04em] text-black sm:text-[1.75rem] sm:leading-10;
+        text-wrap: balance;
+    }
+
+    .home_hero__text,
+    .home_signal__text,
+    .home_principles__text,
+    .home_detail__text,
+    .home_cta__text,
+    .auth_intro__text,
+    .auth_card__text,
+    .auth_link_card__text,
+    .hero_visual__text,
+    .home_detail__item-text {
+        color: var(--text-secondary);
+    }
+
+    .home_hero__text {
+        @apply mt-4 max-w-[34rem] text-base leading-7 sm:text-lg;
+    }
+
+    .home_hero__actions {
+        @apply mt-8 flex flex-wrap items-center gap-3;
+    }
+
+    .home_signals {
+        @apply mt-10 grid gap-0 border-y border-black/10 sm:grid-cols-3;
+    }
+
+    .home_signal {
+        @apply py-5 sm:px-5;
+    }
+
+    .home_signal + .home_signal {
+        @apply border-t border-black/10 sm:border-l sm:border-t-0;
+    }
+
+    .home_signal__title,
+    .home_principles__title {
+        @apply text-xl font-semibold tracking-[-0.03em] text-black;
+    }
+
+    .home_signal__text {
+        @apply mt-3 max-w-[18rem] text-sm leading-6;
+    }
+
+    .home_hero__visual {
+        @apply relative;
+    }
+
+    .hero_visual {
+        @apply relative overflow-hidden rounded-[2.5rem] border border-black/10 p-4 shadow-soft backdrop-blur-xl sm:p-5;
+        background: rgba(255, 255, 255, 0.78);
+    }
+
+    .hero_visual::before {
+        @apply pointer-events-none absolute inset-x-8 top-0 h-24 rounded-full blur-3xl animate-breathe;
+        content: '';
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 72%);
+    }
+
+    .hero_visual__frame {
+        @apply relative flex min-h-[26rem] items-center justify-center overflow-hidden rounded-[2rem] border border-black/10;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 244, 246, 0.9) 100%);
+    }
+
+    .hero_visual__art {
+        @apply relative z-10 w-full max-w-[32rem] animate-float;
+        filter: grayscale(1) contrast(1.1) saturate(0) brightness(1.04);
+    }
+
+    .hero_visual__caption {
+        @apply flex flex-col gap-2 border-t border-black/10 px-1 pb-1 pt-4 sm:flex-row sm:items-end sm:justify-between;
+    }
+
+    .hero_visual__text {
+        @apply max-w-[20rem] text-sm leading-6;
+    }
+
+    .section_heading {
+        @apply max-w-[42rem];
+    }
+
+    .section_heading__title,
+    .home_detail__title,
+    .home_cta__title,
+    .auth_intro__title {
+        @apply mt-3 text-3xl font-semibold leading-tight tracking-[-0.05em] text-black sm:text-5xl;
+        text-wrap: balance;
+    }
+
+    .home_principles__grid {
+        @apply mt-8 grid gap-0 border-y border-black/10 md:grid-cols-3;
+    }
+
+    .home_principles__item {
+        @apply py-6 md:px-6;
+    }
+
+    .home_principles__item + .home_principles__item {
+        @apply border-t border-black/10 md:border-l md:border-t-0;
+    }
+
+    .home_principles__text {
+        @apply mt-3 max-w-[22rem] text-base leading-7;
+    }
+
+    .home_detail {
+        @apply grid gap-8 rounded-[2.5rem] border border-black/10 p-6 shadow-soft backdrop-blur-xl lg:grid-cols-[minmax(0,1.08fr)_minmax(280px,0.92fr)] lg:items-start lg:p-8;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .home_detail__copy {
+        @apply max-w-[40rem];
+    }
+
+    .home_detail__text {
+        @apply mt-4 max-w-[32rem] text-base leading-7 sm:text-lg;
+    }
+
+    .home_detail__list {
+        @apply mt-8 grid gap-4;
+    }
+
+    .home_detail__item {
+        @apply flex items-start gap-4 border-t border-black/10 pt-4 text-base leading-7 text-black;
+    }
+
+    .home_quote {
+        @apply flex h-full flex-col justify-between gap-8 rounded-[2rem] border border-black/10 bg-black p-6 text-white sm:p-7;
+    }
+
+    .home_quote__text {
+        @apply text-2xl font-medium leading-9 tracking-[-0.04em] text-white sm:text-[2rem] sm:leading-[2.5rem];
+        text-wrap: balance;
+    }
+
+    .home_quote__author {
+        @apply text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-white/50;
+    }
+
+    .home_cta {
+        @apply grid gap-6 border-t border-black/10 pt-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end;
+    }
+
+    .home_cta__text {
+        @apply mt-4 max-w-[34rem] text-base leading-7 sm:text-lg;
+    }
+
+    .home_cta__actions {
+        @apply flex flex-wrap gap-3;
+    }
+
+    .page-home .site_main {
+        @apply flex min-h-[calc(100svh-7rem)] items-center justify-center pb-24 pt-4 md:pt-6;
+    }
+
+    .home_minimal_shell {
+        @apply flex w-full flex-col items-center gap-8 text-center;
+    }
+
+    .home_minimal__actions {
+        @apply flex flex-wrap justify-center gap-3;
+    }
+
+    .page-repository .site_main {
+        @apply pb-24 pt-6 md:pt-8;
+    }
+
+    .repo_stage {
+        @apply py-6 md:py-10;
+    }
+
+    .repo_stack {
+        @apply grid gap-8 md:gap-10;
+    }
+
+    .repo_stack--page {
+        @apply gap-6 md:gap-8;
+    }
+
+    .repo_intro {
+        @apply grid gap-6 overflow-hidden rounded-[2.5rem] border border-black/10 p-6 shadow-soft backdrop-blur-xl lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)] lg:items-end lg:p-8;
+        background:
+            radial-gradient(circle at top right, rgba(17, 17, 19, 0.08) 0%, rgba(17, 17, 19, 0) 28%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(244, 244, 246, 0.84) 100%);
+    }
+
+    .repo_intro--page {
+        @apply lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start;
+    }
+
+    .repo_intro__copy {
+        @apply max-w-[44rem];
+    }
+
+    .repo_intro__eyebrow,
+    .git_metric__label,
+    .board_metric__label,
+    .git_panel__eyebrow,
+    .board_column__label,
+    .board_card__section-label,
+    .board_card__number,
+    .board_card__state {
+        @apply text-[0.68rem] font-semibold uppercase tracking-[0.24em];
+        color: var(--text-tertiary);
+    }
+
+    .repo_intro__title {
+        @apply mt-3 text-[clamp(3rem,10vw,6.4rem)] font-semibold leading-[0.9] tracking-[-0.08em] text-black;
+        text-wrap: balance;
+    }
+
+    .repo_intro--page .repo_intro__title {
+        @apply text-[clamp(2.8rem,8vw,5.4rem)];
+    }
+
+    .repo_intro__meta {
+        @apply mt-6 flex flex-wrap gap-2;
+    }
+
+    .repo_intro__meta-item,
+    .repository_toolbar__link,
+    .board_card__label {
+        @apply inline-flex items-center rounded-full border border-black/10 px-3 py-2 text-[0.72rem] font-medium text-black;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .repository_switch {
+        @apply inline-flex flex-wrap items-center gap-3;
+    }
+
+    .repository_switch--page {
+        @apply self-start lg:self-end;
+    }
+
+    .repository_switch__button {
+        @apply inline-flex items-center justify-center rounded-full border border-black bg-transparent px-4 py-2 text-sm font-semibold text-black no-underline transition duration-300 hover:-translate-y-px;
+    }
+
+    .repository_switch__icon {
+        @apply mr-2 h-4 w-4 shrink-0;
+        object-fit: contain;
+    }
+
+    .repository_switch__button--active {
+        @apply border-transparent bg-black text-white;
+        box-shadow: 0 12px 24px rgba(17, 17, 19, 0.16);
+    }
+
+    .repository_workspace {
+        @apply relative overflow-hidden rounded-[2.5rem] border border-black/10 p-5 shadow-soft backdrop-blur-xl sm:p-6 lg:p-7;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(246, 246, 248, 0.78) 100%);
+    }
+
+    .repository_workspace::before {
+        @apply pointer-events-none absolute inset-x-0 top-0 h-40;
+        content: '';
+        background:
+            radial-gradient(circle at 14% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 45%),
+            radial-gradient(circle at 86% 0%, rgba(17, 17, 19, 0.06) 0%, rgba(17, 17, 19, 0) 24%);
+    }
+
+    .repository_workspace--page {
+        @apply p-5 sm:p-6 lg:p-7;
+    }
+
+    .repository_compactbar {
+        @apply relative z-10 mb-5 flex items-center justify-start;
+    }
+
+    .git_panel__heading,
+    .board_column__header,
+    .board_card__topline,
+    .board_card__trackline,
+    .git_author__line,
+    .git_graph__topline,
+    .git_commit__meta,
+    .board_card__footer {
+        @apply flex items-center justify-between gap-3;
+    }
+
+    .git_metrics,
+    .board_metrics {
+        @apply relative z-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
+    }
+
+    .git_metric,
+    .board_metric {
+        @apply rounded-[1.7rem] border border-black/10 p-4;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .git_metric__value,
+    .board_metric__value {
+        @apply block text-3xl font-semibold tracking-[-0.06em] text-black;
+    }
+
+    .git_metric__label,
+    .board_metric__label {
+        @apply mt-2 block;
+    }
+
+    .repository_segmented {
+        @apply relative z-10 mx-auto mt-8 flex w-fit max-w-full items-end gap-2 overflow-x-auto px-2 pb-1;
+        scrollbar-width: none;
+    }
+
+    .repository_segmented::-webkit-scrollbar {
+        display: none;
+    }
+
+    .repository_segmented__button {
+        @apply relative z-[1] whitespace-nowrap border-0 bg-transparent px-4 pb-1 pt-2 text-sm font-semibold tracking-[-0.03em] text-black transition duration-500;
+        color: rgba(17, 17, 19, 0.42);
+    }
+
+    .repository_segmented__button--active {
+        @apply text-black;
+    }
+
+    .repository_segmented__indicator {
+        @apply absolute bottom-0 left-0;
+        width: var(--segment-width, 0px);
+        transform: translateX(var(--segment-x, 0px));
+        height: 0.1875rem;
+        border-radius: 0.7rem 0.7rem 0 0;
+        background: #111114;
+        transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1), width 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
+    }
+
+    .repository_stage,
+    .board_stage {
+        @apply relative z-10 mt-3;
+    }
+
+    .repository_live_loading {
+        @apply relative z-10 mt-6 grid place-items-center gap-4 rounded-[2.4rem] border border-black/10 px-6 py-12 text-center;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(245, 247, 250, 0.9) 100%),
+            radial-gradient(circle at top, rgba(47, 90, 168, 0.12) 0%, rgba(47, 90, 168, 0) 58%);
+    }
+
+    .repository_live_loading__dots {
+        @apply inline-flex items-end justify-center gap-3;
+        min-height: 3rem;
+    }
+
+    .repository_live_loading__dot {
+        @apply inline-block h-4 w-4 rounded-full;
+        background: linear-gradient(180deg, #2f5aa8 0%, #17395f 100%);
+        box-shadow:
+            0 8px 18px rgba(23, 57, 95, 0.2),
+            inset 0 1px 1px rgba(255, 255, 255, 0.28);
+        animation: repository-live-dot-bounce 760ms ease-in-out infinite;
+    }
+
+    .repository_live_loading__dot:nth-child(2) {
+        animation-delay: 120ms;
+    }
+
+    .repository_live_loading__dot:nth-child(3) {
+        animation-delay: 240ms;
+    }
+
+    .repository_live_loading__text {
+        @apply text-base font-semibold tracking-[-0.02em] text-black;
+    }
+
+    @keyframes repository-live-dot-bounce {
+        0%,
+        100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.82;
+        }
+
+        50% {
+            transform: translateY(-0.7rem) scale(1.08);
+            opacity: 1;
+        }
+    }
+
+    .repository_surface {
+        @apply w-full;
+    }
+
+    .git_stage__meta {
+        @apply mt-8 flex items-center justify-center;
+    }
+
+    .git_stage__date {
+        @apply text-[0.72rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .git_graph {
+        @apply grid gap-3;
+    }
+
+    .git_graph--full {
+        @apply mt-4;
+    }
+
+    .git_graph_workspace {
+        @apply mt-4 grid gap-4;
+    }
+
+    .git_graph_workspace__toolbar,
+    .git_activity_surface__toolbar {
+        @apply flex flex-wrap items-center justify-between gap-3;
+    }
+
+    .git_graph_workspace__header {
+        @apply grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end;
+    }
+
+    .git_graph_workspace__title {
+        @apply mt-3 text-[2rem] font-semibold tracking-[-0.07em] text-black sm:text-[2.5rem];
+    }
+
+    .git_graph_workspace__text {
+        @apply mt-3 max-w-2xl text-sm leading-7;
+        color: var(--text-secondary);
+    }
+
+    .git_graph_workspace__meta {
+        @apply grid gap-3;
+    }
+
+    .git_graph_workspace__meta-card {
+        @apply inline-flex items-start gap-3 self-start rounded-[1.6rem] border border-black/10 bg-white/80 px-4 py-3 backdrop-blur-xl;
+    }
+
+    .git_graph_workspace__meta-label {
+        @apply text-[0.72rem] font-semibold uppercase tracking-[0.22em];
+        color: var(--text-tertiary);
+    }
+
+    .git_graph_workspace__meta-value {
+        @apply text-sm font-semibold text-black;
+    }
+
+    .git_graph_workspace__refs {
+        @apply flex max-w-[34rem] flex-wrap gap-2 xl:justify-end;
+    }
+
+    .git_graph_ref {
+        @apply inline-flex items-center rounded-full border border-black/10 bg-white/75 px-3 py-2 text-[0.72rem] font-semibold tracking-[0.04em] text-black;
+        box-shadow: 0 10px 24px rgba(15, 15, 17, 0.04);
+    }
+
+    .git_graph_workspace__body {
+        @apply grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_22rem];
+        --git-graph-panel-height: 32rem;
+        min-height: var(--git-graph-panel-height);
+        grid-auto-rows: minmax(var(--git-graph-panel-height), auto);
+    }
+
+    .git_activity_surface {
+        @apply mt-6 rounded-[2.6rem] border border-black/10 px-4 pb-5 pt-4 sm:px-6;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 244, 246, 0.84) 100%),
+            radial-gradient(circle at top, rgba(17, 17, 19, 0.05) 0%, rgba(17, 17, 19, 0) 56%);
+    }
+
+    .git_graph_canvas_panel {
+        @apply relative rounded-[2.4rem] border border-black/10 p-4 sm:p-6;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 245, 247, 0.92) 100%),
+            radial-gradient(circle at top left, rgba(47, 90, 168, 0.08) 0%, rgba(47, 90, 168, 0) 34%);
+        box-shadow: 0 24px 60px rgba(15, 15, 17, 0.08);
+        height: var(--git-graph-panel-height);
+        min-height: var(--git-graph-panel-height);
+        overflow: hidden;
+    }
+
+    .git_graph_canvas_panel::before {
+        @apply absolute inset-0;
+        content: '';
+        background-image:
+            linear-gradient(rgba(17, 17, 19, 0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(17, 17, 19, 0.035) 1px, transparent 1px);
+        background-size: 100% 3.6rem, 3.6rem 100%;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.12) 45%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .git_graph_canvas {
+        @apply relative z-[1];
+        overflow: visible;
+        min-height: 0;
+        height: auto;
+        padding: 1rem 6.4rem 1rem 0.45rem;
+    }
+
+    .git_graph_canvas svg {
+        @apply block;
+        min-width: 100%;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .git_graph_canvas text {
+        dominant-baseline: middle;
+    }
+
+    .git_graph_feed {
+        @apply flex h-full min-h-0 flex-col rounded-[2rem] border border-black/10 bg-white/75 p-4 backdrop-blur-xl sm:p-5;
+        height: var(--git-graph-panel-height);
+        min-height: var(--git-graph-panel-height);
+        box-shadow: none !important;
+        overflow: hidden;
+    }
+
+    .git_graph_feed__list {
+        @apply mt-4 grid flex-1 gap-3 overflow-y-auto pr-1;
+        min-height: 0;
+        max-height: 100%;
+    }
+
+    .git_graph_feed__list > li,
+    .git_graph_feed__list .git_graph__card {
+        box-shadow: none !important;
+        filter: none !important;
+    }
+
+    .git_graph_feed *,
+    .git_graph_feed *::before,
+    .git_graph_feed *::after {
+        box-shadow: none !important;
+        filter: none !important;
+    }
+
+    .git_graph_tooltip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        max-width: min(21rem, calc(100% - 2rem));
+        border-radius: 1rem;
+        border: 1px solid rgba(17, 17, 19, 0.16);
+        background: rgba(255, 255, 255, 0.96);
+        padding: 0.7rem 0.8rem;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 3;
+        transform: translate(var(--tooltip-x, 0px), var(--tooltip-y, 0px)) scale(0.72);
+        transform-origin: left bottom;
+        transition: opacity 160ms ease;
+    }
+
+    .git_graph_tooltip::before {
+        content: none;
+    }
+
+    .git_graph_tooltip--visible {
+        opacity: 1;
+        animation: git-graph-tooltip-pop 200ms cubic-bezier(0.18, 0.84, 0.34, 1);
+        transform: translate(var(--tooltip-x, 0px), var(--tooltip-y, 0px)) scale(1);
+    }
+
+    @keyframes git-graph-tooltip-pop {
+        0% {
+            opacity: 0;
+            transform: translate(var(--tooltip-source-x, var(--tooltip-x, 0px)), var(--tooltip-source-y, var(--tooltip-y, 0px))) scale(0.2);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translate(var(--tooltip-x, 0px), var(--tooltip-y, 0px)) scale(1);
+        }
+    }
+
+    .git_graph_tooltip__meta {
+        @apply m-0 flex items-center gap-2;
+        font-size: 0.68rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 19, 0.65);
+    }
+
+    .git_graph_tooltip__sha {
+        @apply font-bold;
+        color: #111114;
+    }
+
+    .git_graph_tooltip__title {
+        margin: 0.35rem 0 0;
+        font-size: 0.86rem;
+        line-height: 1.3;
+        font-weight: 600;
+        color: #111114;
+    }
+
+    .git_graph_tooltip__detail {
+        margin: 0.32rem 0 0;
+        font-size: 0.75rem;
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .git_graph_tooltip__author {
+        @apply inline-flex items-center gap-2;
+    }
+
+    .git_graph_tooltip__avatar {
+        @apply inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/80 align-middle;
+    }
+
+    .git_graph_tooltip__avatar .repo_avatar__fallback {
+        @apply text-[0.58rem] tracking-[0.08em];
+    }
+
+    .git_graph__row {
+        @apply grid items-start gap-5 md:grid-cols-[auto_minmax(0,1fr)];
+    }
+
+    .git_graph__lanes {
+        @apply grid items-stretch;
+        grid-template-columns: repeat(var(--lane-count), minmax(0, 1.2rem));
+        gap: 0.28rem;
+        min-height: 4.5rem;
+        padding-top: 0.65rem;
+    }
+
+    .git_lane {
+        @apply relative block;
+        min-height: 2.8rem;
+    }
+
+    .git_lane--pipe::before,
+    .git_lane--node::before {
+        @apply absolute;
+        content: '';
+        left: 50%;
+        top: -0.65rem;
+        bottom: -0.65rem;
+        width: 1px;
+        background: rgba(17, 17, 19, 0.18);
+        transform: translateX(-50%);
+    }
+
+    .git_lane--node::after {
+        @apply absolute rounded-full;
+        content: '';
+        left: 50%;
+        top: 0.9rem;
+        width: 0.72rem;
+        height: 0.72rem;
+        background: #111114;
+        transform: translateX(-50%);
+        box-shadow: 0 0 0 4px rgba(17, 17, 19, 0.08);
+    }
+
+    .git_lane--merge-left::before,
+    .git_lane--merge-right::before,
+    .git_lane--merge-flat::before {
+        @apply absolute;
+        content: '';
+        left: 50%;
+        top: 0.2rem;
+        width: 1px;
+        height: 2.6rem;
+        background: rgba(17, 17, 19, 0.2);
+        transform-origin: top center;
+    }
+
+    .git_lane--merge-left::before {
+        transform: translateX(-50%) rotate(34deg);
+    }
+
+    .git_lane--merge-right::before {
+        transform: translateX(-50%) rotate(-34deg);
+    }
+
+    .git_lane--merge-flat::before {
+        width: 1.15rem;
+        height: 1px;
+        top: 1.2rem;
+        transform: translateX(-50%);
+    }
+
+    .git_graph__card {
+        @apply rounded-[1.8rem] border border-black/10 p-5;
+        background: linear-gradient(180deg, rgba(250, 250, 252, 0.96) 0%, rgba(242, 242, 245, 0.92) 100%);
+        transition: border-color 220ms ease, background-color 220ms ease;
+        cursor: pointer;
+        box-shadow: none;
+    }
+
+    .git_graph__card:hover {
+        border-color: rgba(17, 17, 19, 0.22);
+    }
+
+    .git_graph__card:focus-visible {
+        outline: 2px solid rgba(17, 17, 19, 0.34);
+        outline-offset: 2px;
+    }
+
+    .git_graph__card--active {
+        border-color: rgba(17, 17, 19, 0.32);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(244, 244, 247, 0.96) 100%);
+        box-shadow: none;
+    }
+
+    .git_graph__card--hover {
+        border-color: rgba(17, 17, 19, 0.26);
+    }
+
+    .git_graph_canvas circle[id],
+    .git_graph_canvas use[href],
+    .git_graph_canvas use[xlink\:href] {
+        cursor: pointer;
+        transition: filter 160ms ease;
+        pointer-events: auto !important;
+    }
+
+    .git_graph_canvas circle[id]:hover,
+    .git_graph_canvas use[href]:hover,
+    .git_graph_canvas use[xlink\:href]:hover,
+    .git_graph_canvas circle.git_graph_node--hover,
+    .git_graph_canvas use.git_graph_node--hover {
+        filter: drop-shadow(0 0 0.4rem rgba(17, 17, 19, 0.28));
+    }
+
+    .git_graph_canvas use.git_graph_node--active {
+        stroke: #111114 !important;
+        stroke-width: 8px !important;
+        filter: drop-shadow(0 0 0.62rem rgba(17, 17, 19, 0.32));
+    }
+
+    .git_graph_canvas circle.git_graph_node--active {
+        filter: drop-shadow(0 0 0.62rem rgba(17, 17, 19, 0.32));
+    }
+
+    .git_commit__message {
+        @apply mt-2 text-sm leading-6 text-black;
+    }
+
+    .git_commit__meta {
+        @apply mt-3 justify-start;
+    }
+
+    .git_commit__sha {
+        @apply text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-black;
+    }
+
+    .git_activity {
+        @apply grid min-h-[13rem] gap-3;
+        grid-template-columns: repeat(var(--activity-count, 7), minmax(0, 1fr));
+    }
+
+    .git_activity--full {
+        @apply mt-4;
+    }
+
+    .git_activity__day {
+        @apply flex min-w-0 flex-col items-center justify-end gap-3;
+    }
+
+    .git_activity__count,
+    .git_activity__label,
+    .git_author__count,
+    .git_commit__date,
+    .board_column__count,
+    .board_card__date {
+        @apply text-[0.72rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .git_activity__bar {
+        @apply block w-full;
+        height: var(--bar-size);
+        min-height: 0;
+        border-radius: 0.32rem 0.32rem 0 0;
+        background: #17395f;
+    }
+
+    .git_activity__bar--zero {
+        height: 0;
+        min-height: 0;
+    }
+
+    .git_activity__label--muted {
+        opacity: 0.24;
+    }
+
+    .git_authors {
+        @apply mt-6 grid gap-3;
+    }
+
+    .git_authors--grid {
+        @apply grid-cols-1 pt-1 md:grid-cols-2;
+    }
+
+    .git_author {
+        @apply flex items-center gap-3 rounded-[1.8rem] border border-black/10 bg-white/70 p-4 backdrop-blur-xl;
+    }
+
+    .git_author__badge,
+    .git_commit__author-badge,
+    .board_card__assignee,
+    .board_legend__badge {
+        @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-[0.72rem] font-semibold uppercase tracking-[0.18em];
+        background: var(--tone-soft, rgba(17, 17, 19, 0.08));
+        border-color: var(--tone-border, rgba(17, 17, 19, 0.18));
+        color: var(--tone-ink, #111114);
+    }
+
+    .repo_avatar {
+        @apply inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/80;
+    }
+
+    .repo_avatar--link {
+        @apply no-underline transition duration-300 hover:-translate-y-px;
+    }
+
+    .repo_avatar__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .repo_avatar__fallback {
+        @apply inline-flex h-full w-full items-center justify-center text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-black;
+        background: rgba(17, 17, 19, 0.08);
+    }
+
+    .board_card__assignee {
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .git_author__meta {
+        @apply min-w-0 flex-1;
+    }
+
+    .git_author__name,
+    .git_commit__author,
+    .board_card__title {
+        @apply font-medium text-black;
+    }
+
+    .git_author__name {
+        @apply truncate text-sm;
+    }
+
+    .git_author__bar {
+        @apply mt-2 block h-2 rounded-full;
+        width: var(--author-share);
+        background: linear-gradient(90deg, var(--tone-accent, #111114) 0%, rgba(17, 17, 19, 0.12) 100%);
+    }
+
+    .board_legend {
+        @apply relative z-10 mt-5 flex flex-wrap gap-2;
+    }
+
+    .board_legend__owner {
+        @apply inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[0.72rem] font-medium;
+        background: var(--tone-soft, rgba(17, 17, 19, 0.08));
+        border-color: var(--tone-border, rgba(17, 17, 19, 0.18));
+        color: var(--tone-ink, #111114);
+    }
+
+    .board_legend__name {
+        @apply tracking-[-0.02em];
+    }
+
+    .board_stage {
+        @apply mt-6;
+    }
+
+    .board_showcase {
+        @apply relative rounded-[2.8rem] border px-4 pb-4 pt-5 sm:px-6 sm:pb-6;
+        border-color: var(--tone-border, rgba(17, 17, 19, 0.08));
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, var(--tone-soft, rgba(17, 17, 19, 0.04)) 100%),
+            radial-gradient(circle at top left, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 42%);
+    }
+
+    .board_showcase__header {
+        @apply mb-5 flex items-end justify-between gap-3 border-b border-black/10 pb-4;
+    }
+
+    .board_showcase__label {
+        @apply text-2xl font-semibold tracking-[-0.06em] text-black sm:text-3xl;
+    }
+
+    .board_showcase__count {
+        @apply text-[0.74rem] font-semibold uppercase tracking-[0.22em];
+        color: var(--tone-ink, #111114);
+    }
+
+    .board_showcase__grid {
+        @apply grid gap-4 md:grid-cols-2 2xl:grid-cols-3;
+    }
+
+    .board_showcase__empty {
+        @apply rounded-[1.8rem] border border-dashed border-black/10 px-5 py-10 text-center text-sm leading-6;
+        color: var(--text-secondary);
+    }
+
+    .board_card {
+        @apply block rounded-[2rem] border p-5 no-underline transition duration-300 hover:-translate-y-1;
+        color: var(--board-card-text, #111114);
+        background: var(--board-card-bg, rgba(255, 255, 255, 0.92));
+        border-color: var(--board-card-border, rgba(17, 17, 19, 0.08));
+        box-shadow: 0 18px 40px rgba(15, 15, 17, 0.06);
+    }
+
+    .board_card--compact {
+        cursor: pointer;
+    }
+
+    .board_card--compact .board_card__title {
+        @apply mt-3 text-[1.08rem] leading-7;
+    }
+
+    .board_card--compact .board_card__footer {
+        @apply mt-4 flex justify-end border-t border-black/10 pt-4;
+    }
+
+    .board_card__rule {
+        @apply mb-4 block h-1 rounded-full;
+        background: var(--tone-accent, #111114);
+    }
+
+    .board_card--soft {
+        --board-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 249, 251, 0.92) 100%);
+        --board-card-border: rgba(17, 17, 19, 0.08);
+    }
+
+    .board_card--solid {
+        --board-card-bg: linear-gradient(180deg, rgba(17, 17, 19, 0.96) 0%, rgba(31, 31, 36, 0.92) 100%);
+        --board-card-text: rgba(255, 255, 255, 0.96);
+        --board-card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    .board_card--line {
+        --board-card-bg: linear-gradient(180deg, rgba(244, 244, 246, 0.98) 0%, rgba(235, 235, 239, 0.94) 100%);
+        --board-card-border: rgba(17, 17, 19, 0.12);
+    }
+
+    .board_card--muted {
+        --board-card-bg: linear-gradient(180deg, rgba(240, 240, 242, 0.98) 0%, rgba(248, 248, 249, 0.94) 100%);
+        --board-card-border: rgba(17, 17, 19, 0.08);
+    }
+
+    .board_card--ghost {
+        --board-card-bg: linear-gradient(180deg, rgba(252, 252, 253, 0.96) 0%, rgba(245, 245, 247, 0.92) 100%);
+        --board-card-border: rgba(17, 17, 19, 0.08);
+    }
+
+    .board_card--solid .board_card__number,
+    .board_card--solid .board_card__state,
+    .board_card--solid .board_card__description,
+    .board_card--solid .board_card__date,
+    .board_card--solid .board_card__section-label,
+    .board_card--solid .board_card__list-item {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .board_card__trackline,
+    .board_card__assignees,
+    .board_card__labels {
+        @apply flex flex-wrap items-center gap-2;
+    }
+
+    .board_card__track {
+        @apply rounded-full border border-black/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em];
+    }
+
+    .board_card--solid .board_card__track {
+        @apply border-white/10 text-white/80;
+    }
+
+    .board_card__title {
+        @apply mt-4 text-xl tracking-[-0.05em];
+    }
+
+    .board_card__description,
+    .board_card__list-item {
+        @apply mt-3 text-sm leading-6;
+        color: var(--text-secondary);
+    }
+
+    .board_card__section {
+        @apply mt-4 border-t border-black/10 pt-4;
+    }
+
+    .board_card--solid .board_card__section,
+    .board_card--solid .board_card__footer {
+        @apply border-white/10;
+    }
+
+    .board_card__list {
+        @apply mt-2 grid gap-2;
+    }
+
+    .board_card__list-item--code {
+        @apply rounded-[1rem] border border-black/10 px-3 py-2;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    }
+
+    .board_card--solid .board_card__list-item--code {
+        @apply border-white/10 bg-white/5;
+    }
+
+    .board_card__footer {
+        @apply mt-4 border-t border-black/10 pt-4;
+    }
+
+    .repo_modal {
+        @apply fixed inset-0 z-[999] grid place-items-center p-4 sm:p-6;
+        background:
+            radial-gradient(circle at 18% 14%, rgba(160, 209, 255, 0.28) 0%, rgba(160, 209, 255, 0) 36%),
+            radial-gradient(circle at 84% 82%, rgba(182, 222, 255, 0.2) 0%, rgba(182, 222, 255, 0) 34%),
+            linear-gradient(180deg, rgba(17, 17, 19, 0.34) 0%, rgba(17, 17, 19, 0.6) 100%);
+        backdrop-filter: blur(10px);
+        width: 100vw;
+        height: 100dvh;
+    }
+
+    .repo_modal__surface {
+        @apply relative grid w-full max-w-[58rem] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
+        max-height: calc(100dvh - 2rem);
+        box-shadow:
+            0 42px 76px rgba(15, 15, 17, 0.26),
+            0 0 0 1px rgba(255, 255, 255, 0.34) inset;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 246, 250, 0.96) 100%),
+            radial-gradient(circle at top right, rgba(47, 90, 168, 0.12) 0%, rgba(47, 90, 168, 0) 52%),
+            radial-gradient(circle at 8% 86%, rgba(172, 219, 255, 0.2) 0%, rgba(172, 219, 255, 0) 44%);
+    }
+
+    .repo_modal__surface::before {
+        @apply pointer-events-none absolute inset-x-0 top-0 h-24;
+        content: '';
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .repo_modal__surface--commit {
+        max-width: 52rem;
+    }
+
+    .repo_modal__surface--board {
+        max-width: 58rem;
+    }
+
+    .repo_modal__close {
+        @apply absolute right-4 top-4 z-[2] inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black transition duration-300 hover:-translate-y-px;
+        box-shadow: 0 10px 22px rgba(17, 17, 19, 0.12);
+    }
+
+    .repo_modal__close svg {
+        width: 1rem;
+        height: 1rem;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+    }
+
+    .repo_modal__scroll {
+        @apply overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-8;
+        padding-top: 4.5rem;
+    }
+
+    .repo_modal__header {
+        @apply grid gap-3 border-b border-black/10 pb-5;
+    }
+
+    .repo_modal__title {
+        @apply text-2xl font-semibold tracking-[-0.05em] text-black sm:text-[2rem];
+    }
+
+    .repo_modal__description {
+        @apply mt-5 text-sm leading-7 sm:text-base;
+        color: var(--text-secondary);
+    }
+
+    .repo_modal__gitline {
+        @apply flex flex-wrap items-center gap-2;
+    }
+
+    .repo_modal__hash {
+        @apply inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[0.68rem] font-semibold tracking-[0.05em];
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+        color: var(--text-secondary);
+    }
+
+    .repo_modal__labels {
+        @apply mt-5 flex flex-wrap gap-2;
+    }
+
+    .repo_modal__section {
+        @apply mt-5 rounded-[1.4rem] border border-black/10 p-4 backdrop-blur-xl;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(246, 248, 251, 0.76) 100%),
+            radial-gradient(circle at top left, rgba(177, 220, 255, 0.14) 0%, rgba(177, 220, 255, 0) 46%);
+    }
+
+    .repo_modal__section-label {
+        @apply text-[0.72rem] font-semibold uppercase tracking-[0.2em];
+        color: var(--text-tertiary);
+    }
+
+    .repo_modal__meta {
+        @apply mt-5 flex flex-wrap gap-2;
+    }
+
+    .repo_modal__meta-item {
+        @apply inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[0.72rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .repo_modal__footer {
+        @apply flex items-center justify-end border-t border-black/10 px-5 py-4 sm:px-8;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.74) 0%, rgba(244, 246, 249, 0.95) 100%),
+            radial-gradient(circle at right center, rgba(165, 213, 255, 0.14) 0%, rgba(165, 213, 255, 0) 50%);
+    }
+
+    .repo_modal__github {
+        @apply inline-flex items-center gap-2 rounded-full border border-black bg-black px-4 py-2 text-sm font-semibold text-white no-underline transition duration-300 hover:-translate-y-px;
+        box-shadow: 0 12px 26px rgba(17, 17, 19, 0.26);
+    }
+
+    .repo_modal__github-icon {
+        width: 0.92rem;
+        height: 0.92rem;
+        filter: invert(1) contrast(1.08);
+        opacity: 1;
+    }
+
+    .repo_modal__surface--board .board_card__track {
+        background: var(--tone-soft, rgba(17, 17, 19, 0.08));
+        border-color: var(--tone-border, rgba(17, 17, 19, 0.18));
+        color: var(--tone-ink, #111114);
+    }
+
+    .repo_menu__item--active {
+        @apply bg-zinc-100;
+    }
+
+    @media (max-width: 1023px) {
+        .repo_menu__summary {
+            @apply min-w-0 justify-between;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .repo_intro {
+            @apply p-5;
+        }
+
+        .git_graph__row {
+            @apply grid-cols-1;
+        }
+
+        .git_graph__lanes {
+            @apply mb-2;
+        }
+    }
+
+    .page-auth .site_main {
+        @apply pb-20 pt-6 md:pt-8;
+    }
+
+    .auth_layout {
+        @apply py-6 md:py-10;
+    }
+
+    .auth_shell {
+        @apply grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-stretch;
+    }
+
+    .auth_intro {
+        @apply flex flex-col justify-between gap-10 rounded-[2.5rem] border border-black/10 p-6 shadow-soft backdrop-blur-xl sm:p-8;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(243, 243, 245, 0.82) 100%);
+    }
+
+    .auth_intro__text {
+        @apply mt-4 max-w-[26rem] text-base leading-7 sm:text-lg;
+    }
+
+    .auth_intro__list {
+        @apply grid gap-0 border-y border-black/10;
+    }
+
+    .auth_intro__item {
+        @apply py-4 text-base font-medium leading-7 text-black;
+    }
+
+    .auth_intro__item + .auth_intro__item {
+        @apply border-t border-black/10;
+    }
+
+    .auth_card {
+        @apply rounded-[2.5rem] border border-black/10 bg-white p-6 shadow-soft sm:p-8;
+    }
+
+    .auth_card__header {
+        @apply max-w-[28rem];
+    }
+
+    .auth_card__title,
+    .auth_link_card__title {
+        @apply mt-3 text-3xl font-semibold tracking-[-0.05em] text-black sm:text-[2.8rem];
+        text-wrap: balance;
+    }
+
+    .auth_card__text,
+    .auth_link_card__text {
+        @apply mt-3 text-base leading-7;
+    }
+
+    .auth_form {
+        @apply mt-8 grid gap-4;
+    }
+
+    .auth_field {
+        @apply grid gap-2;
+    }
+
+    .auth_field__label {
+        @apply text-sm font-semibold text-black;
+    }
+
+    .auth_input {
+        @apply w-full rounded-[1.25rem] border border-black/10 bg-zinc-50 px-4 py-4 text-base text-black outline-none transition duration-300 placeholder:text-black/30 focus:border-black/20 focus:bg-white focus:ring-2 focus:ring-black/5;
+    }
+
+    .auth_submit {
+        @apply mt-2 w-full;
+    }
+
+    .auth_link_card {
+        @apply mt-8 flex flex-col gap-6 border-t border-black/10 pt-6 sm:flex-row sm:items-end sm:justify-between;
+    }
+
+    .auth_link_card__action {
+        @apply w-full sm:w-auto;
+    }
+}
+
+@layer utilities {
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}

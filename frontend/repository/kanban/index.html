@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f5f7">
+    <meta name="description" content="Reduzierte Kanban-Unterseite mit farbcodierten Autoren und Issue-Informationen.">
+    <title>Pawsitters | Repository | Kanban</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/site.css"></head>
+<body class="page_surface page-repository page-repository--kanban">
+<div id="app-shell" class="site_frame" v-cloak="">
+    <div class="site_background" aria-hidden="true">
+        <svg class="site_background__threads" viewBox="0 0 1600 2400" preserveAspectRatio="none">
+            <g class="site_background__glow">
+                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
+                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
+                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
+            </g>
+            <g class="site_background__lines">
+                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
+                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
+                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
+                <path d="M 528 560 C 592 642 668 720 780 820 C 854 886 904 952 960 1032"></path>
+                <path d="M 664 1124 C 748 1076 858 1044 960 1032 C 1088 1016 1194 1044 1308 1112"></path>
+                <path d="M 724 1048 C 822 1158 948 1312 1100 1492 C 1144 1544 1186 1610 1224 1704"></path>
+                <path d="M 342 1696 C 498 1644 648 1632 822 1652 C 984 1672 1114 1690 1224 1704"></path>
+            </g>
+            <g class="site_background__nodes">
+                <circle cx="360" cy="620" r="8"></circle>
+                <circle cx="528" cy="560" r="7"></circle>
+                <circle cx="724" cy="1048" r="8"></circle>
+                <circle cx="960" cy="1032" r="10"></circle>
+                <circle cx="664" cy="1124" r="7"></circle>
+                <circle cx="1224" cy="1704" r="9"></circle>
+                <circle cx="342" cy="1696" r="7"></circle>
+            </g>
+        </svg>
+    </div>
+    <header id="site-shell-header" class="header_shell">
+    <div class="main_container">
+        <div :class="scrolled ? 'header_surface header_surface--scrolled' : 'header_surface'">
+            <a class="brand_mark" href="/" @click="closeMenu()" aria-label="Pawsitters">
+                <span class="brand_mark__tile" aria-hidden="true">
+                    <img class="brand_mark__icon" src="/assets/media/favicon.png" alt="">
+                </span>
+            </a>
+
+            <div class="header_center hidden lg:flex">
+                <details class="repo_menu" aria-label="Repository-Navigation">
+                    <summary class="repo_menu__summary">
+                        <img class="repo_menu__icon" src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="" aria-hidden="true">
+                        <span class="repo_menu__label">Repository</span>
+                        <span class="repo_menu__chevron" aria-hidden="true">
+                            <svg viewBox="0 0 16 16" focusable="false">
+                                <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="repo_menu__panel">
+                        <a class="repo_menu__item" href="/repository/git">
+                            <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Git</span>
+                        </a>
+                        <a class="repo_menu__item repo_menu__item--active" href="/repository/kanban">
+                            <span class="repo_menu__item-label">Kanban Board</span>
+                        </a>
+                    </div>
+                </details>
+            </div>
+
+            <div class="header_actions hidden lg:flex">
+                <details class="locale_menu" aria-label="Sprachauswahl">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                        <span class="locale_menu__summary-code">DE</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a class="locale_menu__item locale_menu__item--active" href="/repository/kanban" aria-current="true">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                            <span class="locale_menu__item-label">Deutsch</span>
+                        </a><a class="locale_menu__item" href="/repository/kanban?locale=en">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                            <span class="locale_menu__item-label">English</span>
+                        </a><a class="locale_menu__item" href="/repository/kanban?locale=fr">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EB-1F1F7.svg">
+                            <span class="locale_menu__item-label">Français</span>
+                        </a>
+                    </div>
+                </details>
+                <a class="button button--secondary" href="/login">Einloggen</a>
+            </div>
+
+            <button class="menu_button lg:hidden" type="button" :aria-expanded="menuOpen.toString()" @click="toggleMenu()">
+                <span v-if="!menuOpen">Menü</span>
+                <span v-else="">Menü schließen</span>
+            </button>
+        </div>
+
+        <div v-show="menuOpen" class="mobile_drawer lg:hidden" @click.self="closeMenu()">
+            <div class="mobile_drawer__surface">
+                <details class="repo_menu repo_menu--mobile" aria-label="Repository-Navigation">
+                    <summary class="repo_menu__summary">
+                        <span class="repo_menu__label">Repository</span>
+                    </summary>
+                    <div class="repo_menu__panel">
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/git">
+                            <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Git</span>
+                        </a>
+                        <a class="repo_menu__item repo_menu__item--active" @click="closeMenu()" href="/repository/kanban">
+                            <span class="repo_menu__item-label">Kanban Board</span>
+                        </a>
+                    </div>
+                </details>
+                <details class="locale_menu locale_menu--mobile" aria-label="Sprachauswahl">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                        <span class="locale_menu__summary-code">DE</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/repository/kanban" aria-current="true">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                            <span class="locale_menu__item-label">Deutsch</span>
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/kanban?locale=en">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                            <span class="locale_menu__item-label">English</span>
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/kanban?locale=fr">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EB-1F1F7.svg">
+                            <span class="locale_menu__item-label">Français</span>
+                        </a>
+                    </div>
+                </details>
+                <a class="button button--secondary w-full" @click="closeMenu()" href="/login">Einloggen</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <main id="main-content" class="main_container site_main">
+        <section class="repo_stage">
+        <div class="repo_stack repo_stack--page">
+            <section class="repository_workspace repository_workspace--page" data-repository-live="">
+                <div data-repository-bootstrap="" hidden="">{}</div>
+
+                <div class="repository_compactbar">
+                    <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button" href="/repository/git">
+                            <img class="repository_switch__icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span>Git</span>
+                        </a>
+                        <a class="repository_switch__button repository_switch__button--active" href="/repository/kanban">Kanban Board</a>
+                    </div>
+                </div>
+
+                <div class="board_metrics">
+                    <article class="board_metric">
+                        <span class="board_metric__value" v-text="repository.board.summary.openCount"></span>
+                        <span class="board_metric__label">Offen</span>
+                    </article>
+                    <article class="board_metric">
+                        <span class="board_metric__value" v-text="repository.board.summary.assignedCount"></span>
+                        <span class="board_metric__label">Zugewiesen</span>
+                    </article>
+                    <article class="board_metric">
+                        <span class="board_metric__value" v-text="repository.board.summary.ownerCount"></span>
+                        <span class="board_metric__label">Owner</span>
+                    </article>
+                    <article class="board_metric">
+                        <span class="board_metric__value" v-text="repository.board.summary.criteriaCount"></span>
+                        <span class="board_metric__label">Kriterien</span>
+                    </article>
+                </div>
+
+                <div class="repository_segmented repository_segmented--board" v-if="!repositoryLoading" data-segmented="boardView" data-active="frontend">
+                    <button class="repository_segmented__button" type="button" v-for="column in repository.board.columns" :key="column.id" :data-segmented-value="column.id" @click="setSegment('boardView', column.id)" v-text="column.label"></button>
+                    <span class="repository_segmented__indicator" aria-hidden="true"></span>
+                </div>
+
+                <div v-if="repositoryLoading" class="repository_live_loading" role="status" aria-live="polite">
+                    <span class="repository_live_loading__dots" aria-hidden="true">
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                    </span>
+                    <p class="repository_live_loading__text">Daten werden live von Github geladen... :)</p>
+                </div>
+
+                <div v-if="!repositoryLoading" class="board_legend">
+                    <span class="board_legend__owner" v-for="owner in repository.board.owners" :key="owner.login" :style="owner.style">
+                        <a v-if="owner.profileUrl" class="repo_avatar repo_avatar--link" :href="owner.profileUrl" target="_blank" rel="noreferrer" :title="owner.name">
+                            <img v-if="owner.avatarUrl" class="repo_avatar__image" :src="owner.avatarUrl" :alt="owner.name">
+                            <span v-else="" class="repo_avatar__fallback" v-text="owner.initials"></span>
+                        </a>
+                        <span v-else="" class="repo_avatar" :title="owner.name">
+                            <img v-if="owner.avatarUrl" class="repo_avatar__image" :src="owner.avatarUrl" :alt="owner.name">
+                            <span v-else="" class="repo_avatar__fallback" v-text="owner.initials"></span>
+                        </span>
+                        <span class="board_legend__name" v-text="owner.name"></span>
+                    </span>
+                </div>
+
+                <div v-if="!repositoryLoading" class="board_stage">
+                    <section v-if="currentBoardColumn" class="board_showcase board_column" :style="currentBoardColumn.toneStyle" :data-segment-value="currentBoardColumn.id" data-segment-panel="boardView">
+                        <div class="board_showcase__header">
+                            <span class="board_showcase__label" v-text="currentBoardColumn.label"></span>
+                            <span class="board_showcase__count" v-text="currentBoardColumn.cards.length"></span>
+                        </div>
+
+                        <div v-if="currentBoardColumn.cards.length" class="board_showcase__grid">
+                            <article class="board_card board_card--compact" v-for="card in currentBoardColumn.cards" :key="card.key" :class="card.toneClass" :style="card.ownerStyle" role="button" tabindex="0" @click="openBoardCardModal(card.key)" @keydown.enter.prevent="openBoardCardModal(card.key)" @keydown.space.prevent="openBoardCardModal(card.key)">
+                                <span class="board_card__rule" aria-hidden="true"></span>
+
+                                <div class="board_card__topline">
+                                    <span class="board_card__number" v-text="card.numberLabel"></span>
+                                    <span class="board_card__state" v-text="card.stateLabel"></span>
+                                </div>
+
+                                <div class="board_card__trackline">
+                                    <span class="board_card__track" v-text="card.track"></span>
+                                    <div class="board_card__assignees">
+                                        <span class="board_card__assignee" v-for="assignee in card.assignees" :key="card.key + '-' + assignee.login" :style="assignee.style" :title="assignee.name">
+                                            <img v-if="assignee.avatarUrl" class="repo_avatar__image" :src="assignee.avatarUrl" :alt="assignee.name">
+                                            <span v-else="" class="repo_avatar__fallback" v-text="assignee.initials"></span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <h2 class="board_card__title" v-text="card.title"></h2>
+
+                                <div class="board_card__footer">
+                                    <span class="board_card__date" v-text="card.updatedLabel"></span>
+                                </div>
+                            </article>
+                        </div>
+
+                        <p v-else="" class="board_showcase__empty" v-text="repository.board.emptyText"></p>
+                    </section>
+                </div>
+
+                <teleport to="body">
+                    <div v-if="activeBoardCard" class="repo_modal" role="dialog" aria-modal="true" @click.self="closeRepositoryModal()">
+                        <article class="repo_modal__surface repo_modal__surface--board" :style="activeBoardCard.ownerStyle">
+                            <button class="repo_modal__close" type="button" @click="closeRepositoryModal()" aria-label="Menü schließen">
+                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                    <path d="M6 6l12 12M18 6L6 18"></path>
+                                </svg>
+                            </button>
+
+                            <div class="repo_modal__scroll">
+                                <header class="repo_modal__header">
+                                    <div class="board_card__topline">
+                                        <span class="board_card__number" v-text="activeBoardCard.numberLabel"></span>
+                                        <span class="board_card__state" v-text="activeBoardCard.stateLabel"></span>
+                                    </div>
+
+                                    <div class="board_card__trackline">
+                                        <span class="board_card__track" v-text="activeBoardCard.track"></span>
+                                        <div class="board_card__assignees">
+                                            <span class="board_card__assignee" v-for="assignee in activeBoardCard.assignees" :key="activeBoardCard.key + '-modal-' + assignee.login" :style="assignee.style" :title="assignee.name">
+                                                <img v-if="assignee.avatarUrl" class="repo_avatar__image" :src="assignee.avatarUrl" :alt="assignee.name">
+                                                <span v-else="" class="repo_avatar__fallback" v-text="assignee.initials"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <h2 class="repo_modal__title" v-text="activeBoardCard.title"></h2>
+                                </header>
+
+                                <p v-if="activeBoardCard.hasDescription" class="repo_modal__description" v-text="activeBoardCard.description"></p>
+
+                                <div v-if="activeBoardCard.hasLabels" class="board_card__labels">
+                                    <span class="board_card__label" v-for="label in activeBoardCard.labels" :key="activeBoardCard.key + '-modal-' + label" v-text="label"></span>
+                                </div>
+
+                                <div v-if="activeBoardCard.hasEndpoints" class="repo_modal__section">
+                                    <p class="repo_modal__section-label">Endpunkte</p>
+                                    <ul class="board_card__list">
+                                        <li class="board_card__list-item board_card__list-item--code" v-for="endpoint in activeBoardCard.endpoints" :key="activeBoardCard.key + '-modal-' + endpoint" v-text="endpoint"></li>
+                                    </ul>
+                                </div>
+
+                                <div v-if="activeBoardCard.hasCriteria" class="repo_modal__section">
+                                    <p class="repo_modal__section-label">Kriterien</p>
+                                    <ul class="board_card__list">
+                                        <li class="board_card__list-item" v-for="criterion in activeBoardCard.criteria" :key="activeBoardCard.key + '-modal-' + criterion" v-text="criterion"></li>
+                                    </ul>
+                                </div>
+
+                                <div class="repo_modal__meta">
+                                    <span class="repo_modal__meta-item">
+                                        <span>Erstellt</span>
+                                        <span>: </span>
+                                        <span v-text="activeBoardCard.createdLabel"></span>
+                                    </span>
+                                    <span class="repo_modal__meta-item">
+                                        <span>Aktualisiert</span>
+                                        <span>: </span>
+                                        <span v-text="activeBoardCard.updatedLabel"></span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <footer class="repo_modal__footer">
+                                <a v-if="activeBoardCard.url" class="repo_modal__github" :href="activeBoardCard.url" target="_blank" rel="noreferrer">
+                                    <img class="repo_modal__github-icon repo_menu__icon" src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="" aria-hidden="true">
+                                    <span>Repository</span>
+                                </a>
+                            </footer>
+                        </article>
+                    </div>
+                </teleport>
+            </section>
+        </div>
+    </section>
+    </main>
+
+    <footer class="main_container site_footer">
+        <p class="site_footer__text">Pawsitters. Ruhiges Interface für moderne Haustierbetreuung.</p>
+    </footer>
+</div>
+<script type="module" src="/assets/js/site.js"></script>
+
+
+</body></html>

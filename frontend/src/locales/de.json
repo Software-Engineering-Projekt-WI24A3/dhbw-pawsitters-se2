@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "home": {
+      "title": "Pawsitters",
+      "description": "Reduzierte Startseite mit direktem Einstieg in Repository und Login."
+    },
+    "repositoryGit": {
+      "title": "Pawsitters | Repository | Git",
+      "description": "Klare Git-Unterseite mit Merge-Graph, Aktivität und Autoren."
+    },
+    "repositoryKanban": {
+      "title": "Pawsitters | Repository | Kanban",
+      "description": "Reduzierte Kanban-Unterseite mit farbcodierten Autoren und Issue-Informationen."
+    },
+    "login": {
+      "title": "Pawsitters | Einloggen",
+      "description": "Monochrome Login-Seite für das lokalisierte Pawsitters Frontend."
+    },
+    "register": {
+      "title": "Pawsitters | Registrieren",
+      "description": "Monochrome Registrierungs-Seite für das lokalisierte Pawsitters Frontend."
+    }
+  },
+  "brand": {
+    "name": "Pawsitters"
+  },
+  "locale": {
+    "de": {
+      "code": "DE",
+      "label": "Deutsch",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg"
+    },
+    "en": {
+      "code": "EN",
+      "label": "English",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E7.svg"
+    },
+    "fr": {
+      "code": "FR",
+      "label": "Français",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F7.svg"
+    }
+  },
+  "nav": {
+    "ariaRepository": "Repository-Navigation",
+    "repository": "Repository",
+    "repositoryGit": "Git",
+    "repositoryBoard": "Kanban Board",
+    "ariaLocale": "Sprachauswahl",
+    "login": "Einloggen",
+    "menu": "Menü",
+    "close": "Menü schließen"
+  },
+  "repository": {
+    "liveLoading": "Daten werden live von Github geladen... :)",
+    "git": {
+      "label": "Git",
+      "commits": "Commits",
+      "merges": "Fusionen",
+      "contributors": "Mitwirkende",
+      "branches": "Branches",
+      "activity": "Aktivität",
+      "timeline": "Verlauf",
+      "range": {
+        "week": "Diese Woche",
+        "month": "Diesen Monat"
+      },
+      "recent": "Neueste Commits"
+    },
+    "board": {
+      "label": "Kanban Board",
+      "open": "Offen",
+      "assigned": "Zugewiesen",
+      "owners": "Owner",
+      "criteriaCount": "Kriterien",
+      "empty": "Keine offenen Tickets in dieser Kategorie.",
+      "endpoints": "Endpunkte",
+      "criteria": "Kriterien",
+      "created": "Erstellt",
+      "updated": "Aktualisiert",
+      "column": {
+        "frontend": "Frontend",
+        "api": "API",
+        "data": "Daten",
+        "docs": "Dokumentation",
+        "misc": "Offen"
+      },
+      "state": {
+        "open": "Offen",
+        "closed": "Geschlossen"
+      },
+      "labels": {
+        "documentation": "Dokumentation"
+      }
+    }
+  },
+  "auth": {
+    "shared": {
+      "eyebrow": "Neues Erscheinungsbild",
+      "title": "Ruhiger Zugriff auf die wichtigsten Flows.",
+      "text": "Die Oberfläche setzt auf klare Typografie, weiche Graustufen und direkte Orientierung statt Effekte und blauen Flächen.",
+      "point": {
+        "one": "Klare Lesbarkeit in jeder Sektion",
+        "two": "Fokussierte Eingaben ohne visuelle Ablenkung",
+        "three": "Konsistente Navigation über alle lokalisierten Seiten"
+      }
+    },
+    "login": {
+      "title": "Einloggen",
+      "text": "Dein Zugang zur neuen monochromen Pawsitters Oberfläche.",
+      "email": "E-Mail",
+      "emailPlaceholder": "name@example.com",
+      "password": "Passwort",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Einloggen",
+      "alt": {
+        "eyebrow": "Neu hier",
+        "title": "Registrieren",
+        "text": "Erstelle dein Konto für Halter oder Gastgeber.",
+        "cta": "Registrieren"
+      }
+    },
+    "register": {
+      "title": "Registrieren",
+      "text": "Lege deinen Zugang für die nächsten Frontend-Flows an.",
+      "name": "Name",
+      "namePlaceholder": "Pawsitters Nutzer",
+      "email": "E-Mail",
+      "emailPlaceholder": "name@example.com",
+      "password": "Passwort",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Registrieren",
+      "alt": {
+        "eyebrow": "Bereits dabei",
+        "title": "Einloggen",
+        "text": "Öffne deinen bestehenden Zugang und fahre direkt fort.",
+        "cta": "Zum Login"
+      }
+    }
+  },
+  "footer": {
+    "text": "Pawsitters. Ruhiges Interface für moderne Haustierbetreuung."
+  }
+}
