@@ -8,13 +8,13 @@ INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_dat
 VALUES ('sara.wagner@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Sara', 'Wagner', '01731234567', '1997-11-21', 'Tom Wagner', 'sara.png', 'Katzenliebhaberin und flexibel verfuegbar.', 'PET_OWNER');
 
 INSERT INTO pet (name, species, breed, age, special_needs, owner_id)
-VALUES ('Bello', 'Hund', 'Labrador', 4, 'Keine', (SELECT id FROM users WHERE email = 'anna.meier@example.com'));
+VALUES ('Bello', 'DOG', 'Labrador', 4, 'Keine', (SELECT id FROM users WHERE email = 'anna.meier@example.com'));
 
 INSERT INTO pet (name, species, breed, age, special_needs, owner_id)
-VALUES ('Minka', 'Katze', 'Europaeisch Kurzhaar', 2, 'Braucht taeglich Medikamente', (SELECT id FROM users WHERE email = 'sara.wagner@example.com'));
+VALUES ('Minka', 'CAT', 'Europaeisch Kurzhaar', 2, 'Braucht taeglich Medikamente', (SELECT id FROM users WHERE email = 'sara.wagner@example.com'));
 
 INSERT INTO pet (name, species, breed, age, special_needs, owner_id)
-VALUES ('Rocky', 'Hund', 'Mischling', 7, 'Etwas aengstlich bei Gewitter', (SELECT id FROM users WHERE email = 'anna.meier@example.com'));
+VALUES ('Rocky', 'DOG', 'Mischling', 7, 'Etwas aengstlich bei Gewitter', (SELECT id FROM users WHERE email = 'anna.meier@example.com'));
 
 INSERT INTO pet (name, species, breed, age, special_needs, owner_id)
-VALUES ('Kiwi', 'Vogel', 'Wellensittich', 1, 'Kaefig nachts abdecken', (SELECT id FROM users WHERE email = 'lukas.schmidt@example.com'));
+VALUES ('Kiwi', 'BUDGIE', 'Wellensittich', 1, 'Kaefig nachts abdecken', (SELECT id FROM users WHERE email = 'lukas.schmidt@example.com'));
