@@ -11,6 +11,14 @@
 
                 <div class="repository_compactbar">
                     <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button"
+                           th:href="${repositoryPlaywrightPath}">
+                            <img class="repository_switch__icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.playwright.label}">repository.playwright.label</span>
+                        </a>
                         <a class="repository_switch__button repository_switch__button--active"
                            th:href="${repositoryGitPath}">
                             <img class="repository_switch__icon"

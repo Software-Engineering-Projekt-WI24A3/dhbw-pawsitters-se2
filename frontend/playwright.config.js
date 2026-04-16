@@ -15,6 +15,6 @@ module.exports = defineConfig({
     cwd: __dirname,
     url: 'http://127.0.0.1:4173/',
     timeout: 120000,
-    reuseExistingServer: false
+    reuseExistingServer: true
   }
 });

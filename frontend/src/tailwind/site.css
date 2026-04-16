@@ -926,6 +926,200 @@
         @apply mt-2 block;
     }
 
+    .repository_workspace--playwright::before {
+        content: none;
+    }
+
+    .playwright_runner {
+        @apply relative z-10 grid gap-5 md:gap-6;
+    }
+
+    .playwright_runner__header {
+        @apply flex flex-wrap items-center justify-between gap-4 py-6 md:py-8;
+    }
+
+    .playwright_runner__title {
+        @apply m-0 text-[clamp(2rem,4.6vw,2.7rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-black;
+        text-wrap: balance;
+    }
+
+    .playwright_runner__text {
+        @apply mt-3 max-w-[42rem] text-sm leading-7 sm:text-base;
+        color: var(--text-secondary);
+    }
+
+    .playwright_runner__actions {
+        @apply flex items-start justify-start xl:justify-end;
+    }
+
+    .playwright_runner__run {
+        @apply min-w-[13.5rem] gap-2;
+    }
+
+    .playwright_metrics {
+        @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
+    }
+
+    .playwright_metric {
+        @apply rounded-[1.7rem] border border-black/10 px-4 py-4;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(246, 248, 251, 0.88) 100%),
+            radial-gradient(circle at top right, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0) 56%);
+    }
+
+    .playwright_metric__value {
+        @apply block text-3xl font-semibold tracking-[-0.06em] text-black;
+    }
+
+    .playwright_metric__label {
+        @apply mt-2 block text-[0.68rem] font-semibold uppercase tracking-[0.24em];
+        color: var(--text-tertiary);
+    }
+
+    .playwright_statusline {
+        @apply flex flex-wrap items-center gap-3;
+    }
+
+    .playwright_statusline__meta {
+        @apply inline-flex items-center rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[0.74rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .playwright_status_badge {
+        @apply inline-flex items-center rounded-full border px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em];
+    }
+
+    .playwright_status_badge--small {
+        @apply text-[0.64rem] tracking-[0.1em];
+    }
+
+    .playwright_status_badge--idle {
+        @apply border-black/10 bg-zinc-50 text-zinc-700;
+    }
+
+    .playwright_status_badge--pending {
+        border-color: rgba(146, 64, 14, 0.2);
+        background: rgba(251, 191, 36, 0.16);
+        color: #92400e;
+    }
+
+    .playwright_status_badge--running {
+        border-color: rgba(3, 105, 161, 0.24);
+        background: rgba(56, 189, 248, 0.18);
+        color: #0369a1;
+    }
+
+    .playwright_status_badge--passed {
+        border-color: rgba(22, 101, 52, 0.2);
+        background: rgba(74, 222, 128, 0.15);
+        color: #166534;
+    }
+
+    .playwright_status_badge--failed {
+        border-color: rgba(153, 27, 27, 0.22);
+        background: rgba(248, 113, 113, 0.17);
+        color: #991b1b;
+    }
+
+    .playwright_status_badge--skipped {
+        border-color: rgba(75, 85, 99, 0.2);
+        background: rgba(209, 213, 219, 0.24);
+        color: #4b5563;
+    }
+
+    .playwright_error {
+        @apply rounded-[1.1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700;
+    }
+
+    .playwright_workspace {
+        @apply grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.92fr)];
+    }
+
+    .playwright_tests_panel,
+    .playwright_logs_panel {
+        @apply rounded-[2rem] border border-black/10 p-4 sm:p-5;
+        background: rgba(255, 255, 255, 0.76);
+    }
+
+    .playwright_tests_panel__header,
+    .playwright_logs_panel__header {
+        @apply flex items-center justify-between gap-3 border-b border-black/10 pb-3;
+    }
+
+    .playwright_panel__title {
+        @apply text-sm font-semibold uppercase tracking-[0.2em];
+        color: var(--text-tertiary);
+    }
+
+    .playwright_tests_panel__count,
+    .playwright_logs_panel__cursor {
+        @apply inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold;
+    }
+
+    .playwright_tests_list {
+        @apply mt-4 grid gap-2;
+        max-height: 30rem;
+        overflow-y: auto;
+        padding-right: 0.2rem;
+    }
+
+    .playwright_tests_card {
+        @apply rounded-[1.3rem] border border-black/10 px-3 py-3;
+        background: rgba(255, 255, 255, 0.82);
+    }
+
+    .playwright_tests_card--passed {
+        border-color: rgba(22, 101, 52, 0.16);
+    }
+
+    .playwright_tests_card--failed {
+        border-color: rgba(153, 27, 27, 0.2);
+    }
+
+    .playwright_tests_card--running {
+        border-color: rgba(3, 105, 161, 0.24);
+    }
+
+    .playwright_tests_card__topline {
+        @apply flex items-center justify-between gap-2;
+    }
+
+    .playwright_tests_card__duration {
+        @apply text-[0.72rem] font-medium;
+        color: var(--text-secondary);
+    }
+
+    .playwright_tests_card__title {
+        @apply mt-3 text-base font-semibold tracking-[-0.02em] text-black;
+        text-wrap: balance;
+    }
+
+    .playwright_tests_card__meta {
+        @apply mt-2 text-[0.72rem] font-medium leading-6;
+        color: var(--text-secondary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    }
+
+    .playwright_logs_panel {
+        @apply grid grid-rows-[auto_minmax(0,1fr)] gap-3;
+    }
+
+    .playwright_logs_console {
+        @apply m-0 rounded-[1.25rem] border border-black/15 p-4 text-xs leading-6;
+        background: linear-gradient(180deg, #111114 0%, #1c1c20 100%);
+        color: rgba(240, 244, 250, 0.92);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+        height: 30rem;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .playwright_logs_empty {
+        @apply text-sm leading-6;
+        color: rgba(240, 244, 250, 0.72);
+    }
+
     .repository_segmented {
         @apply relative z-10 mx-auto mt-8 flex w-fit max-w-full items-end gap-2 overflow-x-auto px-2 pb-1;
         scrollbar-width: none;
@@ -1814,6 +2008,18 @@
     @media (max-width: 767px) {
         .repo_intro {
             @apply p-5;
+        }
+
+        .playwright_runner__run {
+            @apply w-full;
+        }
+
+        .playwright_tests_list {
+            max-height: 22rem;
+        }
+
+        .playwright_logs_console {
+            height: 20rem;
         }
 
         .git_graph__row {
