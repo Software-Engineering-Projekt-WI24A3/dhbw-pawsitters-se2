@@ -1628,8 +1628,8 @@
         @apply block w-full;
         height: var(--bar-size);
         min-height: 0;
-        border-radius: 0.32rem 0.32rem 0 0;
-        background: #17395f;
+        border-radius: 0.56rem 0.56rem 0 0;
+        background: #4e98ea;
     }
 
     .git_activity__bar--zero {
