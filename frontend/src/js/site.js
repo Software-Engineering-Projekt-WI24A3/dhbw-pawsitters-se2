@@ -4,6 +4,7 @@ let gitgraphLoader = null;
 const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
+const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
 
 function createEmptyRepository() {
     return {
@@ -29,11 +30,13 @@ function createEmptyRepository() {
             authors: [],
             activity: {
                 week: [],
-                month: []
+                month: [],
+                year: []
             },
             activityRanges: {
                 week: '',
-                month: ''
+                month: '',
+                year: ''
             },
             branches: [],
             branchGraphs: {},
@@ -73,6 +76,82 @@ function normalizeRepository(repository) {
     const sourceBoard = source.board && typeof source.board === 'object' ? source.board : {};
     const sourceBoardSummary = sourceBoard.summary && typeof sourceBoard.summary === 'object' ? sourceBoard.summary : {};
 
+    const extractGitHubLogin = (value) => {
+        if (typeof value !== 'string') {
+            return '';
+        }
+
+        const trimmed = value.trim();
+        if (!trimmed) {
+            return '';
+        }
+
+        const directLoginPattern = /^[A-Za-z0-9-]+(?:\[bot\])?$/;
+        if (directLoginPattern.test(trimmed)) {
+            return trimmed;
+        }
+
+        const profileMatch = trimmed.match(/^https?:\/\/github\.com\/([A-Za-z0-9-]+(?:\[bot\])?)\/?$/i);
+        if (profileMatch?.[1]) {
+            return profileMatch[1];
+        }
+
+        return '';
+    };
+
+    const githubAvatarFromLogin = (login) => {
+        if (!login) {
+            return '';
+        }
+        return `https://avatars.githubusercontent.com/${encodeURIComponent(login)}?size=80`;
+    };
+
+    const normalizeAuthorWithFallback = (author) => {
+        if (!author || typeof author !== 'object') {
+            return author;
+        }
+
+        const login = extractGitHubLogin(author.profileUrl);
+
+        return {
+            ...author,
+            avatarUrl: author.avatarUrl || githubAvatarFromLogin(login)
+        };
+    };
+
+    const normalizeRecentCommitWithFallback = (commit) => {
+        if (!commit || typeof commit !== 'object') {
+            return commit;
+        }
+
+        const login = extractGitHubLogin(commit.profileUrl);
+
+        return {
+            ...commit,
+            avatarUrl: commit.avatarUrl || githubAvatarFromLogin(login)
+        };
+    };
+
+    const sourceBranchGraphs = sourceGit.branchGraphs && typeof sourceGit.branchGraphs === 'object' ? sourceGit.branchGraphs : {};
+    const normalizedBranchGraphs = Object.fromEntries(
+        Object.entries(sourceBranchGraphs).map(([branchName, graph]) => {
+            const safeGraph = graph && typeof graph === 'object' ? graph : {};
+            const recentCommits = Array.isArray(safeGraph.recentCommits)
+                ? safeGraph.recentCommits.map(normalizeRecentCommitWithFallback)
+                : [];
+
+            return [branchName, {
+                ...safeGraph,
+                graphImport: Array.isArray(safeGraph.graphImport) ? safeGraph.graphImport : [],
+                recentCommits
+            }];
+        })
+    );
+
+    const sourceProjectGraph = sourceGit.projectGraph && typeof sourceGit.projectGraph === 'object'
+        ? sourceGit.projectGraph
+        : {};
+
     return {
         ...empty,
         ...source,
@@ -87,7 +166,7 @@ function normalizeRepository(repository) {
                 ...empty.git.repository,
                 ...sourceGitRepository
             },
-            authors: Array.isArray(sourceGit.authors) ? sourceGit.authors : [],
+            authors: Array.isArray(sourceGit.authors) ? sourceGit.authors.map(normalizeAuthorWithFallback) : [],
             activity: {
                 ...empty.git.activity,
                 ...sourceGitActivity
@@ -97,15 +176,15 @@ function normalizeRepository(repository) {
                 ...sourceGitRanges
             },
             branches: Array.isArray(sourceGit.branches) ? sourceGit.branches : [],
-            branchGraphs: sourceGit.branchGraphs && typeof sourceGit.branchGraphs === 'object' ? sourceGit.branchGraphs : {},
-            projectGraph: sourceGit.projectGraph && typeof sourceGit.projectGraph === 'object'
-                ? {
-                    ...empty.git.projectGraph,
-                    ...sourceGit.projectGraph,
-                    graphImport: Array.isArray(sourceGit.projectGraph.graphImport) ? sourceGit.projectGraph.graphImport : [],
-                    recentCommits: Array.isArray(sourceGit.projectGraph.recentCommits) ? sourceGit.projectGraph.recentCommits : []
-                }
-                : { ...empty.git.projectGraph }
+            branchGraphs: normalizedBranchGraphs,
+            projectGraph: {
+                ...empty.git.projectGraph,
+                ...sourceProjectGraph,
+                graphImport: Array.isArray(sourceProjectGraph.graphImport) ? sourceProjectGraph.graphImport : [],
+                recentCommits: Array.isArray(sourceProjectGraph.recentCommits)
+                    ? sourceProjectGraph.recentCommits.map(normalizeRecentCommitWithFallback)
+                    : []
+            }
         },
         board: {
             ...empty.board,
@@ -229,13 +308,16 @@ createApp({
         return {
             menuOpen: false,
             scrolled: false,
-            gitView: 'graph',
+            gitView: 'activity',
             boardView: pickPreferredBoard(repository),
             gitActivityRange: 'week',
             selectedBranch: pickPreferredBranch(repository),
             repository,
             repositoryLoading: Boolean(document.querySelector('[data-repository-live]')),
+            repositoryRefreshing: false,
             repositoryError: '',
+            repositoryRefreshAbortController: null,
+            repositoryRefreshRequestId: 0,
             gitGraphSignature: '',
             gitGraphWidth: 0,
             selectedGitCommitHash: '',
@@ -589,21 +671,87 @@ createApp({
                 }
             });
         },
-        async refreshRepositoryData() {
+        async clearBrowserRepositoryCaches() {
+            const tasks = [];
+
+            if (typeof window !== 'undefined' && 'caches' in window) {
+                tasks.push((async () => {
+                    const cacheKeys = await window.caches.keys();
+                    await Promise.all(cacheKeys.map((cacheKey) => window.caches.delete(cacheKey)));
+                })());
+            }
+
+            if (typeof window !== 'undefined' && window.localStorage) {
+                tasks.push(Promise.resolve().then(() => {
+                    window.localStorage.clear();
+                }));
+            }
+
+            if (typeof window !== 'undefined' && window.sessionStorage) {
+                tasks.push(Promise.resolve().then(() => {
+                    window.sessionStorage.clear();
+                }));
+            }
+
+            await Promise.allSettled(tasks);
+        },
+        async triggerRepositoryRefresh() {
+            if (this.repositoryRefreshing) {
+                return;
+            }
+
+            this.repositoryRefreshing = true;
+
+            try {
+                await this.clearBrowserRepositoryCaches();
+                await this.refreshRepositoryData({
+                    forceFresh: true
+                });
+                if (this.repositoryError) {
+                    await this.refreshRepositoryData({
+                        forceFresh: true
+                    });
+                }
+            } finally {
+                this.repositoryRefreshing = false;
+            }
+        },
+        async refreshRepositoryData(options = {}) {
             if (!document.querySelector('[data-repository-live]')) {
                 return;
             }
 
             const localeFromQuery = new URLSearchParams(window.location.search).get('locale');
             const locale = localeFromQuery || document.documentElement.lang || 'de';
+            const forceFresh = options.forceFresh === true;
+            const requestId = this.repositoryRefreshRequestId + 1;
+            this.repositoryRefreshRequestId = requestId;
+
+            if (this.repositoryRefreshAbortController) {
+                this.repositoryRefreshAbortController.abort();
+            }
+            const abortController = new AbortController();
+            this.repositoryRefreshAbortController = abortController;
+
             this.repositoryLoading = true;
 
             try {
-                const response = await fetch(`/api/repository/live.json?locale=${encodeURIComponent(locale)}`, {
+                const params = new URLSearchParams({
+                    locale
+                });
+                if (forceFresh) {
+                    params.set('refresh', '1');
+                    params.set('_', Date.now().toString(36));
+                }
+
+                const response = await fetch(`/api/repository/live.json?${params.toString()}`, {
                     headers: {
-                        Accept: 'application/json'
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache'
                     },
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    signal: abortController.signal
                 });
 
                 if (!response.ok) {
@@ -616,14 +764,28 @@ createApp({
                     throw new Error(data.message || data.error);
                 }
 
+                if (requestId !== this.repositoryRefreshRequestId) {
+                    return;
+                }
                 this.repository = normalizeRepository(data);
                 this.repositoryError = '';
                 this.ensureRepositoryState();
             } catch (error) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+                if (requestId !== this.repositoryRefreshRequestId) {
+                    return;
+                }
                 this.repositoryError = error.message;
                 this.ensureRepositoryState();
             } finally {
-                this.repositoryLoading = false;
+                if (requestId === this.repositoryRefreshRequestId) {
+                    this.repositoryLoading = false;
+                }
+                if (this.repositoryRefreshAbortController === abortController) {
+                    this.repositoryRefreshAbortController = null;
+                }
             }
         },
         setSegment(property, value) {
@@ -762,80 +924,165 @@ createApp({
 
             workspaceBody.style.setProperty('--git-graph-panel-height', `${requiredHeight}px`);
         },
-        applyGitBranchLabelOutlines() {
+        clearCustomGitBranchLabels() {
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (labelLayer) {
+                labelLayer.innerHTML = '';
+            }
+        },
+        renderCustomGitBranchLabels() {
             const container = this.getGitGraphContainer();
-            if (!container) {
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (!container || !labelLayer) {
                 return;
             }
 
-            const applyOutlineStyles = () => {
-                const labelGroups = Array.from(container.querySelectorAll('g')).filter((group) => {
-                    const textNode = group.querySelector('text');
-                    const shapeNode = group.querySelector('rect,path');
-                    return Boolean(textNode && shapeNode);
-                });
+            labelLayer.innerHTML = '';
 
-                labelGroups.forEach((group) => {
-                    const textNode = group.querySelector('text');
-                    const textColor = textNode
-                        ? (textNode.getAttribute('fill') || window.getComputedStyle(textNode).fill || '#111114')
-                        : '#111114';
-                    const shapeNodes = Array.from(group.querySelectorAll('rect,path'));
-                    const branchColor = shapeNodes.reduce((color, shapeNode) => {
-                        if (color) {
-                            return color;
-                        }
-
-                        const fillColor = shapeNode.getAttribute('fill') || shapeNode.style.fill || '';
-                        if (fillColor && fillColor !== 'none' && fillColor !== 'transparent') {
-                            return fillColor;
-                        }
-
-                        const strokeColor = shapeNode.getAttribute('stroke') || shapeNode.style.stroke || '';
-                        if (strokeColor && strokeColor !== 'none' && strokeColor !== 'transparent') {
-                            return strokeColor;
-                        }
-
-                        return '';
-                    }, '');
-                    const outlineColor = textColor;
-
-                    shapeNodes.forEach((shapeNode) => {
-                        shapeNode.setAttribute('fill', 'transparent');
-                        shapeNode.setAttribute('stroke', outlineColor);
-                        shapeNode.setAttribute('stroke-width', '1.6');
-                        shapeNode.style.fill = 'transparent';
-                        shapeNode.style.stroke = outlineColor;
-                        shapeNode.style.strokeWidth = '1.6px';
-                    });
-
-                    const foreignLabel = group.querySelector('foreignObject > *');
-                    if (foreignLabel) {
-                        foreignLabel.style.background = 'transparent';
-                        foreignLabel.style.border = `1.6px solid ${outlineColor}`;
-                        foreignLabel.style.borderRadius = '999px';
-                    }
-                });
-            };
-
-            applyOutlineStyles();
-
-            if (this.gitGraphLabelObserver) {
-                this.gitGraphLabelObserver.disconnect();
+            const branches = this.repository.git.branches
+                .filter((branch) => typeof branch?.name === 'string' && branch.name.trim() && typeof branch?.hash === 'string' && branch.hash.trim());
+            if (!branches.length) {
+                return;
             }
 
+            const panelRect = labelLayer.getBoundingClientRect();
+            const labelOffset = 18;
+
+            branches.forEach((branch) => {
+                const headNode = this.getGraphCommitNode(branch.hash);
+                if (!headNode) {
+                    return;
+                }
+
+                const nodeRect = headNode.getBoundingClientRect();
+                const x = Math.round(nodeRect.right - panelRect.left + labelOffset);
+                const y = Math.round(nodeRect.top - panelRect.top + (nodeRect.height / 2));
+
+                const label = document.createElement('button');
+                label.type = 'button';
+                label.className = 'git_graph_branch_label';
+                label.textContent = branch.name;
+                label.title = branch.name;
+                const branchColor = this.getBranchLabelColor(branch, branches);
+                label.style.color = branchColor;
+                label.style.borderColor = branchColor;
+                label.style.left = `${x}px`;
+                label.style.top = `${y}px`;
+                label.addEventListener('click', () => {
+                    this.selectGitBranch(branch.name);
+                });
+
+                labelLayer.append(label);
+            });
+        },
+        bindGitGraphBranchLabelTracking() {
+            const container = this.getGitGraphContainer();
+            if (!container || container.dataset.graphBranchLabelsBound === 'true') {
+                return;
+            }
+
+            container.dataset.graphBranchLabelsBound = 'true';
+
             let queued = false;
-            this.gitGraphLabelObserver = new MutationObserver(() => {
+            container.addEventListener('scroll', () => {
                 if (queued) {
                     return;
                 }
                 queued = true;
                 requestAnimationFrame(() => {
                     queued = false;
-                    applyOutlineStyles();
+                    this.renderCustomGitBranchLabels();
                 });
-            });
-            this.gitGraphLabelObserver.observe(container, { childList: true, subtree: true });
+            }, { passive: true });
+        },
+        getGraphCommitDotColor(commitHash) {
+            const container = this.getGitGraphContainer();
+            const svg = container?.querySelector('svg');
+            if (!svg || !commitHash || typeof window.getComputedStyle !== 'function') {
+                return '';
+            }
+
+            const normalizeColor = (value) => {
+                if (typeof value !== 'string') {
+                    return '';
+                }
+
+                const normalized = value.trim().toLowerCase();
+                if (!normalized || normalized === 'none' || normalized === 'transparent') {
+                    return '';
+                }
+
+                return normalized;
+            };
+
+            const escapedHash = window.CSS && typeof window.CSS.escape === 'function'
+                ? window.CSS.escape(commitHash)
+                : commitHash;
+
+            const dot = svg.querySelector(`circle[id="${escapedHash}"]`);
+            if (!dot) {
+                return '';
+            }
+
+            return normalizeColor(dot.getAttribute('fill'))
+                || normalizeColor(window.getComputedStyle(dot).fill);
+        },
+        getBranchLabelColor(branch, branches = []) {
+            const node = this.getGraphCommitNode(branch?.hash);
+            const fallbackColor = GIT_GRAPH_COLORS[
+                Math.max(0, branches.findIndex((item) => item?.name === branch?.name)) % GIT_GRAPH_COLORS.length
+            ] || GIT_GRAPH_COLORS[0];
+
+            if (!node || typeof window.getComputedStyle !== 'function') {
+                return fallbackColor;
+            }
+
+            const normalizeColor = (value) => {
+                if (typeof value !== 'string') {
+                    return '';
+                }
+
+                const normalized = value.trim().toLowerCase();
+                if (!normalized || normalized === 'none' || normalized === 'transparent') {
+                    return '';
+                }
+
+                return normalized;
+            };
+
+            const dotColor = this.getGraphCommitDotColor(branch?.hash);
+            if (dotColor) {
+                return dotColor;
+            }
+
+            const isLikelyBlack = (value) => {
+                const normalized = normalizeColor(value);
+                if (!normalized) {
+                    return false;
+                }
+                return normalized === '#000'
+                    || normalized === '#000000'
+                    || normalized === 'black'
+                    || normalized === 'rgb(0, 0, 0)'
+                    || normalized === 'rgba(0, 0, 0, 1)';
+            };
+
+            const attributeColor = normalizeColor(node.getAttribute('stroke'))
+                || normalizeColor(node.getAttribute('fill'));
+            if (attributeColor) {
+                return attributeColor;
+            }
+
+            const computed = window.getComputedStyle(node);
+            const computedStroke = normalizeColor(computed?.stroke);
+            const computedFill = normalizeColor(computed?.fill);
+            const color = computedStroke || computedFill;
+
+            if (!color || isLikelyBlack(color)) {
+                return fallbackColor;
+            }
+
+            return color;
         },
         hideGitGraphTooltip() {
             this.gitGraphTooltip.visible = false;
@@ -1198,6 +1445,7 @@ createApp({
             const graphData = this.readGitGraphData();
             if (graphData.length === 0) {
                 container.innerHTML = '';
+                this.clearCustomGitBranchLabels();
                 this.selectedGitCommitHash = '';
                 this.activeGitCommitModalHash = '';
                 this.syncModalBodyLock();
@@ -1223,13 +1471,13 @@ createApp({
             }
 
             const template = GitgraphJS.templateExtend(GitgraphJS.TemplateName.Metro, {
-                colors: ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'],
+                colors: GIT_GRAPH_COLORS,
                 branch: {
                     lineWidth: 3,
                     spacing: 44,
                     mergeStyle: GitgraphJS.MergeStyle.Bezier,
                     label: {
-                        display: true,
+                        display: false,
                         font: '600 11pt Instrument Sans, sans-serif',
                         strokeColor: 'transparent',
                         bgColor: '#ffffff',
@@ -1280,13 +1528,14 @@ createApp({
 
             gitgraph.import(interactiveGraphData);
             this.bindGitGraphInteractions();
+            this.bindGitGraphBranchLabelTracking();
             this.gitGraphSignature = signature;
             this.gitGraphWidth = width;
 
             window.requestAnimationFrame(() => {
                 window.requestAnimationFrame(() => {
                     this.syncGitGraphPanelHeight();
-                    this.applyGitBranchLabelOutlines();
+                    this.renderCustomGitBranchLabels();
                     this.syncGraphCommitHighlight();
                 });
             });

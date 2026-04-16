@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadLocalizedRepositorySnapshot } from '../scripts/lib/thymeleaf-preview.mjs';
+import { loadRepositorySnapshot } from '../scripts/lib/repository-snapshot.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,9 @@ test('live repository snapshot exposes real git and board data', async () => {
   assert.ok(snapshot.repository.owner.length > 0);
   assert.ok(snapshot.repository.name.length > 0);
   assert.equal(snapshot.repository.label, `${snapshot.repository.owner}/${snapshot.repository.name}`);
-  assert.deepEqual(columnIds, ['frontend', 'api', 'data', 'docs', 'misc']);
+  assert.ok(columnIds.length > 0);
+  assert.ok(columnIds.every((id) => ['frontend', 'api', 'data', 'docs', 'misc'].includes(id)));
+  assert.ok(snapshot.board.columns.every((column) => column.cards.length > 0));
   assert.equal(snapshot.board.summary.openCount, totalBoardCards);
   assert.equal(snapshot.board.summary.criteriaCount, totalCriteria);
   assert.ok(totalBoardCards > 0);
@@ -38,7 +41,8 @@ test('live repository snapshot exposes real git and board data', async () => {
   assert.ok(snapshot.git.branches.some((branch) => branch.name === snapshot.git.defaultBranch));
   assert.equal(snapshot.git.contributorCount, snapshot.git.authors.length);
   assert.ok(snapshot.git.authors.length > 0);
-  assert.ok(snapshot.git.authors.every((author) => author.profileUrl?.startsWith('https://github.com/')));
+  assert.ok(snapshot.git.authors.every((author) => author.login?.length > 0));
+  assert.ok(snapshot.git.authors.every((author) => !author.profileUrl || author.profileUrl.startsWith('https://github.com/')));
   assert.equal(snapshot.git.activity.week.length, 7);
   assert.equal(snapshot.git.activity.month.length, daysInCurrentMonth());
   assert.ok(snapshot.git.branchGraphs[snapshot.git.defaultBranch]);
@@ -54,4 +58,16 @@ test('repository pages do not embed static snapshot payloads', async () => {
   assert.ok(kanbanTemplate.includes('data-repository-bootstrap hidden>{}</div>'));
   assert.ok(!gitTemplate.includes('repositorySnapshotJson'));
   assert.ok(!kanbanTemplate.includes('repositorySnapshotJson'));
+});
+
+test('fresh repository snapshots rebuild and replace the in-memory cache', async () => {
+  const firstBuild = await loadRepositorySnapshot(rootDir, { fresh: true });
+  const cachedBeforeRefresh = await loadRepositorySnapshot(rootDir);
+  assert.strictEqual(cachedBeforeRefresh, firstBuild);
+
+  const rebuilt = await loadRepositorySnapshot(rootDir, { fresh: true });
+  assert.notStrictEqual(rebuilt, firstBuild);
+
+  const cachedAfterRefresh = await loadRepositorySnapshot(rootDir);
+  assert.strictEqual(cachedAfterRefresh, rebuilt);
 });

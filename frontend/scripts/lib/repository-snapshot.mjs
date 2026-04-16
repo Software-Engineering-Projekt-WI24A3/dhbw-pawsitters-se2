@@ -143,6 +143,18 @@ function formatMonthDay(value, locale = 'en') {
   return formatter.format(date);
 }
 
+function formatMonthLabel(value, locale = 'en') {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const formatter = new Intl.DateTimeFormat(localeTag(locale), {
+    month: 'short'
+  });
+  return formatter.format(date);
+}
+
 function isSameDay(left, right) {
   return left.getFullYear() === right.getFullYear()
     && left.getMonth() === right.getMonth()
@@ -212,6 +224,38 @@ async function fetchGithubUserSafe(login, workspaceRoot) {
       return { login };
     }
     throw error;
+  }
+}
+
+async function fetchGithubIdentityByCommitEmail(owner, repo, authorEmail, workspaceRoot) {
+  const email = normalizeWhitespace(authorEmail);
+  if (!email) {
+    return null;
+  }
+
+  try {
+    const commits = await runJsonRequired(
+      'gh',
+      ['api', `repos/${owner}/${repo}/commits?author=${encodeURIComponent(email)}&per_page=1`],
+      workspaceRoot,
+      `GitHub commits API (${email})`
+    );
+
+    const commit = Array.isArray(commits) ? commits[0] : null;
+    const user = commit?.author;
+    if (!user?.login) {
+      return null;
+    }
+
+    return {
+      login: user.login,
+      name: user.login,
+      email,
+      avatarUrl: user.avatar_url || user.avatarUrl || '',
+      profileUrl: user.html_url || user.profileUrl || `https://github.com/${user.login}`
+    };
+  } catch {
+    return null;
   }
 }
 
@@ -393,7 +437,7 @@ function createActivitySeries(activityCounts, range, locale = 'en') {
         isToday: isSameDay(date, today)
       });
     }
-  } else {
+  } else if (range === 'month') {
     const year = today.getFullYear();
     const month = today.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -408,6 +452,29 @@ function createActivitySeries(activityCounts, range, locale = 'en') {
         fullLabel: displayDate(date.toISOString(), locale),
         isToday: isSameDay(date, today),
         emphasizeLabel: day === 1 || day === today.getDate() || day === daysInMonth || day % 5 === 0
+      });
+    }
+  } else {
+    const year = today.getFullYear();
+
+    for (let month = 0; month < 12; month += 1) {
+      const monthStart = new Date(year, month, 1);
+      const monthEnd = new Date(year, month + 1, 0);
+      let count = 0;
+
+      for (let day = 1; day <= monthEnd.getDate(); day += 1) {
+        const date = new Date(year, month, day);
+        const key = toDateKey(date);
+        count += activityCounts.get(key) ?? 0;
+      }
+
+      entries.push({
+        key: `${year}-${String(month + 1).padStart(2, '0')}`,
+        count,
+        label: formatMonthLabel(monthStart.toISOString(), locale),
+        fullLabel: `${formatMonthLabel(monthStart.toISOString(), locale)} ${year}`,
+        isToday: month === today.getMonth(),
+        emphasizeLabel: true
       });
     }
   }
@@ -447,11 +514,7 @@ function resolveIdentityName(identity, fallbackName = '') {
     return fallbackName;
   }
 
-  if (normalizeIdentityKey(fallbackName) === normalizeIdentityKey(identity.login)) {
-    return fallbackName;
-  }
-
-  return identity.name || fallbackName;
+  return identity.login || identity.name || fallbackName;
 }
 
 function addIdentityAlias(index, key, identity) {
@@ -469,17 +532,11 @@ function indexIdentity(index, identity) {
   }
 
   addIdentityAlias(index, identity.login, identity);
-  addIdentityAlias(index, identity.name, identity);
   addIdentityAlias(index, identity.email, identity);
 
   const emailMatch = identity.email.match(/\+([^@]+)@users\.noreply\.github\.com$/i);
   if (emailMatch?.[1]) {
     addIdentityAlias(index, emailMatch[1], identity);
-  }
-
-  const localPart = identity.email.split('@')[0];
-  if (localPart) {
-    addIdentityAlias(index, localPart, identity);
   }
 }
 
@@ -510,8 +567,6 @@ async function fetchGithubUsers(owner, repo, issues, workspaceRoot) {
 async function resolveAuthorIdentity(authorName, authorEmail, identityIndex, workspaceRoot) {
   const aliasCandidates = [
     authorEmail,
-    authorName,
-    authorEmail.split('@')[0],
     authorEmail.match(/\+([^@]+)@users\.noreply\.github\.com$/i)?.[1]
   ].filter(Boolean);
 
@@ -522,28 +577,15 @@ async function resolveAuthorIdentity(authorName, authorEmail, identityIndex, wor
     }
   }
 
-  const searchResult = await runJsonRequired(
-    'gh',
-    ['api', `search/users?q=${encodeURIComponent(`${authorName} in:login`)}`],
-    workspaceRoot,
-    `GitHub user search API (${authorName})`
-  );
-  const matchedUser = searchResult?.items?.[0];
-
-  if (matchedUser?.login) {
-    const user = await fetchGithubUserSafe(matchedUser.login, workspaceRoot);
-    const identity = buildIdentityFromUser(user);
-    indexIdentity(identityIndex, identity);
-    return identity;
+  const normalizedAuthorName = normalizeIdentityKey(authorName);
+  if (normalizedAuthorName) {
+    const directLoginMatch = identityIndex.get(normalizedAuthorName);
+    if (directLoginMatch && normalizeIdentityKey(directLoginMatch.login) === normalizedAuthorName) {
+      return directLoginMatch;
+    }
   }
 
-  return {
-    login: authorName,
-    name: authorName,
-    email: authorEmail,
-    avatarUrl: '',
-    profileUrl: ''
-  };
+  return null;
 }
 
 function parseAuthorCounts(logOutput) {
@@ -582,7 +624,6 @@ function parseCommitImport(logOutput, refsMap, identityMap) {
     .map((entry) => {
       const [hash, parentsRaw = '', authorName = '', authorEmail = '', authorDate = '', subject = ''] = entry.split('\x1f');
       const identity = identityMap.get(normalizeIdentityKey(authorEmail))
-        ?? identityMap.get(normalizeIdentityKey(authorName))
         ?? null;
 
       return {
@@ -616,7 +657,6 @@ function parseBranchCommits(logOutput, identityMap) {
     .map((entry) => {
       const [hash = '', shortSha = '', date = '', authorName = '', authorEmail = '', subject = ''] = entry.split('\x1f');
       const identity = identityMap.get(normalizeIdentityKey(authorEmail))
-        ?? identityMap.get(normalizeIdentityKey(authorName))
         ?? null;
 
       return {
@@ -706,6 +746,16 @@ async function buildGitSnapshot(workspaceRoot) {
   githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
 
   const authorCounts = parseAuthorCounts(authorLog);
+  const commitEmails = [...new Set(authorCounts
+    .map((author) => normalizeWhitespace(author.authorEmail))
+    .filter(Boolean))];
+  const commitEmailIdentities = await Promise.all(commitEmails.map((email) => {
+    return fetchGithubIdentityByCommitEmail(owner, repo, email, workspaceRoot);
+  }));
+  commitEmailIdentities
+    .filter(Boolean)
+    .forEach((identity) => indexIdentity(identityIndex, identity));
+
   await Promise.all(authorCounts.map(async (author) => {
     const identity = await resolveAuthorIdentity(author.authorName, author.authorEmail, identityIndex, workspaceRoot);
     indexIdentity(identityIndex, identity);
@@ -797,7 +847,7 @@ async function buildGitSnapshot(workspaceRoot) {
   const paletteMap = buildPaletteMap([
     ...authorCounts.map((author) => {
       const identity = identityIndex.get(normalizeIdentityKey(author.authorEmail))
-        ?? identityIndex.get(normalizeIdentityKey(author.authorName));
+        ?? null;
       return identity?.login || identity?.name || author.authorName;
     })
   ]);
@@ -806,7 +856,7 @@ async function buildGitSnapshot(workspaceRoot) {
   const authors = authorCounts
     .map((author) => {
       const identity = identityIndex.get(normalizeIdentityKey(author.authorEmail))
-        ?? identityIndex.get(normalizeIdentityKey(author.authorName));
+        ?? null;
       const tone = paletteMap.get(identity?.login || identity?.name || author.authorName) ?? AUTHOR_PALETTE[0];
       const share = Math.max(12, Math.round((author.count / maxCount) * 100));
 
@@ -838,10 +888,11 @@ async function buildGitSnapshot(workspaceRoot) {
     branchCount: branchList.length,
     contributorCount: authors.length,
     authors,
-    activity: {
-      week: createActivitySeries(activityCounts, 'week'),
-      month: createActivitySeries(activityCounts, 'month')
-    },
+      activity: {
+        week: createActivitySeries(activityCounts, 'week'),
+        month: createActivitySeries(activityCounts, 'month'),
+        year: createActivitySeries(activityCounts, 'year')
+      },
     branches: branchList.map((branch) => ({
       ...branch,
       selected: branch.name === defaultBranch,
@@ -963,11 +1014,13 @@ function mapIssues(rawIssues, identityIndex) {
     columnMap.get(card.columnId)?.push(card);
   }
 
-  const columns = COLUMN_ORDER.map((id) => ({
-    id,
-    label: COLUMN_LABEL[id],
-    cards: (columnMap.get(id) ?? []).sort((left, right) => right.number - left.number)
-  }));
+  const columns = COLUMN_ORDER
+    .map((id) => ({
+      id,
+      label: COLUMN_LABEL[id],
+      cards: (columnMap.get(id) ?? []).sort((left, right) => right.number - left.number)
+    }))
+    .filter((column) => column.cards.length > 0);
 
   const assigneeLogins = new Set(cards.flatMap((card) => card.assignees.map((assignee) => assignee.login)));
   const criteriaCount = cards.reduce((total, card) => total + card.criteria.length, 0);
@@ -1035,7 +1088,8 @@ function localizeRepositorySnapshot(snapshot, locale, messages) {
       ...snapshot.git,
       activityRanges: {
         week: lookupMessage(messages, 'repository.git.range.week', 'This week'),
-        month: lookupMessage(messages, 'repository.git.range.month', 'This month')
+        month: lookupMessage(messages, 'repository.git.range.month', 'This month'),
+        year: lookupMessage(messages, 'repository.git.range.year', 'This year')
       },
       activity: {
         week: snapshot.git.activity.week.map((day) => ({
@@ -1047,6 +1101,11 @@ function localizeRepositorySnapshot(snapshot, locale, messages) {
           ...day,
           label: formatMonthDay(day.key, locale),
           fullLabel: displayDate(day.key, locale)
+        })),
+        year: snapshot.git.activity.year.map((day) => ({
+          ...day,
+          label: formatMonthLabel(`${day.key}-01`, locale),
+          fullLabel: day.fullLabel
         }))
       },
       branches: snapshot.git.branches.map((branch) => ({
@@ -1117,5 +1176,6 @@ export async function loadRepositorySnapshot(rootDir, options = {}) {
 
 export { localizeRepositorySnapshot };
 export const __repositorySnapshotInternals = {
-  parseCommitImport
+  parseCommitImport,
+  parseBranchCommits
 };
