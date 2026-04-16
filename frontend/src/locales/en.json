@@ -8,6 +8,10 @@
       "title": "Pawsitters | Repository | Git",
       "description": "Clean Git page with merge graph, activity and contributors."
     },
+    "repositoryPlaywright": {
+      "title": "Pawsitters | Repository | Playwright Tests",
+      "description": "Playwright control room with browser-triggered runs, live logs, and per-test status."
+    },
     "repositoryKanban": {
       "title": "Pawsitters | Repository | Kanban",
       "description": "Reduced kanban page with color-coded owners and issue details."
@@ -45,6 +49,7 @@
     "ariaRepository": "Repository navigation",
     "repository": "Repository",
     "repositoryGit": "Git",
+    "repositoryPlaywright": "Playwright",
     "repositoryBoard": "Kanban Board",
     "ariaLocale": "Locale switcher",
     "login": "Sign in",
@@ -93,6 +98,33 @@
       },
       "labels": {
         "documentation": "Documentation"
+      }
+    },
+    "playwright": {
+      "label": "Playwright",
+      "eyebrow": "End-to-end control room",
+      "title": "Playwright Tests",
+      "description": "Run your E2E suite directly from the browser, follow live logs, and inspect each test result.",
+      "run": "Run tests",
+      "running": "Running tests...",
+      "lastRun": "Last run",
+      "never": "No run yet",
+      "testsTitle": "All E2E tests",
+      "logsTitle": "Live logs",
+      "logsEmpty": "No logs available yet.",
+      "metrics": {
+        "total": "Total",
+        "passed": "Passed",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "status": {
+        "idle": "Ready",
+        "pending": "Pending",
+        "running": "Running",
+        "passed": "Passed",
+        "failed": "Failed",
+        "skipped": "Skipped"
       }
     }
   },

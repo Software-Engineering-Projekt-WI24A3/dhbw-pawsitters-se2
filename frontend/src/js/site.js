@@ -282,7 +282,7 @@ function sanitizePopupText(value) {
     }
 
     const knownPopupNoise = [
-        /Repository\s+DE\s+Einloggen\s+Git\s+Kanban Board/i,
+        /Repository\s+DE\s+Einloggen\s+Playwright(?:-Tests)?\s+Git\s+Kanban Board/i,
         /GESAMTER\s+PROJEKTGRAPH/i,
         /PAWSITTERS\.\s*RUHIGES INTERFACE/i
     ];
@@ -294,11 +294,66 @@ function sanitizePopupText(value) {
     return collapsed;
 }
 
+function formatLocalDateTime(value) {
+    if (!value) {
+        return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    }).format(date);
+}
+
+function formatDurationMs(value) {
+    const durationMs = Number(value);
+    if (!Number.isFinite(durationMs) || durationMs <= 0) {
+        return '';
+    }
+
+    if (durationMs < 1000) {
+        return `${Math.round(durationMs)}ms`;
+    }
+
+    if (durationMs < 60_000) {
+        return `${(durationMs / 1000).toFixed(1)}s`;
+    }
+
+    const minutes = Math.floor(durationMs / 60_000);
+    const seconds = Math.round((durationMs % 60_000) / 1000);
+    return `${minutes}m ${seconds}s`;
+}
+
 const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
 
 const appRoot = document.querySelector('#app-shell');
+const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
+const defaultPlaywrightStatusLabels = {
+    idle: 'Ready',
+    pending: 'Pending',
+    running: 'Running',
+    passed: 'Passed',
+    failed: 'Failed',
+    skipped: 'Skipped'
+};
+
+const localizedPlaywrightStatusLabels = {
+    idle: playwrightRunnerRoot?.getAttribute('data-status-idle') || defaultPlaywrightStatusLabels.idle,
+    pending: playwrightRunnerRoot?.getAttribute('data-status-pending') || defaultPlaywrightStatusLabels.pending,
+    running: playwrightRunnerRoot?.getAttribute('data-status-running') || defaultPlaywrightStatusLabels.running,
+    passed: playwrightRunnerRoot?.getAttribute('data-status-passed') || defaultPlaywrightStatusLabels.passed,
+    failed: playwrightRunnerRoot?.getAttribute('data-status-failed') || defaultPlaywrightStatusLabels.failed,
+    skipped: playwrightRunnerRoot?.getAttribute('data-status-skipped') || defaultPlaywrightStatusLabels.skipped
+};
+
+const localizedPlaywrightNeverLabel = playwrightRunnerRoot?.getAttribute('data-last-run-never') || 'No run yet';
 
 createApp({
     render: appShellRender,
@@ -338,7 +393,29 @@ createApp({
                 mergeInfo: ''
             },
             activeGitCommitModalHash: '',
-            activeBoardCardKey: ''
+            activeBoardCardKey: '',
+            playwrightRunnerEnabled: Boolean(playwrightRunnerRoot),
+            playwrightStatusPollingHandle: null,
+            playwrightStatusLoading: false,
+            playwrightRunPending: false,
+            playwrightStatusError: '',
+            playwrightRunId: 0,
+            playwrightRunning: false,
+            playwrightStartedAt: '',
+            playwrightFinishedAt: '',
+            playwrightExitCode: null,
+            playwrightSummary: {
+                total: 0,
+                passed: 0,
+                failed: 0,
+                pending: 0,
+                status: 'idle'
+            },
+            playwrightTests: [],
+            playwrightLogs: [],
+            playwrightNextLogIndex: 0,
+            playwrightStatusLabels: localizedPlaywrightStatusLabels,
+            playwrightNeverLabel: localizedPlaywrightNeverLabel
         };
     },
     computed: {
@@ -428,6 +505,17 @@ createApp({
                 description: cleanDescription,
                 hasDescription: Boolean(cleanDescription)
             };
+        },
+        playwrightLogText() {
+            return this.playwrightLogs
+                .map((entry) => entry?.text ?? '')
+                .filter(Boolean)
+                .join('\n');
+        },
+        playwrightLastRunLabel() {
+            const reference = this.playwrightFinishedAt || this.playwrightStartedAt;
+            const formatted = formatLocalDateTime(reference);
+            return formatted || this.playwrightNeverLabel;
         }
     },
     mounted() {
@@ -437,6 +525,7 @@ createApp({
         this.syncScrollState();
         this.handleResize();
         this.refreshRepositoryData();
+        this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
@@ -448,9 +537,223 @@ createApp({
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
         this.closeAllDropdowns({ immediate: true });
+        this.stopPlaywrightPolling();
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        initializePlaywrightRunner() {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+
+            this.fetchPlaywrightStatus({ resetLogs: true });
+            this.startPlaywrightPolling();
+        },
+        startPlaywrightPolling() {
+            if (!this.playwrightRunnerEnabled || this.playwrightStatusPollingHandle) {
+                return;
+            }
+
+            this.playwrightStatusPollingHandle = window.setInterval(() => {
+                this.fetchPlaywrightStatus();
+            }, 1200);
+        },
+        stopPlaywrightPolling() {
+            if (typeof this.playwrightStatusPollingHandle === 'number') {
+                window.clearInterval(this.playwrightStatusPollingHandle);
+            }
+            this.playwrightStatusPollingHandle = null;
+        },
+        normalizePlaywrightPayload(payload = {}) {
+            const source = payload && typeof payload === 'object' ? payload : {};
+            const sourceRunner = source.runner && typeof source.runner === 'object' ? source.runner : {};
+            const sourceSummary = source.summary && typeof source.summary === 'object' ? source.summary : {};
+            const sourceTests = Array.isArray(source.tests) ? source.tests : [];
+            const sourceLogs = Array.isArray(source.logs) ? source.logs : [];
+            const allowedStatus = new Set(['idle', 'pending', 'running', 'passed', 'failed', 'skipped']);
+
+            const tests = sourceTests.map((testCase, index) => {
+                const entry = testCase && typeof testCase === 'object' ? testCase : {};
+                const status = typeof entry.status === 'string' && allowedStatus.has(entry.status)
+                    ? entry.status
+                    : 'idle';
+                return {
+                    id: entry.id || `${entry.location || 'test'}-${index}`,
+                    location: entry.location || '',
+                    title: entry.title || '',
+                    name: entry.name || entry.title || entry.location || '',
+                    status,
+                    durationMs: Number.isFinite(Number(entry.durationMs)) ? Number(entry.durationMs) : 0
+                };
+            });
+
+            const total = Number.isFinite(Number(sourceSummary.total))
+                ? Number(sourceSummary.total)
+                : tests.length;
+            const passed = Number.isFinite(Number(sourceSummary.passed))
+                ? Number(sourceSummary.passed)
+                : tests.filter((entry) => entry.status === 'passed').length;
+            const failed = Number.isFinite(Number(sourceSummary.failed))
+                ? Number(sourceSummary.failed)
+                : tests.filter((entry) => entry.status === 'failed').length;
+            const pending = Number.isFinite(Number(sourceSummary.pending))
+                ? Number(sourceSummary.pending)
+                : Math.max(0, total - passed - failed);
+
+            let status = typeof sourceSummary.status === 'string' && allowedStatus.has(sourceSummary.status)
+                ? sourceSummary.status
+                : 'idle';
+
+            const running = Boolean(sourceRunner.running);
+            if (running) {
+                status = 'running';
+            } else if (failed > 0) {
+                status = 'failed';
+            } else if (total > 0 && passed >= total && pending === 0) {
+                status = 'passed';
+            } else if (pending > 0) {
+                status = 'pending';
+            } else if (total > 0) {
+                status = 'passed';
+            }
+
+            return {
+                runId: Number.isFinite(Number(sourceRunner.runId)) ? Number(sourceRunner.runId) : 0,
+                running,
+                startedAt: sourceRunner.startedAt || '',
+                finishedAt: sourceRunner.finishedAt || '',
+                exitCode: Number.isInteger(sourceRunner.exitCode) ? sourceRunner.exitCode : null,
+                summary: {
+                    total,
+                    passed,
+                    failed,
+                    pending,
+                    status
+                },
+                tests,
+                logs: sourceLogs.map((entry, index) => {
+                    const logEntry = entry && typeof entry === 'object' ? entry : {};
+                    return {
+                        index: Number.isFinite(Number(logEntry.index)) ? Number(logEntry.index) : index,
+                        stream: logEntry.stream === 'stderr' ? 'stderr' : 'stdout',
+                        text: typeof logEntry.text === 'string' ? logEntry.text : '',
+                        time: logEntry.time || ''
+                    };
+                }).filter((entry) => entry.text.trim().length > 0),
+                nextLogIndex: Number.isFinite(Number(source.nextLogIndex))
+                    ? Number(source.nextLogIndex)
+                    : sourceLogs.length
+            };
+        },
+        applyPlaywrightStatus(payload = {}, options = {}) {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+
+            const normalized = this.normalizePlaywrightPayload(payload);
+            const runChanged = normalized.runId !== this.playwrightRunId;
+            const resetLogs = options.resetLogs === true || runChanged;
+            const mergedLogs = resetLogs
+                ? [...normalized.logs]
+                : [...this.playwrightLogs, ...normalized.logs];
+
+            this.playwrightRunId = normalized.runId;
+            this.playwrightRunning = normalized.running;
+            this.playwrightStartedAt = normalized.startedAt;
+            this.playwrightFinishedAt = normalized.finishedAt;
+            this.playwrightExitCode = normalized.exitCode;
+            this.playwrightSummary = normalized.summary;
+            this.playwrightTests = normalized.tests;
+            this.playwrightNextLogIndex = normalized.nextLogIndex;
+            this.playwrightLogs = mergedLogs.slice(-1400);
+
+            if (normalized.logs.length > 0 || resetLogs) {
+                this.scrollPlaywrightLogsToEnd();
+            }
+        },
+        scrollPlaywrightLogsToEnd() {
+            window.requestAnimationFrame(() => {
+                const consoleNode = document.querySelector('[data-playwright-log-console]');
+                if (!consoleNode) {
+                    return;
+                }
+
+                consoleNode.scrollTop = consoleNode.scrollHeight;
+            });
+        },
+        playwrightLabelForStatus(status) {
+            return this.playwrightStatusLabels[status] || this.playwrightStatusLabels.idle || defaultPlaywrightStatusLabels.idle;
+        },
+        playwrightFormatDuration(value) {
+            return formatDurationMs(value);
+        },
+        async fetchPlaywrightStatus(options = {}) {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+
+            if (this.playwrightStatusLoading && options.force !== true) {
+                return;
+            }
+
+            const from = options.resetLogs === true ? 0 : Math.max(0, this.playwrightNextLogIndex);
+            this.playwrightStatusLoading = true;
+
+            try {
+                const response = await fetch(`/api/tests/e2e/status.json?from=${from}`, {
+                    headers: {
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || `Playwright status request failed with ${response.status}`);
+                }
+
+                this.playwrightStatusError = '';
+                this.applyPlaywrightStatus(data, {
+                    resetLogs: options.resetLogs === true
+                });
+            } catch (error) {
+                this.playwrightStatusError = error?.message || 'Playwright status request failed.';
+            } finally {
+                this.playwrightStatusLoading = false;
+            }
+        },
+        async runPlaywrightTests() {
+            if (!this.playwrightRunnerEnabled || this.playwrightRunPending || this.playwrightRunning) {
+                return;
+            }
+
+            this.playwrightRunPending = true;
+
+            try {
+                const response = await fetch('/api/tests/e2e/run', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok && response.status !== 409) {
+                    throw new Error(data.message || `Playwright run request failed with ${response.status}`);
+                }
+
+                this.playwrightStatusError = '';
+                this.applyPlaywrightStatus(data, { resetLogs: true });
+                await this.fetchPlaywrightStatus({ force: true });
+            } catch (error) {
+                this.playwrightStatusError = error?.message || 'Playwright run request failed.';
+            } finally {
+                this.playwrightRunPending = false;
+            }
+        },
         toggleMenu() {
             this.menuOpen = !this.menuOpen;
 

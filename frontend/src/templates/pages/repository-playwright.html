@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.repositoryPlaywright.title}, #{meta.repositoryPlaywright.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, ${loginPath}, 'page-repository page-repository--playwright', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="repo_stage">
+        <div class="repo_stack repo_stack--page">
+            <section class="repository_workspace repository_workspace--page repository_workspace--playwright"
+                     data-playwright-runner
+                     th:attr="data-status-idle=#{repository.playwright.status.idle},data-status-pending=#{repository.playwright.status.pending},data-status-running=#{repository.playwright.status.running},data-status-passed=#{repository.playwright.status.passed},data-status-failed=#{repository.playwright.status.failed},data-status-skipped=#{repository.playwright.status.skipped},data-last-run-never=#{repository.playwright.never}">
+                <div class="repository_compactbar">
+                    <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button repository_switch__button--active"
+                           th:href="${repositoryPlaywrightPath}">
+                            <img class="repository_switch__icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.playwright.label}">repository.playwright.label</span>
+                        </a>
+                        <a class="repository_switch__button"
+                           th:href="${repositoryGitPath}">
+                            <img class="repository_switch__icon"
+                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.git.label}">repository.git.label</span>
+                        </a>
+                        <a class="repository_switch__button"
+                           th:href="${repositoryBoardPath}"
+                           th:text="#{repository.board.label}">repository.board.label</a>
+                    </div>
+                </div>
+
+                <div class="playwright_runner">
+                    <header class="playwright_runner__header">
+                        <h1 class="playwright_runner__title"
+                            th:text="#{repository.playwright.title}">repository.playwright.title</h1>
+                        <div class="playwright_runner__actions">
+                            <button class="button button--primary playwright_runner__run"
+                                    type="button"
+                                    @click="runPlaywrightTests()"
+                                    :disabled="playwrightRunPending || playwrightRunning"
+                                    :aria-busy="String(playwrightRunPending || playwrightRunning)">
+                                <img class="repository_switch__icon"
+                                     src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span v-if="playwrightRunning"
+                                      th:text="#{repository.playwright.running}">repository.playwright.running</span>
+                                <span v-else
+                                      th:text="#{repository.playwright.run}">repository.playwright.run</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="playwright_metrics">
+                        <article class="playwright_metric">
+                            <span class="playwright_metric__value" v-text="playwrightSummary.total"></span>
+                            <span class="playwright_metric__label"
+                                  th:text="#{repository.playwright.metrics.total}">repository.playwright.metrics.total</span>
+                        </article>
+                        <article class="playwright_metric">
+                            <span class="playwright_metric__value" v-text="playwrightSummary.passed"></span>
+                            <span class="playwright_metric__label"
+                                  th:text="#{repository.playwright.metrics.passed}">repository.playwright.metrics.passed</span>
+                        </article>
+                        <article class="playwright_metric">
+                            <span class="playwright_metric__value" v-text="playwrightSummary.failed"></span>
+                            <span class="playwright_metric__label"
+                                  th:text="#{repository.playwright.metrics.failed}">repository.playwright.metrics.failed</span>
+                        </article>
+                        <article class="playwright_metric">
+                            <span class="playwright_metric__value" v-text="playwrightSummary.pending"></span>
+                            <span class="playwright_metric__label"
+                                  th:text="#{repository.playwright.metrics.pending}">repository.playwright.metrics.pending</span>
+                        </article>
+                    </div>
+
+                    <div class="playwright_statusline">
+                        <span class="playwright_status_badge"
+                              :class="'playwright_status_badge--' + playwrightSummary.status"
+                              v-text="playwrightLabelForStatus(playwrightSummary.status)"></span>
+                        <span class="playwright_statusline__meta">
+                            <span th:text="#{repository.playwright.lastRun}">repository.playwright.lastRun</span>
+                            <span>: </span>
+                            <span v-text="playwrightLastRunLabel"></span>
+                        </span>
+                    </div>
+
+                    <p v-if="playwrightStatusError"
+                       class="playwright_error"
+                       v-text="playwrightStatusError"></p>
+
+                    <div class="playwright_workspace">
+                        <section class="playwright_tests_panel">
+                            <header class="playwright_tests_panel__header">
+                                <h2 class="playwright_panel__title"
+                                    th:text="#{repository.playwright.testsTitle}">repository.playwright.testsTitle</h2>
+                                <span class="playwright_tests_panel__count"
+                                      v-text="playwrightSummary.total"></span>
+                            </header>
+
+                            <ol class="playwright_tests_list">
+                                <li v-for="testCase in playwrightTests"
+                                    :key="testCase.id"
+                                    class="playwright_tests_item">
+                                    <article class="playwright_tests_card"
+                                             :class="'playwright_tests_card--' + testCase.status">
+                                        <div class="playwright_tests_card__topline">
+                                            <span class="playwright_status_badge playwright_status_badge--small"
+                                                  :class="'playwright_status_badge--' + testCase.status"
+                                                  v-text="playwrightLabelForStatus(testCase.status)"></span>
+                                            <span class="playwright_tests_card__duration"
+                                                  v-text="playwrightFormatDuration(testCase.durationMs)"></span>
+                                        </div>
+                                        <p class="playwright_tests_card__title" v-text="testCase.name"></p>
+                                        <p class="playwright_tests_card__meta" v-text="testCase.location"></p>
+                                    </article>
+                                </li>
+                            </ol>
+                        </section>
+
+                        <section class="playwright_logs_panel">
+                            <header class="playwright_logs_panel__header">
+                                <h2 class="playwright_panel__title"
+                                    th:text="#{repository.playwright.logsTitle}">repository.playwright.logsTitle</h2>
+                                <span class="playwright_logs_panel__cursor" v-text="playwrightNextLogIndex"></span>
+                            </header>
+
+                            <pre class="playwright_logs_console"
+                                 data-playwright-log-console
+                                 v-text="playwrightLogText"></pre>
+                            <p v-if="!playwrightLogText"
+                               class="playwright_logs_empty"
+                               th:text="#{repository.playwright.logsEmpty}">repository.playwright.logsEmpty</p>
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+</th:block>
+</html>

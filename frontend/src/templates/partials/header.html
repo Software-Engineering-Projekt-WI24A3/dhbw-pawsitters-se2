@@ -26,6 +26,15 @@
                     </summary>
                     <div class="repo_menu__panel">
                         <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryPlaywrightPath}">
+                            <img class="repo_menu__item-icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
+                        </a>
+                        <a class="repo_menu__item"
                            th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
                            th:href="${repositoryGitPath}">
                             <img class="repo_menu__item-icon"
@@ -79,6 +88,16 @@
                         <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
                     </summary>
                     <div class="repo_menu__panel">
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryPlaywrightPath}"
+                           @click="closeMenu()">
+                            <img class="repo_menu__item-icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
+                        </a>
                         <a class="repo_menu__item"
                            th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
                            th:href="${repositoryGitPath}"

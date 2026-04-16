@@ -8,6 +8,10 @@
       "title": "Pawsitters | Repository | Git",
       "description": "Klare Git-Unterseite mit Merge-Graph, Aktivität und Autoren."
     },
+    "repositoryPlaywright": {
+      "title": "Pawsitters | Repository | Playwright-Tests",
+      "description": "Playwright-Kontrollraum mit Testlauf, Live-Logs und Status pro E2E-Test."
+    },
     "repositoryKanban": {
       "title": "Pawsitters | Repository | Kanban",
       "description": "Reduzierte Kanban-Unterseite mit farbcodierten Autoren und Issue-Informationen."
@@ -45,6 +49,7 @@
     "ariaRepository": "Repository-Navigation",
     "repository": "Repository",
     "repositoryGit": "Git",
+    "repositoryPlaywright": "Playwright",
     "repositoryBoard": "Kanban Board",
     "ariaLocale": "Sprachauswahl",
     "login": "Einloggen",
@@ -93,6 +98,33 @@
       },
       "labels": {
         "documentation": "Dokumentation"
+      }
+    },
+    "playwright": {
+      "label": "Playwright",
+      "eyebrow": "End-to-End Kontrollraum",
+      "title": "Playwright Tests",
+      "description": "Starte eure E2E-Suite direkt im Browser, verfolge Live-Logs und prüfe den Status jedes einzelnen Tests.",
+      "run": "Tests starten",
+      "running": "Tests laufen...",
+      "lastRun": "Letzter Lauf",
+      "never": "Noch kein Lauf",
+      "testsTitle": "Alle E2E-Tests",
+      "logsTitle": "Live-Logs",
+      "logsEmpty": "Noch keine Logs verfügbar.",
+      "metrics": {
+        "total": "Gesamt",
+        "passed": "Bestanden",
+        "failed": "Fehlgeschlagen",
+        "pending": "Ausstehend"
+      },
+      "status": {
+        "idle": "Bereit",
+        "pending": "Ausstehend",
+        "running": "Läuft",
+        "passed": "Bestanden",
+        "failed": "Fehlgeschlagen",
+        "skipped": "Übersprungen"
       }
     }
   },
