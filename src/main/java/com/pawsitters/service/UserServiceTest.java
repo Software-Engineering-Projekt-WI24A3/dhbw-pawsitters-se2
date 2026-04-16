@@ -39,7 +39,7 @@ class UserServiceTest {
         // WHEN
         User result = userService.createUser(
                 "max@test.de", "passwort123", "Max", "Muster",
-                "01234567", LocalDate.ofEpochDay((2000-01-01)), "Notfall: 0987",
+                "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
                 "bild.jpg", "Ich bin Max", UserRole.PET_OWNER
         );
 
@@ -61,7 +61,7 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 userService.createUser(
                         "exists@test.de", "passwort123", "Max", "Muster",
-                        "01234567", LocalDate.ofEpochDay(2000-01-01), "Notfall: 0987",
+                        "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
                         "bild.jpg", "Bio", UserRole.PET_OWNER
                 )
         );
