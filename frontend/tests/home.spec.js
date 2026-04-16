@@ -39,6 +39,50 @@ test.describe('Pawsitters shell', () => {
     await expect(page.locator('.board_stage')).toHaveCount(1);
   });
 
+  test('forces a fresh repository request when clicking Git neu laden', async ({ page }) => {
+    const snapshot = await loadLiveRepository(page, 'de');
+    const observedRepositoryUrls = [];
+
+    await page.route('**/api/repository/live.json*', async (route) => {
+      const requestUrl = route.request().url();
+      observedRepositoryUrls.push(requestUrl);
+
+      const parsedUrl = new URL(requestUrl);
+      if (parsedUrl.searchParams.get('refresh') === '1') {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(snapshot)
+      });
+    });
+
+    await page.goto('/git');
+    await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
+
+    const refreshButton = page.getByRole('button', { name: token(de, 'repository.refresh'), exact: true });
+    await refreshButton.click();
+    await expect(refreshButton).toBeDisabled();
+
+    await expect.poll(() => {
+      return observedRepositoryUrls.find((url) => {
+        return new URL(url).searchParams.get('refresh') === '1';
+      }) ?? '';
+    }, { timeout: 10000 }).not.toBe('');
+
+    const refreshRequestUrl = observedRepositoryUrls.find((url) => {
+      return new URL(url).searchParams.get('refresh') === '1';
+    });
+    const refreshParams = new URL(refreshRequestUrl).searchParams;
+
+    expect(refreshParams.get('locale')).toBe('de');
+    expect(refreshParams.get('refresh')).toBe('1');
+    expect(refreshParams.get('_')).toBeTruthy();
+    await expect(refreshButton).toBeEnabled();
+  });
+
   test('opens the root path globally and keeps repository content off the start page', async ({ page }) => {
     await page.goto('/');
 

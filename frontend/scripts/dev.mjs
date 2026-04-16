@@ -159,9 +159,10 @@ async function serveFile(response, filePath) {
 async function serveRepositorySnapshot(requestUrl, response) {
   const requestedLocale = requestUrl.searchParams.get('locale') ?? defaultLocale;
   const locale = supportedLocales.includes(requestedLocale) ? requestedLocale : defaultLocale;
+  const forceFresh = requestUrl.searchParams.get('refresh') === '1';
 
   try {
-    const snapshot = await loadLocalizedRepositorySnapshot(rootDir, locale);
+    const snapshot = await loadLocalizedRepositorySnapshot(rootDir, locale, { fresh: forceFresh });
     response.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store'

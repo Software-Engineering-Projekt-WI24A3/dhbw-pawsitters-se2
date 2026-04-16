@@ -53,6 +53,7 @@
   },
   "repository": {
     "liveLoading": "Les donnees live de GitHub sont en cours de chargement... :)",
+    "refresh": "Recharger les donnees Git",
     "git": {
       "label": "Git",
       "commits": "Commits",
@@ -63,7 +64,8 @@
       "timeline": "Graphe",
       "range": {
         "week": "Cette semaine",
-        "month": "Ce mois-ci"
+        "month": "Ce mois-ci",
+        "year": "Cette année"
       },
       "recent": "Derniers commits"
     },

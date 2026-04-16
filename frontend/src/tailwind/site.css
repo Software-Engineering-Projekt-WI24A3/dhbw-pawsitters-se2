@@ -824,7 +824,7 @@
     }
 
     .repository_switch {
-        @apply inline-flex flex-wrap items-center gap-3;
+        @apply flex w-full flex-wrap items-center gap-3;
     }
 
     .repository_switch--page {
@@ -843,6 +843,34 @@
     .repository_switch__button--active {
         @apply border-transparent bg-black text-white;
         box-shadow: 0 12px 24px rgba(17, 17, 19, 0.16);
+    }
+
+    .repository_switch__refresh {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-black bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm transition duration-300 hover:-translate-y-px hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-55;
+        margin-left: auto;
+    }
+
+    .repository_switch__refresh-label {
+        @apply leading-none;
+    }
+
+    .repository_switch__refresh svg {
+        @apply h-4 w-4 shrink-0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .repository_switch__refresh--loading svg {
+        animation: repository-refresh-spin 900ms linear infinite;
+    }
+
+    @keyframes repository-refresh-spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .repository_workspace {
@@ -1090,6 +1118,18 @@
         padding: 1rem 6.4rem 1rem 0.45rem;
     }
 
+    .git_graph_branch_labels {
+        @apply pointer-events-none absolute inset-0 z-[2];
+    }
+
+    .git_graph_branch_label {
+        @apply absolute inline-flex items-center rounded-full border border-black bg-white px-3 py-1 text-[0.72rem] font-semibold shadow-sm;
+        color: inherit;
+        pointer-events: auto;
+        white-space: nowrap;
+        transform: translateY(-50%);
+    }
+
     .git_graph_canvas svg {
         @apply block;
         min-width: 100%;
@@ -1113,6 +1153,11 @@
         @apply mt-4 grid flex-1 gap-3 overflow-y-auto pr-1;
         min-height: 0;
         max-height: 100%;
+    }
+
+    .git_graph_feed__list > li {
+        min-width: 0;
+        max-width: 100%;
     }
 
     .git_graph_feed__list > li,
@@ -1281,6 +1326,10 @@
         transition: border-color 220ms ease, background-color 220ms ease;
         cursor: pointer;
         box-shadow: none;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .git_graph__card:hover {
@@ -1330,6 +1379,10 @@
 
     .git_commit__message {
         @apply mt-2 text-sm leading-6 text-black;
+        min-width: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .git_commit__meta {
@@ -1338,6 +1391,20 @@
 
     .git_commit__sha {
         @apply text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-black;
+        min-width: 0;
+    }
+
+    .git_graph__topline,
+    .git_commit__meta {
+        min-width: 0;
+    }
+
+    .git_commit__author {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .git_activity {

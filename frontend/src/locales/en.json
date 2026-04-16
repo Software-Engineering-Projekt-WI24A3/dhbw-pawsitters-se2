@@ -53,6 +53,7 @@
   },
   "repository": {
     "liveLoading": "Live data is loading from GitHub... :)",
+    "refresh": "Reload Git data",
     "git": {
       "label": "Git",
       "commits": "Commits",
@@ -63,7 +64,8 @@
       "timeline": "Graph",
       "range": {
         "week": "This week",
-        "month": "This month"
+        "month": "This month",
+        "year": "This year"
       },
       "recent": "Latest commits"
     },

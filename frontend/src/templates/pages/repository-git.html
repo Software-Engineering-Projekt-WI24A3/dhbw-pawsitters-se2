@@ -22,6 +22,20 @@
                         <a class="repository_switch__button"
                            th:href="${repositoryBoardPath}"
                            th:text="#{repository.board.label}">repository.board.label</a>
+                        <button class="repository_switch__refresh"
+                                type="button"
+                                @click="triggerRepositoryRefresh()"
+                                :disabled="repositoryRefreshing || repositoryLoading"
+                                :aria-busy="String(repositoryRefreshing || repositoryLoading)"
+                                :class="{ 'repository_switch__refresh--loading': repositoryRefreshing || repositoryLoading }"
+                                th:attr="aria-label=#{repository.refresh}">
+                            <span class="repository_switch__refresh-label"
+                                  th:text="#{repository.refresh}">repository.refresh</span>
+                            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
+                                <path d="M20 4v6h-6"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -84,6 +98,7 @@
                             <div class="git_graph_workspace__body">
                                 <div class="git_graph_canvas_panel">
                                     <div class="git_graph_canvas" data-gitgraph-container></div>
+                                    <div class="git_graph_branch_labels" data-git-branch-labels></div>
                                     <div class="git_graph_tooltip"
                                          :class="{ 'git_graph_tooltip--visible': gitGraphTooltip.visible }"
                                          :style="{
@@ -208,6 +223,11 @@
                                                 :class="{ 'repo_menu__item--active': gitActivityRange === 'month' }"
                                                 @click="selectGitActivityRange('month', $event)"
                                                 v-text="repository.git.activityRanges.month"></button>
+                                        <button type="button"
+                                                class="repo_menu__item repo_menu__item--button"
+                                                :class="{ 'repo_menu__item--active': gitActivityRange === 'year' }"
+                                                @click="selectGitActivityRange('year', $event)"
+                                                v-text="repository.git.activityRanges.year"></button>
                                     </div>
                                 </details>
                             </div>
@@ -224,7 +244,7 @@
                                           :class="{ 'git_activity__bar--zero': day.count === 0 }"
                                           :style="day.style"></span>
                                     <span class="git_activity__label"
-                                          :class="{ 'git_activity__label--muted': gitActivityRange === 'month' && !day.emphasizeLabel }"
+                                          :class="{ 'git_activity__label--muted': gitActivityRange !== 'week' && !day.emphasizeLabel }"
                                           v-text="day.label"></span>
                                 </article>
                             </div>
