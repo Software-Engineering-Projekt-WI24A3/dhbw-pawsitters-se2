@@ -12,8 +12,8 @@ public class Pet {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String species; // z.B. "Hund", "Katze"
+    @Enumerated(EnumType.STRING)
+    private PetChoice species;
 
     @Column(nullable = false)
     private String breed;
@@ -32,7 +32,7 @@ public class Pet {
 
     public Long getId() { return id; }
     public String getName() { return name; }
-    public String getSpecies() { return species; }
+    public PetChoice getSpecies() { return species; }
     public String getBreed() { return breed; }
     public int getAge() { return age; }
     public String getSpecialNeeds() { return specialNeeds; }
@@ -40,7 +40,7 @@ public class Pet {
 
     public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }
-    public void setSpecies(String species) { this.species = species; }
+    public void setSpecies(PetChoice species) { this.species = species; }
     public void setBreed(String breed) { this.breed = breed; }
     public void setAge(int age) { this.age = age; }
     public void setSpecialNeeds(String specialNeeds) { this.specialNeeds = specialNeeds; }
