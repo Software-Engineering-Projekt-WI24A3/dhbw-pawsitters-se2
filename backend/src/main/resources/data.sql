@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
 	emergency_contact VARCHAR(255) NOT NULL,
 	profile_picture VARCHAR(255) NOT NULL,
 	bio VARCHAR(255) NOT NULL,
-    rating DOUBLE PRECISION,
-    number_of_ratings INTEGER,
+    rating DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    number_of_ratings INTEGER NOT NULL DEFAULT 0,
 	role VARCHAR(255)
 );
 
