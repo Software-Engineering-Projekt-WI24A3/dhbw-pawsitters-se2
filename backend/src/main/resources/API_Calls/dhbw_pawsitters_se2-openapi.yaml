@@ -128,7 +128,6 @@ components:
       required:
         - id
         - email
-        - passwordHash
         - firstName
         - lastName
         - phone
@@ -147,10 +146,6 @@ components:
         email:
           type: string
           format: email
-        passwordHash:
-          type: string
-          readOnly: true
-          description: Wird aktuell mitgeliefert, ist aber nicht fuer Clients gedacht.
         firstName:
           type: string
         lastName:
