@@ -5,40 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/media/404.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projektstart" beforeDir="false" afterPath="$PROJECT_DIR$/Projektstart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/login/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-kanban.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-kanban.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/orga/PAWSITTERS_PROJEKTSTRATEGIE.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/PAWSITTERS_PROJEKTSTRATEGIE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/repository-graph-data.test.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/repository-graph-data.test.mjs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,7 +129,7 @@
     "Shell Script.Projektstart.executor": "Run",
     "Spring Boot.PawsittersApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__new-login-window",
+    "git-widget-placeholder": "n__bugfix__general-bugfixes-and-improvements",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
@@ -197,7 +173,7 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.PawsittersApplication">
+  <component name="RunManager" selected="HTTP Request.All in GetUserByID">
     <configuration name="All in GetUserByID" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http">
       <method v="2" />
     </configuration>
@@ -213,12 +189,49 @@
     <configuration name="getuserbyid | Beispiel Request" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/getuserbyid.http" executionIdentifier="Beispiel Request" runType="Run single request">
       <method v="2" />
     </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <module name="" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="pawsitters" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.pawsitters.PawsittersApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <method v="2" />
     </configuration>
     <recent_temporary>
       <list>

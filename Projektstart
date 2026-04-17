@@ -2,12 +2,158 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRONTEND_DIR="$SCRIPT_DIR/frontend"
+BACKEND_DIR="$SCRIPT_DIR/backend"
+LOG_DIR="$SCRIPT_DIR/.start-logs"
+FRONTEND_LOG="$LOG_DIR/frontend.log"
+BACKEND_LOG="$LOG_DIR/backend.log"
+
+FRONTEND_HOST="127.0.0.1"
+FRONTEND_PORT="4173"
+BACKEND_HOST="127.0.0.1"
+BACKEND_PORT="8080"
+
+FRONTEND_PID=""
+BACKEND_PID=""
+STARTED_FRONTEND=0
+STARTED_BACKEND=0
+
+print_status() {
+  printf '%s\n' "$1"
+}
+
+require_command() {
+  local command_name="$1"
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    print_status "Fehlende Voraussetzung: $command_name"
+    exit 1
+  fi
+}
+
+port_is_busy() {
+  local port="$1"
+  lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
+}
+
+wait_for_http() {
+  local host="$1"
+  local port="$2"
+  local timeout_seconds="$3"
+  local elapsed=0
+
+  while (( elapsed < timeout_seconds )); do
+    local status_code
+    status_code="$(curl -s -o /dev/null -w '%{http_code}' "http://${host}:${port}" || true)"
+    if [[ "$status_code" != "000" ]]; then
+      return 0
+    fi
+    sleep 1
+    (( elapsed += 1 ))
+  done
+
+  return 1
+}
+
+cleanup() {
+  local exit_code="${1:-0}"
+  trap - EXIT INT TERM
+
+  if (( STARTED_FRONTEND == 1 )) && [[ -n "$FRONTEND_PID" ]] && kill -0 "$FRONTEND_PID" >/dev/null 2>&1; then
+    kill "$FRONTEND_PID" >/dev/null 2>&1 || true
+    wait "$FRONTEND_PID" >/dev/null 2>&1 || true
+  fi
+
+  if (( STARTED_BACKEND == 1 )) && [[ -n "$BACKEND_PID" ]] && kill -0 "$BACKEND_PID" >/dev/null 2>&1; then
+    kill "$BACKEND_PID" >/dev/null 2>&1 || true
+    wait "$BACKEND_PID" >/dev/null 2>&1 || true
+  fi
+
+  exit "$exit_code"
+}
+
+trap 'cleanup 130' INT TERM
+trap 'cleanup $?' EXIT
 
 echo
-printf '%s\n' "Herzlich willkommen bei Pawsitters - ein Projekt von Raphael Buller, Niklas Ulbrich & Justus Krahl"
+print_status "Herzlich willkommen bei Pawsitters - ein Projekt von Raphael Buller, Niklas Ulbrich & Justus Krahl"
 echo
-printf '%s\n' "Frontend gestartet & erreichbar unter: http://127.0.0.1:4173"
 
-cd "$SCRIPT_DIR/frontend"
-npm i >/dev/null 2>&1
-npm run dev >/dev/null 2>&1
+if [[ ! -d "$FRONTEND_DIR" || ! -d "$BACKEND_DIR" ]]; then
+  print_status "Projektstruktur unvollständig: frontend/ oder backend/ fehlt"
+  exit 1
+fi
+
+require_command java
+require_command mvn
+require_command npm
+require_command curl
+require_command lsof
+
+mkdir -p "$LOG_DIR"
+: > "$BACKEND_LOG"
+: > "$FRONTEND_LOG"
+
+if port_is_busy "$BACKEND_PORT"; then
+  if ! wait_for_http "$BACKEND_HOST" "$BACKEND_PORT" 5; then
+    print_status "Port belegt: $BACKEND_PORT (Backend)"
+    exit 1
+  fi
+  print_status "Backend bereits erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
+else
+  print_status "Backend wird gestartet ..."
+  (
+    cd "$BACKEND_DIR"
+    mvn -q -DskipTests spring-boot:run
+  ) >"$BACKEND_LOG" 2>&1 &
+  BACKEND_PID=$!
+  STARTED_BACKEND=1
+
+  if ! wait_for_http "$BACKEND_HOST" "$BACKEND_PORT" 300; then
+    print_status "Backend-Start fehlgeschlagen. Log: $BACKEND_LOG"
+    exit 1
+  fi
+  print_status "Backend gestartet & erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
+fi
+
+if port_is_busy "$FRONTEND_PORT"; then
+  if ! wait_for_http "$FRONTEND_HOST" "$FRONTEND_PORT" 5; then
+    print_status "Port belegt: $FRONTEND_PORT (Frontend)"
+    exit 1
+  fi
+  print_status "Frontend bereits erreichbar unter: http://${FRONTEND_HOST}:${FRONTEND_PORT}"
+else
+  print_status "Frontend wird gestartet ..."
+  (
+    cd "$FRONTEND_DIR"
+    npm i >/dev/null 2>&1
+    npm run dev
+  ) >"$FRONTEND_LOG" 2>&1 &
+  FRONTEND_PID=$!
+  STARTED_FRONTEND=1
+
+  if ! wait_for_http "$FRONTEND_HOST" "$FRONTEND_PORT" 300; then
+    print_status "Frontend-Start fehlgeschlagen. Log: $FRONTEND_LOG"
+    exit 1
+  fi
+  print_status "Frontend gestartet & erreichbar unter: http://${FRONTEND_HOST}:${FRONTEND_PORT}"
+fi
+
+while true; do
+  if (( STARTED_BACKEND == 1 )) && ! kill -0 "$BACKEND_PID" >/dev/null 2>&1; then
+    wait "$BACKEND_PID" || true
+    print_status "Backend wurde beendet. Log: $BACKEND_LOG"
+    exit 1
+  fi
+
+  if (( STARTED_FRONTEND == 1 )) && ! kill -0 "$FRONTEND_PID" >/dev/null 2>&1; then
+    wait "$FRONTEND_PID" || true
+    print_status "Frontend wurde beendet. Log: $FRONTEND_LOG"
+    exit 1
+  fi
+
+  if (( STARTED_BACKEND == 0 && STARTED_FRONTEND == 0 )); then
+    exit 0
+  fi
+
+  sleep 1
+done

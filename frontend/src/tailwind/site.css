@@ -19,10 +19,13 @@
         --thread-node: rgba(130, 196, 255, 0.18);
         --dropdown-duration: 180ms;
         --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
-        --corp-modal-overlay: rgba(242, 244, 247, 0.54);
-        --corp-modal-backdrop-blur: 5px;
-        --corp-modal-motion-duration: 420ms;
-        --corp-modal-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        --corp-modal-overlay: rgba(240, 244, 249, 0.56);
+        --corp-modal-overlay-highlight: rgba(177, 217, 255, 0.38);
+        --corp-modal-backdrop-blur: 9px;
+        --corp-modal-motion-duration: 460ms;
+        --corp-modal-motion-duration-out: 300ms;
+        --corp-modal-motion-ease: cubic-bezier(0.2, 0.9, 0.24, 1);
+        --corp-modal-motion-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
         --corp-input-motion-duration: 320ms;
         --corp-input-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -1617,7 +1620,11 @@
     }
 
     .git_activity__day {
-        @apply flex min-w-0 flex-col items-center justify-end gap-3;
+        @apply flex min-w-0 flex-col items-center gap-3;
+    }
+
+    .git_activity__bar-track {
+        @apply flex w-full min-h-0 flex-1 items-end;
     }
 
     .git_activity__count,
@@ -1633,6 +1640,7 @@
     .git_activity__bar {
         @apply block w-full;
         height: var(--bar-size);
+        max-height: 100%;
         min-height: 0;
         border-radius: 0.56rem 0.56rem 0 0;
         background: var(--brand-corporate-green);
@@ -1874,10 +1882,26 @@
 
     .repo_modal,
     .auth_modal {
-        background: var(--corp-modal-overlay);
-        -webkit-backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(0);
-        backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(0);
-        will-change: opacity;
+        @apply relative isolate overflow-hidden;
+        background:
+            radial-gradient(circle at 14% 10%, var(--corp-modal-overlay-highlight) 0%, rgba(177, 217, 255, 0) 46%),
+            radial-gradient(circle at 86% 90%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 52%),
+            linear-gradient(180deg, var(--corp-modal-overlay) 0%, rgba(236, 241, 247, 0.62) 100%);
+        -webkit-backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+        backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+        will-change: opacity, backdrop-filter;
+    }
+
+    .repo_modal::before,
+    .auth_modal::before {
+        @apply pointer-events-none absolute inset-[-24%];
+        content: '';
+        z-index: 0;
+        background:
+            radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 50%),
+            radial-gradient(circle at 74% 70%, rgba(158, 207, 255, 0.22) 0%, rgba(158, 207, 255, 0) 46%);
+        opacity: 0.84;
+        transform: translate3d(0, 0, 0) scale(1);
     }
 
     .repo_modal {
@@ -1889,6 +1913,7 @@
     .repo_modal__surface {
         @apply relative grid w-full max-w-[58rem] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
         max-height: calc(100dvh - 2rem);
+        z-index: 1;
         box-shadow:
             0 42px 76px rgba(15, 15, 17, 0.26),
             0 0 0 1px rgba(255, 255, 255, 0.34) inset;
@@ -2098,42 +2123,54 @@
 
     .corp_field,
     .auth_field {
-        @apply relative block;
+        @apply relative block isolate;
     }
 
     .corp_field__label,
     .auth_field__label {
-        @apply pointer-events-none absolute left-4 top-[0.72rem] origin-left text-[0.92rem] font-medium text-black/55;
-        transform: translate3d(0, 0.92rem, 0) scale(1);
-        transform-origin: left top;
-        will-change: transform, letter-spacing, color;
+        @apply pointer-events-none absolute left-4 top-1/2 origin-left text-[1rem] font-semibold text-black/60;
+        max-width: calc(100% - 2rem);
+        line-height: 1.08;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transform: translate3d(0, -50%, 0) scale(1);
+        transform-origin: left center;
+        will-change: transform, letter-spacing, color, opacity;
         transition:
             transform var(--corp-input-motion-duration) var(--corp-input-motion-ease),
             letter-spacing var(--corp-input-motion-duration) var(--corp-input-motion-ease),
-            color calc(var(--corp-input-motion-duration) - 40ms) var(--corp-input-motion-ease);
+            color calc(var(--corp-input-motion-duration) - 40ms) var(--corp-input-motion-ease),
+            opacity calc(var(--corp-input-motion-duration) - 40ms) var(--corp-input-motion-ease);
     }
 
     .corp_input,
     .auth_input {
-        @apply w-full rounded-[1.1rem] border bg-zinc-50 px-4 pb-[0.58rem] pt-[1.52rem] text-[0.95rem] leading-5 text-black outline-none;
-        border-color: rgba(17, 17, 19, 0.12);
-        min-height: 3.52rem;
+        @apply w-full rounded-[1.2rem] border bg-zinc-50/90 px-4 pb-[0.7rem] pt-[1.78rem] text-[0.98rem] font-medium leading-5 text-black outline-none;
+        border-color: rgba(17, 17, 19, 0.14);
+        min-height: 3.86rem;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.94),
+            0 1px 2px rgba(17, 17, 19, 0.04);
         transition:
             border-color var(--corp-input-motion-duration) var(--corp-input-motion-ease),
             background-color var(--corp-input-motion-duration) var(--corp-input-motion-ease),
+            box-shadow var(--corp-input-motion-duration) var(--corp-input-motion-ease),
             transform var(--corp-input-motion-duration) var(--corp-input-motion-ease);
     }
 
     .corp_input:hover,
     .auth_input:hover {
-        border-color: rgba(17, 17, 19, 0.22);
+        border-color: rgba(17, 17, 19, 0.24);
+        background: rgba(255, 255, 255, 0.94);
     }
 
     .corp_input:focus,
     .auth_input:focus {
-        border-color: rgba(75, 126, 72, 0.54);
+        border-color: rgba(75, 126, 72, 0.62);
         background: #ffffff;
-        box-shadow: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98);
+        transform: translateY(-1px);
     }
 
     .corp_input::placeholder,
@@ -2145,10 +2182,11 @@
     .corp_input:not(:placeholder-shown) + .corp_field__label,
     .auth_input:focus + .auth_field__label,
     .auth_input:not(:placeholder-shown) + .auth_field__label {
-        transform: translate3d(0, 0, 0) scale(0.46);
-        letter-spacing: 0.06em;
+        transform: translate3d(0, -1.36rem, 0) scale(0.72);
+        letter-spacing: 0.02em;
         color: rgba(56, 94, 53, 0.92);
-        text-transform: uppercase;
+        text-transform: none;
+        opacity: 1;
     }
 
     .auth_submit {
@@ -2169,10 +2207,14 @@
 
     .auth_modal__surface {
         @apply relative w-full max-w-[23.5rem] rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
+        z-index: 1;
         box-shadow:
-            0 1.4rem 3.3rem -2rem rgba(5, 7, 10, 0.55),
-            0 0 0 1px rgba(255, 255, 255, 0.72);
-        background: #ffffff;
+            0 34px 66px rgba(9, 12, 18, 0.24),
+            0 0 0 1px rgba(255, 255, 255, 0.74) inset;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 252, 0.95) 100%),
+            radial-gradient(circle at 82% 14%, rgba(47, 90, 168, 0.11) 0%, rgba(47, 90, 168, 0) 50%),
+            radial-gradient(circle at 20% 90%, rgba(162, 212, 255, 0.24) 0%, rgba(162, 212, 255, 0) 52%);
     }
 
     .auth_modal__close {
@@ -2227,15 +2269,14 @@
     }
 
     .auth_modal__field .corp_field__label {
-        @apply text-[0.84rem];
-        transform: translate3d(0, 0.94rem, 0) scale(1);
+        @apply text-[0.92rem];
     }
 
     .auth_modal__field .corp_input:focus + .corp_field__label,
     .auth_modal__field .corp_input:not(:placeholder-shown) + .corp_field__label {
-        transform: translate3d(0, 0, 0) scale(0.4);
+        transform: translate3d(0, -1.34rem, 0) scale(0.74);
         text-transform: none;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.015em;
     }
 
     .auth_modal__submit {
@@ -2251,49 +2292,174 @@
         @apply outline-none ring-2 ring-black/15;
     }
 
-    .auth_modal_presence-enter-active,
-    .auth_modal_presence-leave-active,
-    .repo_modal_presence-enter-active,
-    .repo_modal_presence-leave-active {
-        transition: opacity var(--corp-modal-motion-duration) var(--corp-modal-motion-ease);
+    .auth_modal.auth_modal_presence-enter-active,
+    .repo_modal.repo_modal_presence-enter-active {
+        animation: corpModalOverlayIn var(--corp-modal-motion-duration) var(--corp-modal-motion-ease) both;
     }
 
-    .auth_modal_presence-enter-from,
-    .auth_modal_presence-leave-to,
-    .repo_modal_presence-enter-from,
-    .repo_modal_presence-leave-to {
-        opacity: 0;
+    .auth_modal.auth_modal_presence-leave-active,
+    .repo_modal.repo_modal_presence-leave-active {
+        animation: corpModalOverlayOut var(--corp-modal-motion-duration-out) var(--corp-modal-motion-ease-out) both;
     }
 
-    .auth_modal_presence-enter-active .auth_modal__surface,
-    .auth_modal_presence-leave-active .auth_modal__surface,
-    .repo_modal_presence-enter-active .repo_modal__surface,
-    .repo_modal_presence-leave-active .repo_modal__surface {
-        transition:
-            transform calc(var(--corp-modal-motion-duration) + 40ms) var(--corp-modal-motion-ease),
-            opacity var(--corp-modal-motion-duration) var(--corp-modal-motion-ease);
-        will-change: transform, opacity;
+    .auth_modal.auth_modal_presence-enter-active::before,
+    .repo_modal.repo_modal_presence-enter-active::before {
+        animation: corpModalOverlayBloom calc(var(--corp-modal-motion-duration) + 80ms) var(--corp-modal-motion-ease) both;
+    }
+
+    .auth_modal.auth_modal_presence-leave-active::before,
+    .repo_modal.repo_modal_presence-leave-active::before {
+        animation: corpModalOverlayBloomOut var(--corp-modal-motion-duration-out) var(--corp-modal-motion-ease-out) both;
+    }
+
+    .auth_modal.auth_modal_presence-enter-active .auth_modal__surface,
+    .repo_modal.repo_modal_presence-enter-active .repo_modal__surface {
+        animation: corpModalSurfaceIn calc(var(--corp-modal-motion-duration) + 90ms) var(--corp-modal-motion-ease) both;
+        will-change: transform, opacity, filter;
         backface-visibility: hidden;
         transform-origin: center;
     }
 
-    .auth_modal_presence-enter-from .auth_modal__surface,
-    .auth_modal_presence-leave-to .auth_modal__surface,
-    .repo_modal_presence-enter-from .repo_modal__surface,
-    .repo_modal_presence-leave-to .repo_modal__surface {
+    .auth_modal.auth_modal_presence-leave-active .auth_modal__surface,
+    .repo_modal.repo_modal_presence-leave-active .repo_modal__surface {
+        animation: corpModalSurfaceOut var(--corp-modal-motion-duration-out) var(--corp-modal-motion-ease-out) both;
+        will-change: transform, opacity, filter;
+        backface-visibility: hidden;
+        transform-origin: center;
+    }
+
+    .auth_modal.auth_modal_presence-enter-active .auth_modal__surface > *,
+    .repo_modal.repo_modal_presence-enter-active .repo_modal__surface > * {
+        animation: corpModalSurfaceContentIn calc(var(--corp-modal-motion-duration) + 180ms) cubic-bezier(0.2, 0.92, 0.32, 1) both;
+    }
+
+    .auth_modal.auth_modal_presence-enter-from,
+    .auth_modal.auth_modal_presence-leave-to,
+    .repo_modal.repo_modal_presence-enter-from,
+    .repo_modal.repo_modal_presence-leave-to {
         opacity: 0;
-        transform: translate3d(0, 16px, 0) scale(0.968);
+    }
+
+    .auth_modal.auth_modal_presence-enter-from .auth_modal__surface,
+    .repo_modal.repo_modal_presence-enter-from .repo_modal__surface {
+        opacity: 0;
+        filter: blur(8px);
+        transform: translate3d(0, 26px, 0) scale(0.93);
+    }
+
+    .auth_modal.auth_modal_presence-leave-to .auth_modal__surface,
+    .repo_modal.repo_modal_presence-leave-to .repo_modal__surface {
+        opacity: 0;
+        filter: blur(5px);
+        transform: translate3d(0, 18px, 0) scale(0.965);
+    }
+
+    @keyframes corpModalOverlayIn {
+        0% {
+            opacity: 0;
+            -webkit-backdrop-filter: blur(0) saturate(0.9);
+            backdrop-filter: blur(0) saturate(0.9);
+        }
+
+        100% {
+            opacity: 1;
+            -webkit-backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+            backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+        }
+    }
+
+    @keyframes corpModalOverlayOut {
+        0% {
+            opacity: 1;
+            -webkit-backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+            backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(1.08);
+        }
+
+        100% {
+            opacity: 0;
+            -webkit-backdrop-filter: blur(0) saturate(0.9);
+            backdrop-filter: blur(0) saturate(0.9);
+        }
+    }
+
+    @keyframes corpModalOverlayBloom {
+        0% {
+            opacity: 0.44;
+            transform: translate3d(0, 12px, 0) scale(0.93);
+        }
+
+        68% {
+            opacity: 0.92;
+        }
+
+        100% {
+            opacity: 0.84;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+    }
+
+    @keyframes corpModalOverlayBloomOut {
+        0% {
+            opacity: 0.84;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        100% {
+            opacity: 0.3;
+            transform: translate3d(0, 8px, 0) scale(0.96);
+        }
+    }
+
+    @keyframes corpModalSurfaceIn {
+        0% {
+            opacity: 0;
+            filter: blur(8px);
+            transform: translate3d(0, 30px, 0) scale(0.92);
+        }
+
+        62% {
+            opacity: 1;
+            filter: blur(0);
+            transform: translate3d(0, -4px, 0) scale(1.015);
+        }
+
+        100% {
+            opacity: 1;
+            filter: blur(0);
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+    }
+
+    @keyframes corpModalSurfaceOut {
+        0% {
+            opacity: 1;
+            filter: blur(0);
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            filter: blur(6px);
+            transform: translate3d(0, 16px, 0) scale(0.968);
+        }
+    }
+
+    @keyframes corpModalSurfaceContentIn {
+        0% {
+            opacity: 0;
+            transform: translate3d(0, 12px, 0);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
     }
 }
 
 @layer utilities {
     @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
+        html {
             scroll-behavior: auto !important;
         }
     }
