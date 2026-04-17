@@ -2,7 +2,6 @@ package com.pawsitters.controller;
 
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
-import com.pawsitters.repository.UserRepository;
 import com.pawsitters.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,7 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
