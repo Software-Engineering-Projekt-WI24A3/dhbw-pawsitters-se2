@@ -1,11 +1,11 @@
 const de = require('../../../src/locales/de.json');
 const en = require('../../../src/locales/en.json');
-const fr = require('../../../src/locales/fr.json');
+const ro = require('../../../src/locales/ro.json');
 
 const LOCALES = {
   de,
   en,
-  fr
+  ro
 };
 
 function resolveLocale(locale) {

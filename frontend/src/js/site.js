@@ -4,6 +4,7 @@ let gitgraphLoader = null;
 const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
+const DROPDOWN_CLOSE_DELAY_MS = 180;
 const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
 const GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX = 84;
 const GIT_GRAPH_LABEL_OFFSET_PX = 18;
@@ -838,6 +839,8 @@ const localizedPlaywrightStatusLabels = {
 const localizedPlaywrightNeverLabel = playwrightRunnerRoot?.getAttribute('data-last-run-never') || 'No run yet';
 const localizedPlaywrightLoadingLabel = playwrightRunnerRoot?.getAttribute('data-loading-text') || 'Playwright tests are running...';
 const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute('data-notification-title') || 'Playwright tests completed';
+const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
+const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
 
 createApp({
     render: appShellRender,
@@ -1432,7 +1435,7 @@ createApp({
 
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    throw new Error(data.message || `Playwright status request failed with ${response.status}`);
+                    throw new Error(data.message || `${localizedPlaywrightStatusRequestFailed} (${response.status})`);
                 }
 
                 this.playwrightStatusError = '';
@@ -1440,7 +1443,7 @@ createApp({
                     resetLogs: options.resetLogs === true
                 });
             } catch (error) {
-                this.playwrightStatusError = error?.message || 'Playwright status request failed.';
+                this.playwrightStatusError = error?.message || localizedPlaywrightStatusRequestFailed;
             } finally {
                 this.playwrightStatusLoading = false;
             }
@@ -1467,14 +1470,14 @@ createApp({
 
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok && response.status !== 409) {
-                    throw new Error(data.message || `Playwright run request failed with ${response.status}`);
+                    throw new Error(data.message || `${localizedPlaywrightRunRequestFailed} (${response.status})`);
                 }
 
                 this.applyPlaywrightStatus(data, { resetLogs: true });
                 this.startPlaywrightPolling();
                 await this.fetchPlaywrightStatus({ force: true });
             } catch (error) {
-                this.playwrightStatusError = error?.message || 'Playwright run request failed.';
+                this.playwrightStatusError = error?.message || localizedPlaywrightRunRequestFailed;
             } finally {
                 this.playwrightRunPending = false;
             }
@@ -1563,14 +1566,11 @@ createApp({
             details.open = true;
             this.setDropdownExpanded(details, true);
 
-            const frameIds = [];
-            frameIds.push(window.requestAnimationFrame(() => {
-                frameIds.push(window.requestAnimationFrame(() => {
-                    details.classList.add('is-open');
-                    dropdownFrames.delete(details);
-                }));
-            }));
-            dropdownFrames.set(details, frameIds);
+            const frameId = window.requestAnimationFrame(() => {
+                details.classList.add('is-open');
+                dropdownFrames.delete(details);
+            });
+            dropdownFrames.set(details, [frameId]);
         },
         closeDropdown(details, options = {}) {
             if (!details) {
@@ -1597,7 +1597,7 @@ createApp({
             const timeoutId = window.setTimeout(() => {
                 details.open = false;
                 dropdownTimers.delete(details);
-            }, 340);
+            }, DROPDOWN_CLOSE_DELAY_MS);
 
             dropdownTimers.set(details, timeoutId);
         },
