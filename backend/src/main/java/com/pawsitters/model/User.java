@@ -1,6 +1,7 @@
 package com.pawsitters.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,10 +42,17 @@ public class User {
     @Column(nullable = false)
     private String bio;
 
+    @Column(nullable = false)
+    private Float rating;
+
+    @Column(nullable = false)
+    private Integer numberOfRatings;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Pet> pets = new ArrayList<>();
 
     // ===== GETTER =====
@@ -68,6 +76,10 @@ public class User {
     public String getProfilePicture() { return profilePicture; }
 
     public String getBio() { return bio; }
+
+    public Float getRating() { return rating; }
+
+    public Integer getNumberOfRatings() { return numberOfRatings; }
 
     public UserRole getRole() { return role; }
 
@@ -94,6 +106,10 @@ public class User {
     public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 
     public void setBio(String bio) { this.bio = bio; }
+
+    public void setRating(Float rating) { this.rating = rating; }
+
+    public void setNumberOfRatings(Integer numberOfRatings) { this.numberOfRatings = numberOfRatings; }
 
     public void setRole(UserRole role) { this.role = role; }
 

@@ -1,0 +1,1 @@
+GET {{baseUrl}}/api/users/mailExists/anna.meier@example.com
