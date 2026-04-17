@@ -57,15 +57,10 @@ public class UserController {
         }
     }
 
-    @GetMapping("/mailExists/{mail}")
-    public ResponseEntity<?> mailExists(@PathVariable String mail) {
-        try {
-            boolean user = userService.existsByEmail(mail);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-
+    @GetMapping("/mailExists")
+    public ResponseEntity<?> mailExists(@RequestParam String mail) {
+        boolean user = userService.existsByEmail(mail);
+        return ResponseEntity.ok(user);
     }
 
     // ===== Request Body Record =====
