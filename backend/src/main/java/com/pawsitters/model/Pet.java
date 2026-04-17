@@ -1,6 +1,7 @@
 package com.pawsitters.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 public class Pet {
@@ -26,6 +27,7 @@ public class Pet {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonBackReference
     private User owner; // Jedes Tier gehört genau einem User
 
     // ===== GETTER & SETTER =====

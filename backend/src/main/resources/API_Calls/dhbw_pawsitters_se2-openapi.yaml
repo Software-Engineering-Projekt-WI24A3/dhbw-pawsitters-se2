@@ -1,0 +1,235 @@
+openapi: 3.0.3
+info:
+  title: User API
+  version: 1.0.0
+  description: OpenAPI-Dokumentation fuer den UserController.
+  contact:
+    name: Pawsitters API Team
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Users
+    description: Endpunkte zur Benutzerverwaltung.
+paths:
+  /api/users/register:
+    post:
+      operationId: registerUser
+      tags:
+        - Users
+      summary: Benutzer registrieren
+      description: Erstellt einen neuen Benutzer und gibt das User-Objekt zurueck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Benutzer erfolgreich registriert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/users/{id}:
+    get:
+      operationId: getUserById
+      tags:
+        - Users
+      summary: Benutzer abrufen
+      description: Gibt einen Benutzer anhand seiner ID zurueck.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Benutzer gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Benutzer nicht gefunden.
+  /api/users/mailExists/{mail}:
+    get:
+      operationId: mailExists
+      tags:
+        - Users
+      summary: E-Mail pruefen
+      description: Prueft, ob eine E-Mail bereits registriert ist.
+      parameters:
+        - name: mail
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        "200":
+          description: Ergebnis der Pruefung.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "404":
+          description: Anfrage konnte nicht verarbeitet werden.
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+        - phone
+        - birthDate
+        - emergencyContact
+        - profilePicture
+        - bio
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - passwordHash
+        - firstName
+        - lastName
+        - phone
+        - birthDate
+        - emergencyContact
+        - profilePicture
+        - bio
+        - rating
+        - numberOfRatings
+        - role
+        - pets
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        passwordHash:
+          type: string
+          readOnly: true
+          description: Wird aktuell mitgeliefert, ist aber nicht fuer Clients gedacht.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        rating:
+          type: number
+          format: float
+        numberOfRatings:
+          type: integer
+          format: int32
+        role:
+          $ref: "#/components/schemas/UserRole"
+        pets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pet"
+    UserRole:
+      type: string
+      enum:
+        - PET_OWNER
+        - HOST
+    Pet:
+      type: object
+      description: Eigentuermer (owner) wird hier nicht serialisiert, um Zyklen zu vermeiden.
+      required:
+        - id
+        - name
+        - species
+        - breed
+        - age
+        - specialNeeds
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/PetChoice"
+        breed:
+          type: string
+        age:
+          type: integer
+          format: int32
+        specialNeeds:
+          type: string
+    PetChoice:
+      type: string
+      enum:
+        - DOG
+        - CAT
+        - RABBIT
+        - HAMSTER
+        - GUINEA_PIG
+        - PARROT
+        - BUDGIE
+        - CANARY
+        - TURTLE
+        - SNAKE
+        - LIZARD
+        - FERRET
+        - RAT
+        - MOUSE
+        - FISH
+        - HORSE
+        - DONKEY
+        - GOAT
+        - CHICKEN
+        - BIRD
+

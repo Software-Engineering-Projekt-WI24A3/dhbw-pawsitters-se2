@@ -6,4 +6,4 @@ Prompt 5, Claude Sonnet 4.6: Woher entsteht dieser Fehler, Unit Testing, User Se
 Prompt 6, GPT 5.3 Codex: erweitere die klasse userservice, dass diese user anlegen kann, nach dem user.java schema
 Prompt 7, GPT 5.3 Codex: erstelle mir eine datei, die beim start der h2 ausgeführt wird. diese erstellt 3 testuser mit zugehörigen
 Prompt 8, Claude Haiku 4.5: gib in das enum eine liste an den 20 typischen haustieren ein
-Prompt 9,
+Prompt 9, Claude Haiku 4.5: Woher entsteht dieser netty fehler, wieso closed die verbindung GET http://localhost:8080/api/users/1 reactor.netty.http.client.PrematureCloseException: Connection prematurely closed DURING response
