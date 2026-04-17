@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "home": {
+      "title": "Pawsitters",
+      "description": "Pagină de start redusă cu acces direct la repozitoriu și autentificare."
+    },
+    "repositoryGit": {
+      "title": "Pawsitters | Repozitoriu | Git",
+      "description": "Pagină Git curată cu grafic de merge, activitate și contributori."
+    },
+    "repositoryPlaywright": {
+      "title": "Pawsitters | Repozitoriu | Teste Playwright",
+      "description": "Centru de control Playwright cu rulare din browser, loguri live și stare pentru fiecare test E2E."
+    },
+    "repositoryKanban": {
+      "title": "Pawsitters | Repozitoriu | Kanban",
+      "description": "Pagină Kanban redusă cu responsabili colorați și detalii despre issue-uri."
+    },
+    "login": {
+      "title": "Pawsitters | Autentificare",
+      "description": "Pagină monocromă de autentificare pentru frontendul localizat Pawsitters."
+    },
+    "register": {
+      "title": "Pawsitters | Creează cont",
+      "description": "Pagină monocromă de înregistrare pentru frontendul localizat Pawsitters."
+    }
+  },
+  "brand": {
+    "name": "Pawsitters"
+  },
+  "locale": {
+    "de": {
+      "code": "DE",
+      "label": "Deutsch",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg"
+    },
+    "en": {
+      "code": "EN",
+      "label": "English",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E7.svg"
+    },
+    "ro": {
+      "code": "RO",
+      "label": "Română",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1F4.svg"
+    }
+  },
+  "nav": {
+    "ariaRepository": "Navigare repozitoriu",
+    "repository": "Repozitoriu",
+    "repositoryGit": "Git",
+    "repositoryPlaywright": "Playwright",
+    "repositoryBoard": "Panou Kanban",
+    "ariaLocale": "Selector de limbă",
+    "login": "Autentificare",
+    "menu": "Meniu",
+    "close": "Închide meniul"
+  },
+  "repository": {
+    "liveLoading": "Datele live se încarcă din GitHub... :)",
+    "refresh": "Reîncarcă datele Git",
+    "git": {
+      "label": "Git",
+      "commits": "Commit-uri",
+      "merges": "Merge-uri",
+      "contributors": "Contribuitori",
+      "branches": "Branch-uri",
+      "activity": "Activitate",
+      "timeline": "Grafic",
+      "range": {
+        "week": "Săptămâna aceasta",
+        "month": "Luna aceasta",
+        "year": "Anul acesta"
+      },
+      "recent": "Ultimele commit-uri"
+    },
+    "board": {
+      "label": "Panou Kanban",
+      "open": "Deschis",
+      "assigned": "Asignat",
+      "owners": "Responsabili",
+      "criteriaCount": "Criterii",
+      "empty": "Nu există tichete deschise în această categorie.",
+      "endpoints": "Endpoint-uri",
+      "criteria": "Criterii",
+      "created": "Creat",
+      "updated": "Actualizat",
+      "column": {
+        "frontend": "Frontend",
+        "api": "API",
+        "data": "Date",
+        "docs": "Documentație",
+        "misc": "Deschis"
+      },
+      "state": {
+        "open": "Deschis",
+        "closed": "Închis"
+      },
+      "labels": {
+        "documentation": "Documentație"
+      }
+    },
+    "playwright": {
+      "label": "Playwright",
+      "eyebrow": "Centru de control end-to-end",
+      "title": "Teste Playwright",
+      "description": "Rulează suita E2E direct din browser, urmărește logurile live și verifică rezultatul fiecărui test.",
+      "run": "Rulează testele",
+      "running": "Testele rulează...",
+      "loading": "Testele Playwright sunt în execuție",
+      "notificationTitle": "Testele Playwright s-au încheiat",
+      "statusRequestFailed": "Cererea pentru starea Playwright a eșuat.",
+      "runRequestFailed": "Cererea de rulare Playwright a eșuat.",
+      "lastRun": "Ultima rulare",
+      "never": "Nicio rulare încă",
+      "testsTitle": "Toate testele E2E",
+      "logsTitle": "Loguri live",
+      "logsEmpty": "Nu există încă loguri disponibile.",
+      "metrics": {
+        "total": "Total",
+        "passed": "Reușite",
+        "failed": "Eșuate",
+        "pending": "În așteptare"
+      },
+      "status": {
+        "idle": "Gata",
+        "pending": "În așteptare",
+        "running": "În rulare",
+        "passed": "Reușit",
+        "failed": "Eșuat",
+        "skipped": "Omis"
+      }
+    }
+  },
+  "auth": {
+    "shared": {
+      "eyebrow": "Aspect nou",
+      "title": "Acces calm la cele mai importante fluxuri.",
+      "text": "Interfața se bazează pe tipografie clară, tonuri de gri fine și orientare directă, în loc de efecte grele și suprafețe albastre.",
+      "point": {
+        "one": "Lizibilitate clară în fiecare secțiune",
+        "two": "Câmpuri focusate fără distrageri vizuale",
+        "three": "Navigare consecventă pe toate paginile localizate"
+      }
+    },
+    "login": {
+      "title": "Autentificare",
+      "text": "Punctul tău de acces la noua interfață monocromă Pawsitters.",
+      "email": "E-mail",
+      "emailPlaceholder": "name@example.com",
+      "password": "Parolă",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Autentificare",
+      "alt": {
+        "eyebrow": "Nou aici",
+        "title": "Creează cont",
+        "text": "Configurează contul de proprietar sau gazdă pentru următoarele ecrane.",
+        "cta": "Înregistrare"
+      }
+    },
+    "register": {
+      "title": "Creează cont",
+      "text": "Pregătește-ți accesul pentru următoarele fluxuri frontend.",
+      "name": "Nume",
+      "namePlaceholder": "Utilizator Pawsitters",
+      "email": "E-mail",
+      "emailPlaceholder": "name@example.com",
+      "password": "Parolă",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Înregistrare",
+      "alt": {
+        "eyebrow": "Deja înregistrat",
+        "title": "Autentificare",
+        "text": "Deschide contul existent și continuă direct.",
+        "cta": "Înapoi la autentificare"
+      }
+    }
+  },
+  "footer": {
+    "text": "Pawsitters. Interfață calmă pentru îngrijirea modernă a animalelor de companie."
+  }
+}

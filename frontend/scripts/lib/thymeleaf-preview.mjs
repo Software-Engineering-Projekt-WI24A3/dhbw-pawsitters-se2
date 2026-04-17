@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { loadRepositorySnapshot, localizeRepositorySnapshot } from './repository-snapshot.mjs';
 
-export const supportedLocales = ['de', 'en', 'fr'];
+export const supportedLocales = ['de', 'en', 'ro'];
 export const defaultLocale = 'de';
 
 const templateCache = new Map();

@@ -39,10 +39,10 @@
       "label": "English",
       "flagPath": "/assets/media/country-flag/1F1EC-1F1E7.svg"
     },
-    "fr": {
-      "code": "FR",
-      "label": "Français",
-      "flagPath": "/assets/media/country-flag/1F1EB-1F1F7.svg"
+    "ro": {
+      "code": "RO",
+      "label": "Română",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1F4.svg"
     }
   },
   "nav": {
@@ -109,6 +109,8 @@
       "running": "Tests laufen...",
       "loading": "Playwright-Tests werden ausgeführt",
       "notificationTitle": "Playwright-Tests abgeschlossen",
+      "statusRequestFailed": "Playwright-Statusabfrage fehlgeschlagen.",
+      "runRequestFailed": "Playwright-Testlauf konnte nicht gestartet werden.",
       "lastRun": "Letzter Lauf",
       "never": "Noch kein Lauf",
       "testsTitle": "Alle E2E-Tests",

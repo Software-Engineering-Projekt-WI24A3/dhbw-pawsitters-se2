@@ -46,8 +46,8 @@ function localeTag(locale) {
   switch (locale) {
     case 'de':
       return 'de-DE';
-    case 'fr':
-      return 'fr-FR';
+    case 'ro':
+      return 'ro-RO';
     case 'en':
     default:
       return 'en-GB';

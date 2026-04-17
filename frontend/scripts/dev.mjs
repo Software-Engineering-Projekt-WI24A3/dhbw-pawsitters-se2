@@ -519,7 +519,7 @@ function resolveFilePath(urlPath) {
     return { redirect: '/repository/playwright' };
   }
 
-  const localePrefixed = urlPath.match(/^\/(de|en|fr)(\/.*)?$/);
+  const localePrefixed = urlPath.match(/^\/(de|en|ro)(\/.*)?$/);
   if (localePrefixed) {
     const locale = localePrefixed[1];
     const subPath = localePrefixed[2] || '/';

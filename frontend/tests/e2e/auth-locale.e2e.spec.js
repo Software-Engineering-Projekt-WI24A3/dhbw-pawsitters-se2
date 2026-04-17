@@ -24,23 +24,23 @@ test.describe('Auth locale routing', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
   });
 
-  test('should render register in French and switch to English', async ({ page }) => {
-    await page.goto('/register?locale=fr');
+  test('should render register in Romanian and switch to English', async ({ page }) => {
+    await page.goto('/register?locale=ro');
 
-    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-    await expect(page.getByRole('heading', { name: token('fr', 'auth.register.title') })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
+    await expect(page.getByRole('heading', { name: token('ro', 'auth.register.title') })).toBeVisible();
 
     const repositoryLinks = await readHeaderRepositoryMenuHrefs(page);
     expect(repositoryLinks).toEqual([
-      '/repository/playwright?locale=fr',
-      '/repository/git?locale=fr',
-      '/repository/kanban?locale=fr'
+      '/repository/playwright?locale=ro',
+      '/repository/git?locale=ro',
+      '/repository/kanban?locale=ro'
     ]);
-    await expect(page.locator('.header_actions .locale_menu__summary')).toContainText(token('fr', 'locale.fr.code'));
+    await expect(page.locator('.header_actions .locale_menu__summary')).toContainText(token('ro', 'locale.ro.code'));
 
     await page.locator('.header_actions .locale_menu__summary').click();
     await expect(page.locator('.header_actions .locale_menu__item')).toHaveCount(3);
-    await page.locator('.header_actions .locale_menu__item').filter({ hasText: token('fr', 'locale.en.label') }).click();
+    await page.locator('.header_actions .locale_menu__item').filter({ hasText: token('ro', 'locale.en.label') }).click();
 
     await expect(page).toHaveURL(/\/register\?locale=en$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
