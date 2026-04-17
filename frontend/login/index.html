@@ -10,31 +10,17 @@
     <link rel="stylesheet" href="/assets/css/site.css"></head>
 <body class="page_surface page-auth">
 <div id="app-shell" class="site_frame" v-cloak="">
+    <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
+        <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
+            <p class="site_notification__title" v-text="notification.title"></p>
+            <p v-if="notification.message" class="site_notification__message" v-text="notification.message"></p>
+        </article>
+    </transition-group>
     <div class="site_background" aria-hidden="true">
-        <svg class="site_background__threads" viewBox="0 0 1600 2400" preserveAspectRatio="none">
-            <g class="site_background__glow">
-                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
-                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
-                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
-            </g>
-            <g class="site_background__lines">
-                <path d="M -120 160 C 160 220 288 406 360 620 C 438 840 536 978 664 1124 C 828 1310 1022 1494 1224 1704 C 1392 1878 1516 2096 1700 2280"></path>
-                <path d="M 228 -120 C 286 172 380 366 528 560 C 676 752 820 902 960 1032 C 1114 1174 1238 1380 1364 1668 C 1462 1892 1536 2174 1568 2520"></path>
-                <path d="M 1580 -80 C 1354 170 1230 362 1102 542 C 962 736 844 896 724 1048 C 572 1240 468 1452 342 1696 C 202 1968 76 2200 -96 2436"></path>
-                <path d="M 528 560 C 592 642 668 720 780 820 C 854 886 904 952 960 1032"></path>
-                <path d="M 664 1124 C 748 1076 858 1044 960 1032 C 1088 1016 1194 1044 1308 1112"></path>
-                <path d="M 724 1048 C 822 1158 948 1312 1100 1492 C 1144 1544 1186 1610 1224 1704"></path>
-                <path d="M 342 1696 C 498 1644 648 1632 822 1652 C 984 1672 1114 1690 1224 1704"></path>
-            </g>
-            <g class="site_background__nodes">
-                <circle cx="360" cy="620" r="8"></circle>
-                <circle cx="528" cy="560" r="7"></circle>
-                <circle cx="724" cy="1048" r="8"></circle>
-                <circle cx="960" cy="1032" r="10"></circle>
-                <circle cx="664" cy="1124" r="7"></circle>
-                <circle cx="1224" cy="1704" r="9"></circle>
-                <circle cx="342" cy="1696" r="7"></circle>
-            </g>
+        <svg class="site_background__threads" data-thread-background="" viewBox="0 0 1600 2400" preserveAspectRatio="none">
+            <g class="site_background__glow"></g>
+            <g class="site_background__lines"></g>
+            <g class="site_background__nodes"></g>
         </svg>
     </div>
     <header id="site-shell-header" class="header_shell">
@@ -44,6 +30,7 @@
                 <span class="brand_mark__tile" aria-hidden="true">
                     <img class="brand_mark__icon" src="/assets/media/favicon.png" alt="">
                 </span>
+                <span class="brand_mark__wordmark">Pawsitters</span>
             </a>
 
             <div class="header_center hidden lg:flex">
@@ -58,6 +45,10 @@
                         </span>
                     </summary>
                     <div class="repo_menu__panel">
+                        <a class="repo_menu__item" href="/repository/playwright">
+                            <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Playwright</span>
+                        </a>
                         <a class="repo_menu__item" href="/repository/git">
                             <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Git</span>
@@ -82,9 +73,9 @@
                         </a><a class="locale_menu__item" href="/login?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/login?locale=fr">
-                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EB-1F1F7.svg">
-                            <span class="locale_menu__item-label">Français</span>
+                        </a><a class="locale_menu__item" href="/login?locale=ro">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
+                            <span class="locale_menu__item-label">Română</span>
                         </a>
                     </div>
                 </details>
@@ -104,6 +95,10 @@
                         <span class="repo_menu__label">Repository</span>
                     </summary>
                     <div class="repo_menu__panel">
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/playwright">
+                            <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Playwright</span>
+                        </a>
                         <a class="repo_menu__item" @click="closeMenu()" href="/repository/git">
                             <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Git</span>
@@ -125,9 +120,9 @@
                         </a><a class="locale_menu__item" @click="closeMenu()" href="/login?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/login?locale=fr">
-                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EB-1F1F7.svg">
-                            <span class="locale_menu__item-label">Français</span>
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/login?locale=ro">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
+                            <span class="locale_menu__item-label">Română</span>
                         </a>
                     </div>
                 </details>

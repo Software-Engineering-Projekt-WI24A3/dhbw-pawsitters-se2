@@ -4,6 +4,472 @@ let gitgraphLoader = null;
 const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
+const DROPDOWN_CLOSE_DELAY_MS = 180;
+const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
+const GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX = 84;
+const GIT_GRAPH_LABEL_OFFSET_PX = 18;
+const GIT_GRAPH_MIN_CONTENT_WIDTH_PX = 360;
+const METRIC_ANIMATION_DURATION_MS = 2200;
+const NOTIFICATION_LIMIT = 4;
+const NOTIFICATION_LIFETIME_MS = 7000;
+const METRIC_GROUP_FIELDS = {
+    git: ['totalCommits', 'mergeCommits', 'contributorCount', 'branchCount'],
+    board: ['openCount', 'assignedCount', 'ownerCount', 'criteriaCount'],
+    playwright: ['total', 'passed', 'failed', 'pending']
+};
+const METRIC_GROUP_SELECTORS = {
+    git: '.git_metrics',
+    board: '.board_metrics',
+    playwright: '.playwright_metrics'
+};
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const THREAD_BACKGROUND_VIEWBOX_WIDTH = 1600;
+const THREAD_BACKGROUND_EDGE_BLEED = 220;
+const THREAD_BACKGROUND_SEGMENT_HEIGHT = 760;
+const THREAD_BACKGROUND_MIN_HEIGHT = 1080;
+const THREAD_BACKGROUND_COVERAGE_BUFFER = 460;
+const THREAD_BACKGROUND_LANE_POINT_MIN_STEP = 116;
+const THREAD_BACKGROUND_LANE_POINT_MAX_STEP = 198;
+const THREAD_BACKGROUND_SEED = 0x8f7f19ab;
+const THREAD_BACKGROUND_LANES = [
+    { anchorX: 72, spread: 286, waveLength: 540, pull: 0.33, phase: 0.28, glow: true },
+    { anchorX: 308, spread: 312, waveLength: 505, pull: 0.34, phase: 1.06, glow: false },
+    { anchorX: 546, spread: 272, waveLength: 624, pull: 0.3, phase: 1.9, glow: true },
+    { anchorX: 884, spread: 296, waveLength: 584, pull: 0.33, phase: 2.44, glow: false },
+    { anchorX: 1174, spread: 258, waveLength: 548, pull: 0.31, phase: 2.88, glow: true },
+    { anchorX: 1448, spread: 236, waveLength: 506, pull: 0.29, phase: 3.42, glow: false }
+];
+
+function mixThreadUint32(value) {
+    let hash = value >>> 0;
+    hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+    hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+    return (hash ^ (hash >>> 16)) >>> 0;
+}
+
+function threadNoise01(...parts) {
+    let hash = THREAD_BACKGROUND_SEED;
+
+    parts.forEach((part, index) => {
+        const numeric = Number(part);
+        const normalized = Number.isFinite(numeric) ? Math.round(numeric * 1000) : 0;
+        const mixed = mixThreadUint32((normalized + 0x9e3779b9 + index * 97) >>> 0);
+        hash = mixThreadUint32(hash ^ mixed);
+    });
+
+    return hash / 4294967295;
+}
+
+function threadNoiseRange(min, max, ...parts) {
+    return min + (max - min) * threadNoise01(...parts);
+}
+
+function clampThreadValue(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function roundThreadValue(value) {
+    return Math.round(value * 10) / 10;
+}
+
+function createThreadSvgElement(tagName, attributes = {}) {
+    const element = document.createElementNS(SVG_NS, tagName);
+
+    Object.entries(attributes).forEach(([key, value]) => {
+        element.setAttribute(key, String(value));
+    });
+
+    return element;
+}
+
+function createThreadLaneState(laneIndex) {
+    const lane = THREAD_BACKGROUND_LANES[laneIndex];
+    const startPoint = {
+        x: roundThreadValue(
+            lane.anchorX + threadNoiseRange(-lane.spread * 0.22, lane.spread * 0.22, laneIndex, -1, 0)
+        ),
+        y: -THREAD_BACKGROUND_EDGE_BLEED
+    };
+
+    return {
+        lane,
+        laneIndex,
+        points: [startPoint],
+        linePathElement: createThreadSvgElement('path'),
+        glowPathElement: lane.glow ? createThreadSvgElement('path') : null
+    };
+}
+
+function appendThreadLanePointsToY(laneState, targetY) {
+    const { lane, laneIndex, points } = laneState;
+
+    while (points[points.length - 1].y < targetY) {
+        const pointIndex = points.length;
+        const previousPoint = points[pointIndex - 1];
+        const rawStep = threadNoiseRange(
+            THREAD_BACKGROUND_LANE_POINT_MIN_STEP,
+            THREAD_BACKGROUND_LANE_POINT_MAX_STEP,
+            laneIndex,
+            pointIndex,
+            10
+        );
+        const nextY = previousPoint.y + rawStep;
+        const primaryWave = Math.sin((nextY / lane.waveLength) + lane.phase) * lane.spread * 0.34;
+        const secondaryWave = Math.sin((nextY / (lane.waveLength * 0.47)) + lane.phase * 1.8) * lane.spread * 0.16;
+        const pullTarget = lane.anchorX
+            + primaryWave
+            + secondaryWave
+            + threadNoiseRange(-lane.spread * 0.4, lane.spread * 0.4, laneIndex, pointIndex, 11);
+        const jitter = threadNoiseRange(-40, 40, laneIndex, pointIndex, 12);
+        const nextX = clampThreadValue(
+            previousPoint.x + ((pullTarget - previousPoint.x) * lane.pull) + jitter,
+            -THREAD_BACKGROUND_EDGE_BLEED,
+            THREAD_BACKGROUND_VIEWBOX_WIDTH + THREAD_BACKGROUND_EDGE_BLEED
+        );
+
+        points.push({
+            x: roundThreadValue(nextX),
+            y: roundThreadValue(nextY)
+        });
+    }
+}
+
+function buildThreadPath(points) {
+    if (!Array.isArray(points) || points.length < 2) {
+        return '';
+    }
+
+    let pathData = `M ${points[0].x} ${points[0].y}`;
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+        const p0 = points[Math.max(0, index - 1)];
+        const p1 = points[index];
+        const p2 = points[index + 1];
+        const p3 = points[Math.min(points.length - 1, index + 2)];
+        const c1x = roundThreadValue(p1.x + (p2.x - p0.x) / 6);
+        const c1y = roundThreadValue(p1.y + (p2.y - p0.y) / 6);
+        const c2x = roundThreadValue(p2.x - (p3.x - p1.x) / 6);
+        const c2y = roundThreadValue(p2.y - (p3.y - p1.y) / 6);
+
+        pathData += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`;
+    }
+
+    return pathData;
+}
+
+function updateThreadLanePath(laneState) {
+    const pathData = buildThreadPath(laneState.points);
+    if (!pathData) {
+        return;
+    }
+
+    laneState.linePathElement.setAttribute('d', pathData);
+    laneState.glowPathElement?.setAttribute('d', pathData);
+}
+
+function sampleThreadPointAtY(points, targetY) {
+    if (!Array.isArray(points) || points.length === 0) {
+        return null;
+    }
+
+    if (targetY <= points[0].y) {
+        return { ...points[0] };
+    }
+
+    for (let index = 1; index < points.length; index += 1) {
+        const previous = points[index - 1];
+        const current = points[index];
+
+        if (targetY > current.y) {
+            continue;
+        }
+
+        const denominator = current.y - previous.y;
+        if (Math.abs(denominator) < 0.0001) {
+            return { ...current };
+        }
+
+        const ratio = clampThreadValue((targetY - previous.y) / denominator, 0, 1);
+        return {
+            x: roundThreadValue(previous.x + (current.x - previous.x) * ratio),
+            y: roundThreadValue(previous.y + (current.y - previous.y) * ratio)
+        };
+    }
+
+    return { ...points[points.length - 1] };
+}
+
+function buildThreadConnectorPath(fromPoint, toPoint, connectorSeedA, connectorSeedB) {
+    const controlX = roundThreadValue(
+        ((fromPoint.x + toPoint.x) / 2) + threadNoiseRange(-118, 118, connectorSeedA, connectorSeedB, 31)
+    );
+    const controlY = roundThreadValue(
+        ((fromPoint.y + toPoint.y) / 2) + threadNoiseRange(-66, 66, connectorSeedA, connectorSeedB, 32)
+    );
+
+    return `M ${fromPoint.x} ${fromPoint.y} Q ${controlX} ${controlY} ${toPoint.x} ${toPoint.y}`;
+}
+
+function appendThreadSegment(state, segmentIndex) {
+    const segmentStartY = segmentIndex * THREAD_BACKGROUND_SEGMENT_HEIGHT;
+    const segmentEndY = segmentStartY + THREAD_BACKGROUND_SEGMENT_HEIGHT;
+    const laneCount = state.laneStates.length;
+
+    state.laneStates.forEach((laneState) => {
+        appendThreadLanePointsToY(laneState, segmentEndY + THREAD_BACKGROUND_EDGE_BLEED);
+        updateThreadLanePath(laneState);
+    });
+
+    const connectorCount = Math.max(2, Math.round(threadNoiseRange(2.1, 4.3, segmentIndex, 20)));
+    for (let connectorIndex = 0; connectorIndex < connectorCount; connectorIndex += 1) {
+        const laneA = Math.floor(threadNoiseRange(0, laneCount, segmentIndex, connectorIndex, 21));
+        const direction = threadNoise01(segmentIndex, connectorIndex, 22) > 0.5 ? 1 : -1;
+        const laneGap = 1 + Math.floor(threadNoiseRange(0, Math.min(2.99, laneCount - 1), segmentIndex, connectorIndex, 23));
+        const laneB = (laneA + (direction * laneGap) + (laneCount * 4)) % laneCount;
+
+        if (laneA === laneB) {
+            continue;
+        }
+
+        const connectorY = segmentStartY + threadNoiseRange(88, THREAD_BACKGROUND_SEGMENT_HEIGHT - 88, segmentIndex, connectorIndex, 24);
+        const fromPoint = sampleThreadPointAtY(
+            state.laneStates[laneA].points,
+            connectorY + threadNoiseRange(-34, 34, segmentIndex, connectorIndex, 25)
+        );
+        const toPoint = sampleThreadPointAtY(
+            state.laneStates[laneB].points,
+            connectorY + threadNoiseRange(-34, 34, segmentIndex, connectorIndex, 26)
+        );
+
+        if (!fromPoint || !toPoint) {
+            continue;
+        }
+
+        const horizontalDistance = Math.abs(fromPoint.x - toPoint.x);
+        if (horizontalDistance < 112 || horizontalDistance > 690) {
+            continue;
+        }
+
+        const connectorPath = buildThreadConnectorPath(fromPoint, toPoint, segmentIndex, connectorIndex);
+        state.lineGroup.append(createThreadSvgElement('path', { d: connectorPath }));
+
+        if (threadNoise01(segmentIndex, connectorIndex, 27) > 0.83) {
+            state.glowGroup.append(createThreadSvgElement('path', { d: connectorPath }));
+        }
+    }
+
+    const nodeCount = Math.max(3, Math.round(threadNoiseRange(3.3, 6.6, segmentIndex, 40)));
+    for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex += 1) {
+        const laneIndex = Math.floor(threadNoiseRange(0, laneCount, segmentIndex, nodeIndex, 41));
+        const nodeY = segmentStartY + threadNoiseRange(54, THREAD_BACKGROUND_SEGMENT_HEIGHT - 54, segmentIndex, nodeIndex, 42);
+        const anchorPoint = sampleThreadPointAtY(
+            state.laneStates[laneIndex].points,
+            nodeY + threadNoiseRange(-22, 22, segmentIndex, nodeIndex, 43)
+        );
+
+        if (!anchorPoint) {
+            continue;
+        }
+
+        if (threadNoise01(segmentIndex, nodeIndex, 44) < 0.34) {
+            continue;
+        }
+
+        state.nodeGroup.append(createThreadSvgElement('circle', {
+            cx: roundThreadValue(anchorPoint.x + threadNoiseRange(-11, 11, segmentIndex, nodeIndex, 45)),
+            cy: roundThreadValue(anchorPoint.y + threadNoiseRange(-10, 10, segmentIndex, nodeIndex, 46)),
+            r: roundThreadValue(threadNoiseRange(5.4, 9.6, segmentIndex, nodeIndex, 47))
+        }));
+    }
+}
+
+function readThreadBackgroundHostHeight(host) {
+    const elementRectHeight = Math.ceil(host.getBoundingClientRect().height);
+    const elementOffsetHeight = Math.ceil(host.offsetHeight || 0);
+    const elementScrollHeight = Math.ceil(host.scrollHeight || 0);
+    const documentHeight = Math.ceil(Math.max(
+        document.documentElement?.scrollHeight || 0,
+        document.body?.scrollHeight || 0,
+        elementRectHeight,
+        elementOffsetHeight,
+        elementScrollHeight
+    ));
+
+    return Math.max(
+        window.innerHeight,
+        documentHeight,
+        elementRectHeight,
+        elementOffsetHeight,
+        elementScrollHeight,
+        THREAD_BACKGROUND_MIN_HEIGHT
+    );
+}
+
+function createThreadBackgroundController() {
+    const svg = document.querySelector('[data-thread-background]');
+    const host = document.querySelector('.site_background');
+    const glowGroup = svg?.querySelector('.site_background__glow');
+    const lineGroup = svg?.querySelector('.site_background__lines');
+    const nodeGroup = svg?.querySelector('.site_background__nodes');
+
+    if (!svg || !host || !glowGroup || !lineGroup || !nodeGroup) {
+        return null;
+    }
+
+    const laneStates = THREAD_BACKGROUND_LANES.map((_, laneIndex) => createThreadLaneState(laneIndex));
+    lineGroup.textContent = '';
+    glowGroup.textContent = '';
+    nodeGroup.textContent = '';
+
+    laneStates.forEach((laneState) => {
+        lineGroup.append(laneState.linePathElement);
+        if (laneState.glowPathElement) {
+            glowGroup.append(laneState.glowPathElement);
+        }
+    });
+
+    const state = {
+        svg,
+        host,
+        glowGroup,
+        lineGroup,
+        nodeGroup,
+        laneStates,
+        resizeObserver: null,
+        mutationObserver: null,
+        fallbackPollHandle: 0,
+        rafId: 0,
+        pendingForceRender: true,
+        generatedSegmentCount: 0,
+        lastViewHeight: 0,
+        lastCoverageTarget: 0,
+        handleOrientationChange: null,
+        handleScroll: null,
+        handleLoad: null
+    };
+
+    const scheduleRender = (force = false) => {
+        if (force) {
+            state.pendingForceRender = true;
+        }
+
+        if (state.rafId > 0) {
+            return;
+        }
+
+        state.rafId = window.requestAnimationFrame(() => {
+            const forceRender = state.pendingForceRender;
+            state.pendingForceRender = false;
+            state.rafId = 0;
+            const measuredHeight = readThreadBackgroundHostHeight(state.host);
+            const viewHeight = Math.max(state.lastViewHeight, measuredHeight);
+            const coverageTarget = viewHeight + THREAD_BACKGROUND_COVERAGE_BUFFER;
+            const shouldGrowSegments = coverageTarget > state.lastCoverageTarget;
+            const requiredSegmentCount = Math.max(
+                1,
+                Math.ceil((coverageTarget + THREAD_BACKGROUND_EDGE_BLEED) / THREAD_BACKGROUND_SEGMENT_HEIGHT)
+            );
+
+            if (shouldGrowSegments) {
+                while (state.generatedSegmentCount < requiredSegmentCount) {
+                    appendThreadSegment(state, state.generatedSegmentCount);
+                    state.generatedSegmentCount += 1;
+                }
+
+                state.lastCoverageTarget = coverageTarget;
+            }
+
+            if (forceRender || viewHeight > state.lastViewHeight) {
+                state.svg.setAttribute('viewBox', `0 0 ${THREAD_BACKGROUND_VIEWBOX_WIDTH} ${Math.round(viewHeight)}`);
+                state.lastViewHeight = viewHeight;
+            }
+        });
+    };
+
+    if (typeof ResizeObserver === 'function') {
+        const observedNodes = [
+            document.querySelector('#app-shell'),
+            document.querySelector('.site_main'),
+            document.querySelector('.site_footer')
+        ].filter(Boolean);
+
+        state.resizeObserver = new ResizeObserver(() => {
+            scheduleRender(false);
+        });
+        observedNodes.forEach((node) => state.resizeObserver.observe(node));
+    }
+
+    if (typeof MutationObserver === 'function') {
+        const mutationRoot = document.querySelector('#app-shell');
+        if (mutationRoot) {
+            state.mutationObserver = new MutationObserver(() => {
+                scheduleRender(false);
+            });
+            state.mutationObserver.observe(mutationRoot, {
+                childList: true,
+                subtree: true
+            });
+        }
+    }
+
+    state.handleOrientationChange = () => {
+        scheduleRender(true);
+    };
+    state.handleScroll = () => {
+        scheduleRender(false);
+    };
+    state.handleLoad = () => {
+        scheduleRender(true);
+    };
+
+    window.addEventListener('orientationchange', state.handleOrientationChange, { passive: true });
+    window.addEventListener('scroll', state.handleScroll, { passive: true });
+    window.addEventListener('load', state.handleLoad, { passive: true, once: true });
+
+    if (document.fonts?.ready) {
+        document.fonts.ready.then(() => {
+            scheduleRender(true);
+        }).catch(() => {
+            scheduleRender(false);
+        });
+    }
+
+    if (typeof ResizeObserver !== 'function' && typeof MutationObserver !== 'function') {
+        state.fallbackPollHandle = window.setInterval(() => {
+            scheduleRender(false);
+        }, 900);
+    }
+
+    scheduleRender(true);
+
+    return {
+        refresh(force = false) {
+            scheduleRender(force);
+        },
+        destroy() {
+            if (state.rafId > 0) {
+                window.cancelAnimationFrame(state.rafId);
+                state.rafId = 0;
+            }
+
+            state.resizeObserver?.disconnect();
+            state.mutationObserver?.disconnect();
+            if (state.fallbackPollHandle) {
+                window.clearInterval(state.fallbackPollHandle);
+                state.fallbackPollHandle = 0;
+            }
+            if (state.handleOrientationChange) {
+                window.removeEventListener('orientationchange', state.handleOrientationChange);
+            }
+            if (state.handleScroll) {
+                window.removeEventListener('scroll', state.handleScroll);
+            }
+            if (state.handleLoad) {
+                window.removeEventListener('load', state.handleLoad);
+            }
+        }
+    };
+}
 
 function createEmptyRepository() {
     return {
@@ -29,11 +495,13 @@ function createEmptyRepository() {
             authors: [],
             activity: {
                 week: [],
-                month: []
+                month: [],
+                year: []
             },
             activityRanges: {
                 week: '',
-                month: ''
+                month: '',
+                year: ''
             },
             branches: [],
             branchGraphs: {},
@@ -62,6 +530,24 @@ function createEmptyRepository() {
     };
 }
 
+function createMetricAnimationState() {
+    return Object.fromEntries(
+        Object.entries(METRIC_GROUP_FIELDS).map(([group, fields]) => [
+            group,
+            Object.fromEntries(fields.map((field) => [field, 0]))
+        ])
+    );
+}
+
+function normalizeMetricNumber(value) {
+    const normalized = Number(value);
+    if (!Number.isFinite(normalized)) {
+        return 0;
+    }
+
+    return Math.max(0, Math.round(normalized));
+}
+
 function normalizeRepository(repository) {
     const empty = createEmptyRepository();
     const source = repository && typeof repository === 'object' ? repository : {};
@@ -72,6 +558,82 @@ function normalizeRepository(repository) {
     const sourceGitRanges = sourceGit.activityRanges && typeof sourceGit.activityRanges === 'object' ? sourceGit.activityRanges : {};
     const sourceBoard = source.board && typeof source.board === 'object' ? source.board : {};
     const sourceBoardSummary = sourceBoard.summary && typeof sourceBoard.summary === 'object' ? sourceBoard.summary : {};
+
+    const extractGitHubLogin = (value) => {
+        if (typeof value !== 'string') {
+            return '';
+        }
+
+        const trimmed = value.trim();
+        if (!trimmed) {
+            return '';
+        }
+
+        const directLoginPattern = /^[A-Za-z0-9-]+(?:\[bot\])?$/;
+        if (directLoginPattern.test(trimmed)) {
+            return trimmed;
+        }
+
+        const profileMatch = trimmed.match(/^https?:\/\/github\.com\/([A-Za-z0-9-]+(?:\[bot\])?)\/?$/i);
+        if (profileMatch?.[1]) {
+            return profileMatch[1];
+        }
+
+        return '';
+    };
+
+    const githubAvatarFromLogin = (login) => {
+        if (!login) {
+            return '';
+        }
+        return `https://avatars.githubusercontent.com/${encodeURIComponent(login)}?size=80`;
+    };
+
+    const normalizeAuthorWithFallback = (author) => {
+        if (!author || typeof author !== 'object') {
+            return author;
+        }
+
+        const login = extractGitHubLogin(author.profileUrl);
+
+        return {
+            ...author,
+            avatarUrl: author.avatarUrl || githubAvatarFromLogin(login)
+        };
+    };
+
+    const normalizeRecentCommitWithFallback = (commit) => {
+        if (!commit || typeof commit !== 'object') {
+            return commit;
+        }
+
+        const login = extractGitHubLogin(commit.profileUrl);
+
+        return {
+            ...commit,
+            avatarUrl: commit.avatarUrl || githubAvatarFromLogin(login)
+        };
+    };
+
+    const sourceBranchGraphs = sourceGit.branchGraphs && typeof sourceGit.branchGraphs === 'object' ? sourceGit.branchGraphs : {};
+    const normalizedBranchGraphs = Object.fromEntries(
+        Object.entries(sourceBranchGraphs).map(([branchName, graph]) => {
+            const safeGraph = graph && typeof graph === 'object' ? graph : {};
+            const recentCommits = Array.isArray(safeGraph.recentCommits)
+                ? safeGraph.recentCommits.map(normalizeRecentCommitWithFallback)
+                : [];
+
+            return [branchName, {
+                ...safeGraph,
+                graphImport: Array.isArray(safeGraph.graphImport) ? safeGraph.graphImport : [],
+                recentCommits
+            }];
+        })
+    );
+
+    const sourceProjectGraph = sourceGit.projectGraph && typeof sourceGit.projectGraph === 'object'
+        ? sourceGit.projectGraph
+        : {};
 
     return {
         ...empty,
@@ -87,7 +649,7 @@ function normalizeRepository(repository) {
                 ...empty.git.repository,
                 ...sourceGitRepository
             },
-            authors: Array.isArray(sourceGit.authors) ? sourceGit.authors : [],
+            authors: Array.isArray(sourceGit.authors) ? sourceGit.authors.map(normalizeAuthorWithFallback) : [],
             activity: {
                 ...empty.git.activity,
                 ...sourceGitActivity
@@ -97,15 +659,15 @@ function normalizeRepository(repository) {
                 ...sourceGitRanges
             },
             branches: Array.isArray(sourceGit.branches) ? sourceGit.branches : [],
-            branchGraphs: sourceGit.branchGraphs && typeof sourceGit.branchGraphs === 'object' ? sourceGit.branchGraphs : {},
-            projectGraph: sourceGit.projectGraph && typeof sourceGit.projectGraph === 'object'
-                ? {
-                    ...empty.git.projectGraph,
-                    ...sourceGit.projectGraph,
-                    graphImport: Array.isArray(sourceGit.projectGraph.graphImport) ? sourceGit.projectGraph.graphImport : [],
-                    recentCommits: Array.isArray(sourceGit.projectGraph.recentCommits) ? sourceGit.projectGraph.recentCommits : []
-                }
-                : { ...empty.git.projectGraph }
+            branchGraphs: normalizedBranchGraphs,
+            projectGraph: {
+                ...empty.git.projectGraph,
+                ...sourceProjectGraph,
+                graphImport: Array.isArray(sourceProjectGraph.graphImport) ? sourceProjectGraph.graphImport : [],
+                recentCommits: Array.isArray(sourceProjectGraph.recentCommits)
+                    ? sourceProjectGraph.recentCommits.map(normalizeRecentCommitWithFallback)
+                    : []
+            }
         },
         board: {
             ...empty.board,
@@ -175,7 +737,7 @@ function readRepositoryBootstrap() {
 
 function pickPreferredBoard(repository) {
     const columns = repository.board.columns;
-    return columns[0]?.id ?? 'frontend';
+    return columns[0]?.id ?? '';
 }
 
 function pickPreferredBranch(repository) {
@@ -203,7 +765,7 @@ function sanitizePopupText(value) {
     }
 
     const knownPopupNoise = [
-        /Repository\s+DE\s+Einloggen\s+Git\s+Kanban Board/i,
+        /Repository\s+DE\s+Einloggen\s+Playwright(?:-Tests)?\s+Git\s+Kanban Board/i,
         /GESAMTER\s+PROJEKTGRAPH/i,
         /PAWSITTERS\.\s*RUHIGES INTERFACE/i
     ];
@@ -215,11 +777,70 @@ function sanitizePopupText(value) {
     return collapsed;
 }
 
+function formatLocalDateTime(value) {
+    if (!value) {
+        return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    }).format(date);
+}
+
+function formatDurationMs(value) {
+    const durationMs = Number(value);
+    if (!Number.isFinite(durationMs) || durationMs <= 0) {
+        return '';
+    }
+
+    if (durationMs < 1000) {
+        return `${Math.round(durationMs)}ms`;
+    }
+
+    if (durationMs < 60_000) {
+        return `${(durationMs / 1000).toFixed(1)}s`;
+    }
+
+    const minutes = Math.floor(durationMs / 60_000);
+    const seconds = Math.round((durationMs % 60_000) / 1000);
+    return `${minutes}m ${seconds}s`;
+}
+
 const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
 
 const appRoot = document.querySelector('#app-shell');
+const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
+const defaultPlaywrightStatusLabels = {
+    idle: 'Ready',
+    pending: 'Pending',
+    running: 'Running',
+    passed: 'Passed',
+    failed: 'Failed',
+    skipped: 'Skipped'
+};
+
+const localizedPlaywrightStatusLabels = {
+    idle: playwrightRunnerRoot?.getAttribute('data-status-idle') || defaultPlaywrightStatusLabels.idle,
+    pending: playwrightRunnerRoot?.getAttribute('data-status-pending') || defaultPlaywrightStatusLabels.pending,
+    running: playwrightRunnerRoot?.getAttribute('data-status-running') || defaultPlaywrightStatusLabels.running,
+    passed: playwrightRunnerRoot?.getAttribute('data-status-passed') || defaultPlaywrightStatusLabels.passed,
+    failed: playwrightRunnerRoot?.getAttribute('data-status-failed') || defaultPlaywrightStatusLabels.failed,
+    skipped: playwrightRunnerRoot?.getAttribute('data-status-skipped') || defaultPlaywrightStatusLabels.skipped
+};
+
+const localizedPlaywrightNeverLabel = playwrightRunnerRoot?.getAttribute('data-last-run-never') || 'No run yet';
+const localizedPlaywrightLoadingLabel = playwrightRunnerRoot?.getAttribute('data-loading-text') || 'Playwright tests are running...';
+const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute('data-notification-title') || 'Playwright tests completed';
+const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
+const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
 
 createApp({
     render: appShellRender,
@@ -229,15 +850,20 @@ createApp({
         return {
             menuOpen: false,
             scrolled: false,
-            gitView: 'graph',
+            threadBackgroundController: null,
+            gitView: 'activity',
             boardView: pickPreferredBoard(repository),
             gitActivityRange: 'week',
             selectedBranch: pickPreferredBranch(repository),
             repository,
             repositoryLoading: Boolean(document.querySelector('[data-repository-live]')),
+            repositoryRefreshing: false,
             repositoryError: '',
+            repositoryRefreshAbortController: null,
+            repositoryRefreshRequestId: 0,
             gitGraphSignature: '',
             gitGraphWidth: 0,
+            gitGraphRenderToken: 0,
             selectedGitCommitHash: '',
             hoveredGitCommitHash: '',
             gitGraphTooltip: {
@@ -256,7 +882,48 @@ createApp({
                 mergeInfo: ''
             },
             activeGitCommitModalHash: '',
-            activeBoardCardKey: ''
+            activeBoardCardKey: '',
+            playwrightRunnerEnabled: Boolean(playwrightRunnerRoot),
+            playwrightStatusPollingHandle: null,
+            playwrightStatusLoading: false,
+            playwrightRunPending: false,
+            playwrightStatusError: '',
+            playwrightRunId: 0,
+            playwrightRunning: false,
+            playwrightSessionStarted: false,
+            playwrightNotifiedRunIds: [],
+            playwrightStartedAt: '',
+            playwrightFinishedAt: '',
+            playwrightExitCode: null,
+            playwrightSummary: {
+                total: 0,
+                passed: 0,
+                failed: 0,
+                pending: 0,
+                status: 'idle'
+            },
+            animatedMetrics: createMetricAnimationState(),
+            metricAnimationFrames: {
+                git: 0,
+                board: 0,
+                playwright: 0
+            },
+            metricAnimationTargets: createMetricAnimationState(),
+            metricAnimationHasPlayed: {
+                git: false,
+                board: false,
+                playwright: false
+            },
+            playwrightTests: [],
+            playwrightLogs: [],
+            playwrightNextLogIndex: 0,
+            playwrightStatusLabels: localizedPlaywrightStatusLabels,
+            playwrightNeverLabel: localizedPlaywrightNeverLabel,
+            playwrightLoadingLabel: localizedPlaywrightLoadingLabel,
+            playwrightNotificationTitle: localizedPlaywrightNotificationTitle,
+            notifications: [],
+            notificationCounter: 0,
+            notificationTimers: {}
         };
     },
     computed: {
@@ -346,15 +1013,29 @@ createApp({
                 description: cleanDescription,
                 hasDescription: Boolean(cleanDescription)
             };
+        },
+        playwrightLogText() {
+            return this.playwrightLogs
+                .map((entry) => entry?.text ?? '')
+                .filter(Boolean)
+                .join('\n');
+        },
+        playwrightLastRunLabel() {
+            const reference = this.playwrightFinishedAt || this.playwrightStartedAt;
+            const formatted = formatLocalDateTime(reference);
+            return formatted || this.playwrightNeverLabel;
         }
     },
     mounted() {
         this.initializeRepositoryViews();
         this.initializeDropdowns();
+        this.initializeThreadBackground();
         this.ensureRepositoryState();
         this.syncScrollState();
         this.handleResize();
+        this.animateVisibleMetricGroups({ fromZero: true });
         this.refreshRepositoryData();
+        this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
@@ -366,9 +1047,441 @@ createApp({
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
         this.closeAllDropdowns({ immediate: true });
+        this.destroyThreadBackground();
+        this.stopPlaywrightPolling();
+        this.stopAllMetricAnimations();
+        this.clearNotificationTimers();
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        pushNotification({ title = '', message = '', tone = 'info', lifetimeMs = NOTIFICATION_LIFETIME_MS } = {}) {
+            const trimmedTitle = typeof title === 'string' ? title.trim() : '';
+            const trimmedMessage = typeof message === 'string' ? message.trim() : '';
+
+            if (!trimmedTitle && !trimmedMessage) {
+                return;
+            }
+
+            this.notificationCounter += 1;
+            const id = this.notificationCounter;
+            const nextNotification = {
+                id,
+                title: trimmedTitle,
+                message: trimmedMessage,
+                tone
+            };
+
+            this.notifications = [...this.notifications, nextNotification].slice(-NOTIFICATION_LIMIT);
+
+            if (Number.isFinite(lifetimeMs) && lifetimeMs > 0) {
+                const timerId = window.setTimeout(() => {
+                    this.removeNotification(id);
+                }, lifetimeMs);
+                this.notificationTimers[id] = timerId;
+            }
+        },
+        removeNotification(id) {
+            const timerId = this.notificationTimers[id];
+            if (typeof timerId === 'number') {
+                window.clearTimeout(timerId);
+            }
+            delete this.notificationTimers[id];
+            this.notifications = this.notifications.filter((notification) => notification.id !== id);
+        },
+        clearNotificationTimers() {
+            Object.values(this.notificationTimers).forEach((timerId) => {
+                if (typeof timerId === 'number') {
+                    window.clearTimeout(timerId);
+                }
+            });
+            this.notificationTimers = {};
+        },
+        prefersReducedMotion() {
+            if (typeof window.matchMedia !== 'function') {
+                return false;
+            }
+
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        },
+        initializeThreadBackground() {
+            this.threadBackgroundController = createThreadBackgroundController();
+        },
+        refreshThreadBackground(force = false) {
+            this.threadBackgroundController?.refresh(force);
+        },
+        destroyThreadBackground() {
+            this.threadBackgroundController?.destroy();
+            this.threadBackgroundController = null;
+        },
+        hasMetricGroupContainer(group) {
+            const selector = METRIC_GROUP_SELECTORS[group];
+            if (!selector) {
+                return false;
+            }
+
+            return Boolean(document.querySelector(selector));
+        },
+        normalizeMetricGroup(group, values = {}) {
+            const fields = METRIC_GROUP_FIELDS[group] || [];
+            return Object.fromEntries(fields.map((field) => [field, normalizeMetricNumber(values[field])]));
+        },
+        setAnimatedMetricGroup(group, values = {}) {
+            const targetGroup = this.animatedMetrics[group];
+            if (!targetGroup) {
+                return;
+            }
+
+            const normalizedValues = this.normalizeMetricGroup(group, values);
+            Object.entries(normalizedValues).forEach(([field, value]) => {
+                targetGroup[field] = value;
+            });
+        },
+        areMetricGroupsEqual(group, leftValues = {}, rightValues = {}) {
+            const fields = METRIC_GROUP_FIELDS[group] || [];
+            return fields.every((field) => normalizeMetricNumber(leftValues[field]) === normalizeMetricNumber(rightValues[field]));
+        },
+        stopMetricAnimation(group) {
+            const frameId = this.metricAnimationFrames[group];
+            if (typeof frameId === 'number' && frameId > 0) {
+                window.cancelAnimationFrame(frameId);
+            }
+            this.metricAnimationFrames[group] = 0;
+        },
+        stopAllMetricAnimations() {
+            Object.keys(METRIC_GROUP_FIELDS).forEach((group) => {
+                this.stopMetricAnimation(group);
+            });
+        },
+        getMetricGroupTargets(group) {
+            if (group === 'git') {
+                return {
+                    totalCommits: this.repository.git.totalCommits,
+                    mergeCommits: this.repository.git.mergeCommits,
+                    contributorCount: this.repository.git.contributorCount,
+                    branchCount: this.repository.git.branchCount
+                };
+            }
+
+            if (group === 'board') {
+                return {
+                    openCount: this.repository.board.summary.openCount,
+                    assignedCount: this.repository.board.summary.assignedCount,
+                    ownerCount: this.repository.board.summary.ownerCount,
+                    criteriaCount: this.repository.board.summary.criteriaCount
+                };
+            }
+
+            if (group === 'playwright') {
+                return {
+                    total: this.playwrightSummary.total,
+                    passed: this.playwrightSummary.passed,
+                    failed: this.playwrightSummary.failed,
+                    pending: this.playwrightSummary.pending
+                };
+            }
+
+            return {};
+        },
+        animateMetricGroup(group, options = {}) {
+            if (!this.hasMetricGroupContainer(group)) {
+                return;
+            }
+
+            const nextTargets = this.normalizeMetricGroup(group, this.getMetricGroupTargets(group));
+            const previousTargets = this.metricAnimationTargets[group] || {};
+            const currentValues = this.normalizeMetricGroup(group, this.animatedMetrics[group] || {});
+            const firstAnimation = !this.metricAnimationHasPlayed[group];
+            const fromZero = options.fromZero === true || firstAnimation;
+            const startValues = fromZero
+                ? this.normalizeMetricGroup(group, {})
+                : currentValues;
+
+            this.metricAnimationTargets[group] = { ...nextTargets };
+
+            if (options.immediate === true || this.prefersReducedMotion()) {
+                this.stopMetricAnimation(group);
+                this.setAnimatedMetricGroup(group, nextTargets);
+                this.metricAnimationHasPlayed[group] = true;
+                return;
+            }
+
+            if (!firstAnimation && this.areMetricGroupsEqual(group, previousTargets, nextTargets)) {
+                return;
+            }
+
+            if (this.areMetricGroupsEqual(group, startValues, nextTargets)) {
+                this.stopMetricAnimation(group);
+                this.setAnimatedMetricGroup(group, nextTargets);
+                this.metricAnimationHasPlayed[group] = true;
+                return;
+            }
+
+            this.stopMetricAnimation(group);
+            this.setAnimatedMetricGroup(group, startValues);
+
+            const startedAt = performance.now();
+            const tick = (timestamp) => {
+                const elapsed = Math.max(0, timestamp - startedAt);
+                const progress = Math.min(1, elapsed / METRIC_ANIMATION_DURATION_MS);
+                const easedProgress = 1 - ((1 - progress) ** 3);
+                const frameValues = {};
+
+                (METRIC_GROUP_FIELDS[group] || []).forEach((field) => {
+                    const fromValue = normalizeMetricNumber(startValues[field]);
+                    const toValue = normalizeMetricNumber(nextTargets[field]);
+                    frameValues[field] = Math.round(fromValue + ((toValue - fromValue) * easedProgress));
+                });
+
+                this.setAnimatedMetricGroup(group, frameValues);
+
+                if (progress < 1) {
+                    this.metricAnimationFrames[group] = window.requestAnimationFrame(tick);
+                    return;
+                }
+
+                this.metricAnimationFrames[group] = 0;
+                this.setAnimatedMetricGroup(group, nextTargets);
+            };
+
+            this.metricAnimationHasPlayed[group] = true;
+            this.metricAnimationFrames[group] = window.requestAnimationFrame(tick);
+        },
+        animateVisibleMetricGroups(options = {}) {
+            Object.keys(METRIC_GROUP_FIELDS).forEach((group) => {
+                this.animateMetricGroup(group, options);
+            });
+        },
+        initializePlaywrightRunner() {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+        },
+        startPlaywrightPolling() {
+            if (!this.playwrightRunnerEnabled || this.playwrightStatusPollingHandle) {
+                return;
+            }
+
+            this.playwrightStatusPollingHandle = window.setInterval(() => {
+                this.fetchPlaywrightStatus();
+            }, 1200);
+        },
+        stopPlaywrightPolling() {
+            if (typeof this.playwrightStatusPollingHandle === 'number') {
+                window.clearInterval(this.playwrightStatusPollingHandle);
+            }
+            this.playwrightStatusPollingHandle = null;
+        },
+        normalizePlaywrightPayload(payload = {}) {
+            const source = payload && typeof payload === 'object' ? payload : {};
+            const sourceRunner = source.runner && typeof source.runner === 'object' ? source.runner : {};
+            const sourceSummary = source.summary && typeof source.summary === 'object' ? source.summary : {};
+            const sourceTests = Array.isArray(source.tests) ? source.tests : [];
+            const sourceLogs = Array.isArray(source.logs) ? source.logs : [];
+            const allowedStatus = new Set(['idle', 'pending', 'running', 'passed', 'failed', 'skipped']);
+
+            const tests = sourceTests.map((testCase, index) => {
+                const entry = testCase && typeof testCase === 'object' ? testCase : {};
+                const status = typeof entry.status === 'string' && allowedStatus.has(entry.status)
+                    ? entry.status
+                    : 'idle';
+                return {
+                    id: entry.id || `${entry.location || 'test'}-${index}`,
+                    location: entry.location || '',
+                    title: entry.title || '',
+                    name: entry.name || entry.title || entry.location || '',
+                    status,
+                    durationMs: Number.isFinite(Number(entry.durationMs)) ? Number(entry.durationMs) : 0
+                };
+            });
+
+            const total = Number.isFinite(Number(sourceSummary.total))
+                ? Number(sourceSummary.total)
+                : tests.length;
+            const passed = Number.isFinite(Number(sourceSummary.passed))
+                ? Number(sourceSummary.passed)
+                : tests.filter((entry) => entry.status === 'passed').length;
+            const failed = Number.isFinite(Number(sourceSummary.failed))
+                ? Number(sourceSummary.failed)
+                : tests.filter((entry) => entry.status === 'failed').length;
+            const pending = Number.isFinite(Number(sourceSummary.pending))
+                ? Number(sourceSummary.pending)
+                : Math.max(0, total - passed - failed);
+
+            let status = typeof sourceSummary.status === 'string' && allowedStatus.has(sourceSummary.status)
+                ? sourceSummary.status
+                : 'idle';
+
+            const running = Boolean(sourceRunner.running);
+            if (running) {
+                status = 'running';
+            } else if (failed > 0) {
+                status = 'failed';
+            } else if (total > 0 && passed >= total && pending === 0) {
+                status = 'passed';
+            } else if (pending > 0) {
+                status = 'pending';
+            } else if (total > 0) {
+                status = 'passed';
+            }
+
+            return {
+                runId: Number.isFinite(Number(sourceRunner.runId)) ? Number(sourceRunner.runId) : 0,
+                running,
+                startedAt: sourceRunner.startedAt || '',
+                finishedAt: sourceRunner.finishedAt || '',
+                exitCode: Number.isInteger(sourceRunner.exitCode) ? sourceRunner.exitCode : null,
+                summary: {
+                    total,
+                    passed,
+                    failed,
+                    pending,
+                    status
+                },
+                tests,
+                logs: sourceLogs.map((entry, index) => {
+                    const logEntry = entry && typeof entry === 'object' ? entry : {};
+                    return {
+                        index: Number.isFinite(Number(logEntry.index)) ? Number(logEntry.index) : index,
+                        stream: logEntry.stream === 'stderr' ? 'stderr' : 'stdout',
+                        text: typeof logEntry.text === 'string' ? logEntry.text : '',
+                        time: logEntry.time || ''
+                    };
+                }).filter((entry) => entry.text.trim().length > 0),
+                nextLogIndex: Number.isFinite(Number(source.nextLogIndex))
+                    ? Number(source.nextLogIndex)
+                    : sourceLogs.length
+            };
+        },
+        applyPlaywrightStatus(payload = {}, options = {}) {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+
+            const previousRunId = this.playwrightRunId;
+            const wasRunning = this.playwrightRunning;
+            const normalized = this.normalizePlaywrightPayload(payload);
+            const runChanged = normalized.runId !== previousRunId;
+            const resetLogs = options.resetLogs === true || runChanged;
+            const mergedLogs = resetLogs
+                ? [...normalized.logs]
+                : [...this.playwrightLogs, ...normalized.logs];
+
+            this.playwrightRunId = normalized.runId;
+            this.playwrightRunning = normalized.running;
+            this.playwrightStartedAt = normalized.startedAt;
+            this.playwrightFinishedAt = normalized.finishedAt;
+            this.playwrightExitCode = normalized.exitCode;
+            this.playwrightSummary = normalized.summary;
+            this.animateMetricGroup('playwright');
+            this.playwrightTests = normalized.tests;
+            this.playwrightNextLogIndex = normalized.nextLogIndex;
+            this.playwrightLogs = mergedLogs.slice(-1400);
+
+            if (normalized.logs.length > 0 || resetLogs) {
+                this.scrollPlaywrightLogsToEnd();
+            }
+
+            const runCompleted = normalized.runId > 0 && !normalized.running;
+            const completionObserved = runCompleted && (wasRunning || runChanged);
+
+            if (this.playwrightSessionStarted && completionObserved && !this.playwrightNotifiedRunIds.includes(normalized.runId)) {
+                this.playwrightNotifiedRunIds.push(normalized.runId);
+                this.pushNotification({
+                    title: this.playwrightNotificationTitle,
+                    message: `${normalizeMetricNumber(normalized.summary.passed)} ${this.playwrightLabelForStatus('passed')} · ${normalizeMetricNumber(normalized.summary.failed)} ${this.playwrightLabelForStatus('failed')}`,
+                    tone: normalized.summary.failed > 0 ? 'warning' : 'success'
+                });
+            }
+        },
+        scrollPlaywrightLogsToEnd() {
+            nextTick(() => {
+                window.requestAnimationFrame(() => {
+                    const consoleNode = document.querySelector('[data-playwright-log-console]');
+                    if (!consoleNode) {
+                        return;
+                    }
+
+                    consoleNode.scrollTop = consoleNode.scrollHeight;
+                });
+            });
+        },
+        playwrightLabelForStatus(status) {
+            return this.playwrightStatusLabels[status] || this.playwrightStatusLabels.idle || defaultPlaywrightStatusLabels.idle;
+        },
+        playwrightFormatDuration(value) {
+            return formatDurationMs(value);
+        },
+        async fetchPlaywrightStatus(options = {}) {
+            if (!this.playwrightRunnerEnabled) {
+                return;
+            }
+
+            if (this.playwrightStatusLoading && options.force !== true) {
+                return;
+            }
+
+            const from = options.resetLogs === true ? 0 : Math.max(0, this.playwrightNextLogIndex);
+            this.playwrightStatusLoading = true;
+
+            try {
+                const response = await fetch(`/api/tests/e2e/status.json?from=${from}`, {
+                    headers: {
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || `${localizedPlaywrightStatusRequestFailed} (${response.status})`);
+                }
+
+                this.playwrightStatusError = '';
+                this.applyPlaywrightStatus(data, {
+                    resetLogs: options.resetLogs === true
+                });
+            } catch (error) {
+                this.playwrightStatusError = error?.message || localizedPlaywrightStatusRequestFailed;
+            } finally {
+                this.playwrightStatusLoading = false;
+            }
+        },
+        async runPlaywrightTests() {
+            if (!this.playwrightRunnerEnabled || this.playwrightRunPending || this.playwrightRunning) {
+                return;
+            }
+
+            this.playwrightSessionStarted = true;
+            this.playwrightStatusError = '';
+            this.playwrightLogs = [];
+            this.playwrightNextLogIndex = 0;
+            this.playwrightRunPending = true;
+
+            try {
+                const response = await fetch('/api/tests/e2e/run', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok && response.status !== 409) {
+                    throw new Error(data.message || `${localizedPlaywrightRunRequestFailed} (${response.status})`);
+                }
+
+                this.applyPlaywrightStatus(data, { resetLogs: true });
+                this.startPlaywrightPolling();
+                await this.fetchPlaywrightStatus({ force: true });
+            } catch (error) {
+                this.playwrightStatusError = error?.message || localizedPlaywrightRunRequestFailed;
+            } finally {
+                this.playwrightRunPending = false;
+            }
+        },
         toggleMenu() {
             this.menuOpen = !this.menuOpen;
 
@@ -453,14 +1566,11 @@ createApp({
             details.open = true;
             this.setDropdownExpanded(details, true);
 
-            const frameIds = [];
-            frameIds.push(window.requestAnimationFrame(() => {
-                frameIds.push(window.requestAnimationFrame(() => {
-                    details.classList.add('is-open');
-                    dropdownFrames.delete(details);
-                }));
-            }));
-            dropdownFrames.set(details, frameIds);
+            const frameId = window.requestAnimationFrame(() => {
+                details.classList.add('is-open');
+                dropdownFrames.delete(details);
+            });
+            dropdownFrames.set(details, [frameId]);
         },
         closeDropdown(details, options = {}) {
             if (!details) {
@@ -487,7 +1597,7 @@ createApp({
             const timeoutId = window.setTimeout(() => {
                 details.open = false;
                 dropdownTimers.delete(details);
-            }, 340);
+            }, DROPDOWN_CLOSE_DELAY_MS);
 
             dropdownTimers.set(details, timeoutId);
         },
@@ -540,7 +1650,7 @@ createApp({
                     : null;
 
                 if (!hasCurrentButton) {
-                    this[property] = configuredValue || firstValue || currentValue;
+                    this[property] = firstValue || configuredValue || currentValue;
                 }
             });
 
@@ -589,21 +1699,95 @@ createApp({
                 }
             });
         },
-        async refreshRepositoryData() {
+        async clearBrowserRepositoryCaches() {
+            const tasks = [];
+
+            if (typeof window !== 'undefined' && 'caches' in window) {
+                tasks.push((async () => {
+                    const cacheKeys = await window.caches.keys();
+                    await Promise.all(cacheKeys.map((cacheKey) => window.caches.delete(cacheKey)));
+                })());
+            }
+
+            if (typeof window !== 'undefined' && window.localStorage) {
+                tasks.push(Promise.resolve().then(() => {
+                    window.localStorage.clear();
+                }));
+            }
+
+            if (typeof window !== 'undefined' && window.sessionStorage) {
+                tasks.push(Promise.resolve().then(() => {
+                    window.sessionStorage.clear();
+                }));
+            }
+
+            await Promise.allSettled(tasks);
+        },
+        async triggerRepositoryRefresh() {
+            if (this.repositoryRefreshing) {
+                return;
+            }
+
+            this.repositoryRefreshing = true;
+
+            try {
+                await this.clearBrowserRepositoryCaches();
+                await this.refreshRepositoryData({
+                    forceFresh: true
+                });
+                if (this.repositoryError) {
+                    await this.refreshRepositoryData({
+                        forceFresh: true
+                    });
+                }
+            } finally {
+                this.repositoryRefreshing = false;
+
+                if (this.gitView === 'graph' && !this.repositoryLoading) {
+                    nextTick(() => {
+                        this.updateSegmentedIndicators();
+                        this.renderGitGraph(true);
+                    });
+                }
+            }
+        },
+        async refreshRepositoryData(options = {}) {
             if (!document.querySelector('[data-repository-live]')) {
                 return;
             }
 
             const localeFromQuery = new URLSearchParams(window.location.search).get('locale');
             const locale = localeFromQuery || document.documentElement.lang || 'de';
+            const forceFresh = options.forceFresh === true;
+            const requestId = this.repositoryRefreshRequestId + 1;
+            this.repositoryRefreshRequestId = requestId;
+            let shouldSyncRepositoryState = false;
+
+            if (this.repositoryRefreshAbortController) {
+                this.repositoryRefreshAbortController.abort();
+            }
+            const abortController = new AbortController();
+            this.repositoryRefreshAbortController = abortController;
+
             this.repositoryLoading = true;
 
             try {
-                const response = await fetch(`/api/repository/live.json?locale=${encodeURIComponent(locale)}`, {
+                const params = new URLSearchParams({
+                    locale
+                });
+                if (forceFresh) {
+                    params.set('refresh', '1');
+                    params.set('_', Date.now().toString(36));
+                }
+
+                const response = await fetch(`/api/repository/live.json?${params.toString()}`, {
                     headers: {
-                        Accept: 'application/json'
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache'
                     },
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    signal: abortController.signal
                 });
 
                 if (!response.ok) {
@@ -616,14 +1800,34 @@ createApp({
                     throw new Error(data.message || data.error);
                 }
 
+                if (requestId !== this.repositoryRefreshRequestId) {
+                    return;
+                }
                 this.repository = normalizeRepository(data);
                 this.repositoryError = '';
-                this.ensureRepositoryState();
+                shouldSyncRepositoryState = true;
+                this.animateMetricGroup('git');
+                this.animateMetricGroup('board');
             } catch (error) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+                if (requestId !== this.repositoryRefreshRequestId) {
+                    return;
+                }
                 this.repositoryError = error.message;
-                this.ensureRepositoryState();
+                shouldSyncRepositoryState = true;
             } finally {
-                this.repositoryLoading = false;
+                if (requestId === this.repositoryRefreshRequestId) {
+                    this.repositoryLoading = false;
+
+                    if (shouldSyncRepositoryState) {
+                        this.ensureRepositoryState();
+                    }
+                }
+                if (this.repositoryRefreshAbortController === abortController) {
+                    this.repositoryRefreshAbortController = null;
+                }
             }
         },
         setSegment(property, value) {
@@ -705,6 +1909,193 @@ createApp({
         getGitGraphContainer() {
             return document.querySelector('[data-gitgraph-container]');
         },
+        getGitGraphPanel() {
+            return document.querySelector('.git_graph_canvas_panel');
+        },
+        getGitGraphViewportWidth() {
+            const panel = this.getGitGraphPanel();
+            if (panel) {
+                const panelWidth = Math.round(panel.clientWidth || panel.getBoundingClientRect().width || 0);
+                if (panelWidth > 0) {
+                    return panelWidth;
+                }
+            }
+
+            const container = this.getGitGraphContainer();
+            return Math.round(container?.getBoundingClientRect().width || 0);
+        },
+        calculateGitGraphMinContentWidth(viewportWidth = 0) {
+            const safeViewportWidth = Math.max(0, Number(viewportWidth) || 0);
+            return Math.max(safeViewportWidth, GIT_GRAPH_MIN_CONTENT_WIDTH_PX);
+        },
+        readMergeCommitHashes() {
+            const graphData = this.readGitGraphData();
+            const mergeHashes = graphData
+                .filter((commit) => Array.isArray(commit?.refs) && commit.refs.some((ref) => typeof ref === 'string' && ref.toLowerCase().startsWith('merge:')))
+                .map((commit) => commit.hash)
+                .filter((hash) => typeof hash === 'string' && hash.trim());
+
+            if (mergeHashes.length > 0) {
+                return mergeHashes;
+            }
+
+            return graphData
+                .map((commit) => commit?.hash)
+                .filter((hash) => typeof hash === 'string' && hash.trim());
+        },
+        readGitGraphNodeCenterX(commitHash) {
+            const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            const node = this.getGraphCommitNode(commitHash);
+
+            if (!panel || !node) {
+                return null;
+            }
+
+            const nodeRect = node.getBoundingClientRect();
+            const labelLayerRect = labelLayer?.getBoundingClientRect?.();
+            if (labelLayerRect) {
+                // Use the branch-label layer as shared coordinate space so scroll offsets are never double-counted.
+                return Math.round(nodeRect.left - labelLayerRect.left + (nodeRect.width / 2));
+            }
+
+            const panelRect = panel.getBoundingClientRect();
+            return Math.round(nodeRect.left - panelRect.left + panel.scrollLeft + (nodeRect.width / 2));
+        },
+        resolveGitGraphSymmetricEdgeGap() {
+            const mergeHashes = this.readMergeCommitHashes();
+            if (!mergeHashes.length) {
+                return GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX;
+            }
+
+            let leftMostMergeX = Number.POSITIVE_INFINITY;
+            mergeHashes.forEach((hash) => {
+                const x = this.readGitGraphNodeCenterX(hash);
+                if (Number.isFinite(x)) {
+                    leftMostMergeX = Math.min(leftMostMergeX, x);
+                }
+            });
+
+            if (!Number.isFinite(leftMostMergeX)) {
+                return GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX;
+            }
+
+            return Math.max(0, Math.round(leftMostMergeX));
+        },
+        readRightMostGraphLabelRight(labelLayer = null) {
+            const targetLayer = labelLayer || document.querySelector('[data-git-branch-labels]');
+            if (!targetLayer) {
+                return 0;
+            }
+
+            let maxLabelRight = 0;
+            targetLayer.querySelectorAll('.git_graph_branch_label').forEach((label) => {
+                maxLabelRight = Math.max(maxLabelRight, label.offsetLeft + label.offsetWidth);
+            });
+
+            return Math.round(maxLabelRight);
+        },
+        syncGitGraphHorizontalSpace(options = {}) {
+            const container = this.getGitGraphContainer();
+            const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+
+            if (!container || !panel) {
+                return 0;
+            }
+
+            const requestedViewportWidth = Number.isFinite(options.viewportWidth)
+                ? Math.round(options.viewportWidth)
+                : 0;
+            const viewportWidth = requestedViewportWidth > 0
+                ? requestedViewportWidth
+                : this.getGitGraphViewportWidth();
+            if (viewportWidth <= 0) {
+                return 0;
+            }
+
+            const edgeGap = this.resolveGitGraphSymmetricEdgeGap();
+            let requiredWidth = this.calculateGitGraphMinContentWidth(viewportWidth);
+            const svg = container.querySelector('svg');
+            const svgBBox = typeof svg?.getBBox === 'function' ? svg.getBBox() : null;
+            const maxLabelRight = this.readRightMostGraphLabelRight(labelLayer);
+            const hasLabels = maxLabelRight > 0;
+
+            if (hasLabels) {
+                // Hard symmetry rule: right gap after the right-most branch label equals the left merge gap.
+                requiredWidth = Math.max(requiredWidth, maxLabelRight + edgeGap);
+            }
+
+            if (svgBBox && Number.isFinite(svgBBox.width)) {
+                const svgRight = Math.ceil(svgBBox.x + svgBBox.width);
+                requiredWidth = Math.max(
+                    requiredWidth,
+                    hasLabels ? svgRight : svgRight + edgeGap
+                );
+            }
+
+            const targetWidth = Math.max(viewportWidth, Math.ceil(requiredWidth));
+            container.style.width = `${targetWidth}px`;
+            container.style.minWidth = `${targetWidth}px`;
+
+            if (labelLayer) {
+                labelLayer.style.width = `${targetWidth}px`;
+                labelLayer.style.minWidth = `${targetWidth}px`;
+            }
+
+            const maxScrollLeft = Math.max(0, targetWidth - viewportWidth);
+            if (panel.scrollLeft > maxScrollLeft) {
+                panel.scrollLeft = maxScrollLeft;
+            }
+
+            return targetWidth;
+        },
+        resolveTopGraphAnchorX() {
+            const labels = Array.from(document.querySelectorAll('.git_graph_branch_label'));
+            if (!labels.length) {
+                return null;
+            }
+
+            const topLabel = labels.reduce((currentTop, label) => {
+                if (!currentTop) {
+                    return label;
+                }
+                return label.offsetTop < currentTop.offsetTop ? label : currentTop;
+            }, null);
+            if (!topLabel) {
+                return null;
+            }
+
+            const labelCenterX = topLabel.offsetLeft + (topLabel.offsetWidth / 2);
+            const commitHash = topLabel.dataset.commitHash || '';
+            const nodeCenterX = this.readGitGraphNodeCenterX(commitHash);
+
+            if (Number.isFinite(nodeCenterX)) {
+                return Math.round((labelCenterX + nodeCenterX) / 2);
+            }
+
+            return Math.round(labelCenterX);
+        },
+        centerGitGraphOnTopAnchor() {
+            const panel = this.getGitGraphPanel();
+            if (!panel) {
+                return;
+            }
+
+            const viewportWidth = Math.round(panel.clientWidth || 0);
+            if (viewportWidth <= 0) {
+                return;
+            }
+
+            const anchorX = this.resolveTopGraphAnchorX();
+            if (!Number.isFinite(anchorX)) {
+                return;
+            }
+
+            const maxScrollLeft = Math.max(0, panel.scrollWidth - viewportWidth);
+            const targetScrollLeft = Math.max(0, Math.min(Math.round(anchorX - (viewportWidth / 2)), maxScrollLeft));
+            panel.scrollLeft = targetScrollLeft;
+        },
         getRecentCommitCards() {
             return Array.from(document.querySelectorAll('[data-recent-commit-hash]'));
         },
@@ -762,80 +2153,161 @@ createApp({
 
             workspaceBody.style.setProperty('--git-graph-panel-height', `${requiredHeight}px`);
         },
-        applyGitBranchLabelOutlines() {
+        clearCustomGitBranchLabels() {
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (labelLayer) {
+                labelLayer.innerHTML = '';
+                labelLayer.style.removeProperty('width');
+                labelLayer.style.removeProperty('min-width');
+            }
+        },
+        renderCustomGitBranchLabels() {
             const container = this.getGitGraphContainer();
-            if (!container) {
+            const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (!container || !panel || !labelLayer) {
                 return;
             }
 
-            const applyOutlineStyles = () => {
-                const labelGroups = Array.from(container.querySelectorAll('g')).filter((group) => {
-                    const textNode = group.querySelector('text');
-                    const shapeNode = group.querySelector('rect,path');
-                    return Boolean(textNode && shapeNode);
-                });
+            labelLayer.innerHTML = '';
 
-                labelGroups.forEach((group) => {
-                    const textNode = group.querySelector('text');
-                    const textColor = textNode
-                        ? (textNode.getAttribute('fill') || window.getComputedStyle(textNode).fill || '#111114')
-                        : '#111114';
-                    const shapeNodes = Array.from(group.querySelectorAll('rect,path'));
-                    const branchColor = shapeNodes.reduce((color, shapeNode) => {
-                        if (color) {
-                            return color;
-                        }
-
-                        const fillColor = shapeNode.getAttribute('fill') || shapeNode.style.fill || '';
-                        if (fillColor && fillColor !== 'none' && fillColor !== 'transparent') {
-                            return fillColor;
-                        }
-
-                        const strokeColor = shapeNode.getAttribute('stroke') || shapeNode.style.stroke || '';
-                        if (strokeColor && strokeColor !== 'none' && strokeColor !== 'transparent') {
-                            return strokeColor;
-                        }
-
-                        return '';
-                    }, '');
-                    const outlineColor = textColor;
-
-                    shapeNodes.forEach((shapeNode) => {
-                        shapeNode.setAttribute('fill', 'transparent');
-                        shapeNode.setAttribute('stroke', outlineColor);
-                        shapeNode.setAttribute('stroke-width', '1.6');
-                        shapeNode.style.fill = 'transparent';
-                        shapeNode.style.stroke = outlineColor;
-                        shapeNode.style.strokeWidth = '1.6px';
-                    });
-
-                    const foreignLabel = group.querySelector('foreignObject > *');
-                    if (foreignLabel) {
-                        foreignLabel.style.background = 'transparent';
-                        foreignLabel.style.border = `1.6px solid ${outlineColor}`;
-                        foreignLabel.style.borderRadius = '999px';
-                    }
-                });
-            };
-
-            applyOutlineStyles();
-
-            if (this.gitGraphLabelObserver) {
-                this.gitGraphLabelObserver.disconnect();
+            const branches = this.repository.git.branches
+                .filter((branch) => typeof branch?.name === 'string' && branch.name.trim() && typeof branch?.hash === 'string' && branch.hash.trim());
+            if (!branches.length) {
+                return;
             }
 
-            let queued = false;
-            this.gitGraphLabelObserver = new MutationObserver(() => {
-                if (queued) {
+            const labelLayerRect = labelLayer.getBoundingClientRect();
+            const labelOffset = GIT_GRAPH_LABEL_OFFSET_PX;
+
+            branches.forEach((branch) => {
+                const headNode = this.getGraphCommitNode(branch.hash);
+                if (!headNode) {
                     return;
                 }
-                queued = true;
-                requestAnimationFrame(() => {
-                    queued = false;
-                    applyOutlineStyles();
+
+                const nodeRect = headNode.getBoundingClientRect();
+                const x = Math.round(nodeRect.right - labelLayerRect.left + labelOffset);
+                const y = Math.round(nodeRect.top - labelLayerRect.top + (nodeRect.height / 2));
+
+                const label = document.createElement('button');
+                label.type = 'button';
+                label.className = 'git_graph_branch_label';
+                label.textContent = branch.name;
+                label.title = branch.name;
+                label.dataset.commitHash = branch.hash;
+                const branchColor = this.getBranchLabelColor(branch, branches);
+                label.style.color = branchColor;
+                label.style.borderColor = branchColor;
+                label.style.left = `${x}px`;
+                label.style.top = `${y}px`;
+                label.addEventListener('click', () => {
+                    this.selectGitBranch(branch.name);
                 });
+
+                labelLayer.append(label);
             });
-            this.gitGraphLabelObserver.observe(container, { childList: true, subtree: true });
+
+            this.syncGitGraphHorizontalSpace({
+                viewportWidth: this.getGitGraphViewportWidth()
+            });
+        },
+        bindGitGraphBranchLabelTracking() {
+            const panel = this.getGitGraphPanel();
+            if (!panel || panel.dataset.graphBranchLabelsBound === 'true') {
+                return;
+            }
+
+            panel.dataset.graphBranchLabelsBound = 'true';
+        },
+        getGraphCommitDotColor(commitHash) {
+            const container = this.getGitGraphContainer();
+            const svg = container?.querySelector('svg');
+            if (!svg || !commitHash || typeof window.getComputedStyle !== 'function') {
+                return '';
+            }
+
+            const normalizeColor = (value) => {
+                if (typeof value !== 'string') {
+                    return '';
+                }
+
+                const normalized = value.trim().toLowerCase();
+                if (!normalized || normalized === 'none' || normalized === 'transparent') {
+                    return '';
+                }
+
+                return normalized;
+            };
+
+            const escapedHash = window.CSS && typeof window.CSS.escape === 'function'
+                ? window.CSS.escape(commitHash)
+                : commitHash;
+
+            const dot = svg.querySelector(`circle[id="${escapedHash}"]`);
+            if (!dot) {
+                return '';
+            }
+
+            return normalizeColor(dot.getAttribute('fill'))
+                || normalizeColor(window.getComputedStyle(dot).fill);
+        },
+        getBranchLabelColor(branch, branches = []) {
+            const node = this.getGraphCommitNode(branch?.hash);
+            const fallbackColor = GIT_GRAPH_COLORS[
+                Math.max(0, branches.findIndex((item) => item?.name === branch?.name)) % GIT_GRAPH_COLORS.length
+            ] || GIT_GRAPH_COLORS[0];
+
+            if (!node || typeof window.getComputedStyle !== 'function') {
+                return fallbackColor;
+            }
+
+            const normalizeColor = (value) => {
+                if (typeof value !== 'string') {
+                    return '';
+                }
+
+                const normalized = value.trim().toLowerCase();
+                if (!normalized || normalized === 'none' || normalized === 'transparent') {
+                    return '';
+                }
+
+                return normalized;
+            };
+
+            const dotColor = this.getGraphCommitDotColor(branch?.hash);
+            if (dotColor) {
+                return dotColor;
+            }
+
+            const isLikelyBlack = (value) => {
+                const normalized = normalizeColor(value);
+                if (!normalized) {
+                    return false;
+                }
+                return normalized === '#000'
+                    || normalized === '#000000'
+                    || normalized === 'black'
+                    || normalized === 'rgb(0, 0, 0)'
+                    || normalized === 'rgba(0, 0, 0, 1)';
+            };
+
+            const attributeColor = normalizeColor(node.getAttribute('stroke'))
+                || normalizeColor(node.getAttribute('fill'));
+            if (attributeColor) {
+                return attributeColor;
+            }
+
+            const computed = window.getComputedStyle(node);
+            const computedStroke = normalizeColor(computed?.stroke);
+            const computedFill = normalizeColor(computed?.fill);
+            const color = computedStroke || computedFill;
+
+            if (!color || isLikelyBlack(color)) {
+                return fallbackColor;
+            }
+
+            return color;
         },
         hideGitGraphTooltip() {
             this.gitGraphTooltip.visible = false;
@@ -1172,6 +2644,9 @@ createApp({
             this.openGitCommitModal(commitHash, { scrollGraph: true });
         },
         async renderGitGraph(force = false) {
+            this.gitGraphRenderToken += 1;
+            const renderToken = this.gitGraphRenderToken;
+
             if (this.gitView !== 'graph') {
                 return;
             }
@@ -1184,20 +2659,27 @@ createApp({
                 return;
             }
 
+            if (renderToken !== this.gitGraphRenderToken) {
+                return;
+            }
+
             const GitgraphJS = window.GitgraphJS;
 
             if (!container || !GitgraphJS) {
                 return;
             }
 
-            const width = Math.round(container.getBoundingClientRect().width);
-            if (width <= 0) {
+            const viewportWidth = this.getGitGraphViewportWidth();
+            if (viewportWidth <= 0) {
                 return;
             }
 
             const graphData = this.readGitGraphData();
             if (graphData.length === 0) {
                 container.innerHTML = '';
+                container.style.removeProperty('width');
+                container.style.removeProperty('min-width');
+                this.clearCustomGitBranchLabels();
                 this.selectedGitCommitHash = '';
                 this.activeGitCommitModalHash = '';
                 this.syncModalBodyLock();
@@ -1218,18 +2700,18 @@ createApp({
                 ...graphData.map((commit) => [commit.hash, commit.subject, commit.refs, commit.parents])
             ]);
 
-            if (!force && this.gitGraphSignature === signature && this.gitGraphWidth === width) {
+            if (!force && this.gitGraphSignature === signature && this.gitGraphWidth === viewportWidth) {
                 return;
             }
 
             const template = GitgraphJS.templateExtend(GitgraphJS.TemplateName.Metro, {
-                colors: ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'],
+                colors: GIT_GRAPH_COLORS,
                 branch: {
                     lineWidth: 3,
                     spacing: 44,
                     mergeStyle: GitgraphJS.MergeStyle.Bezier,
                     label: {
-                        display: true,
+                        display: false,
                         font: '600 11pt Instrument Sans, sans-serif',
                         strokeColor: 'transparent',
                         bgColor: '#ffffff',
@@ -1263,7 +2745,14 @@ createApp({
             });
 
             container.innerHTML = '';
-            container.removeAttribute('style');
+            const estimatedWidth = this.calculateGitGraphMinContentWidth(viewportWidth);
+            container.style.width = `${estimatedWidth}px`;
+            container.style.minWidth = `${estimatedWidth}px`;
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (labelLayer) {
+                labelLayer.style.width = `${estimatedWidth}px`;
+                labelLayer.style.minWidth = `${estimatedWidth}px`;
+            }
 
             const gitgraph = GitgraphJS.createGitgraph(container, {
                 template,
@@ -1280,13 +2769,26 @@ createApp({
 
             gitgraph.import(interactiveGraphData);
             this.bindGitGraphInteractions();
+            this.bindGitGraphBranchLabelTracking();
             this.gitGraphSignature = signature;
-            this.gitGraphWidth = width;
+            this.gitGraphWidth = viewportWidth;
 
             window.requestAnimationFrame(() => {
+                if (renderToken !== this.gitGraphRenderToken) {
+                    return;
+                }
+
                 window.requestAnimationFrame(() => {
+                    if (renderToken !== this.gitGraphRenderToken) {
+                        return;
+                    }
+
                     this.syncGitGraphPanelHeight();
-                    this.applyGitBranchLabelOutlines();
+                    this.renderCustomGitBranchLabels();
+                    this.syncGitGraphHorizontalSpace({
+                        viewportWidth
+                    });
+                    this.centerGitGraphOnTopAnchor();
                     this.syncGraphCommitHighlight();
                 });
             });
@@ -1351,6 +2853,8 @@ createApp({
                     this.syncSegmentPanels(property, activeValue);
                 }
             });
+
+            this.refreshThreadBackground();
         },
         syncScrollState() {
             this.scrolled = window.scrollY > 20;
@@ -1362,6 +2866,7 @@ createApp({
 
             this.closeAllDropdowns({ immediate: true });
             this.updateSegmentedIndicators();
+            this.refreshThreadBackground(true);
 
             if (this.gitView === 'graph') {
                 this.renderGitGraph(true);

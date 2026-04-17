@@ -11,6 +11,14 @@
 
                 <div class="repository_compactbar">
                     <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button"
+                           th:href="${repositoryPlaywrightPath}">
+                            <img class="repository_switch__icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.playwright.label}">repository.playwright.label</span>
+                        </a>
                         <a class="repository_switch__button repository_switch__button--active"
                            th:href="${repositoryGitPath}">
                             <img class="repository_switch__icon"
@@ -22,28 +30,42 @@
                         <a class="repository_switch__button"
                            th:href="${repositoryBoardPath}"
                            th:text="#{repository.board.label}">repository.board.label</a>
+                        <button class="repository_switch__refresh"
+                                type="button"
+                                @click="triggerRepositoryRefresh()"
+                                :disabled="repositoryRefreshing || repositoryLoading"
+                                :aria-busy="String(repositoryRefreshing || repositoryLoading)"
+                                :class="{ 'repository_switch__refresh--loading': repositoryRefreshing || repositoryLoading }"
+                                th:attr="aria-label=#{repository.refresh}">
+                            <span class="repository_switch__refresh-label"
+                                  th:text="#{repository.refresh}">repository.refresh</span>
+                            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
+                                <path d="M20 4v6h-6"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
                 <div class="git_metrics">
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.totalCommits"></span>
+                              v-text="animatedMetrics.git.totalCommits"></span>
                         <span class="git_metric__label" th:text="#{repository.git.commits}">repository.git.commits</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.mergeCommits"></span>
+                              v-text="animatedMetrics.git.mergeCommits"></span>
                         <span class="git_metric__label" th:text="#{repository.git.merges}">repository.git.merges</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.contributorCount"></span>
+                              v-text="animatedMetrics.git.contributorCount"></span>
                         <span class="git_metric__label" th:text="#{repository.git.contributors}">repository.git.contributors</span>
                     </article>
                     <article class="git_metric">
                         <span class="git_metric__value"
-                              v-text="repository.git.branchCount"></span>
+                              v-text="animatedMetrics.git.branchCount"></span>
                         <span class="git_metric__label" th:text="#{repository.git.branches}">repository.git.branches</span>
                     </article>
                 </div>
@@ -84,6 +106,7 @@
                             <div class="git_graph_workspace__body">
                                 <div class="git_graph_canvas_panel">
                                     <div class="git_graph_canvas" data-gitgraph-container></div>
+                                    <div class="git_graph_branch_labels" data-git-branch-labels></div>
                                     <div class="git_graph_tooltip"
                                          :class="{ 'git_graph_tooltip--visible': gitGraphTooltip.visible }"
                                          :style="{
@@ -208,6 +231,11 @@
                                                 :class="{ 'repo_menu__item--active': gitActivityRange === 'month' }"
                                                 @click="selectGitActivityRange('month', $event)"
                                                 v-text="repository.git.activityRanges.month"></button>
+                                        <button type="button"
+                                                class="repo_menu__item repo_menu__item--button"
+                                                :class="{ 'repo_menu__item--active': gitActivityRange === 'year' }"
+                                                @click="selectGitActivityRange('year', $event)"
+                                                v-text="repository.git.activityRanges.year"></button>
                                     </div>
                                 </details>
                             </div>
@@ -224,7 +252,7 @@
                                           :class="{ 'git_activity__bar--zero': day.count === 0 }"
                                           :style="day.style"></span>
                                     <span class="git_activity__label"
-                                          :class="{ 'git_activity__label--muted': gitActivityRange === 'month' && !day.emphasizeLabel }"
+                                          :class="{ 'git_activity__label--muted': gitActivityRange !== 'week' && !day.emphasizeLabel }"
                                           v-text="day.label"></span>
                                 </article>
                             </div>
@@ -255,7 +283,8 @@
                                 <div class="git_author__meta">
                                     <div class="git_author__line">
                                         <span class="git_author__name" v-text="author.name"></span>
-                                        <span class="git_author__count" v-text="author.count"></span>
+                                        <span class="git_author__count"
+                                              v-text="author.count + ' Commits | ' + (author.linesContributed ?? 0) + ' Zeilen beigetragen'"></span>
                                     </div>
                                     <span class="git_author__bar" :style="author.toneStyle"></span>
                                 </div>

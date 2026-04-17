@@ -6,6 +6,15 @@ classDiagram
         +Long id
         +String email
         +String passwordHash
+        +String firstName
+        +String lastName
+        +String phone
+        +LocalDate birthDate
+        +String address
+        +String emergencyContact
+        +String profilePicture
+        +String bio
+        +LocalDateTime createdAt
         +UserRole role
         +List~Pet~ pets
         +HostProfile hostProfile

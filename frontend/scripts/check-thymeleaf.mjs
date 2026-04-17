@@ -11,11 +11,12 @@ async function main() {
   await buildPreview(rootDir);
   const results = await validatePreview(rootDir);
 
-  assert.equal(results.length, 5);
+  assert.equal(results.length, 6);
   assert.ok(results.find((entry) => entry.locale === defaultLocale && entry.pageKey === 'home'));
   assert.ok(results.find((entry) => entry.pageKey === 'login'));
   assert.ok(results.find((entry) => entry.pageKey === 'register'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryGit'));
+  assert.ok(results.find((entry) => entry.pageKey === 'repositoryPlaywright'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryKanban'));
 
   for (const entry of results) {

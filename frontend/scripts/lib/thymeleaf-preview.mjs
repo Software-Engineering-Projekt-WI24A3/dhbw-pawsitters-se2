@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { loadRepositorySnapshot, localizeRepositorySnapshot } from './repository-snapshot.mjs';
 
-export const supportedLocales = ['de', 'en', 'fr'];
+export const supportedLocales = ['de', 'en', 'ro'];
 export const defaultLocale = 'de';
 
 const templateCache = new Map();
@@ -16,6 +16,7 @@ const pageDefinitions = [
   { key: 'login', templatePath: 'pages/login.html' },
   { key: 'register', templatePath: 'pages/register.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
+  { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
   { key: 'repositoryKanban', templatePath: 'pages/repository-kanban.html' }
 ];
 const routeToPageKey = new Map([
@@ -23,6 +24,7 @@ const routeToPageKey = new Map([
   ['/login', 'login'],
   ['/register', 'register'],
   ['/repository/git', 'repositoryGit'],
+  ['/repository/playwright', 'repositoryPlaywright'],
   ['/repository/kanban', 'repositoryKanban']
 ]);
 
@@ -321,6 +323,8 @@ function resolveLocalizedPath(locale, pageKey) {
       return `/register${query}`;
     case 'repositoryGit':
       return `/repository/git${query}`;
+    case 'repositoryPlaywright':
+      return `/repository/playwright${query}`;
     case 'repositoryKanban':
       return `/repository/kanban${query}`;
     default:
@@ -344,6 +348,11 @@ function resolveOutputPaths(locale, pageKey) {
       return [
         path.join('repository', 'git', 'index.html'),
         path.join('git', 'index.html')
+      ];
+    case 'repositoryPlaywright':
+      return [
+        path.join('repository', 'playwright', 'index.html'),
+        path.join('playwright', 'index.html')
       ];
     case 'repositoryKanban':
       return [
@@ -942,6 +951,7 @@ async function buildPageContext(rootDir, locale, pageKey) {
     loginPath: resolveLocalizedPath(locale, 'login'),
     registerPath: resolveLocalizedPath(locale, 'register'),
     repositoryGitPath: resolveLocalizedPath(locale, 'repositoryGit'),
+    repositoryPlaywrightPath: resolveLocalizedPath(locale, 'repositoryPlaywright'),
     repositoryBoardPath: resolveLocalizedPath(locale, 'repositoryKanban'),
     repositorySnapshot,
     __messages: messages
@@ -1003,6 +1013,11 @@ export async function buildPreview(rootDir) {
   await fs.writeFile(
     path.join(rootDir, 'kanban', 'index.html'),
     buildRedirectPage('/repository/kanban', defaultLocale, getMessage(defaultMessages, 'meta.repositoryKanban.title')),
+    'utf8'
+  );
+  await fs.writeFile(
+    path.join(rootDir, 'playwright', 'index.html'),
+    buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title')),
     'utf8'
   );
 }

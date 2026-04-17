@@ -134,8 +134,7 @@
     "Shell Script.Projektstart.executor": "Run",
     "Spring Boot.PawsittersApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "j__feature__restapi",
+    "git-widget-placeholder": "n__feature__adding-romanian-language-and-removing-french",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
@@ -233,6 +232,23 @@
       <workItem from="1776350058328" duration="5134000" />
       <workItem from="1776412419552" duration="9551000" />
     </task>
+    <task id="LOCAL-00001" summary="reviewed and updated all e2e tests">
+      <option name="closed" value="true" />
+      <created>1776356612637</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776356612637</updated>
+    </task>
+    <task id="LOCAL-00002" summary="fixed the git graph">
+      <option name="closed" value="true" />
+      <created>1776410251650</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1776410251650</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,6 +264,11 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="reviewed and updated all e2e tests" />
+    <MESSAGE value="fixed the git graph" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed the git graph" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

@@ -2,13 +2,13 @@
 <html lang="de"><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f5f7">
-    <meta name="description" content="Reduzierte Startseite mit direktem Einstieg in Repository und Login.">
-    <title>Pawsitters</title>
+    <meta name="description" content="Playwright-Kontrollraum mit Testlauf, Live-Logs und Status pro E2E-Test.">
+    <title>Pawsitters | Repository | Playwright-Tests</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/site.css"></head>
-<body class="page_surface page-home">
+<body class="page_surface page-repository page-repository--playwright">
 <div id="app-shell" class="site_frame" v-cloak="">
     <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
         <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
@@ -45,7 +45,7 @@
                         </span>
                     </summary>
                     <div class="repo_menu__panel">
-                        <a class="repo_menu__item" href="/repository/playwright">
+                        <a class="repo_menu__item repo_menu__item--active" href="/repository/playwright">
                             <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Playwright</span>
                         </a>
@@ -67,13 +67,13 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" href="/" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" href="/repository/playwright" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" href="/?locale=en">
+                        </a><a class="locale_menu__item" href="/repository/playwright?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/?locale=ro">
+                        </a><a class="locale_menu__item" href="/repository/playwright?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -95,7 +95,7 @@
                         <span class="repo_menu__label">Repository</span>
                     </summary>
                     <div class="repo_menu__panel">
-                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/playwright">
+                        <a class="repo_menu__item repo_menu__item--active" @click="closeMenu()" href="/repository/playwright">
                             <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Playwright</span>
                         </a>
@@ -114,13 +114,13 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/repository/playwright" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/?locale=en">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/playwright?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/?locale=ro">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/playwright?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -133,13 +133,54 @@
 </header>
 
     <main id="main-content" class="main_container site_main">
-        <section class="home_stage home_stage--minimal">
-        <div class="home_minimal_shell">
-            <h1 class="home_wordmark">Pawsitters</h1>
-            <div class="home_minimal__actions">
-                <a class="button button--primary" href="/repository/git">Repository</a>
-                <a class="button button--secondary" href="/login">Einloggen</a>
-            </div>
+        <section class="repo_stage">
+        <div class="repo_stack repo_stack--page">
+            <section class="repository_workspace repository_workspace--page repository_workspace--playwright" data-playwright-runner="" data-status-idle="Bereit" data-status-pending="Ausstehend" data-status-running="Läuft" data-status-passed="Bestanden" data-status-failed="Fehlgeschlagen" data-status-skipped="Übersprungen" data-last-run-never="Noch kein Lauf" data-loading-text="Playwright-Tests werden ausgeführt" data-notification-title="Playwright-Tests abgeschlossen" data-status-request-failed="Playwright-Statusabfrage fehlgeschlagen." data-run-request-failed="Playwright-Testlauf konnte nicht gestartet werden.">
+                <div class="repository_compactbar">
+                    <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button repository_switch__button--active" href="/repository/playwright">
+                            <img class="repository_switch__icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span>Playwright</span>
+                        </a>
+                        <a class="repository_switch__button" href="/repository/git">
+                            <img class="repository_switch__icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span>Git</span>
+                        </a>
+                        <a class="repository_switch__button" href="/repository/kanban">Kanban Board</a>
+                    </div>
+                </div>
+
+                <div class="playwright_runner">
+                    <header class="playwright_runner__header">
+                        <h1 class="playwright_runner__title">Playwright Tests</h1>
+                        <div class="playwright_runner__actions">
+                            <button class="button button--primary playwright_runner__run" type="button" @click="runPlaywrightTests()" :disabled="playwrightRunPending || playwrightRunning" :aria-busy="String(playwrightRunPending || playwrightRunning)">
+                                <img class="repository_switch__icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                                <span v-if="playwrightRunPending || playwrightRunning">Tests laufen...</span>
+                                <span v-else="">Tests starten</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <p v-if="playwrightStatusError" class="playwright_error" v-text="playwrightStatusError"></p>
+
+                    <div v-if="playwrightSessionStarted || playwrightRunPending || playwrightRunning" class="playwright_run_surface">
+                        <div v-if="playwrightRunPending || playwrightRunning" class="repository_live_loading playwright_live_loading" role="status" aria-live="polite">
+                            <span class="repository_live_loading__dots" aria-hidden="true">
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                            </span>
+                            <p class="repository_live_loading__text" v-text="playwrightLoadingLabel"></p>
+                        </div>
+
+                        <section class="playwright_console_panel">
+                            <pre class="playwright_logs_console" data-playwright-log-console="" v-text="playwrightLogText"></pre>
+                            <p v-if="!playwrightLogText" class="playwright_logs_empty">Noch keine Logs verfügbar.</p>
+                        </section>
+                    </div>
+                </div>
+            </section>
         </div>
     </section>
     </main>
