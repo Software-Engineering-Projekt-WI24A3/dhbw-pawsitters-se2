@@ -23,6 +23,10 @@
     "register": {
       "title": "Pawsitters | Creează cont",
       "description": "Pagină monocromă de înregistrare pentru frontendul localizat Pawsitters."
+    },
+    "notFound": {
+      "title": "Pawsitters | Pagina nu a fost găsită",
+      "description": "Pagină 404 pentru rute necunoscute."
     }
   },
   "brand": {
@@ -133,6 +137,13 @@
     }
   },
   "auth": {
+    "modal": {
+      "close": "Închide",
+      "closeAria": "Închide fereastra de autentificare",
+      "title": "Autentifică-te sau înregistrează-te",
+      "identifier": "Număr de telefon sau adresă de e-mail",
+      "continue": "Continuă"
+    },
     "shared": {
       "eyebrow": "Aspect nou",
       "title": "Acces calm la cele mai importante fluxuri.",
@@ -175,6 +186,9 @@
         "cta": "Înapoi la autentificare"
       }
     }
+  },
+  "notFound": {
+    "imageAlt": "Ilustrație 404"
   },
   "footer": {
     "text": "Pawsitters. Interfață calmă pentru îngrijirea modernă a animalelor de companie."

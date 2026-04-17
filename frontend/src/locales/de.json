@@ -23,6 +23,10 @@
     "register": {
       "title": "Pawsitters | Registrieren",
       "description": "Monochrome Registrierungs-Seite für das lokalisierte Pawsitters Frontend."
+    },
+    "notFound": {
+      "title": "Pawsitters | Seite nicht gefunden",
+      "description": "404-Seite für nicht verfügbare Routen."
     }
   },
   "brand": {
@@ -133,6 +137,13 @@
     }
   },
   "auth": {
+    "modal": {
+      "close": "Schließen",
+      "closeAria": "Login-Fenster schließen",
+      "title": "Einloggen oder registrieren",
+      "identifier": "Telefonnummer oder E-Mail Adresse",
+      "continue": "Weiter"
+    },
     "shared": {
       "eyebrow": "Neues Erscheinungsbild",
       "title": "Ruhiger Zugriff auf die wichtigsten Flows.",
@@ -175,6 +186,9 @@
         "cta": "Zum Login"
       }
     }
+  },
+  "notFound": {
+    "imageAlt": "404 Illustration"
   },
   "footer": {
     "text": "Pawsitters. Ruhiges Interface für moderne Haustierbetreuung."

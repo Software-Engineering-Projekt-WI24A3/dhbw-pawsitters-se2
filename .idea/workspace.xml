@@ -5,28 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/src/media/404.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F4.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/login/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/login/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/login/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/fr.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1F4.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/support/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/support/i18n.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-kanban.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-kanban.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orga/PAWSITTERS_PROJEKTSTRATEGIE.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/PAWSITTERS_PROJEKTSTRATEGIE.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +87,7 @@
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__adding-romanian-language-and-removing-french",
+    "git-widget-placeholder": "n__feature__new-login-window",
     "javascript.preferred.runtime.type.id": "node",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -150,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776410251650</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="addd romanian language - removed french">
+      <option name="closed" value="true" />
+      <created>1776417367508</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1776417367509</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -170,7 +190,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="reviewed and updated all e2e tests" />
     <MESSAGE value="fixed the git graph" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed the git graph" />
+    <MESSAGE value="addd romanian language - removed french" />
+    <option name="LAST_COMMIT_MESSAGE" value="addd romanian language - removed french" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

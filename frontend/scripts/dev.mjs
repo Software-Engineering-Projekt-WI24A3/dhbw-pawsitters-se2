@@ -673,7 +673,8 @@ async function main() {
 
     const localizedPage = await renderLocalizedPage(rootDir, requestUrl.pathname, locale);
     if (localizedPage) {
-      response.writeHead(200, {
+      const isNotFoundRoute = requestUrl.pathname === '/404' || requestUrl.pathname === '/404.html';
+      response.writeHead(isNotFoundRoute ? 404 : 200, {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'no-store'
       });
@@ -684,6 +685,16 @@ async function main() {
     const resolved = resolveFilePath(requestUrl.pathname);
 
     if (!resolved) {
+      const notFoundPage = await renderLocalizedPage(rootDir, '/404', locale);
+      if (notFoundPage) {
+        response.writeHead(404, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        response.end(notFoundPage);
+        return;
+      }
+
       response.writeHead(404);
       response.end('Not found');
       return;

@@ -2,13 +2,13 @@
 <html lang="de"><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f5f7">
-    <meta name="description" content="Monochrome Registrierungs-Seite für das lokalisierte Pawsitters Frontend.">
-    <title>Pawsitters | Registrieren</title>
+    <meta name="description" content="404-Seite für nicht verfügbare Routen.">
+    <title>Pawsitters | Seite nicht gefunden</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/site.css"></head>
-<body class="page_surface page-auth">
+<body class="page_surface page-not-found">
 <div id="app-shell" class="site_frame" v-cloak="">
     <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
         <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
@@ -67,13 +67,13 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" href="/register" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" href="/404" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" href="/register?locale=en">
+                        </a><a class="locale_menu__item" href="/404?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/register?locale=ro">
+                        </a><a class="locale_menu__item" href="/404?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -114,13 +114,13 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/register" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/404" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/register?locale=en">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/404?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/register?locale=ro">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/404?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -162,63 +162,10 @@
     </transition>
 
     <main id="main-content" class="main_container site_main">
-        <section class="auth_layout">
-        <div class="auth_shell">
-            <section class="auth_intro">
-                <div>
-                    <p class="auth_intro__eyebrow">Neues Erscheinungsbild</p>
-                    <h2 class="auth_intro__title">Ruhiger Zugriff auf die wichtigsten Flows.</h2>
-                    <p class="auth_intro__text">Die Oberfläche setzt auf klare Typografie, weiche Graustufen und direkte Orientierung statt Effekte und blauen Flächen.</p>
-                </div>
-                <ul class="auth_intro__list">
-                    <li class="auth_intro__item">Klare Lesbarkeit in jeder Sektion</li>
-                    <li class="auth_intro__item">Fokussierte Eingaben ohne visuelle Ablenkung</li>
-                    <li class="auth_intro__item">Konsistente Navigation über alle lokalisierten Seiten</li>
-                </ul>
-            </section>
-
-            <section class="auth_card">
-                <div class="auth_card__header">
-                    <p class="auth_card__eyebrow">Pawsitters</p>
-                    <h1 class="auth_card__title">Registrieren</h1>
-                    <p class="auth_card__text">Lege deinen Zugang für die nächsten Frontend-Flows an.</p>
-                </div>
-
-                <form class="auth_form" novalidate="">
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Name</span>
-                        <input class="auth_input corp_input" type="text" autocomplete="name" aria-label="Name" placeholder="Pawsitters Nutzer">
-                        <span class="auth_field__label corp_field__label">Pawsitters Nutzer</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">E-Mail</span>
-                        <input class="auth_input corp_input" type="email" autocomplete="email" aria-label="E-Mail" placeholder="name@example.com">
-                        <span class="auth_field__label corp_field__label">name@example.com</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Passwort</span>
-                        <input class="auth_input corp_input" type="password" autocomplete="new-password" aria-label="Passwort" placeholder="••••••••">
-                        <span class="auth_field__label corp_field__label">••••••••</span>
-                    </label>
-                    <button class="button button--primary auth_submit" type="button">Registrieren</button>
-                </form>
-
-                <div class="auth_link_card">
-                    <div>
-                        <p class="auth_link_card__eyebrow">Bereits dabei</p>
-                        <h2 class="auth_link_card__title">Einloggen</h2>
-                        <p class="auth_link_card__text">Öffne deinen bestehenden Zugang und fahre direkt fort.</p>
-                    </div>
-                    <button class="button button--secondary auth_link_card__action" type="button" @click="openLoginModal()">Zum Login</button>
-                </div>
-            </section>
-        </div>
+        <section class="not_found_layout">
+        <img class="not_found_visual" src="/assets/media/404.svg" alt="404 Illustration">
     </section>
     </main>
-
-    <footer class="main_container site_footer">
-        <p class="site_footer__text">Pawsitters. Ruhiges Interface für moderne Haustierbetreuung.</p>
-    </footer>
 </div>
 <script type="module" src="/assets/js/site.js"></script>
 

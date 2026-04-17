@@ -849,6 +849,7 @@ createApp({
 
         return {
             menuOpen: false,
+            loginModalOpen: false,
             scrolled: false,
             threadBackgroundController: null,
             gitView: 'activity',
@@ -1039,12 +1040,15 @@ createApp({
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.addEventListener('click', this.handleDocumentClick);
         document.addEventListener('keydown', this.handleDocumentKeydown);
+        this.patchLegacyLoginLinks();
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.syncScrollState);
         window.removeEventListener('resize', this.handleResize);
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
         this.closeAllDropdowns({ immediate: true });
         this.destroyThreadBackground();
@@ -1493,10 +1497,37 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns();
         },
+        focusLoginModalIdentifier() {
+            nextTick(() => {
+                const identifierInput = document.querySelector('[data-auth-login-identifier]');
+                if (identifierInput instanceof HTMLInputElement) {
+                    identifierInput.focus({ preventScroll: true });
+                }
+            });
+        },
+        openLoginModal() {
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.loginModalOpen = true;
+            this.syncModalBodyLock();
+            this.focusLoginModalIdentifier();
+        },
+        openLoginModalFromMenu() {
+            this.menuOpen = false;
+            this.openLoginModal();
+        },
+        closeLoginModal() {
+            if (!this.loginModalOpen) {
+                return;
+            }
+
+            this.loginModalOpen = false;
+            this.syncModalBodyLock();
+        },
         syncModalBodyLock() {
             document.body.classList.toggle(
                 'body--modal-open',
-                Boolean(this.activeGitCommitModalHash || this.activeBoardCardKey)
+                Boolean(this.loginModalOpen || this.activeGitCommitModalHash || this.activeBoardCardKey)
             );
         },
         closeRepositoryModal() {
@@ -1619,8 +1650,58 @@ createApp({
 
             this.closeAllDropdowns();
         },
+        isLegacyLoginPath(pathname) {
+            if (typeof pathname !== 'string') {
+                return false;
+            }
+
+            const normalizedPath = pathname.trim().replace(/\/+$/, '') || '/';
+            return normalizedPath === '/login' || /^\/(?:de|en|ro)\/login$/i.test(normalizedPath);
+        },
+        isLegacyLoginHref(href) {
+            if (typeof href !== 'string' || !href.trim()) {
+                return false;
+            }
+
+            try {
+                const parsed = new URL(href, window.location.origin);
+                return this.isLegacyLoginPath(parsed.pathname);
+            } catch {
+                return false;
+            }
+        },
+        patchLegacyLoginLinks() {
+            document.querySelectorAll('a[href]').forEach((linkElement) => {
+                const href = linkElement.getAttribute('href') || '';
+                if (!this.isLegacyLoginHref(href)) {
+                    return;
+                }
+
+                linkElement.dataset.legacyLoginModal = 'true';
+                linkElement.setAttribute('href', '#');
+            });
+        },
+        handleDocumentClick(event) {
+            const anchorElement = event.target?.closest?.('a[href]');
+            if (!anchorElement) {
+                return;
+            }
+
+            const href = anchorElement.getAttribute('href') || '';
+            if (!this.isLegacyLoginHref(href) && anchorElement.dataset.legacyLoginModal !== 'true') {
+                return;
+            }
+
+            event.preventDefault();
+            this.openLoginModal();
+        },
         handleDocumentKeydown(event) {
             if (event.key !== 'Escape') {
+                return;
+            }
+
+            if (this.loginModalOpen) {
+                this.closeLoginModal();
                 return;
             }
 
@@ -1873,6 +1954,7 @@ createApp({
                 return;
             }
 
+            this.loginModalOpen = false;
             this.activeBoardCardKey = cardKey;
             this.activeGitCommitModalHash = '';
             this.syncModalBodyLock();
@@ -2632,6 +2714,7 @@ createApp({
             }
 
             this.selectGitCommit(commitHash, options);
+            this.loginModalOpen = false;
             this.activeGitCommitModalHash = commitHash;
             this.activeBoardCardKey = '';
             this.syncModalBodyLock();

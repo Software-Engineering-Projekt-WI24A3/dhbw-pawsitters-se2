@@ -23,6 +23,10 @@
     "register": {
       "title": "Pawsitters | Create account",
       "description": "Monochrome registration page for the localized Pawsitters frontend."
+    },
+    "notFound": {
+      "title": "Pawsitters | Page not found",
+      "description": "404 page for unknown routes."
     }
   },
   "brand": {
@@ -133,6 +137,13 @@
     }
   },
   "auth": {
+    "modal": {
+      "close": "Close",
+      "closeAria": "Close login modal",
+      "title": "Sign in or register",
+      "identifier": "Phone number or email address",
+      "continue": "Continue"
+    },
     "shared": {
       "eyebrow": "New appearance",
       "title": "Calm access to the most important flows.",
@@ -175,6 +186,9 @@
         "cta": "Back to sign in"
       }
     }
+  },
+  "notFound": {
+    "imageAlt": "404 illustration"
   },
   "footer": {
     "text": "Pawsitters. Calm interface for modern pet care."
