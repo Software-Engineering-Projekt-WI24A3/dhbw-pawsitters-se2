@@ -246,6 +246,46 @@ test.describe('Repository git view', () => {
     }
   });
 
+  test('should render distinct heights for top activity bars', async ({ page }) => {
+    const snapshot = cloneJson(await loadLiveRepository(page, 'de'));
+    const seededWeek = (snapshot.git?.activity?.week || []).map((day, index) => {
+      if (index === 0) {
+        return { ...day, count: 30, height: 100, style: '--bar-size:100%;' };
+      }
+      if (index === 1) {
+        return { ...day, count: 27, height: 90, style: '--bar-size:90%;' };
+      }
+      if (index === 2) {
+        return { ...day, count: 24, height: 80, style: '--bar-size:80%;' };
+      }
+      return { ...day, count: 0, height: 0, style: '--bar-size:0%;' };
+    });
+
+    test.skip(seededWeek.length < 3, 'Snapshot has fewer than 3 activity bars.');
+
+    snapshot.git.activity.week = seededWeek;
+
+    await page.route('**/api/repository/live.json**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(snapshot)
+      });
+    });
+
+    await page.goto('/repository/git');
+
+    const heights = await page.$$eval(
+      '[data-segment-panel="gitView"][data-segment-value="activity"] [data-activity-day] .git_activity__bar',
+      (bars) => bars.slice(0, 3).map((bar) => Number(bar.getBoundingClientRect().height.toFixed(2)))
+    );
+
+    expect(heights).toHaveLength(3);
+    expect(heights[0]).toBeGreaterThan(heights[1]);
+    expect(heights[1]).toBeGreaterThan(heights[2]);
+    expect(heights[0] - heights[2]).toBeGreaterThan(8);
+  });
+
   test('should reload timeline after manual repository refresh', async ({ page }) => {
     const snapshot = await loadLiveRepository(page, 'de');
     const firstSnapshot = cloneJson(snapshot);

@@ -248,9 +248,11 @@
                                          :title="day.fullLabel"
                                          data-activity-day>
                                     <span class="git_activity__count" v-text="day.count"></span>
-                                    <span class="git_activity__bar"
-                                          :class="{ 'git_activity__bar--zero': day.count === 0 }"
-                                          :style="day.style"></span>
+                                    <span class="git_activity__bar-track">
+                                        <span class="git_activity__bar"
+                                              :class="{ 'git_activity__bar--zero': day.count === 0 }"
+                                              :style="day.style"></span>
+                                    </span>
                                     <span class="git_activity__label"
                                           :class="{ 'git_activity__label--muted': gitActivityRange !== 'week' && !day.emphasizeLabel }"
                                           v-text="day.label"></span>
