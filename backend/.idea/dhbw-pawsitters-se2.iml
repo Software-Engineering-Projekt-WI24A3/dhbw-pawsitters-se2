@@ -8,10 +8,6 @@
       <configuration>
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="Hibernate" />
-        <datasource-mapping>
-          <factory-entry name="dhbw-pawsitters-se2" value="f417bd4b-5957-4933-b66d-63c3021986c5" />
-          <factory-entry name="entityManagerFactory" />
-        </datasource-mapping>
         <naming-strategy-map />
       </configuration>
     </facet>
