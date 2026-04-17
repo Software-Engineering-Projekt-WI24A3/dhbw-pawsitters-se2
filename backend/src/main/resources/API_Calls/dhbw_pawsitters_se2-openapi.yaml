@@ -60,7 +60,7 @@ paths:
                 $ref: "#/components/schemas/User"
         "404":
           description: Benutzer nicht gefunden.
-  /api/users/mailExists/{mail}:
+  /api/users/mailExists:
     get:
       operationId: mailExists
       tags:
@@ -69,7 +69,7 @@ paths:
       description: Prueft, ob eine E-Mail bereits registriert ist.
       parameters:
         - name: mail
-          in: path
+          in: query
           required: true
           schema:
             type: string
@@ -81,8 +81,8 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "404":
-          description: Anfrage konnte nicht verarbeitet werden.
+        "400":
+          description: Ungueltige E-Mail-Adresse oder fehlerhafte Anfrage.
 components:
   schemas:
     RegisterRequest:
