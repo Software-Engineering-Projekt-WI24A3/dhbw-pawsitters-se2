@@ -45,8 +45,19 @@ public class UserService {
         user.setEmergencyContact(emergencyContact);
         user.setProfilePicture(profilePicture);
         user.setBio(bio);
+        user.setRating(0f);
+        user.setNumberOfRatings(0);
         user.setRole(role);
 
         return userRepository.save(user);
+    }
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User mit ID " + id + " nicht gefunden."));
+    }
+
+    public boolean existsByEmail(String email){
+        return (userRepository.existsByEmailIgnoreCase(email));
     }
 }
