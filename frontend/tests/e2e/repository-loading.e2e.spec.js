@@ -1,31 +1,51 @@
 const { test, expect } = require('@playwright/test');
 const { token } = require('./support/i18n');
 const { loadLiveRepository } = require('./support/repository');
+const {
+  expectNoLegacyLoginRouteLinks,
+  openLoginModal,
+  closeLoginModal
+} = require('./support/auth');
 
 test.describe('Repository live loading', () => {
-  test('should show the live loading state before git and kanban data is rendered', async ({ page }) => {
-    await page.route('**/api/repository/live.json?locale=de*', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+  test('should keep git and kanban content pending until live data resolves', async ({ page }) => {
+    const pendingLiveRequestResolvers = [];
+    const observedLiveRequestUrls = [];
+
+    await page.route('**/api/repository/live.json*', async (route) => {
+      const requestUrl = route.request().url();
+      const locale = new URL(requestUrl).searchParams.get('locale');
+      if (locale === 'de') {
+        observedLiveRequestUrls.push(requestUrl);
+        await new Promise((resolve) => pendingLiveRequestResolvers.push(resolve));
+      }
       const response = await route.fetch();
       await route.fulfill({ response });
     });
 
-    await page.goto('/git');
-    await expect(page.locator('.repository_live_loading')).toBeVisible();
-    await expect(page.locator('.repository_live_loading__text')).toHaveText(token('de', 'repository.liveLoading'));
-    await expect(page.locator('.repository_live_loading__dot')).toHaveCount(3);
-    await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(0);
-    await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
-    await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(2);
+    const releaseNextLiveRequest = async () => {
+      await expect.poll(() => pendingLiveRequestResolvers.length, { timeout: 10000 }).toBeGreaterThan(0);
+      const release = pendingLiveRequestResolvers.shift();
+      release();
+    };
 
-    await page.goto('/kanban');
-    await expect(page.locator('.repository_live_loading')).toBeVisible();
-    await expect(page.locator('.repository_live_loading__text')).toHaveText(token('de', 'repository.liveLoading'));
+    await page.goto('/repository/git');
+    await expect.poll(() => observedLiveRequestUrls.length, { timeout: 10000 }).toBeGreaterThanOrEqual(1);
+    await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(0);
+    await releaseNextLiveRequest();
+    await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(2);
+    await expectNoLegacyLoginRouteLinks(page);
+    await openLoginModal(page, { locale: 'de' });
+    await closeLoginModal(page);
+
+    await page.goto('/repository/kanban');
+    await expect.poll(() => observedLiveRequestUrls.length, { timeout: 10000 }).toBeGreaterThanOrEqual(2);
     await expect(page.locator('.board_legend')).toHaveCount(0);
     await expect(page.locator('.board_stage')).toHaveCount(0);
-    await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
+    await releaseNextLiveRequest();
     await expect(page.locator('.board_legend')).toHaveCount(1);
     await expect(page.locator('.board_stage')).toHaveCount(1);
+    expect(observedLiveRequestUrls.every((url) => new URL(url).searchParams.get('locale') === 'de')).toBe(true);
   });
 
   test('should request a fresh snapshot when the refresh action is triggered', async ({ page }) => {
@@ -48,7 +68,7 @@ test.describe('Repository live loading', () => {
       });
     });
 
-    await page.goto('/git');
+    await page.goto('/repository/git');
     await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
 
     const refreshButton = page.getByRole('button', { name: token('de', 'repository.refresh'), exact: true });

@@ -79,7 +79,7 @@
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary" href="/login">Einloggen</a>
+                <button class="button button--secondary" type="button" @click="openLoginModal()">Einloggen</button>
             </div>
 
             <button class="menu_button lg:hidden" type="button" :aria-expanded="menuOpen.toString()" @click="toggleMenu()">
@@ -126,11 +126,40 @@
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary w-full" @click="closeMenu()" href="/login">Einloggen</a>
+                <button class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()">Einloggen</button>
             </div>
         </div>
     </div>
 </header>
+
+    <transition name="auth_modal_presence">
+        <div v-if="loginModalOpen" class="auth_modal" role="dialog" aria-modal="true" @click.self="closeLoginModal()">
+            <article class="auth_modal__surface">
+                <button class="auth_modal__close" type="button" @click="closeLoginModal()" aria-label="Login-Fenster schließen">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only">Schließen</span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon" src="/assets/media/favicon.png" alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title">Einloggen oder registrieren</h2>
+
+                <form class="auth_modal__form" novalidate="" @submit.prevent="">
+                    <label class="corp_field auth_modal__field">
+                        <span class="sr-only">Telefonnummer oder E-Mail Adresse</span>
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
+                        <span class="corp_field__label">Telefonnummer oder E-Mail Adresse</span>
+                    </label>
+                    <button class="button auth_modal__submit" type="submit">Weiter</button>
+                </form>
+            </article>
+        </div>
+    </transition>
 
     <main id="main-content" class="main_container site_main">
         <section class="home_stage home_stage--minimal">
@@ -138,7 +167,7 @@
             <h1 class="home_wordmark">Pawsitters</h1>
             <div class="home_minimal__actions">
                 <a class="button button--primary" href="/repository/git">Repository</a>
-                <a class="button button--secondary" href="/login">Einloggen</a>
+                <button class="button button--secondary" type="button" @click="openLoginModal()">Einloggen</button>
             </div>
         </div>
     </section>

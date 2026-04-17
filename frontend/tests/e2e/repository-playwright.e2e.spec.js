@@ -1,5 +1,10 @@
 const { test, expect } = require('@playwright/test');
 const { token } = require('./support/i18n');
+const {
+  expectNoLegacyLoginRouteLinks,
+  openLoginModal,
+  closeLoginModal
+} = require('./support/auth');
 
 test.describe('Repository playwright view', () => {
   test('should render a minimal start state, run tests, and show completion notification', async ({ page }) => {
@@ -74,7 +79,7 @@ test.describe('Repository playwright view', () => {
       });
     });
 
-    await page.goto('/playwright');
+    await page.goto('/repository/playwright');
 
     await expect(page).toHaveURL(/\/repository\/playwright$/);
     await expect(page.locator('.repository_switch__button').nth(0)).toContainText(token('de', 'repository.playwright.label'));
@@ -83,6 +88,9 @@ test.describe('Repository playwright view', () => {
     await expect(page.locator('.repository_switch__button--active')).toContainText(token('de', 'repository.playwright.label'));
     await expect(page.getByRole('heading', { name: token('de', 'repository.playwright.title') })).toBeVisible();
     await expect(page.getByRole('button', { name: token('de', 'repository.playwright.run') })).toBeVisible();
+    await expectNoLegacyLoginRouteLinks(page);
+    await openLoginModal(page, { locale: 'de' });
+    await closeLoginModal(page);
     await expect(page.locator('.playwright_run_surface')).toHaveCount(0);
 
     await page.getByRole('button', { name: token('de', 'repository.playwright.run') }).click();
@@ -100,8 +108,9 @@ test.describe('Repository playwright view', () => {
   });
 
   test('should expose consistent repository switch navigation targets', async ({ page }) => {
-    await page.goto('/playwright');
+    await page.goto('/repository/playwright');
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+    await expectNoLegacyLoginRouteLinks(page);
 
     const switchLinks = await page.locator('.repository_switch__button').evaluateAll((elements) => {
       return elements.map((element) => element.getAttribute('href'));

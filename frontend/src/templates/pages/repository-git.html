@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: shell(#{meta.repositoryGit.title}, #{meta.repositoryGit.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, ${loginPath}, 'page-repository page-repository--git', ~{::content})}">
+      th:replace="~{layout :: shell(#{meta.repositoryGit.title}, #{meta.repositoryGit.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-repository page-repository--git', ~{::content})}">
 <th:block th:fragment="content">
     <section class="repo_stage">
         <div class="repo_stack repo_stack--page">
@@ -294,90 +294,92 @@
                 </div>
 
                 <teleport to="body">
-                    <div v-if="activeGitCommit"
-                         class="repo_modal"
-                         role="dialog"
-                         aria-modal="true"
-                         @click.self="closeRepositoryModal()">
-                        <article class="repo_modal__surface repo_modal__surface--commit">
-                            <button class="repo_modal__close"
-                                    type="button"
-                                    th:attr="aria-label=#{nav.close}"
-                                    @click="closeRepositoryModal()">
-                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                                    <path d="M6 6l12 12M18 6L6 18"></path>
-                                </svg>
-                            </button>
+                    <transition name="repo_modal_presence">
+                        <div v-if="activeGitCommit"
+                             class="repo_modal"
+                             role="dialog"
+                             aria-modal="true"
+                             @click.self="closeRepositoryModal()">
+                            <article class="repo_modal__surface repo_modal__surface--commit">
+                                <button class="repo_modal__close"
+                                        type="button"
+                                        th:attr="aria-label=#{nav.close}"
+                                        @click="closeRepositoryModal()">
+                                    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                        <path d="M6 6l12 12M18 6L6 18"></path>
+                                    </svg>
+                                </button>
 
-                            <div class="repo_modal__scroll">
-                                <header class="repo_modal__header">
-                                    <div class="board_card__topline">
-                                        <span class="board_card__number" v-text="activeGitCommit.shortSha"></span>
-                                        <span class="board_card__state" v-text="activeGitCommit.dateLabel"></span>
+                                <div class="repo_modal__scroll">
+                                    <header class="repo_modal__header">
+                                        <div class="board_card__topline">
+                                            <span class="board_card__number" v-text="activeGitCommit.shortSha"></span>
+                                            <span class="board_card__state" v-text="activeGitCommit.dateLabel"></span>
+                                        </div>
+
+                                        <h2 class="repo_modal__title" v-text="activeGitCommit.message"></h2>
+
+                                        <div class="repo_modal__gitline">
+                                            <span class="repo_modal__hash" v-text="activeGitCommit.hash"></span>
+                                        </div>
+
+                                        <div class="git_commit__meta">
+                                            <a v-if="activeGitCommit.profileUrl"
+                                               class="repo_avatar repo_avatar--link"
+                                               :href="activeGitCommit.profileUrl"
+                                               target="_blank"
+                                               rel="noreferrer"
+                                               :title="activeGitCommit.author">
+                                                <img v-if="activeGitCommit.avatarUrl"
+                                                     class="repo_avatar__image"
+                                                     :src="activeGitCommit.avatarUrl"
+                                                     :alt="activeGitCommit.author">
+                                                <span v-else class="repo_avatar__fallback" v-text="activeGitCommit.initials"></span>
+                                            </a>
+                                            <span v-else class="repo_avatar" :title="activeGitCommit.author">
+                                                <img v-if="activeGitCommit.avatarUrl"
+                                                     class="repo_avatar__image"
+                                                     :src="activeGitCommit.avatarUrl"
+                                                     :alt="activeGitCommit.author">
+                                                <span v-else class="repo_avatar__fallback" v-text="activeGitCommit.initials"></span>
+                                            </span>
+                                            <span class="git_commit__author" v-text="activeGitCommit.author"></span>
+                                        </div>
+                                    </header>
+
+                                    <div v-if="activeGitCommitRefs.length" class="repo_modal__labels">
+                                        <span class="board_card__label"
+                                              v-for="ref in activeGitCommitRefs"
+                                              :key="activeGitCommit.hash + '-ref-' + ref"
+                                              v-text="ref"></span>
                                     </div>
 
-                                    <h2 class="repo_modal__title" v-text="activeGitCommit.message"></h2>
-
-                                    <div class="repo_modal__gitline">
-                                        <span class="repo_modal__hash" v-text="activeGitCommit.hash"></span>
+                                    <div v-if="activeGitCommitParents.length" class="repo_modal__section">
+                                        <ul class="board_card__list">
+                                            <li class="board_card__list-item board_card__list-item--code"
+                                                v-for="parent in activeGitCommitParents"
+                                                :key="activeGitCommit.hash + '-parent-' + parent"
+                                                v-text="parent"></li>
+                                        </ul>
                                     </div>
-
-                                    <div class="git_commit__meta">
-                                        <a v-if="activeGitCommit.profileUrl"
-                                           class="repo_avatar repo_avatar--link"
-                                           :href="activeGitCommit.profileUrl"
-                                           target="_blank"
-                                           rel="noreferrer"
-                                           :title="activeGitCommit.author">
-                                            <img v-if="activeGitCommit.avatarUrl"
-                                                 class="repo_avatar__image"
-                                                 :src="activeGitCommit.avatarUrl"
-                                                 :alt="activeGitCommit.author">
-                                            <span v-else class="repo_avatar__fallback" v-text="activeGitCommit.initials"></span>
-                                        </a>
-                                        <span v-else class="repo_avatar" :title="activeGitCommit.author">
-                                            <img v-if="activeGitCommit.avatarUrl"
-                                                 class="repo_avatar__image"
-                                                 :src="activeGitCommit.avatarUrl"
-                                                 :alt="activeGitCommit.author">
-                                            <span v-else class="repo_avatar__fallback" v-text="activeGitCommit.initials"></span>
-                                        </span>
-                                        <span class="git_commit__author" v-text="activeGitCommit.author"></span>
-                                    </div>
-                                </header>
-
-                                <div v-if="activeGitCommitRefs.length" class="repo_modal__labels">
-                                    <span class="board_card__label"
-                                          v-for="ref in activeGitCommitRefs"
-                                          :key="activeGitCommit.hash + '-ref-' + ref"
-                                          v-text="ref"></span>
                                 </div>
 
-                                <div v-if="activeGitCommitParents.length" class="repo_modal__section">
-                                    <ul class="board_card__list">
-                                        <li class="board_card__list-item board_card__list-item--code"
-                                            v-for="parent in activeGitCommitParents"
-                                            :key="activeGitCommit.hash + '-parent-' + parent"
-                                            v-text="parent"></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <footer class="repo_modal__footer">
-                                <a v-if="activeGitCommitUrl"
-                                   class="repo_modal__github"
-                                   :href="activeGitCommitUrl"
-                                   target="_blank"
-                                   rel="noreferrer">
-                                    <img class="repo_modal__github-icon repo_menu__icon"
-                                         src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
-                                         alt=""
-                                         aria-hidden="true">
-                                    <span th:text="#{nav.repository}">nav.repository</span>
-                                </a>
-                            </footer>
-                        </article>
-                    </div>
+                                <footer class="repo_modal__footer">
+                                    <a v-if="activeGitCommitUrl"
+                                       class="repo_modal__github"
+                                       :href="activeGitCommitUrl"
+                                       target="_blank"
+                                       rel="noreferrer">
+                                        <img class="repo_modal__github-icon repo_menu__icon"
+                                             src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
+                                             alt=""
+                                             aria-hidden="true">
+                                        <span th:text="#{nav.repository}">nav.repository</span>
+                                    </a>
+                                </footer>
+                            </article>
+                        </div>
+                    </transition>
                 </teleport>
             </section>
         </div>

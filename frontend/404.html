@@ -2,13 +2,13 @@
 <html lang="de"><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f5f7">
-    <meta name="description" content="Monochrome Login-Seite für das lokalisierte Pawsitters Frontend.">
-    <title>Pawsitters | Einloggen</title>
+    <meta name="description" content="404-Seite für nicht verfügbare Routen.">
+    <title>Pawsitters | Seite nicht gefunden</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/site.css"></head>
-<body class="page_surface page-auth">
+<body class="page_surface page-not-found">
 <div id="app-shell" class="site_frame" v-cloak="">
     <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
         <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
@@ -67,19 +67,19 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" href="/login" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" href="/404" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" href="/login?locale=en">
+                        </a><a class="locale_menu__item" href="/404?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/login?locale=ro">
+                        </a><a class="locale_menu__item" href="/404?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary" href="/login">Einloggen</a>
+                <button class="button button--secondary" type="button" @click="openLoginModal()">Einloggen</button>
             </div>
 
             <button class="menu_button lg:hidden" type="button" :aria-expanded="menuOpen.toString()" @click="toggleMenu()">
@@ -114,75 +114,58 @@
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/login" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/404" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/login?locale=en">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/404?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/login?locale=ro">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/404?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary w-full" @click="closeMenu()" href="/login">Einloggen</a>
+                <button class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()">Einloggen</button>
             </div>
         </div>
     </div>
 </header>
 
-    <main id="main-content" class="main_container site_main">
-        <section class="auth_layout">
-        <div class="auth_shell">
-            <section class="auth_intro">
-                <div>
-                    <p class="auth_intro__eyebrow">Neues Erscheinungsbild</p>
-                    <h2 class="auth_intro__title">Ruhiger Zugriff auf die wichtigsten Flows.</h2>
-                    <p class="auth_intro__text">Die Oberfläche setzt auf klare Typografie, weiche Graustufen und direkte Orientierung statt Effekte und blauen Flächen.</p>
-                </div>
-                <ul class="auth_intro__list">
-                    <li class="auth_intro__item">Klare Lesbarkeit in jeder Sektion</li>
-                    <li class="auth_intro__item">Fokussierte Eingaben ohne visuelle Ablenkung</li>
-                    <li class="auth_intro__item">Konsistente Navigation über alle lokalisierten Seiten</li>
-                </ul>
-            </section>
+    <transition name="auth_modal_presence">
+        <div v-if="loginModalOpen" class="auth_modal" role="dialog" aria-modal="true" @click.self="closeLoginModal()">
+            <article class="auth_modal__surface">
+                <button class="auth_modal__close" type="button" @click="closeLoginModal()" aria-label="Login-Fenster schließen">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only">Schließen</span>
+                </button>
 
-            <section class="auth_card">
-                <div class="auth_card__header">
-                    <p class="auth_card__eyebrow">Pawsitters</p>
-                    <h1 class="auth_card__title">Einloggen</h1>
-                    <p class="auth_card__text">Dein Zugang zur neuen monochromen Pawsitters Oberfläche.</p>
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon" src="/assets/media/favicon.png" alt="">
+                    </span>
                 </div>
+                <h2 class="auth_modal__title">Einloggen oder registrieren</h2>
 
-                <form class="auth_form" novalidate="">
-                    <label class="auth_field">
-                        <span class="auth_field__label">E-Mail</span>
-                        <input class="auth_input" type="email" autocomplete="email" placeholder="name@example.com">
+                <form class="auth_modal__form" novalidate="" @submit.prevent="">
+                    <label class="corp_field auth_modal__field">
+                        <span class="sr-only">Telefonnummer oder E-Mail Adresse</span>
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
+                        <span class="corp_field__label">Telefonnummer oder E-Mail Adresse</span>
                     </label>
-                    <label class="auth_field">
-                        <span class="auth_field__label">Passwort</span>
-                        <input class="auth_input" type="password" autocomplete="current-password" placeholder="••••••••">
-                    </label>
-                    <button class="button button--primary auth_submit" type="button">Einloggen</button>
+                    <button class="button auth_modal__submit" type="submit">Weiter</button>
                 </form>
-
-                <div class="auth_link_card">
-                    <div>
-                        <p class="auth_link_card__eyebrow">Neu hier</p>
-                        <h2 class="auth_link_card__title">Registrieren</h2>
-                        <p class="auth_link_card__text">Erstelle dein Konto für Halter oder Gastgeber.</p>
-                    </div>
-                    <a class="button button--secondary auth_link_card__action" href="/register">Registrieren</a>
-                </div>
-            </section>
+            </article>
         </div>
+    </transition>
+
+    <main id="main-content" class="main_container site_main">
+        <section class="not_found_layout">
+        <img class="not_found_visual" src="/assets/media/404.svg" alt="404 Illustration">
     </section>
     </main>
-
-    <footer class="main_container site_footer">
-        <p class="site_footer__text">Pawsitters. Ruhiges Interface für moderne Haustierbetreuung.</p>
-    </footer>
 </div>
 <script type="module" src="/assets/js/site.js"></script>
 

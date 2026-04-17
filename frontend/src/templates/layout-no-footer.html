@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:fragment="shell(pageTitle, pageDescription, currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, pageClass, mainContent)"
+      th:fragment="shellNoFooter(pageTitle, pageDescription, currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, pageClass, mainContent)"
       th:lang="${currentLocale}">
 <head th:replace="~{fragments/head :: siteHead(${pageTitle}, ${pageDescription})}"></head>
 <body class="page_surface" th:classappend="${pageClass}">
@@ -80,10 +80,6 @@
     <main id="main-content" class="main_container site_main">
         <th:block th:replace="${mainContent}"></th:block>
     </main>
-
-    <footer class="main_container site_footer" th:unless="${pageClass == 'page-home'}">
-        <p class="site_footer__text" th:text="#{footer.text}">footer.text</p>
-    </footer>
 </div>
 <script type="module" th:src="@{/assets/js/site.js}"></script>
 </body>

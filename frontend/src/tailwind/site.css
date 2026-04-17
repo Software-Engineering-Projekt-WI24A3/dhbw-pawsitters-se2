@@ -19,6 +19,12 @@
         --thread-node: rgba(130, 196, 255, 0.18);
         --dropdown-duration: 180ms;
         --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+        --corp-modal-overlay: rgba(242, 244, 247, 0.54);
+        --corp-modal-backdrop-blur: 5px;
+        --corp-modal-motion-duration: 420ms;
+        --corp-modal-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        --corp-input-motion-duration: 320ms;
+        --corp-input-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     html {
@@ -144,6 +150,22 @@
 
     .site_main {
         @apply relative z-10 pb-20 pt-5 md:pt-6;
+    }
+
+    .not_found_layout {
+        @apply grid min-h-[calc(100vh-9.5rem)] place-items-center py-8;
+    }
+
+    .not_found_visual {
+        width: min(62rem, 90vw);
+        max-height: 72vh;
+        object-fit: contain;
+    }
+
+    @media (max-width: 768px) {
+        .not_found_layout {
+            min-height: calc(100vh - 8.5rem);
+        }
     }
 
     .site_notifications {
@@ -1850,13 +1872,16 @@
         @apply mt-4 border-t border-black/10 pt-4;
     }
 
+    .repo_modal,
+    .auth_modal {
+        background: var(--corp-modal-overlay);
+        -webkit-backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(0);
+        backdrop-filter: blur(var(--corp-modal-backdrop-blur)) saturate(0);
+        will-change: opacity;
+    }
+
     .repo_modal {
         @apply fixed inset-0 z-[999] grid place-items-center p-4 sm:p-6;
-        background:
-            radial-gradient(circle at 18% 14%, rgba(160, 209, 255, 0.28) 0%, rgba(160, 209, 255, 0) 36%),
-            radial-gradient(circle at 84% 82%, rgba(182, 222, 255, 0.2) 0%, rgba(182, 222, 255, 0) 34%),
-            linear-gradient(180deg, rgba(17, 17, 19, 0.34) 0%, rgba(17, 17, 19, 0.6) 100%);
-        backdrop-filter: blur(10px);
         width: 100vw;
         height: 100dvh;
     }
@@ -2071,16 +2096,59 @@
         @apply mt-8 grid gap-4;
     }
 
+    .corp_field,
     .auth_field {
-        @apply grid gap-2;
+        @apply relative block;
     }
 
+    .corp_field__label,
     .auth_field__label {
-        @apply text-sm font-semibold text-black;
+        @apply pointer-events-none absolute left-4 top-[0.72rem] origin-left text-[0.92rem] font-medium text-black/55;
+        transform: translate3d(0, 0.92rem, 0) scale(1);
+        transform-origin: left top;
+        will-change: transform, letter-spacing, color;
+        transition:
+            transform var(--corp-input-motion-duration) var(--corp-input-motion-ease),
+            letter-spacing var(--corp-input-motion-duration) var(--corp-input-motion-ease),
+            color calc(var(--corp-input-motion-duration) - 40ms) var(--corp-input-motion-ease);
     }
 
+    .corp_input,
     .auth_input {
-        @apply w-full rounded-[1.25rem] border border-black/10 bg-zinc-50 px-4 py-4 text-base text-black outline-none transition duration-300 placeholder:text-black/30 focus:border-black/20 focus:bg-white focus:ring-2 focus:ring-black/5;
+        @apply w-full rounded-[1.1rem] border bg-zinc-50 px-4 pb-[0.58rem] pt-[1.52rem] text-[0.95rem] leading-5 text-black outline-none;
+        border-color: rgba(17, 17, 19, 0.12);
+        min-height: 3.52rem;
+        transition:
+            border-color var(--corp-input-motion-duration) var(--corp-input-motion-ease),
+            background-color var(--corp-input-motion-duration) var(--corp-input-motion-ease),
+            transform var(--corp-input-motion-duration) var(--corp-input-motion-ease);
+    }
+
+    .corp_input:hover,
+    .auth_input:hover {
+        border-color: rgba(17, 17, 19, 0.22);
+    }
+
+    .corp_input:focus,
+    .auth_input:focus {
+        border-color: rgba(75, 126, 72, 0.54);
+        background: #ffffff;
+        box-shadow: none;
+    }
+
+    .corp_input::placeholder,
+    .auth_input::placeholder {
+        @apply text-transparent;
+    }
+
+    .corp_input:focus + .corp_field__label,
+    .corp_input:not(:placeholder-shown) + .corp_field__label,
+    .auth_input:focus + .auth_field__label,
+    .auth_input:not(:placeholder-shown) + .auth_field__label {
+        transform: translate3d(0, 0, 0) scale(0.46);
+        letter-spacing: 0.06em;
+        color: rgba(56, 94, 53, 0.92);
+        text-transform: uppercase;
     }
 
     .auth_submit {
@@ -2093,6 +2161,128 @@
 
     .auth_link_card__action {
         @apply w-full sm:w-auto;
+    }
+
+    .auth_modal {
+        @apply fixed inset-0 z-[80] grid place-items-center p-4 sm:p-6;
+    }
+
+    .auth_modal__surface {
+        @apply relative w-full max-w-[23.5rem] rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
+        box-shadow:
+            0 1.4rem 3.3rem -2rem rgba(5, 7, 10, 0.55),
+            0 0 0 1px rgba(255, 255, 255, 0.72);
+        background: #ffffff;
+    }
+
+    .auth_modal__close {
+        @apply absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 transition duration-200;
+    }
+
+    .auth_modal__close:hover {
+        @apply border-black/20 text-black;
+    }
+
+    .auth_modal__close:focus-visible {
+        @apply outline-none ring-2 ring-black/15;
+    }
+
+    .auth_modal__close svg {
+        @apply h-4 w-4;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-width: 1.8;
+    }
+
+    .auth_modal__brand {
+        @apply mt-7 flex justify-center;
+    }
+
+    .auth_modal__brand-tile {
+        @apply relative inline-flex items-center justify-center overflow-hidden rounded-full;
+        width: 3.15rem;
+        height: 3.15rem;
+        background: #ffffff;
+        border: 1px solid rgba(17, 17, 19, 0.12);
+        box-shadow:
+            0 10px 24px rgba(17, 17, 19, 0.12),
+            0 0 0 1px rgba(17, 17, 19, 0.06);
+    }
+
+    .auth_modal__brand-icon {
+        @apply block h-full w-full rounded-full object-cover;
+        transform: scale(1.15);
+        transform-origin: center;
+    }
+
+    .auth_modal__title {
+        @apply mx-auto mt-5 max-w-[16rem] text-center text-[1.38rem] font-semibold tracking-[-0.03em] text-black;
+        line-height: 1.22;
+        text-wrap: balance;
+    }
+
+    .auth_modal__form {
+        @apply mt-6 grid gap-3;
+    }
+
+    .auth_modal__field .corp_field__label {
+        @apply text-[0.84rem];
+        transform: translate3d(0, 0.94rem, 0) scale(1);
+    }
+
+    .auth_modal__field .corp_input:focus + .corp_field__label,
+    .auth_modal__field .corp_input:not(:placeholder-shown) + .corp_field__label {
+        transform: translate3d(0, 0, 0) scale(0.4);
+        text-transform: none;
+        letter-spacing: 0.02em;
+    }
+
+    .auth_modal__submit {
+        @apply mt-2 w-full border border-black bg-white text-black;
+        box-shadow: none;
+    }
+
+    .auth_modal__submit:hover {
+        @apply -translate-y-px bg-zinc-50;
+    }
+
+    .auth_modal__submit:focus-visible {
+        @apply outline-none ring-2 ring-black/15;
+    }
+
+    .auth_modal_presence-enter-active,
+    .auth_modal_presence-leave-active,
+    .repo_modal_presence-enter-active,
+    .repo_modal_presence-leave-active {
+        transition: opacity var(--corp-modal-motion-duration) var(--corp-modal-motion-ease);
+    }
+
+    .auth_modal_presence-enter-from,
+    .auth_modal_presence-leave-to,
+    .repo_modal_presence-enter-from,
+    .repo_modal_presence-leave-to {
+        opacity: 0;
+    }
+
+    .auth_modal_presence-enter-active .auth_modal__surface,
+    .auth_modal_presence-leave-active .auth_modal__surface,
+    .repo_modal_presence-enter-active .repo_modal__surface,
+    .repo_modal_presence-leave-active .repo_modal__surface {
+        transition:
+            transform calc(var(--corp-modal-motion-duration) + 40ms) var(--corp-modal-motion-ease),
+            opacity var(--corp-modal-motion-duration) var(--corp-modal-motion-ease);
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        transform-origin: center;
+    }
+
+    .auth_modal_presence-enter-from .auth_modal__surface,
+    .auth_modal_presence-leave-to .auth_modal__surface,
+    .repo_modal_presence-enter-from .repo_modal__surface,
+    .repo_modal_presence-leave-to .repo_modal__surface {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0) scale(0.968);
     }
 }
 

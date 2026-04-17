@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<header id="site-shell-header" class="header_shell" th:fragment="siteHeader(currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, loginPath)">
+<header id="site-shell-header" class="header_shell" th:fragment="siteHeader(currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath)">
     <div class="main_container">
         <div :class="scrolled ? 'header_surface header_surface--scrolled' : 'header_surface'">
             <a class="brand_mark" href="/" th:href="${homePath}" th:attr="aria-label=#{brand.name}" @click="closeMenu()">
@@ -70,7 +70,7 @@
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary" th:href="${loginPath}" th:text="#{nav.login}">nav.login</a>
+                <button class="button button--secondary" type="button" @click="openLoginModal()" th:text="#{nav.login}">nav.login</button>
             </div>
 
             <button class="menu_button lg:hidden"
@@ -134,7 +134,7 @@
                         </a>
                     </div>
                 </details>
-                <a class="button button--secondary w-full" th:href="${loginPath}" @click="closeMenu()" th:text="#{nav.login}">nav.login</a>
+                <button class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()" th:text="#{nav.login}">nav.login</button>
             </div>
         </div>
     </div>

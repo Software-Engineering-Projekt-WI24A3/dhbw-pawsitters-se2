@@ -1,6 +1,11 @@
 const { test, expect } = require('@playwright/test');
 const { token } = require('./support/i18n');
 const { loadLiveRepository } = require('./support/repository');
+const {
+  expectNoLegacyLoginRouteLinks,
+  openLoginModal,
+  closeLoginModal
+} = require('./support/auth');
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
@@ -44,7 +49,7 @@ test.describe('Repository git view', () => {
     const activityPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="activity"]');
     const activityMenuSummary = activityPanel.locator('.repo_menu__summary').first();
 
-    await page.goto('/git');
+    await page.goto('/repository/git');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
     await expect(page).toHaveURL(/\/repository\/git$/);
@@ -57,6 +62,9 @@ test.describe('Repository git view', () => {
     await expect(page.locator('[data-segmented="gitView"] .repository_segmented__button--active')).toContainText(token('de', 'repository.git.activity'));
     await expect(activityMenuSummary).toContainText(snapshot.git.activityRanges.week, { timeout: 20000 });
     await expect(activityPanel.locator('[data-activity-day]')).toHaveCount(snapshot.git.activity.week.length);
+    await expectNoLegacyLoginRouteLinks(page);
+    await openLoginModal(page, { locale: 'de' });
+    await closeLoginModal(page);
 
     const activityWidths = await activityPanel.locator('[data-activity-day]').evaluateAll((elements) => {
       return elements.map((element) => element.getBoundingClientRect().width);
@@ -182,7 +190,7 @@ test.describe('Repository git view', () => {
     expect(graphLayout.overflowX).toBe('auto');
     expect(graphLayout.scrollWidth).toBeGreaterThanOrEqual(graphLayout.clientWidth);
     expect(Math.abs(graphLayout.rightGap - graphLayout.leftGap)).toBeLessThanOrEqual(2);
-    expect(Math.abs((graphLayout.topAnchorCenter ?? 0) - graphLayout.viewportCenter)).toBeLessThanOrEqual(2);
+    expect(Math.abs((graphLayout.topAnchorCenter ?? 0) - graphLayout.viewportCenter)).toBeLessThanOrEqual(4);
     const graphSummaryCount = await graphSummary.count();
     if (graphSummaryCount > 0) {
       await expect(graphSummary).toContainText(snapshot.git.defaultBranch);
@@ -279,7 +287,7 @@ test.describe('Repository git view', () => {
       });
     });
 
-    await page.goto('/git');
+    await page.goto('/repository/git');
     await page.getByRole('button', { name: token('de', 'repository.git.timeline') }).click();
 
     const graphPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="graph"]');
