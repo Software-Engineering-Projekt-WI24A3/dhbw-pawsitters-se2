@@ -860,6 +860,7 @@ createApp({
             repositoryRefreshRequestId: 0,
             gitGraphSignature: '',
             gitGraphWidth: 0,
+            gitGraphRenderToken: 0,
             selectedGitCommitHash: '',
             hoveredGitCommitHash: '',
             gitGraphTooltip: {
@@ -1944,15 +1945,21 @@ createApp({
         },
         readGitGraphNodeCenterX(commitHash) {
             const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
             const node = this.getGraphCommitNode(commitHash);
 
             if (!panel || !node) {
                 return null;
             }
 
-            const panelRect = panel.getBoundingClientRect();
             const nodeRect = node.getBoundingClientRect();
+            const labelLayerRect = labelLayer?.getBoundingClientRect?.();
+            if (labelLayerRect) {
+                // Use the branch-label layer as shared coordinate space so scroll offsets are never double-counted.
+                return Math.round(nodeRect.left - labelLayerRect.left + (nodeRect.width / 2));
+            }
 
+            const panelRect = panel.getBoundingClientRect();
             return Math.round(nodeRect.left - panelRect.left + panel.scrollLeft + (nodeRect.width / 2));
         },
         resolveGitGraphSymmetricEdgeGap() {
@@ -2170,8 +2177,7 @@ createApp({
                 return;
             }
 
-            const panelRect = labelLayer.getBoundingClientRect();
-            const panelScrollLeft = panel.scrollLeft || 0;
+            const labelLayerRect = labelLayer.getBoundingClientRect();
             const labelOffset = GIT_GRAPH_LABEL_OFFSET_PX;
 
             branches.forEach((branch) => {
@@ -2181,8 +2187,8 @@ createApp({
                 }
 
                 const nodeRect = headNode.getBoundingClientRect();
-                const x = Math.round(nodeRect.right - panelRect.left + panelScrollLeft + labelOffset);
-                const y = Math.round(nodeRect.top - panelRect.top + (nodeRect.height / 2));
+                const x = Math.round(nodeRect.right - labelLayerRect.left + labelOffset);
+                const y = Math.round(nodeRect.top - labelLayerRect.top + (nodeRect.height / 2));
 
                 const label = document.createElement('button');
                 label.type = 'button';
@@ -2638,6 +2644,9 @@ createApp({
             this.openGitCommitModal(commitHash, { scrollGraph: true });
         },
         async renderGitGraph(force = false) {
+            this.gitGraphRenderToken += 1;
+            const renderToken = this.gitGraphRenderToken;
+
             if (this.gitView !== 'graph') {
                 return;
             }
@@ -2647,6 +2656,10 @@ createApp({
             try {
                 await ensureGitgraphLibrary();
             } catch {
+                return;
+            }
+
+            if (renderToken !== this.gitGraphRenderToken) {
                 return;
             }
 
@@ -2761,7 +2774,15 @@ createApp({
             this.gitGraphWidth = viewportWidth;
 
             window.requestAnimationFrame(() => {
+                if (renderToken !== this.gitGraphRenderToken) {
+                    return;
+                }
+
                 window.requestAnimationFrame(() => {
+                    if (renderToken !== this.gitGraphRenderToken) {
+                        return;
+                    }
+
                     this.syncGitGraphPanelHeight();
                     this.renderCustomGitBranchLabels();
                     this.syncGitGraphHorizontalSpace({
