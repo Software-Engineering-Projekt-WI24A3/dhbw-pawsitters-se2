@@ -13,6 +13,7 @@
         --text-primary: #111114;
         --text-secondary: rgba(17, 17, 19, 0.68);
         --text-tertiary: rgba(17, 17, 19, 0.46);
+        --brand-corporate-green: #4b7e48;
         --thread-line-strong: rgba(118, 189, 255, 0.24);
         --thread-line-soft: rgba(158, 210, 255, 0.12);
         --thread-node: rgba(130, 196, 255, 0.18);
@@ -204,13 +205,19 @@
     }
 
     .header_shell {
-        @apply sticky top-0 z-50 pt-3 md:pt-4;
+        @apply sticky top-0 z-50 w-full;
+        background: #ffffff;
+    }
+
+    .header_shell .main_container {
+        width: 100%;
+        margin-inline: 0;
     }
 
     .header_surface {
-        @apply flex items-center justify-between gap-4 rounded-full border border-black/10 px-4 py-3 backdrop-blur-xl transition duration-300 md:px-6;
-        background: rgba(255, 255, 255, 0.97);
-        box-shadow: 0 14px 36px rgba(15, 15, 17, 0.06);
+        @apply flex items-center justify-between gap-4 border-b border-black/10 p-5 md:p-6 transition duration-300;
+        background: #ffffff;
+        box-shadow: none;
     }
 
     @media (min-width: 1024px) {
@@ -221,14 +228,17 @@
     }
 
     .header_surface--scrolled {
-        background: rgba(255, 255, 255, 0.995);
-        box-shadow: 0 18px 44px rgba(15, 15, 17, 0.08);
+        background: #ffffff;
+        box-shadow: none;
     }
 
     .brand_mark {
-        @apply inline-flex min-w-0 items-center justify-center rounded-full no-underline;
+        @apply inline-flex min-w-0 items-center justify-center no-underline;
         position: relative;
         isolation: isolate;
+        gap: 0.72rem;
+        flex-shrink: 0;
+        color: var(--brand-corporate-green);
         transition: transform 300ms ease, filter 300ms ease;
         justify-self: start;
     }
@@ -274,6 +284,17 @@
         filter: none;
     }
 
+    .brand_mark__wordmark {
+        @apply inline-flex items-center text-[1.05rem] font-bold;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        text-transform: lowercase;
+        flex-shrink: 0;
+        opacity: 1;
+        color: var(--brand-corporate-green);
+        white-space: nowrap;
+    }
+
     .home_hero__eyebrow,
     .section_heading__eyebrow,
     .home_detail__eyebrow,
@@ -302,7 +323,7 @@
     }
 
     .repo_menu__summary {
-        @apply flex min-w-[9.5rem] cursor-pointer items-center justify-center rounded-full border border-black bg-transparent px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-px;
+        @apply flex min-w-[9.5rem] cursor-pointer items-center justify-center rounded-full border border-black bg-transparent px-4 py-3 text-[0.96rem] font-semibold text-black transition duration-300 hover:-translate-y-px;
     }
 
     .repo_menu.is-open .repo_menu__summary,
@@ -446,7 +467,7 @@
     }
 
     .repo_menu__item {
-        @apply flex items-center gap-3 rounded-[1.1rem] px-4 py-3 text-sm font-medium no-underline transition duration-300 hover:bg-zinc-100;
+        @apply flex items-center gap-3 rounded-[1.1rem] px-4 py-3 text-[0.95rem] font-medium no-underline transition duration-300 hover:bg-zinc-100;
     }
 
     .repo_menu__item--button {
@@ -454,7 +475,7 @@
     }
 
     .repo_menu--surface .repo_menu__summary {
-        @apply min-w-[11rem] justify-between rounded-full border border-black/10 bg-white/80 px-4 py-3 text-sm font-semibold text-black backdrop-blur-xl;
+        @apply min-w-[11rem] justify-between rounded-full border border-black/10 bg-white/80 px-4 py-3 text-[0.95rem] font-semibold text-black backdrop-blur-xl;
         box-shadow: 0 12px 24px rgba(17, 17, 19, 0.05);
     }
 
@@ -519,8 +540,12 @@
         @apply border-black bg-transparent text-black hover:-translate-y-px;
     }
 
+    .header_actions .button {
+        @apply text-[0.95rem];
+    }
+
     .menu_button {
-        @apply inline-flex rounded-full border border-black bg-transparent px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-px;
+        @apply inline-flex rounded-full border border-black bg-transparent px-4 py-3 text-[0.95rem] font-semibold text-black transition duration-300 hover:-translate-y-px;
     }
 
     .mobile_drawer {
@@ -570,7 +595,7 @@
     }
 
     .locale_menu__summary-code {
-        @apply text-[0.68rem] font-medium uppercase tracking-[0.12em] leading-none text-black/55;
+        @apply text-[0.75rem] font-medium uppercase tracking-[0.12em] leading-none text-black/55;
     }
 
     .locale_menu__panel {
@@ -1582,7 +1607,7 @@
         height: var(--bar-size);
         min-height: 0;
         border-radius: 0.56rem 0.56rem 0 0;
-        background: #4e98ea;
+        background: var(--brand-corporate-green);
     }
 
     .git_activity__bar--zero {
