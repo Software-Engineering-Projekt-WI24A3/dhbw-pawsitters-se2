@@ -242,6 +242,25 @@ test.describe('Repository git view', () => {
     const snapshot = await loadLiveRepository(page, 'de');
     const firstSnapshot = cloneJson(snapshot);
     const secondSnapshot = cloneJson(snapshot);
+    const pickPreferredBranch = (sourceSnapshot) => {
+      const branches = Array.isArray(sourceSnapshot.git?.branches) ? sourceSnapshot.git.branches : [];
+      if (branches.some((branch) => branch?.name === 'develop')) {
+        return 'develop';
+      }
+      return sourceSnapshot.git?.defaultBranch || branches[0]?.name || '';
+    };
+    const graphImportSource = Array.isArray(secondSnapshot.git?.projectGraph?.graphImport) && secondSnapshot.git.projectGraph.graphImport.length > 0
+      ? secondSnapshot.git.projectGraph.graphImport
+      : (secondSnapshot.git?.branchGraphs?.[pickPreferredBranch(secondSnapshot)]?.graphImport || []);
+    const mergeHashesFromSnapshot = graphImportSource
+      .filter((commit) => Array.isArray(commit?.refs) && commit.refs.some((ref) => typeof ref === 'string' && ref.toLowerCase().startsWith('merge:')))
+      .map((commit) => commit.hash)
+      .filter((hash) => typeof hash === 'string' && hash.trim());
+    const graphHashesForEdgeGap = mergeHashesFromSnapshot.length > 0
+      ? mergeHashesFromSnapshot
+      : graphImportSource
+        .map((commit) => commit?.hash)
+        .filter((hash) => typeof hash === 'string' && hash.trim());
     const beforeMessage = `E2E Verlauf Vorher ${Date.now().toString(36)}`;
     const afterMessage = `E2E Verlauf Nachher ${Date.now().toString(36)}`;
     const firstHasGraph = overwriteFirstGraphMessage(firstSnapshot, beforeMessage);
@@ -266,6 +285,11 @@ test.describe('Repository git view', () => {
     const graphPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="graph"]');
     const firstCommitMessage = graphPanel.locator('.git_graph__card .git_commit__message').first();
     await expect(firstCommitMessage).toContainText(beforeMessage);
+    await graphPanel.locator('.git_graph_branch_label').first().waitFor({ state: 'visible', timeout: 20000 });
+    await graphPanel.evaluate((panel) => {
+      const maxScrollLeft = Math.max(0, (panel.scrollWidth || 0) - (panel.clientWidth || 0));
+      panel.scrollLeft = Math.max(0, Math.round(maxScrollLeft * 0.55));
+    });
 
     await page.locator('.repository_switch__refresh').click();
     await expect.poll(() => requestCount, { timeout: 20000 }).toBeGreaterThanOrEqual(2);
@@ -273,6 +297,84 @@ test.describe('Repository git view', () => {
     await expect(page.locator('[data-segmented="gitView"] .repository_segmented__button--active')).toContainText(token('de', 'repository.git.timeline'));
     await expect(page.locator('[data-gitgraph-container] svg')).toBeVisible();
     await expect(firstCommitMessage).toContainText(afterMessage, { timeout: 20000 });
+    await graphPanel.locator('.git_graph_branch_label').first().waitFor({ state: 'visible', timeout: 20000 });
+    const refreshedGraphLayout = await graphPanel.evaluate((panel, edgeHashes) => {
+      const container = panel.querySelector('[data-gitgraph-container]');
+      const labels = Array.from(panel.querySelectorAll('.git_graph_branch_label'));
+      const labelLayer = panel.querySelector('[data-git-branch-labels]');
+      const labelLayerRect = labelLayer?.getBoundingClientRect();
+      const labelOffset = 18;
+
+      const resolveVisibleNode = (hash) => {
+        if (!hash || !container) {
+          return null;
+        }
+
+        const escaped = window.CSS?.escape ? window.CSS.escape(hash) : hash;
+        const useNode = Array.from(container.querySelectorAll(`use[href="#${escaped}"], use[xlink\\:href="#${escaped}"]`))
+          .find((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+          });
+        if (useNode) {
+          return useNode;
+        }
+
+        return Array.from(container.querySelectorAll(`circle[id="${escaped}"]`))
+          .find((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+          }) || null;
+      };
+
+      const maxLabelDelta = labels.reduce((maxDelta, label) => {
+        const commitHash = label.dataset.commitHash || '';
+        const node = resolveVisibleNode(commitHash);
+        if (!node || !labelLayerRect) {
+          return maxDelta;
+        }
+
+        const nodeRect = node.getBoundingClientRect();
+        const expectedLeft = Math.round(nodeRect.right - labelLayerRect.left + labelOffset);
+        return Math.max(maxDelta, Math.abs(label.offsetLeft - expectedLeft));
+      }, 0);
+
+      const centerForHash = (hash) => {
+        const node = resolveVisibleNode(hash);
+        if (!node || !labelLayerRect) {
+          return null;
+        }
+        const rect = node.getBoundingClientRect();
+        return rect.left - labelLayerRect.left + (rect.width / 2);
+      };
+
+      const edgeCenters = Array.isArray(edgeHashes)
+        ? edgeHashes.map((hash) => centerForHash(hash)).filter((x) => Number.isFinite(x))
+        : [];
+      const allNodeCenters = Array.from(container?.querySelectorAll('use[href], use[xlink\\:href], circle[id]') ?? [])
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0 || !labelLayerRect) {
+            return null;
+          }
+          return rect.left - labelLayerRect.left + (rect.width / 2);
+        })
+        .filter((x) => Number.isFinite(x));
+
+      const leftGap = edgeCenters.length > 0
+        ? Math.min(...edgeCenters)
+        : (allNodeCenters.length > 0 ? Math.min(...allNodeCenters) : 0);
+      const maxLabelRight = labels.reduce((max, label) => Math.max(max, label.offsetLeft + label.offsetWidth), 0);
+      const contentWidth = Math.round(container?.getBoundingClientRect().width || 0);
+
+      return {
+        maxLabelDelta,
+        leftGap: Number.isFinite(leftGap) ? leftGap : 0,
+        rightGap: contentWidth - maxLabelRight
+      };
+    }, graphHashesForEdgeGap);
+    expect(refreshedGraphLayout.maxLabelDelta).toBeLessThanOrEqual(2);
+    expect(Math.abs(refreshedGraphLayout.rightGap - refreshedGraphLayout.leftGap)).toBeLessThanOrEqual(2);
     expect(requestCount).toBeGreaterThanOrEqual(2);
   });
 });
