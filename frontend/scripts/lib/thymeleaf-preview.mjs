@@ -2,6 +2,7 @@ import { load } from 'cheerio';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { loadRepositorySnapshot, localizeRepositorySnapshot } from './repository-snapshot.mjs';
+import { loadCountryFlagEntries, loadPetChoices } from './search-data.mjs';
 
 export const supportedLocales = ['de', 'en', 'ro'];
 export const defaultLocale = 'de';
@@ -933,6 +934,36 @@ async function copyDirectory(rootDir, fromRelativePath, toRelativePath) {
   }
 }
 
+async function copyDirectoryIfExists(rootDir, fromRelativePath, toRelativePath) {
+  try {
+    await copyDirectory(rootDir, fromRelativePath, toRelativePath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+}
+
+async function writeSearchDataAssets(rootDir) {
+  const [countries, petChoices] = await Promise.all([
+    loadCountryFlagEntries(rootDir),
+    loadPetChoices(rootDir)
+  ]);
+  const dataDirectory = path.join(rootDir, 'assets', 'data');
+
+  await fs.mkdir(dataDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(dataDirectory, 'country-flags.json'),
+    `${JSON.stringify({ countries }, null, 2)}\n`,
+    'utf8'
+  );
+  await fs.writeFile(
+    path.join(dataDirectory, 'pet-choices.json'),
+    `${JSON.stringify({ choices: petChoices }, null, 2)}\n`,
+    'utf8'
+  );
+}
+
 async function buildPageContext(rootDir, locale, pageKey) {
   const messages = await loadMessages(rootDir, locale);
   const repositorySnapshot = localizeRepositorySnapshot(await loadRepositorySnapshot(rootDir), locale, messages);
@@ -996,6 +1027,14 @@ async function writeRenderedPages(rootDir, renderedPages) {
 export async function buildPreview(rootDir) {
   await validateLocaleResources(rootDir);
   await validateSourceTemplates(rootDir);
+  const animalMediaDirectories = [
+    'animal-amphibian',
+    'animal-bird',
+    'animal-bug',
+    'animal-mammal',
+    'animal-marine',
+    'animal-reptile'
+  ];
 
   await Promise.all([
     copyAsset(rootDir, 'src/js/site.js', 'assets/js/site.js'),
@@ -1003,7 +1042,14 @@ export async function buildPreview(rootDir) {
     copyAsset(rootDir, 'node_modules/vue/dist/vue.esm-browser.prod.js', 'assets/vendor/vue.esm-browser.prod.js'),
     copyAssetIfExists(rootDir, 'src/media/pawsitters-scene.svg', 'assets/media/pawsitters-scene.svg'),
     copyAssetIfExists(rootDir, 'src/media/404.svg', 'assets/media/404.svg'),
-    copyDirectory(rootDir, 'src/media/country-flag', 'assets/media/country-flag')
+    copyAssetIfExists(rootDir, 'src/media/search-lense.svg', 'assets/media/search-lense.svg'),
+    writeSearchDataAssets(rootDir),
+    copyDirectory(rootDir, 'src/media/country-flag', 'assets/media/country-flag'),
+    ...animalMediaDirectories.map((directoryName) => copyDirectoryIfExists(
+      rootDir,
+      `src/media/${directoryName}`,
+      `assets/media/${directoryName}`
+    ))
   ]);
 
   const renderedPages = await renderAllPages(rootDir);

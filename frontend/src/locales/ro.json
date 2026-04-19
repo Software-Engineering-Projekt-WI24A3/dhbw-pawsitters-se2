@@ -60,6 +60,40 @@
     "menu": "Meniu",
     "close": "Închide meniul"
   },
+  "header": {
+    "search": {
+      "destination": {
+        "label": "Unde",
+        "description": "Caută locații de închiriere",
+        "searchAria": "Caută locații de închiriere",
+        "searchPlaceholder": "Caută orașe din toată lumea",
+        "noResults": "Nu s-au găsit orașe",
+        "loading": "Se încarcă orașele",
+        "compactEmpty": "Oriunde",
+        "searchHint": "Caută orașe din întreaga lume unde ai vrea să îți lași animalul de companie."
+      },
+      "date": {
+        "label": "Când",
+        "description": "Adaugă dată",
+        "from": "De la",
+        "to": "Până la",
+        "clear": "Șterge intervalul",
+        "previousMonth": "Luna anterioară",
+        "nextMonth": "Luna următoare",
+        "compactEmpty": "Oricând"
+      },
+      "pet": {
+        "label": "Cine",
+        "description": "Animale de companie",
+        "loading": "Se încarcă animalele",
+        "empty": "Nu există animale disponibile",
+        "decrease": "Scade numărul",
+        "increase": "Crește numărul",
+        "compactEmpty": "Adaugă oaspeți"
+      },
+      "submitAria": "Pornește căutarea"
+    }
+  },
   "repository": {
     "liveLoading": "Datele live se încarcă din GitHub... :)",
     "refresh": "Reîncarcă datele Git",

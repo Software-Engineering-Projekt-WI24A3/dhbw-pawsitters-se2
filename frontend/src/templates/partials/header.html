@@ -8,49 +8,249 @@
                 <span class="brand_mark__tile" aria-hidden="true">
                     <img class="brand_mark__icon" th:src="@{/assets/media/favicon.png}" src="/assets/media/favicon.png" alt="">
                 </span>
-                <span class="brand_mark__wordmark" th:text="#{brand.name}">brand.name</span>
+                <span class="brand_mark__wordmark" th:unless="${currentPageKey == 'home'}" th:text="#{brand.name}">brand.name</span>
             </a>
 
-            <div class="header_center hidden lg:flex">
-                <details class="repo_menu" th:attr="aria-label=#{nav.ariaRepository}">
-                    <summary class="repo_menu__summary">
-                        <img class="repo_menu__icon"
-                             src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
-                             alt=""
-                             aria-hidden="true">
-                        <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
-                        <span class="repo_menu__chevron" aria-hidden="true">
-                            <svg viewBox="0 0 16 16" focusable="false">
-                                <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
-                            </svg>
-                        </span>
-                    </summary>
-                    <div class="repo_menu__panel">
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryPlaywrightPath}">
-                            <img class="repo_menu__item-icon"
-                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+            <div class="header_center">
+                <div class="header_center__stack">
+                    <details class="repo_menu" th:unless="${currentPageKey == 'home'}" th:attr="aria-label=#{nav.ariaRepository}">
+                        <summary class="repo_menu__summary">
+                            <img class="repo_menu__icon"
+                                 src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
                                  alt=""
                                  aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryGitPath}">
-                            <img class="repo_menu__item-icon"
-                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                            <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
+                            <span class="repo_menu__chevron" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                    <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
+                                </svg>
+                            </span>
+                        </summary>
+                        <div class="repo_menu__panel">
+                            <a class="repo_menu__item"
+                               th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
+                               th:href="${repositoryPlaywrightPath}">
+                                <img class="repo_menu__item-icon"
+                                     src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
+                            </a>
+                            <a class="repo_menu__item"
+                               th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
+                               th:href="${repositoryGitPath}">
+                                <img class="repo_menu__item-icon"
+                                     src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
+                            </a>
+                            <a class="repo_menu__item"
+                               th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
+                               th:href="${repositoryBoardPath}">
+                                <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
+                            </a>
+                        </div>
+                    </details>
+
+                    <div class="header_search"
+                         data-header-search
+                         th:attr="data-destination-description=#{header.search.destination.description},
+                                  data-destination-compact-empty=#{header.search.destination.compactEmpty},
+                                  data-date-description=#{header.search.date.description},
+                                  data-date-compact-empty=#{header.search.date.compactEmpty},
+                                  data-pet-description=#{header.search.pet.description},
+                                  data-pet-compact-empty=#{header.search.pet.compactEmpty},
+                                  data-destination-no-results=#{header.search.destination.noResults},
+                                  data-destination-loading=#{header.search.destination.loading},
+                                  data-pet-loading=#{header.search.pet.loading},
+                                  data-pet-empty=#{header.search.pet.empty}">
+                        <details class="header_search_field header_search_field--destination"
+                                 th:attr="aria-label=#{header.search.destination.label}">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow"
+                                      th:text="#{header.search.destination.label}">header.search.destination.label</span>
+                                <span class="header_search_field__value"
+                                      v-text="locationDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--destination">
+                                <label class="header_search_panel__search">
+                                    <span class="sr-only" th:text="#{header.search.destination.searchAria}">header.search.destination.searchAria</span>
+                                    <input class="header_search_panel__search-input"
+                                           type="search"
+                                           v-model="locationQuery"
+                                           autocomplete="off"
+                                           spellcheck="false"
+                                           th:attr="placeholder=#{header.search.destination.searchPlaceholder}">
+                                </label>
+                                <p class="header_search_panel__hint"
+                                   th:text="#{header.search.destination.searchHint}">
+                                    header.search.destination.searchHint
+                                </p>
+                                <div v-if="locationOptionsLoading"
+                                     class="header_search_panel__loading"
+                                     role="status"
+                                     aria-live="polite">
+                                    <span class="header_search_panel__loading-dots" aria-hidden="true">
+                                        <span class="header_search_panel__loading-dot"></span>
+                                        <span class="header_search_panel__loading-dot"></span>
+                                        <span class="header_search_panel__loading-dot"></span>
+                                    </span>
+                                    <span class="header_search_panel__loading-text" v-text="headerSearchStrings.destinationLoading"></span>
+                                </div>
+                                <div v-else class="header_search_panel__list" role="listbox">
+                                    <button class="header_search_location__item"
+                                            type="button"
+                                            v-for="option in filteredLocationOptions"
+                                            :key="'destination-' + option.id"
+                                            :class="{ 'header_search_location__item--active': selectedLocation && selectedLocation.id === option.id }"
+                                            @click="selectLocation(option, $event)">
+                                        <img v-if="option.flagPath"
+                                             class="header_search_location__flag"
+                                             :src="option.flagPath"
+                                             :alt="option.countryName">
+                                        <span v-else
+                                              class="header_search_location__flag header_search_location__flag--placeholder"
+                                              aria-hidden="true"></span>
+                                        <span class="header_search_location__copy">
+                                            <span class="header_search_location__name" v-text="option.cityName"></span>
+                                            <span class="header_search_location__meta" v-text="option.countryName"></span>
+                                        </span>
+                                        <span v-if="option.countryCode"
+                                              class="header_search_location__code"
+                                              v-text="option.countryCode"></span>
+                                    </button>
+                                    <p v-if="locationQuery.trim().length >= 2 && !filteredLocationOptions.length"
+                                       class="header_search_panel__empty"
+                                       v-text="headerSearchStrings.destinationNoResults"></p>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="header_search_field header_search_field--date"
+                                 th:attr="aria-label=#{header.search.date.label}">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow"
+                                      th:text="#{header.search.date.label}">header.search.date.label</span>
+                                <span class="header_search_field__value"
+                                      v-text="dateDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--date">
+                                <div class="header_search_date" @click.stop>
+                                    <div class="header_search_date__toolbar">
+                                        <button class="header_search_date__nav"
+                                                type="button"
+                                                @click="moveDateCalendar(-1)"
+                                                th:attr="aria-label=#{header.search.date.previousMonth}">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                        <p class="header_search_date__month" v-text="dateCalendarMonthLabel"></p>
+                                        <button class="header_search_date__nav"
+                                                type="button"
+                                                @click="moveDateCalendar(1)"
+                                                th:attr="aria-label=#{header.search.date.nextMonth}">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__weekdays" aria-hidden="true">
+                                        <span class="header_search_date__weekday"
+                                              v-for="weekday in dateCalendarWeekdayLabels"
+                                              :key="'weekday-' + weekday"
+                                              v-text="weekday"></span>
+                                    </div>
+                                    <div class="header_search_date__days" role="grid">
+                                        <button class="header_search_date__day"
+                                                type="button"
+                                                v-for="day in dateCalendarDays"
+                                                :key="'day-' + day.iso"
+                                                :class="{
+                                                    'header_search_date__day--outside': !day.isCurrentMonth,
+                                                    'header_search_date__day--today': day.isToday,
+                                                    'header_search_date__day--range': day.isInRange,
+                                                    'header_search_date__day--start': day.isSelectedStart,
+                                                    'header_search_date__day--end': day.isSelectedEnd,
+                                                    'header_search_date__day--single': day.isSingleDaySelection
+                                                }"
+                                                :aria-label="day.ariaLabel"
+                                                :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'"
+                                                @click="selectDateCalendarDay(day)">
+                                            <span v-text="day.dayNumber"></span>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__selection">
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label" th:text="#{header.search.date.from}">header.search.date.from</span>
+                                            <span class="header_search_date__selection-value" v-text="dateSelectionStartLabel"></span>
+                                        </span>
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label" th:text="#{header.search.date.to}">header.search.date.to</span>
+                                            <span class="header_search_date__selection-value" v-text="dateSelectionEndLabel"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="header_search_field header_search_field--pet"
+                                 th:attr="aria-label=#{header.search.pet.label}">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow"
+                                      th:text="#{header.search.pet.label}">header.search.pet.label</span>
+                                <span class="header_search_field__value"
+                                      v-text="petDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--pet">
+                                <p v-if="petChoicesLoading" class="header_search_panel__empty" v-text="headerSearchStrings.petLoading"></p>
+                                <p v-else-if="!petChoices.length" class="header_search_panel__empty" v-text="headerSearchStrings.petEmpty"></p>
+                                <ul v-else class="header_search_pet__list">
+                                    <li class="header_search_pet__item"
+                                        v-for="choice in petChoices"
+                                        :key="'pet-' + choice.value">
+                                        <span class="header_search_pet__name">
+                                            <img class="header_search_pet__emoji"
+                                                 :src="choice.emojiPath"
+                                                 alt=""
+                                                 aria-hidden="true">
+                                            <span class="header_search_pet__name-text" v-text="choice.label"></span>
+                                        </span>
+                                        <div class="header_search_pet__controls">
+                                            <button class="header_search_pet__stepper"
+                                                    type="button"
+                                                    @click="decrementPetCount(choice.value)"
+                                                    :disabled="getPetCount(choice.value) === 0"
+                                                    th:attr="aria-label=#{header.search.pet.decrease}">
+                                                <span aria-hidden="true">-</span>
+                                            </button>
+                                            <span class="header_search_pet__count"
+                                                  v-text="getPetCount(choice.value)"></span>
+                                            <button class="header_search_pet__stepper"
+                                                    type="button"
+                                                    @click="incrementPetCount(choice.value)"
+                                                    th:attr="aria-label=#{header.search.pet.increase}">
+                                                <span aria-hidden="true">+</span>
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <button class="header_search_submit"
+                                type="button"
+                                @click="triggerHeaderSearch()"
+                                th:attr="aria-label=#{header.search.submitAria}">
+                            <img class="header_search_submit__icon"
+                                 th:src="@{/assets/media/search-lense.svg}"
+                                 src="/assets/media/search-lense.svg"
                                  alt=""
                                  aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryBoardPath}">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
-                        </a>
+                        </button>
                     </div>
-                </details>
+                </div>
             </div>
 
             <div class="header_actions hidden lg:flex">
@@ -70,7 +270,7 @@
                         </a>
                     </div>
                 </details>
-                <button class="button button--secondary" type="button" @click="openLoginModal()" th:text="#{nav.login}">nav.login</button>
+                <button class="button button--secondary" th:unless="${currentPageKey == 'home'}" type="button" @click="openLoginModal()" th:text="#{nav.login}">nav.login</button>
             </div>
 
             <button class="menu_button lg:hidden"
@@ -84,7 +284,7 @@
 
         <div v-show="menuOpen" class="mobile_drawer lg:hidden" @click.self="closeMenu()">
             <div class="mobile_drawer__surface">
-                <details class="repo_menu repo_menu--mobile" th:attr="aria-label=#{nav.ariaRepository}">
+                <details class="repo_menu repo_menu--mobile" th:unless="${currentPageKey == 'home'}" th:attr="aria-label=#{nav.ariaRepository}">
                     <summary class="repo_menu__summary">
                         <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
                     </summary>
@@ -134,7 +334,7 @@
                         </a>
                     </div>
                 </details>
-                <button class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()" th:text="#{nav.login}">nav.login</button>
+                <button class="button button--secondary w-full" th:unless="${currentPageKey == 'home'}" type="button" @click="openLoginModalFromMenu()" th:text="#{nav.login}">nav.login</button>
             </div>
         </div>
     </div>

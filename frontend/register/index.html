@@ -33,31 +33,150 @@
                 <span class="brand_mark__wordmark">Pawsitters</span>
             </a>
 
-            <div class="header_center hidden lg:flex">
-                <details class="repo_menu" aria-label="Repository-Navigation">
-                    <summary class="repo_menu__summary">
-                        <img class="repo_menu__icon" src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="" aria-hidden="true">
-                        <span class="repo_menu__label">Repository</span>
-                        <span class="repo_menu__chevron" aria-hidden="true">
-                            <svg viewBox="0 0 16 16" focusable="false">
-                                <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
-                            </svg>
-                        </span>
-                    </summary>
-                    <div class="repo_menu__panel">
-                        <a class="repo_menu__item" href="/repository/playwright">
-                            <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
-                            <span class="repo_menu__item-label">Playwright</span>
-                        </a>
-                        <a class="repo_menu__item" href="/repository/git">
-                            <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
-                            <span class="repo_menu__item-label">Git</span>
-                        </a>
-                        <a class="repo_menu__item" href="/repository/kanban">
-                            <span class="repo_menu__item-label">Kanban Board</span>
-                        </a>
+            <div class="header_center">
+                <div class="header_center__stack">
+                    <details class="repo_menu" aria-label="Repository-Navigation">
+                        <summary class="repo_menu__summary">
+                            <img class="repo_menu__icon" src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__label">Repository</span>
+                            <span class="repo_menu__chevron" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                    <path d="M3.5 5.75 8 10.25l4.5-4.5"></path>
+                                </svg>
+                            </span>
+                        </summary>
+                        <div class="repo_menu__panel">
+                            <a class="repo_menu__item" href="/repository/playwright">
+                                <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                                <span class="repo_menu__item-label">Playwright</span>
+                            </a>
+                            <a class="repo_menu__item" href="/repository/git">
+                                <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                                <span class="repo_menu__item-label">Git</span>
+                            </a>
+                            <a class="repo_menu__item" href="/repository/kanban">
+                                <span class="repo_menu__item-label">Kanban Board</span>
+                            </a>
+                        </div>
+                    </details>
+
+                    <div class="header_search" data-header-search="" data-destination-description="Vermietungsorte suchen" data-destination-compact-empty="Irgendwo" data-date-description="Datum hinzufügen" data-date-compact-empty="Jederzeit" data-pet-description="Haustiere" data-pet-compact-empty="Gäste hinzufügen" data-destination-no-results="Keine Städte gefunden" data-destination-loading="Städte werden geladen" data-pet-loading="Haustiere werden geladen" data-pet-empty="Keine Haustiere verfügbar">
+                        <details class="header_search_field header_search_field--destination" aria-label="Wohin">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow">Wohin</span>
+                                <span class="header_search_field__value" v-text="locationDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--destination">
+                                <label class="header_search_panel__search">
+                                    <span class="sr-only">Vermietungsorte durchsuchen</span>
+                                    <input class="header_search_panel__search-input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Stadt weltweit suchen">
+                                </label>
+                                <p class="header_search_panel__hint">Suche Städte auf der ganzen Welt, in der du dein Haustier abgeben möchtest.</p>
+                                <div v-if="locationOptionsLoading" class="header_search_panel__loading" role="status" aria-live="polite">
+                                    <span class="header_search_panel__loading-dots" aria-hidden="true">
+                                        <span class="header_search_panel__loading-dot"></span>
+                                        <span class="header_search_panel__loading-dot"></span>
+                                        <span class="header_search_panel__loading-dot"></span>
+                                    </span>
+                                    <span class="header_search_panel__loading-text" v-text="headerSearchStrings.destinationLoading"></span>
+                                </div>
+                                <div v-else="" class="header_search_panel__list" role="listbox">
+                                    <button class="header_search_location__item" type="button" v-for="option in filteredLocationOptions" :key="'destination-' + option.id" :class="{ 'header_search_location__item--active': selectedLocation &amp;&amp; selectedLocation.id === option.id }" @click="selectLocation(option, $event)">
+                                        <img v-if="option.flagPath" class="header_search_location__flag" :src="option.flagPath" :alt="option.countryName">
+                                        <span v-else="" class="header_search_location__flag header_search_location__flag--placeholder" aria-hidden="true"></span>
+                                        <span class="header_search_location__copy">
+                                            <span class="header_search_location__name" v-text="option.cityName"></span>
+                                            <span class="header_search_location__meta" v-text="option.countryName"></span>
+                                        </span>
+                                        <span v-if="option.countryCode" class="header_search_location__code" v-text="option.countryCode"></span>
+                                    </button>
+                                    <p v-if="locationQuery.trim().length >= 2 &amp;&amp; !filteredLocationOptions.length" class="header_search_panel__empty" v-text="headerSearchStrings.destinationNoResults"></p>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="header_search_field header_search_field--date" aria-label="Wann">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow">Wann</span>
+                                <span class="header_search_field__value" v-text="dateDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--date">
+                                <div class="header_search_date" @click.stop="">
+                                    <div class="header_search_date__toolbar">
+                                        <button class="header_search_date__nav" type="button" @click="moveDateCalendar(-1)" aria-label="Vorheriger Monat">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                        <p class="header_search_date__month" v-text="dateCalendarMonthLabel"></p>
+                                        <button class="header_search_date__nav" type="button" @click="moveDateCalendar(1)" aria-label="Nächster Monat">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__weekdays" aria-hidden="true">
+                                        <span class="header_search_date__weekday" v-for="weekday in dateCalendarWeekdayLabels" :key="'weekday-' + weekday" v-text="weekday"></span>
+                                    </div>
+                                    <div class="header_search_date__days" role="grid">
+                                        <button class="header_search_date__day" type="button" v-for="day in dateCalendarDays" :key="'day-' + day.iso" :class="{
+                                                    'header_search_date__day--outside': !day.isCurrentMonth,
+                                                    'header_search_date__day--today': day.isToday,
+                                                    'header_search_date__day--range': day.isInRange,
+                                                    'header_search_date__day--start': day.isSelectedStart,
+                                                    'header_search_date__day--end': day.isSelectedEnd,
+                                                    'header_search_date__day--single': day.isSingleDaySelection
+                                                }" :aria-label="day.ariaLabel" :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'" @click="selectDateCalendarDay(day)">
+                                            <span v-text="day.dayNumber"></span>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__selection">
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label">Von</span>
+                                            <span class="header_search_date__selection-value" v-text="dateSelectionStartLabel"></span>
+                                        </span>
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label">Bis</span>
+                                            <span class="header_search_date__selection-value" v-text="dateSelectionEndLabel"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="header_search_field header_search_field--pet" aria-label="Wer">
+                            <summary class="header_search_field__summary">
+                                <span class="header_search_field__eyebrow">Wer</span>
+                                <span class="header_search_field__value" v-text="petDisplayValue"></span>
+                            </summary>
+                            <div class="header_search_field__panel header_search_field__panel--pet">
+                                <p v-if="petChoicesLoading" class="header_search_panel__empty" v-text="headerSearchStrings.petLoading"></p>
+                                <p v-else-if="!petChoices.length" class="header_search_panel__empty" v-text="headerSearchStrings.petEmpty"></p>
+                                <ul v-else="" class="header_search_pet__list">
+                                    <li class="header_search_pet__item" v-for="choice in petChoices" :key="'pet-' + choice.value">
+                                        <span class="header_search_pet__name">
+                                            <img class="header_search_pet__emoji" :src="choice.emojiPath" alt="" aria-hidden="true">
+                                            <span class="header_search_pet__name-text" v-text="choice.label"></span>
+                                        </span>
+                                        <div class="header_search_pet__controls">
+                                            <button class="header_search_pet__stepper" type="button" @click="decrementPetCount(choice.value)" :disabled="getPetCount(choice.value) === 0" aria-label="Anzahl verringern">
+                                                <span aria-hidden="true">-</span>
+                                            </button>
+                                            <span class="header_search_pet__count" v-text="getPetCount(choice.value)"></span>
+                                            <button class="header_search_pet__stepper" type="button" @click="incrementPetCount(choice.value)" aria-label="Anzahl erhöhen">
+                                                <span aria-hidden="true">+</span>
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <button class="header_search_submit" type="button" @click="triggerHeaderSearch()" aria-label="Suche starten">
+                            <img class="header_search_submit__icon" src="/assets/media/search-lense.svg" alt="" aria-hidden="true">
+                        </button>
                     </div>
-                </details>
+                </div>
             </div>
 
             <div class="header_actions hidden lg:flex">

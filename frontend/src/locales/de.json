@@ -60,6 +60,40 @@
     "menu": "Menü",
     "close": "Menü schließen"
   },
+  "header": {
+    "search": {
+      "destination": {
+        "label": "Wohin",
+        "description": "Vermietungsorte suchen",
+        "searchAria": "Vermietungsorte durchsuchen",
+        "searchPlaceholder": "Stadt weltweit suchen",
+        "noResults": "Keine Städte gefunden",
+        "loading": "Städte werden geladen",
+        "compactEmpty": "Irgendwo",
+        "searchHint": "Suche Städte auf der ganzen Welt, in der du dein Haustier abgeben möchtest."
+      },
+      "date": {
+        "label": "Wann",
+        "description": "Datum hinzufügen",
+        "from": "Von",
+        "to": "Bis",
+        "clear": "Zeitraum löschen",
+        "previousMonth": "Vorheriger Monat",
+        "nextMonth": "Nächster Monat",
+        "compactEmpty": "Jederzeit"
+      },
+      "pet": {
+        "label": "Wer",
+        "description": "Haustiere",
+        "loading": "Haustiere werden geladen",
+        "empty": "Keine Haustiere verfügbar",
+        "decrease": "Anzahl verringern",
+        "increase": "Anzahl erhöhen",
+        "compactEmpty": "Gäste hinzufügen"
+      },
+      "submitAria": "Suche starten"
+    }
+  },
   "repository": {
     "liveLoading": "Daten werden live von Github geladen... :)",
     "refresh": "Git neu laden",
