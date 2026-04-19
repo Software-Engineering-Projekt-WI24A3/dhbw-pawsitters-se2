@@ -5,6 +5,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultLocale, loadLocalizedRepositorySnapshot, renderLocalizedPage, supportedLocales } from './lib/thymeleaf-preview.mjs';
+import { loadCountryFlagEntries, loadPetChoices } from './lib/search-data.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,7 @@ const watchTargets = [
   'src/locales',
   'src/js',
   'src/media',
+  '../backend/src/main/java/com/pawsitters/model',
   'scripts/build-site.mjs',
   'scripts/check-thymeleaf.mjs',
   'scripts/lib'
@@ -588,6 +590,30 @@ async function serveRepositorySnapshot(requestUrl, response) {
   }
 }
 
+async function serveCountryFlags(response) {
+  try {
+    const countries = await loadCountryFlagEntries(rootDir);
+    sendJson(response, 200, { countries });
+  } catch (error) {
+    sendJson(response, 500, {
+      error: 'country_flags_failed',
+      message: error.message
+    });
+  }
+}
+
+async function servePetChoices(response) {
+  try {
+    const choices = await loadPetChoices(rootDir);
+    sendJson(response, 200, { choices });
+  } catch (error) {
+    sendJson(response, 500, {
+      error: 'pet_choices_failed',
+      message: error.message
+    });
+  }
+}
+
 async function main() {
   await runProcess(binPath('tailwindcss'), [
     '-c',
@@ -625,6 +651,32 @@ async function main() {
 
     if (requestUrl.pathname === '/api/repository/live.json') {
       await serveRepositorySnapshot(requestUrl, response);
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/locations/countries.json') {
+      if (request.method !== 'GET') {
+        sendJson(response, 405, {
+          error: 'method_not_allowed',
+          message: 'Only GET is supported for /api/locations/countries.json'
+        });
+        return;
+      }
+
+      await serveCountryFlags(response);
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/pets/choices' || requestUrl.pathname === '/api/pets/choices.json') {
+      if (request.method !== 'GET') {
+        sendJson(response, 405, {
+          error: 'method_not_allowed',
+          message: 'Only GET is supported for /api/pets/choices'
+        });
+        return;
+      }
+
+      await servePetChoices(response);
       return;
     }
 
