@@ -62,7 +62,7 @@ public class AuthController {
             );
             return ResponseEntity.ok(new AuthResponse(token, user.getRole().name()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body("User nicht gefunden.");
+            return ResponseEntity.status(401).body("Ungültige Credentials.");
         }
     }
 
