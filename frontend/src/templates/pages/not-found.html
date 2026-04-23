@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-no-footer :: shellNoFooter(#{meta.notFound.title}, #{meta.notFound.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-not-found', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="not_found_layout">
+        <img class="not_found_visual"
+             th:src="@{/assets/media/404.svg}"
+             src="/assets/media/404.svg"
+             alt="notFound.imageAlt"
+             th:attr="alt=#{notFound.imageAlt}">
+    </section>
+</th:block>
+</html>

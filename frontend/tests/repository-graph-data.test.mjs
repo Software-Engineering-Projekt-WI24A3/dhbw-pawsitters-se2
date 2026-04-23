@@ -85,3 +85,35 @@ test('parseAuthorContributionStats ignores malformed and binary numstat entries'
   assert.equal(stats.deletions, 3);
   assert.equal(stats.linesContributed, 10);
 });
+
+test('createActivitySeries applies tie-breaking for duplicate max counts', () => {
+  const toDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - 6);
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return toDateKey(date);
+  });
+
+  const counts = new Map([
+    [days[0], 1],
+    [days[1], 8],
+    [days[2], 8]
+  ]);
+
+  const series = __repositorySnapshotInternals.createActivitySeries(counts, 'week', 'de');
+  const maxCount = Math.max(...series.map((entry) => entry.count));
+  const maxBars = series.filter((entry) => entry.count === maxCount);
+
+  assert.equal(maxBars.length, 2);
+  assert.notEqual(maxBars[0].height, maxBars[1].height);
+  assert.equal(Math.max(...maxBars.map((entry) => entry.height)), 100);
+});

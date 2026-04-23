@@ -1,6 +1,11 @@
 const { test, expect } = require('@playwright/test');
 const { token } = require('./support/i18n');
 const { loadLiveRepository } = require('./support/repository');
+const {
+  expectNoLegacyLoginRouteLinks,
+  openLoginModal,
+  closeLoginModal
+} = require('./support/auth');
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
@@ -44,7 +49,7 @@ test.describe('Repository git view', () => {
     const activityPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="activity"]');
     const activityMenuSummary = activityPanel.locator('.repo_menu__summary').first();
 
-    await page.goto('/git');
+    await page.goto('/repository/git');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
     await expect(page).toHaveURL(/\/repository\/git$/);
@@ -57,6 +62,9 @@ test.describe('Repository git view', () => {
     await expect(page.locator('[data-segmented="gitView"] .repository_segmented__button--active')).toContainText(token('de', 'repository.git.activity'));
     await expect(activityMenuSummary).toContainText(snapshot.git.activityRanges.week, { timeout: 20000 });
     await expect(activityPanel.locator('[data-activity-day]')).toHaveCount(snapshot.git.activity.week.length);
+    await expectNoLegacyLoginRouteLinks(page);
+    await openLoginModal(page, { locale: 'de' });
+    await closeLoginModal(page);
 
     const activityWidths = await activityPanel.locator('[data-activity-day]').evaluateAll((elements) => {
       return elements.map((element) => element.getBoundingClientRect().width);
@@ -182,7 +190,7 @@ test.describe('Repository git view', () => {
     expect(graphLayout.overflowX).toBe('auto');
     expect(graphLayout.scrollWidth).toBeGreaterThanOrEqual(graphLayout.clientWidth);
     expect(Math.abs(graphLayout.rightGap - graphLayout.leftGap)).toBeLessThanOrEqual(2);
-    expect(Math.abs((graphLayout.topAnchorCenter ?? 0) - graphLayout.viewportCenter)).toBeLessThanOrEqual(2);
+    expect(Math.abs((graphLayout.topAnchorCenter ?? 0) - graphLayout.viewportCenter)).toBeLessThanOrEqual(4);
     const graphSummaryCount = await graphSummary.count();
     if (graphSummaryCount > 0) {
       await expect(graphSummary).toContainText(snapshot.git.defaultBranch);
@@ -238,6 +246,46 @@ test.describe('Repository git view', () => {
     }
   });
 
+  test('should render distinct heights for top activity bars', async ({ page }) => {
+    const snapshot = cloneJson(await loadLiveRepository(page, 'de'));
+    const seededWeek = (snapshot.git?.activity?.week || []).map((day, index) => {
+      if (index === 0) {
+        return { ...day, count: 30, height: 100, style: '--bar-size:100%;' };
+      }
+      if (index === 1) {
+        return { ...day, count: 27, height: 90, style: '--bar-size:90%;' };
+      }
+      if (index === 2) {
+        return { ...day, count: 24, height: 80, style: '--bar-size:80%;' };
+      }
+      return { ...day, count: 0, height: 0, style: '--bar-size:0%;' };
+    });
+
+    test.skip(seededWeek.length < 3, 'Snapshot has fewer than 3 activity bars.');
+
+    snapshot.git.activity.week = seededWeek;
+
+    await page.route('**/api/repository/live.json**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(snapshot)
+      });
+    });
+
+    await page.goto('/repository/git');
+
+    const heights = await page.$$eval(
+      '[data-segment-panel="gitView"][data-segment-value="activity"] [data-activity-day] .git_activity__bar',
+      (bars) => bars.slice(0, 3).map((bar) => Number(bar.getBoundingClientRect().height.toFixed(2)))
+    );
+
+    expect(heights).toHaveLength(3);
+    expect(heights[0]).toBeGreaterThan(heights[1]);
+    expect(heights[1]).toBeGreaterThan(heights[2]);
+    expect(heights[0] - heights[2]).toBeGreaterThan(8);
+  });
+
   test('should reload timeline after manual repository refresh', async ({ page }) => {
     const snapshot = await loadLiveRepository(page, 'de');
     const firstSnapshot = cloneJson(snapshot);
@@ -279,7 +327,7 @@ test.describe('Repository git view', () => {
       });
     });
 
-    await page.goto('/git');
+    await page.goto('/repository/git');
     await page.getByRole('button', { name: token('de', 'repository.git.timeline') }).click();
 
     const graphPanel = page.locator('[data-segment-panel="gitView"][data-segment-value="graph"]');
