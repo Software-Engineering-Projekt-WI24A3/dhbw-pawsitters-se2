@@ -56,7 +56,11 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "User mit ID " + id + " nicht gefunden."));
     }
-
+    public User findByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User mit E-Mail " + email + " nicht gefunden."));
+    }
     public boolean existsByEmail(String email){
         return (userRepository.existsByEmailIgnoreCase(email));
     }

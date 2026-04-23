@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,6 +68,37 @@ class UserServiceTest {
         );
 
         // Repository darf NICHT aufgerufen werden
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void whenLoginEmailHasDifferentCase_thenFindByEmailStillReturnsUser() {
+        // GIVEN
+        User existingUser = new User();
+        existingUser.setEmail("max@test.de");
+        when(userRepository.findByEmailIgnoreCase("MAX@TEST.DE")).thenReturn(Optional.of(existingUser));
+
+        // WHEN
+        User result = userService.findByEmail("MAX@TEST.DE");
+
+        // THEN
+        assertEquals("max@test.de", result.getEmail());
+        verify(userRepository).findByEmailIgnoreCase("MAX@TEST.DE");
+    }
+
+    @Test
+    void whenDuplicateEmailWithDifferentCase_thenCreateUserThrowsException() {
+        // GIVEN
+        when(userRepository.existsByEmailIgnoreCase("MAX@TEST.DE")).thenReturn(true);
+
+        // WHEN + THEN
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.createUser(
+                        "MAX@TEST.DE", "passwort123", "Max", "Muster",
+                        "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
+                        "bild.jpg", "Bio", UserRole.PET_OWNER
+                )
+        );
         verify(userRepository, never()).save(any());
     }
 }
