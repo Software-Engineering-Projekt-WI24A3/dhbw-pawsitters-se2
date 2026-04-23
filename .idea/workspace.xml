@@ -4,22 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/RegisterUser.http" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/user-controller.openapi.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/http-client.env.json" afterDir="false" />
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat: implement user registration and retrieval endpoints with OpenAPI documentation">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/AuthController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/JWTServiceTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/JwtAuthFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/JwtService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/security/AuthIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.idea/dhbw-pawsitters-se2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.idea/dhbw-pawsitters-se2.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Pet.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Pet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.idea/dhbw-pawsitters-se2.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/data.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/orga/KI_PROMPTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/KI_PROMPTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/UserServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/UserServiceTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +30,7 @@
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_projekt" value="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_se-projekt" value="3COcM1TZA3XHi3Ot37fwiS8brOF" />
       <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2" value="3CRYvqaA54AvrSJdBhLrsxpuaRw" />
+      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2/backend" value="3Cd6YlLREPX0cpUrxMcysg2wOAC" />
     </persistenceIdMap>
   </component>
   <component name="CopilotUserSelectedChatMode">
@@ -38,23 +38,23 @@
   </component>
   <component name="CopilotUserSelectedModel">
     <selectedModels>
-      <entry key="chat-panel" value="GPT-5.2-Codex" />
-      <entry key="agent-panel" value="GPT-5.2-Codex" />
+      <entry key="agent-panel" value="GPT-5.3-Codex" />
+      <entry key="chat-panel" value="GPT-5.3-Codex" />
     </selectedModels>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="HTTP Public Environment File" />
         <option value="HTTP Request" />
+        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="j_feature_restapi" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -117,6 +117,9 @@
     "HTTP Request.All in getuserbyid.executor": "Run",
     "HTTP Request.MailExists | #1.executor": "Run",
     "HTTP Request.getuserbyid | Beispiel Request.executor": "Run",
+    "JUnit.AuthIntegrationTest.executor": "Run",
+    "JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse.executor": "Run",
+    "JUnit.JwtServiceTest.executor": "Run",
     "JavaScript Debug.index.html.executor": "Run",
     "Maven.PawsittersApplication.executor": "Run",
     "Maven.pawsitters [clean].executor": "Run",
@@ -134,7 +137,8 @@
     "Shell Script.Projektstart.executor": "Run",
     "Spring Boot.PawsittersApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__adding-romanian-language-and-removing-french",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "j__feature__resterweiterung",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
@@ -163,35 +167,68 @@
       <recent name="$PROJECT_DIR$/frontend/src/media" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="configurationStatuses">
-      <map>
-        <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <map>
-              <entry key="All in GetUserByID" value="STOPPED" />
-              <entry key="All in RegisterUser" value="STOPPED" />
-              <entry key="MailExists | #1" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="RunManager" selected="Spring Boot.PawsittersApplication">
-    <configuration name="All in GetUserByID" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http">
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="JUnit.AuthIntegrationTest">
     <configuration name="All in RegisterUser" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/RegisterUser.http">
-      <method v="2" />
-    </configuration>
-    <configuration name="All in getuserbyid" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/getuserbyid.http">
       <method v="2" />
     </configuration>
     <configuration name="MailExists | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="getuserbyid | Beispiel Request" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/getuserbyid.http" executionIdentifier="Beispiel Request" runType="Run single request">
+    <configuration name="AuthIntegrationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pawsitters" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.pawsitters.security.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
+      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.AuthIntegrationTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pawsitters" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.pawsitters.security.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
+      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.AuthIntegrationTest" />
+      <option name="METHOD_NAME" value="sessionWithoutTokenReturnsLoggedInFalse" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JwtServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pawsitters" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.pawsitters.security.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
+      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.JwtServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="dhbw-pawsitters-se2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="dhbw-pawsitters-se2" />
+      <option name="filePath" />
       <method v="2" />
     </configuration>
     <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
@@ -203,11 +240,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.AuthIntegrationTest" />
+        <item itemvalue="JUnit.JwtServiceTest" />
+        <item itemvalue="JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse" />
         <item itemvalue="HTTP Request.MailExists | #1" />
         <item itemvalue="HTTP Request.All in RegisterUser" />
-        <item itemvalue="HTTP Request.All in GetUserByID" />
-        <item itemvalue="HTTP Request.All in getuserbyid" />
-        <item itemvalue="HTTP Request.getuserbyid | Beispiel Request" />
       </list>
     </recent_temporary>
   </component>
@@ -231,24 +268,11 @@
       <workItem from="1776341609724" duration="5718000" />
       <workItem from="1776350058328" duration="5134000" />
       <workItem from="1776412419552" duration="9551000" />
+      <workItem from="1776458488018" duration="5183000" />
+      <workItem from="1776703128940" duration="455000" />
+      <workItem from="1776886188541" duration="1227000" />
+      <workItem from="1776965326628" duration="1330000" />
     </task>
-    <task id="LOCAL-00001" summary="reviewed and updated all e2e tests">
-      <option name="closed" value="true" />
-      <created>1776356612637</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1776356612637</updated>
-    </task>
-    <task id="LOCAL-00002" summary="fixed the git graph">
-      <option name="closed" value="true" />
-      <created>1776410251650</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1776410251650</updated>
-    </task>
-    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -264,11 +288,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="reviewed and updated all e2e tests" />
-    <MESSAGE value="fixed the git graph" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed the git graph" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
