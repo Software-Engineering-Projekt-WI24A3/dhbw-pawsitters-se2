@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: shell(#{meta.register.title}, #{meta.register.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, ${loginPath}, 'page-auth', ~{::content})}">
+      th:replace="~{layout :: shell(#{meta.register.title}, #{meta.register.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-auth', ~{::content})}">
 <th:block th:fragment="content">
     <section class="auth_layout">
         <div class="auth_shell">
@@ -26,29 +26,32 @@
                 </div>
 
                 <form class="auth_form" novalidate>
-                    <label class="auth_field">
-                        <span class="auth_field__label" th:text="#{auth.register.name}">auth.register.name</span>
-                        <input class="auth_input"
+                    <label class="auth_field corp_field">
+                        <span class="sr-only" th:text="#{auth.register.name}">auth.register.name</span>
+                        <input class="auth_input corp_input"
                                type="text"
                                autocomplete="name"
-                               placeholder="auth.register.namePlaceholder"
-                               th:attr="placeholder=#{auth.register.namePlaceholder}">
+                               th:attr="aria-label=#{auth.register.name},placeholder=#{auth.register.namePlaceholder}">
+                        <span class="auth_field__label corp_field__label"
+                              th:text="#{auth.register.namePlaceholder}">auth.register.namePlaceholder</span>
                     </label>
-                    <label class="auth_field">
-                        <span class="auth_field__label" th:text="#{auth.register.email}">auth.register.email</span>
-                        <input class="auth_input"
+                    <label class="auth_field corp_field">
+                        <span class="sr-only" th:text="#{auth.register.email}">auth.register.email</span>
+                        <input class="auth_input corp_input"
                                type="email"
                                autocomplete="email"
-                               placeholder="auth.register.emailPlaceholder"
-                               th:attr="placeholder=#{auth.register.emailPlaceholder}">
+                               th:attr="aria-label=#{auth.register.email},placeholder=#{auth.register.emailPlaceholder}">
+                        <span class="auth_field__label corp_field__label"
+                              th:text="#{auth.register.emailPlaceholder}">auth.register.emailPlaceholder</span>
                     </label>
-                    <label class="auth_field">
-                        <span class="auth_field__label" th:text="#{auth.register.password}">auth.register.password</span>
-                        <input class="auth_input"
+                    <label class="auth_field corp_field">
+                        <span class="sr-only" th:text="#{auth.register.password}">auth.register.password</span>
+                        <input class="auth_input corp_input"
                                type="password"
                                autocomplete="new-password"
-                               placeholder="auth.register.passwordPlaceholder"
-                               th:attr="placeholder=#{auth.register.passwordPlaceholder}">
+                               th:attr="aria-label=#{auth.register.password},placeholder=#{auth.register.passwordPlaceholder}">
+                        <span class="auth_field__label corp_field__label"
+                              th:text="#{auth.register.passwordPlaceholder}">auth.register.passwordPlaceholder</span>
                     </label>
                     <button class="button button--primary auth_submit" type="button" th:text="#{auth.register.submit}">auth.register.submit</button>
                 </form>
@@ -59,7 +62,7 @@
                         <h2 class="auth_link_card__title" th:text="#{auth.register.alt.title}">auth.register.alt.title</h2>
                         <p class="auth_link_card__text" th:text="#{auth.register.alt.text}">auth.register.alt.text</p>
                     </div>
-                    <a class="button button--secondary auth_link_card__action" th:href="${loginPath}" th:text="#{auth.register.alt.cta}">auth.register.alt.cta</a>
+                    <button class="button button--secondary auth_link_card__action" type="button" @click="openLoginModal()" th:text="#{auth.register.alt.cta}">auth.register.alt.cta</button>
                 </div>
             </section>
         </div>

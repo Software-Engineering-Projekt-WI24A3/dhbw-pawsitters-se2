@@ -51,7 +51,7 @@ public class AuthController {
             AuthService.AuthResult result = authService.login(request.email(), request.password());
             return ResponseEntity.ok(new AuthResponse(result.token(), result.role()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+            return ResponseEntity.status(401).body("Ungültige Credentials.");
         }
     }
 

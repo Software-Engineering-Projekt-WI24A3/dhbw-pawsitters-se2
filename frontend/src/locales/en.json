@@ -23,6 +23,10 @@
     "register": {
       "title": "Pawsitters | Create account",
       "description": "Monochrome registration page for the localized Pawsitters frontend."
+    },
+    "notFound": {
+      "title": "Pawsitters | Page not found",
+      "description": "404 page for unknown routes."
     }
   },
   "brand": {
@@ -55,6 +59,40 @@
     "login": "Sign in",
     "menu": "Menu",
     "close": "Close menu"
+  },
+  "header": {
+    "search": {
+      "destination": {
+        "label": "Where",
+        "description": "Search rental locations",
+        "searchAria": "Search rental locations",
+        "searchPlaceholder": "Search cities worldwide",
+        "noResults": "No cities found",
+        "loading": "Loading cities",
+        "compactEmpty": "Anywhere",
+        "searchHint": "Search cities worldwide where you would like to leave your pet."
+      },
+      "date": {
+        "label": "When",
+        "description": "Add date",
+        "from": "From",
+        "to": "To",
+        "clear": "Clear range",
+        "previousMonth": "Previous month",
+        "nextMonth": "Next month",
+        "compactEmpty": "Anytime"
+      },
+      "pet": {
+        "label": "Who",
+        "description": "Pets",
+        "loading": "Loading pets",
+        "empty": "No pets available",
+        "decrease": "Decrease amount",
+        "increase": "Increase amount",
+        "compactEmpty": "Add guests"
+      },
+      "submitAria": "Start search"
+    }
   },
   "repository": {
     "liveLoading": "Live data is loading from GitHub... :)",
@@ -133,6 +171,13 @@
     }
   },
   "auth": {
+    "modal": {
+      "close": "Close",
+      "closeAria": "Close login modal",
+      "title": "Sign in or register",
+      "identifier": "Phone number or email address",
+      "continue": "Continue"
+    },
     "shared": {
       "eyebrow": "New appearance",
       "title": "Calm access to the most important flows.",
@@ -175,6 +220,9 @@
         "cta": "Back to sign in"
       }
     }
+  },
+  "notFound": {
+    "imageAlt": "404 illustration"
   },
   "footer": {
     "text": "Pawsitters. Calm interface for modern pet care."

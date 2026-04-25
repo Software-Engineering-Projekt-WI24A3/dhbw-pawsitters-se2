@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // H2 offen
                         .anyRequest().authenticated() // alles andere geschützt
                 )
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
