@@ -45,6 +45,13 @@ public class JwtService {
     }
 
     /**
+     * Extrahiert das Ablaufdatum aus einem Token.
+     */
+    public Date extractExpiration(String token) {
+        return parseClaims(token).getExpiration();
+    }
+
+    /**
      * Prüft ob ein Token noch gültig ist.
      */
     public boolean isTokenValid(String token) {

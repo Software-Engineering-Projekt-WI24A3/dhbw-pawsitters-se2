@@ -1,14 +1,17 @@
 package com.pawsitters.controller;
 
+import com.pawsitters.dto.RegisterRequest;
 import com.pawsitters.model.User;
-import com.pawsitters.model.UserRole;
 import com.pawsitters.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-
 @RestController
+@Validated
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -23,7 +26,7 @@ public class UserController {
      * POST /api/users/register
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
             User user = userService.createUser(
                     request.email(),
@@ -31,7 +34,7 @@ public class UserController {
                     request.firstName(),
                     request.lastName(),
                     request.phone(),
-                    LocalDate.parse(request.birthDate()),
+                    request.birthDate(),
                     request.emergencyContact(),
                     request.profilePicture(),
                     request.bio(),
@@ -58,22 +61,8 @@ public class UserController {
     }
 
     @GetMapping("/mailExists")
-    public ResponseEntity<?> mailExists(@RequestParam String mail) {
+    public ResponseEntity<?> mailExists(@RequestParam @NotBlank @Email String mail) {
         boolean user = userService.existsByEmail(mail);
         return ResponseEntity.ok(user);
     }
-
-    // ===== Request Body Record =====
-    public record RegisterRequest(
-            String email,
-            String password,
-            String firstName,
-            String lastName,
-            String phone,
-            String birthDate,
-            String emergencyContact,
-            String profilePicture,
-            String bio,
-            UserRole role
-    ) {}
 }
