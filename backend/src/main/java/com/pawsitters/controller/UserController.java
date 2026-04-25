@@ -3,12 +3,20 @@ package com.pawsitters.controller;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
 @RestController
+@Validated
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -23,7 +31,7 @@ public class UserController {
      * POST /api/users/register
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
             User user = userService.createUser(
                     request.email(),
@@ -31,7 +39,7 @@ public class UserController {
                     request.firstName(),
                     request.lastName(),
                     request.phone(),
-                    LocalDate.parse(request.birthDate()),
+                    request.birthDate(),
                     request.emergencyContact(),
                     request.profilePicture(),
                     request.bio(),
@@ -58,22 +66,22 @@ public class UserController {
     }
 
     @GetMapping("/mailExists")
-    public ResponseEntity<?> mailExists(@RequestParam String mail) {
+    public ResponseEntity<?> mailExists(@RequestParam @NotBlank @Email String mail) {
         boolean user = userService.existsByEmail(mail);
         return ResponseEntity.ok(user);
     }
 
     // ===== Request Body Record =====
     public record RegisterRequest(
-            String email,
-            String password,
-            String firstName,
-            String lastName,
-            String phone,
-            String birthDate,
-            String emergencyContact,
-            String profilePicture,
-            String bio,
-            UserRole role
+            @NotBlank @Email String email,
+            @NotBlank @Size(min = 8, max = 100) String password,
+            @NotBlank String firstName,
+            @NotBlank String lastName,
+            @NotBlank String phone,
+            @NotNull @Past LocalDate birthDate,
+            @NotBlank String emergencyContact,
+            @NotBlank String profilePicture,
+            @NotBlank String bio,
+            @NotNull UserRole role
     ) {}
 }
