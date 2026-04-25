@@ -1,6 +1,7 @@
 package com.pawsitters;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Haupteinstiegspunkt der Pawsitters-Anwendung.
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * alle notwendigen Komponenten.
  */
 @SpringBootApplication
+@EnableScheduling
 public class PawsittersApplication {
 
 	public static void main(String[] args) {
