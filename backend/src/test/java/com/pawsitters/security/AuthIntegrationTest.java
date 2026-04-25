@@ -88,6 +88,22 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.email").value(baseEmail));
     }
 
+    @Test
+    void logoutInvalidatesTokenForSessionCheck() throws Exception {
+        String baseEmail = "logout." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(baseEmail, "StrongPass123!");
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/auth/session")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loggedIn").value(false))
+                .andExpect(jsonPath("$.email").value(nullValue()));
+    }
+
     private String registerUser(String email, String password) throws Exception {
         String response = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

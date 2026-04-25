@@ -3,6 +3,7 @@ package com.pawsitters.service;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
+import com.pawsitters.security.RevokedTokenService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +15,16 @@ public class AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final RevokedTokenService revokedTokenService;
 
-    public AuthService(UserService userService, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public AuthService(UserService userService,
+                       JwtService jwtService,
+                       PasswordEncoder passwordEncoder,
+                       RevokedTokenService revokedTokenService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.revokedTokenService = revokedTokenService;
     }
 
     public AuthResult register(String email,
@@ -54,6 +60,19 @@ public class AuthService {
         }
 
         return toAuthResult(user);
+    }
+
+    public void logout(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return;
+        }
+
+        String token = authorizationHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            return;
+        }
+
+        revokedTokenService.revoke(token, jwtService.extractExpiration(token).toInstant());
     }
 
     private AuthResult toAuthResult(User user) {

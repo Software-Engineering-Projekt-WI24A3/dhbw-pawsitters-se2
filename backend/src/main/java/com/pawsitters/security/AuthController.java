@@ -57,9 +57,8 @@ public class AuthController {
 
     /** POST /api/auth/logout */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        // JWT ist stateless – Client löscht Token lokal
-        // Server-seitig nichts zu tun
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+        authService.logout(authorizationHeader);
         return ResponseEntity.ok("Logout erfolgreich.");
     }
 
