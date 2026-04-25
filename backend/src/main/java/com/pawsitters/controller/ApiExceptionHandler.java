@@ -31,9 +31,20 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String field = violation.getPropertyPath() != null
+                    ? violation.getPropertyPath().toString()
+                    : "request";
+            if (field == null || field.isBlank()) {
+                field = "request";
+            }
+            errors.put(field, violation.getMessage());
+        });
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("message", "Validation failed");
-        body.put("errors", ex.getMessage());
+        body.put("errors", errors);
         return ResponseEntity.badRequest().body(body);
     }
 
