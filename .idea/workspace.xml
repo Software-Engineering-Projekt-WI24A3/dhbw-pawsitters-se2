@@ -4,537 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="fixed the height of the git graph, general bugs, improving the animation of the pop ups and added several e2e tests">
-      <change afterPath="$PROJECT_DIR$/frontend/src/media/search-lense.svg" afterDir="false" />
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat: implement logout functionality with token revocation and session invalidation">
+      <change afterPath="$PROJECT_DIR$/backend/README_PET_IMAGES.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/PetController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/.gitkeep" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/PetIntegrationTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F4-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F4-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F6-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F6-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FD-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FD-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E6-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E7-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E8-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1E9-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EA-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EB-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EC-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1ED-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EE-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1EF-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F0-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F1-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F2-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F5.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F5.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F3-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F4-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F4-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F5-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F6-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F6-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F7-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FD.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FD.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F8-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1E9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1ED.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1ED.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1EF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F1.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F1.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F4.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F4.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F7.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F7.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1F9-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1FE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1FE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1FF.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FA-1F1FF.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1E8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1E8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EE.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1EE.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1F3.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1F3.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1FA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FB-1F1FA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FC-1F1EB.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FC-1F1EB.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FC-1F1F8.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FC-1F1F8.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FD-1F1F0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FD-1F1F0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FE-1F1EA.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FE-1F1EA.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FE-1F1F9.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FE-1F1F9.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1E6.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1E6.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1F2.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1F2.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1FC.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/country-flag/1F1FF-1F1FC.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Pet.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Pet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/PetChoice.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/PetChoice.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/PetRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/PetRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/PetService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/PetService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -553,8 +32,8 @@
   </component>
   <component name="CopilotUserSelectedModel">
     <selectedModels>
-      <entry key="chat-panel" value="GPT-5.2-Codex" />
       <entry key="agent-panel" value="GPT-5.2-Codex" />
+      <entry key="chat-panel" value="GPT-5.2-Codex" />
     </selectedModels>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -632,6 +111,10 @@
     "HTTP Request.All in getuserbyid.executor": "Run",
     "HTTP Request.MailExists | #1.executor": "Run",
     "HTTP Request.getuserbyid | Beispiel Request.executor": "Run",
+    "JUnit.AuthIntegrationTest.executor": "Run",
+    "JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse.executor": "Run",
+    "JUnit.JwtServiceTest.executor": "Run",
+    "JUnit.PetIntegrationTest.executor": "Run",
     "JavaScript Debug.index.html.executor": "Run",
     "Maven.PawsittersApplication.executor": "Run",
     "Maven.pawsitters [clean].executor": "Run",
@@ -679,33 +162,33 @@
       <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="configurationStatuses">
-      <map>
-        <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <map>
-              <entry key="All in GetUserByID" value="STOPPED" />
-              <entry key="All in RegisterUser" value="STOPPED" />
-              <entry key="MailExists | #1" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="RunManager" selected="Shell Script.Projektstart">
-    <configuration name="All in GetUserByID" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http">
-      <method v="2" />
-    </configuration>
-    <configuration name="All in RegisterUser" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/RegisterUser.http">
+  <component name="RunManager" selected="JUnit.PetIntegrationTest">
+    <configuration name="MailExists | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="All in getuserbyid" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/getuserbyid.http">
       <method v="2" />
     </configuration>
-    <configuration name="MailExists | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" executionIdentifier="#1" runType="Run single request">
-      <method v="2" />
+    <configuration name="PetIntegrationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pawsitters" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.pawsitters.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.pawsitters.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.pawsitters.controller.PetIntegrationTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="dhbw-pawsitters-se2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration name="Projektstart" type="ShConfigurationType" temporary="true">
       <option name="SCRIPT_TEXT" value="" />
@@ -731,11 +214,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Shell Script.Projektstart" />
+        <item itemvalue="JUnit.PetIntegrationTest" />
+        <item itemvalue="JUnit.AuthIntegrationTest" />
+        <item itemvalue="JUnit.JwtServiceTest" />
+        <item itemvalue="JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse" />
         <item itemvalue="HTTP Request.MailExists | #1" />
-        <item itemvalue="HTTP Request.All in RegisterUser" />
-        <item itemvalue="HTTP Request.All in GetUserByID" />
-        <item itemvalue="HTTP Request.All in getuserbyid" />
       </list>
     </recent_temporary>
   </component>
@@ -758,41 +241,39 @@
       <workItem from="1776341609724" duration="5718000" />
       <workItem from="1776350058328" duration="5134000" />
       <workItem from="1776412419552" duration="9551000" />
-      <workItem from="1776595690397" duration="8223000" />
+      <workItem from="1776458488018" duration="5183000" />
+      <workItem from="1776703128940" duration="455000" />
+      <workItem from="1776886188541" duration="1227000" />
+      <workItem from="1776965326628" duration="1958000" />
+      <workItem from="1777145461181" duration="2722000" />
+      <workItem from="1777291810767" duration="1147000" />
+      <workItem from="1777553794592" duration="1341000" />
     </task>
-    <task id="LOCAL-00001" summary="reviewed and updated all e2e tests">
+    <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
-      <created>1776356612637</created>
+      <created>1776966706173</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1776356612637</updated>
+      <updated>1776966706173</updated>
     </task>
-    <task id="LOCAL-00002" summary="fixed the git graph">
+    <task id="LOCAL-00002" summary="feat: implement authentication service with registration and login functionality - userstory finalisierung">
       <option name="closed" value="true" />
-      <created>1776410251650</created>
+      <created>1777146680398</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1776410251650</updated>
+      <updated>1777146680398</updated>
     </task>
-    <task id="LOCAL-00003" summary="addd romanian language - removed french">
+    <task id="LOCAL-00003" summary="feat: implement logout functionality with token revocation and session invalidation">
       <option name="closed" value="true" />
-      <created>1776417367508</created>
+      <created>1777147697912</created>
       <option name="number" value="00003" />
       <option name="presentableId" value="LOCAL-00003" />
       <option name="project" value="LOCAL" />
-      <updated>1776417367509</updated>
+      <updated>1777147697912</updated>
     </task>
-    <task id="LOCAL-00004" summary="fixed the height of the git graph, general bugs, improving the animation of the pop ups and added several e2e tests">
-      <option name="closed" value="true" />
-      <created>1776446378906</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1776446378906</updated>
-    </task>
-    <option name="localTasksCounter" value="5" />
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -810,11 +291,10 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="reviewed and updated all e2e tests" />
-    <MESSAGE value="fixed the git graph" />
-    <MESSAGE value="addd romanian language - removed french" />
-    <MESSAGE value="fixed the height of the git graph, general bugs, improving the animation of the pop ups and added several e2e tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed the height of the git graph, general bugs, improving the animation of the pop ups and added several e2e tests" />
+    <MESSAGE value="feat: add JWT authentication with registration and login endpoints" />
+    <MESSAGE value="feat: implement authentication service with registration and login functionality - userstory finalisierung" />
+    <MESSAGE value="feat: implement logout functionality with token revocation and session invalidation" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: implement logout functionality with token revocation and session invalidation" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

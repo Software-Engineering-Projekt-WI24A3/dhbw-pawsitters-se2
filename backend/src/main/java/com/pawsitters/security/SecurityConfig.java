@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Login/Register offen
                         .requestMatchers("/h2-console/**").permitAll() // H2 offen
+                        .requestMatchers("/uploads/**").permitAll() // hochgeladene Bilder öffentlich
                         .anyRequest().authenticated() // alles andere geschützt
                 )
                 .headers(headers -> headers
