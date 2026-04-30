@@ -5,22 +5,30 @@ import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.repository.PetRepository;
 import com.pawsitters.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class PetService {
+
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp");
 
     private final PetRepository petRepository;
     private final UserRepository userRepository;
@@ -75,8 +83,11 @@ public class PetService {
                                       int age,
                                       String specialNeeds) {
         User owner = getOwnerByEmail(ownerEmail);
-        Pet pet = petRepository.findByIdAndOwnerId(petId, owner.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Tier nicht gefunden oder kein Zugriff."));
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tier nicht gefunden."));
+        if (!pet.getOwner().getId().equals(owner.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Kein Zugriff auf dieses Tier.");
+        }
 
         pet.setName(name);
         pet.setSpecies(species);
@@ -96,15 +107,32 @@ public class PetService {
             throw new IllegalArgumentException("Nur Bilddateien sind erlaubt.");
         }
 
+        String extension = extractExtension(image.getOriginalFilename());
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Nur JPEG, PNG, GIF, WebP und BMP Dateien sind erlaubt.");
+        }
+
         User owner = getOwnerByEmail(ownerEmail);
-        Pet pet = petRepository.findByIdAndOwnerId(petId, owner.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Tier nicht gefunden oder kein Zugriff."));
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tier nicht gefunden."));
+        if (!pet.getOwner().getId().equals(owner.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Kein Zugriff auf dieses Tier.");
+        }
 
         byte[] imageBytes;
         try {
             imageBytes = image.getBytes();
         } catch (IOException e) {
             throw new IllegalArgumentException("Bild konnte nicht gelesen werden.");
+        }
+
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage img = ImageIO.read(bais);
+            if (img == null) {
+                throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
         }
 
         String imageHash = sha256(imageBytes);
@@ -120,7 +148,6 @@ public class PetService {
         Path uploadDir = Paths.get("uploads", "pets");
         try {
             Files.createDirectories(uploadDir);
-            String extension = extractExtension(image.getOriginalFilename());
             String filename = "pet-" + pet.getId() + "-" + UUID.randomUUID() + extension;
             Path target = uploadDir.resolve(filename);
             Files.write(target, imageBytes);
@@ -129,12 +156,34 @@ public class PetService {
 
             pet.setImagePath("/uploads/pets/" + filename);
             pet.setImageHash(imageHash);
-            return petRepository.save(pet);
+            try {
+                return petRepository.save(pet);
+            } catch (DataIntegrityViolationException e) {
+                Files.deleteIfExists(target);
+                Throwable cause = e.getRootCause();
+                String causeMsg = cause != null ? cause.getMessage().toLowerCase() : "";
+                if (causeMsg.contains("image_hash") || causeMsg.contains("imagehash")) {
+                    throw new IllegalArgumentException("Dieses Foto ist bereits einem anderen Tier zugeordnet.");
+                }
+                throw e;
+            }
         } catch (IOException e) {
             throw new IllegalArgumentException("Bild konnte nicht gespeichert werden.");
         }
     }
 
+
+    @Transactional
+    public void deletePetForOwnerEmail(Long petId, String ownerEmail) {
+        User owner = getOwnerByEmail(ownerEmail);
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tier nicht gefunden."));
+        if (!pet.getOwner().getId().equals(owner.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Kein Zugriff auf dieses Tier.");
+        }
+        deleteOldImageIfPresent(pet.getImagePath());
+        petRepository.delete(pet);
+    }
 
     public void deletePet(Long petId, Long ownerId) {
         Pet pet = petRepository.findById(petId)
@@ -181,6 +230,10 @@ public class PetService {
         }
         String raw = originalFilename.substring(index).toLowerCase();
         if (raw.length() > 10) {
+            return ".bin";
+        }
+        // Only allow alphanumeric characters after the dot
+        if (!raw.matches("\\.[a-z0-9]+")) {
             return ".bin";
         }
         return raw;
