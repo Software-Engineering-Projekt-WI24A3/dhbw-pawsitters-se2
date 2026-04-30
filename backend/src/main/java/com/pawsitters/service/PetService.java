@@ -145,6 +145,9 @@ public class PetService {
                     "Dieses Tier gehört nicht dem angegebenen User.");
         }
 
+        deleteOldImageIfPresent(pet.getImagePath());
+        pet.setImagePath(null);
+        pet.setImageHash(null);
         petRepository.delete(pet);
     }
 
