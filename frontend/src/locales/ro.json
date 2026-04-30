@@ -23,6 +23,10 @@
     "register": {
       "title": "Pawsitters | Creează cont",
       "description": "Pagină monocromă de înregistrare pentru frontendul localizat Pawsitters."
+    },
+    "notFound": {
+      "title": "Pawsitters | Pagina nu a fost găsită",
+      "description": "Pagină 404 pentru rute necunoscute."
     }
   },
   "brand": {
@@ -55,6 +59,40 @@
     "login": "Autentificare",
     "menu": "Meniu",
     "close": "Închide meniul"
+  },
+  "header": {
+    "search": {
+      "destination": {
+        "label": "Unde",
+        "description": "Caută locații de închiriere",
+        "searchAria": "Caută locații de închiriere",
+        "searchPlaceholder": "Caută orașe din toată lumea",
+        "noResults": "Nu s-au găsit orașe",
+        "loading": "Se încarcă orașele",
+        "compactEmpty": "Oriunde",
+        "searchHint": "Caută orașe din întreaga lume unde ai vrea să îți lași animalul de companie."
+      },
+      "date": {
+        "label": "Când",
+        "description": "Adaugă dată",
+        "from": "De la",
+        "to": "Până la",
+        "clear": "Șterge intervalul",
+        "previousMonth": "Luna anterioară",
+        "nextMonth": "Luna următoare",
+        "compactEmpty": "Oricând"
+      },
+      "pet": {
+        "label": "Cine",
+        "description": "Animale de companie",
+        "loading": "Se încarcă animalele",
+        "empty": "Nu există animale disponibile",
+        "decrease": "Scade numărul",
+        "increase": "Crește numărul",
+        "compactEmpty": "Adaugă oaspeți"
+      },
+      "submitAria": "Pornește căutarea"
+    }
   },
   "repository": {
     "liveLoading": "Datele live se încarcă din GitHub... :)",
@@ -133,6 +171,13 @@
     }
   },
   "auth": {
+    "modal": {
+      "close": "Închide",
+      "closeAria": "Închide fereastra de autentificare",
+      "title": "Autentifică-te sau înregistrează-te",
+      "identifier": "Număr de telefon sau adresă de e-mail",
+      "continue": "Continuă"
+    },
     "shared": {
       "eyebrow": "Aspect nou",
       "title": "Acces calm la cele mai importante fluxuri.",
@@ -175,6 +220,9 @@
         "cta": "Înapoi la autentificare"
       }
     }
+  },
+  "notFound": {
+    "imageAlt": "Ilustrație 404"
   },
   "footer": {
     "text": "Pawsitters. Interfață calmă pentru îngrijirea modernă a animalelor de companie."

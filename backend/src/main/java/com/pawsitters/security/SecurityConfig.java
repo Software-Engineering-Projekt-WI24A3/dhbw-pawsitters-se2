@@ -32,6 +32,8 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll() // hochgeladene Bilder öffentlich
                         .anyRequest().authenticated() // alles andere geschützt
                 )
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

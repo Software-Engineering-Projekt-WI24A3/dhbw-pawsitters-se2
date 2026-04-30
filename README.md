@@ -1,16 +1,17 @@
-# Pawsitters
+<h1 align="center">Pawsitters</h1>
 
-Software-Engineering Projekt von Justus Krahl, Raphael Buller & Niklas Ulbrich  
-Kurs WI24A3 bei Dr. Ana-Maria Nicolaescu
+Herzlich willkommen bei dem Software-Engineering Projekt von Justus Krahl, Raphael Buller & Niklas Ulbrich für die Vorlesung "Software Engineering" im Kurs WI24A3 bei Dr. Ana-Maria Nicolaescu
 
-![Japan](https://github.com/user-attachments/assets/49667f7b-60a7-4f34-aa31-27685d84e30c)
+<p align="center">
+  <img src="https://freesvg.org/img/Tiere-lineart.png" alt="Japan" />
+</p>
 
-## Projektstruktur
+<h2 align="center">Projektstruktur</h2>
 
 - `frontend/` enthält das komplette Frontend mit HTML, CSS, JavaScript, Vue, Tailwind und Playwright-E2E-Tests.
 - `backend/` enthält das Backend mit Spring Boot und den API-/Server-Komponenten.
 
-## Entwicklung
+<h2 align="center">Entwicklung</h2>
 
 ### Frontend
 
@@ -34,8 +35,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-## Hinweise
+<h2 align="center">Hinweise</h2>
 
 - Die zentrale `.gitignore` liegt im Projekt-Root und gilt gemeinsam für Frontend und Backend.
 - Frontend und Backend bleiben technisch getrennt, werden aber gemeinsam in diesem Repository verwaltet.
-

@@ -13,14 +13,18 @@ async function main() {
 
   assert.equal(results.length, 6);
   assert.ok(results.find((entry) => entry.locale === defaultLocale && entry.pageKey === 'home'));
-  assert.ok(results.find((entry) => entry.pageKey === 'login'));
   assert.ok(results.find((entry) => entry.pageKey === 'register'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryGit'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryPlaywright'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryKanban'));
+  assert.ok(results.find((entry) => entry.pageKey === 'notFound'));
 
   for (const entry of results) {
     assert.match(entry.html, /<main[^>]*class="main_container site_main"/);
+    if (entry.pageKey === 'notFound') {
+      assert.doesNotMatch(entry.html, /<footer[^>]*class="main_container site_footer"/);
+      continue;
+    }
     assert.match(entry.html, /<footer[^>]*class="main_container site_footer"/);
   }
 }

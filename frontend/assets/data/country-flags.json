@@ -1,0 +1,1040 @@
+{
+  "countries": [
+    {
+      "code": "AC",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1E8.svg"
+    },
+    {
+      "code": "AD",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1E9.svg"
+    },
+    {
+      "code": "AE",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1EA.svg"
+    },
+    {
+      "code": "AF",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1EB.svg"
+    },
+    {
+      "code": "AG",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1EC.svg"
+    },
+    {
+      "code": "AI",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1EE.svg"
+    },
+    {
+      "code": "AL",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F1.svg"
+    },
+    {
+      "code": "AM",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F2.svg"
+    },
+    {
+      "code": "AO",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F4.svg"
+    },
+    {
+      "code": "AQ",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F6.svg"
+    },
+    {
+      "code": "AR",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F7.svg"
+    },
+    {
+      "code": "AS",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F8.svg"
+    },
+    {
+      "code": "AT",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1F9.svg"
+    },
+    {
+      "code": "AU",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1FA.svg"
+    },
+    {
+      "code": "AW",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1FC.svg"
+    },
+    {
+      "code": "AX",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1FD.svg"
+    },
+    {
+      "code": "AZ",
+      "flagPath": "/assets/media/country-flag/1F1E6-1F1FF.svg"
+    },
+    {
+      "code": "BA",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1E6.svg"
+    },
+    {
+      "code": "BB",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1E7.svg"
+    },
+    {
+      "code": "BD",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1E9.svg"
+    },
+    {
+      "code": "BE",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1EA.svg"
+    },
+    {
+      "code": "BF",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1EB.svg"
+    },
+    {
+      "code": "BG",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1EC.svg"
+    },
+    {
+      "code": "BH",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1ED.svg"
+    },
+    {
+      "code": "BI",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1EE.svg"
+    },
+    {
+      "code": "BJ",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1EF.svg"
+    },
+    {
+      "code": "BL",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F1.svg"
+    },
+    {
+      "code": "BM",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F2.svg"
+    },
+    {
+      "code": "BN",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F3.svg"
+    },
+    {
+      "code": "BO",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F4.svg"
+    },
+    {
+      "code": "BQ",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F6.svg"
+    },
+    {
+      "code": "BR",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F7.svg"
+    },
+    {
+      "code": "BS",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F8.svg"
+    },
+    {
+      "code": "BT",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1F9.svg"
+    },
+    {
+      "code": "BV",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1FB.svg"
+    },
+    {
+      "code": "BW",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1FC.svg"
+    },
+    {
+      "code": "BY",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1FE.svg"
+    },
+    {
+      "code": "BZ",
+      "flagPath": "/assets/media/country-flag/1F1E7-1F1FF.svg"
+    },
+    {
+      "code": "CA",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1E6.svg"
+    },
+    {
+      "code": "CC",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1E8.svg"
+    },
+    {
+      "code": "CD",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1E9.svg"
+    },
+    {
+      "code": "CF",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1EB.svg"
+    },
+    {
+      "code": "CG",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1EC.svg"
+    },
+    {
+      "code": "CH",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1ED.svg"
+    },
+    {
+      "code": "CI",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1EE.svg"
+    },
+    {
+      "code": "CK",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F0.svg"
+    },
+    {
+      "code": "CL",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F1.svg"
+    },
+    {
+      "code": "CM",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F2.svg"
+    },
+    {
+      "code": "CN",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F3.svg"
+    },
+    {
+      "code": "CO",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F4.svg"
+    },
+    {
+      "code": "CP",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F5.svg"
+    },
+    {
+      "code": "CQ",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F6.svg"
+    },
+    {
+      "code": "CR",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1F7.svg"
+    },
+    {
+      "code": "CU",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FA.svg"
+    },
+    {
+      "code": "CV",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FB.svg"
+    },
+    {
+      "code": "CW",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FC.svg"
+    },
+    {
+      "code": "CX",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FD.svg"
+    },
+    {
+      "code": "CY",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FE.svg"
+    },
+    {
+      "code": "CZ",
+      "flagPath": "/assets/media/country-flag/1F1E8-1F1FF.svg"
+    },
+    {
+      "code": "DE",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg"
+    },
+    {
+      "code": "DG",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EC.svg"
+    },
+    {
+      "code": "DJ",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1EF.svg"
+    },
+    {
+      "code": "DK",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1F0.svg"
+    },
+    {
+      "code": "DM",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1F2.svg"
+    },
+    {
+      "code": "DO",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1F4.svg"
+    },
+    {
+      "code": "DZ",
+      "flagPath": "/assets/media/country-flag/1F1E9-1F1FF.svg"
+    },
+    {
+      "code": "EA",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1E6.svg"
+    },
+    {
+      "code": "EC",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1E8.svg"
+    },
+    {
+      "code": "EE",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1EA.svg"
+    },
+    {
+      "code": "EG",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1EC.svg"
+    },
+    {
+      "code": "EH",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1ED.svg"
+    },
+    {
+      "code": "ER",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1F7.svg"
+    },
+    {
+      "code": "ES",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1F8.svg"
+    },
+    {
+      "code": "ET",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1F9.svg"
+    },
+    {
+      "code": "EU",
+      "flagPath": "/assets/media/country-flag/1F1EA-1F1FA.svg"
+    },
+    {
+      "code": "FI",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1EE.svg"
+    },
+    {
+      "code": "FJ",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1EF.svg"
+    },
+    {
+      "code": "FK",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F0.svg"
+    },
+    {
+      "code": "FM",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F2.svg"
+    },
+    {
+      "code": "FO",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F4.svg"
+    },
+    {
+      "code": "FR",
+      "flagPath": "/assets/media/country-flag/1F1EB-1F1F7.svg"
+    },
+    {
+      "code": "GA",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E6.svg"
+    },
+    {
+      "code": "GB",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E7.svg"
+    },
+    {
+      "code": "GD",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1E9.svg"
+    },
+    {
+      "code": "GE",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1EA.svg"
+    },
+    {
+      "code": "GF",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1EB.svg"
+    },
+    {
+      "code": "GG",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1EC.svg"
+    },
+    {
+      "code": "GH",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1ED.svg"
+    },
+    {
+      "code": "GI",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1EE.svg"
+    },
+    {
+      "code": "GL",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F1.svg"
+    },
+    {
+      "code": "GM",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F2.svg"
+    },
+    {
+      "code": "GN",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F3.svg"
+    },
+    {
+      "code": "GP",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F5.svg"
+    },
+    {
+      "code": "GQ",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F6.svg"
+    },
+    {
+      "code": "GR",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F7.svg"
+    },
+    {
+      "code": "GS",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F8.svg"
+    },
+    {
+      "code": "GT",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1F9.svg"
+    },
+    {
+      "code": "GU",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1FA.svg"
+    },
+    {
+      "code": "GW",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1FC.svg"
+    },
+    {
+      "code": "GY",
+      "flagPath": "/assets/media/country-flag/1F1EC-1F1FE.svg"
+    },
+    {
+      "code": "HK",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1F0.svg"
+    },
+    {
+      "code": "HM",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1F2.svg"
+    },
+    {
+      "code": "HN",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1F3.svg"
+    },
+    {
+      "code": "HR",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1F7.svg"
+    },
+    {
+      "code": "HT",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1F9.svg"
+    },
+    {
+      "code": "HU",
+      "flagPath": "/assets/media/country-flag/1F1ED-1F1FA.svg"
+    },
+    {
+      "code": "IC",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1E8.svg"
+    },
+    {
+      "code": "ID",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1E9.svg"
+    },
+    {
+      "code": "IE",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1EA.svg"
+    },
+    {
+      "code": "IL",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F1.svg"
+    },
+    {
+      "code": "IM",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F2.svg"
+    },
+    {
+      "code": "IN",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F3.svg"
+    },
+    {
+      "code": "IO",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F4.svg"
+    },
+    {
+      "code": "IQ",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F6.svg"
+    },
+    {
+      "code": "IR",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F7.svg"
+    },
+    {
+      "code": "IS",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F8.svg"
+    },
+    {
+      "code": "IT",
+      "flagPath": "/assets/media/country-flag/1F1EE-1F1F9.svg"
+    },
+    {
+      "code": "JE",
+      "flagPath": "/assets/media/country-flag/1F1EF-1F1EA.svg"
+    },
+    {
+      "code": "JM",
+      "flagPath": "/assets/media/country-flag/1F1EF-1F1F2.svg"
+    },
+    {
+      "code": "JO",
+      "flagPath": "/assets/media/country-flag/1F1EF-1F1F4.svg"
+    },
+    {
+      "code": "JP",
+      "flagPath": "/assets/media/country-flag/1F1EF-1F1F5.svg"
+    },
+    {
+      "code": "KE",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1EA.svg"
+    },
+    {
+      "code": "KG",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1EC.svg"
+    },
+    {
+      "code": "KH",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1ED.svg"
+    },
+    {
+      "code": "KI",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1EE.svg"
+    },
+    {
+      "code": "KM",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1F2.svg"
+    },
+    {
+      "code": "KN",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1F3.svg"
+    },
+    {
+      "code": "KP",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1F5.svg"
+    },
+    {
+      "code": "KR",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1F7.svg"
+    },
+    {
+      "code": "KW",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1FC.svg"
+    },
+    {
+      "code": "KY",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1FE.svg"
+    },
+    {
+      "code": "KZ",
+      "flagPath": "/assets/media/country-flag/1F1F0-1F1FF.svg"
+    },
+    {
+      "code": "LA",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1E6.svg"
+    },
+    {
+      "code": "LB",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1E7.svg"
+    },
+    {
+      "code": "LC",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1E8.svg"
+    },
+    {
+      "code": "LI",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1EE.svg"
+    },
+    {
+      "code": "LK",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1F0.svg"
+    },
+    {
+      "code": "LR",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1F7.svg"
+    },
+    {
+      "code": "LS",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1F8.svg"
+    },
+    {
+      "code": "LT",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1F9.svg"
+    },
+    {
+      "code": "LU",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1FA.svg"
+    },
+    {
+      "code": "LV",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1FB.svg"
+    },
+    {
+      "code": "LY",
+      "flagPath": "/assets/media/country-flag/1F1F1-1F1FE.svg"
+    },
+    {
+      "code": "MA",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1E6.svg"
+    },
+    {
+      "code": "MC",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1E8.svg"
+    },
+    {
+      "code": "MD",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1E9.svg"
+    },
+    {
+      "code": "ME",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1EA.svg"
+    },
+    {
+      "code": "MF",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1EB.svg"
+    },
+    {
+      "code": "MG",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1EC.svg"
+    },
+    {
+      "code": "MH",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1ED.svg"
+    },
+    {
+      "code": "MK",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F0.svg"
+    },
+    {
+      "code": "ML",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F1.svg"
+    },
+    {
+      "code": "MM",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F2.svg"
+    },
+    {
+      "code": "MN",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F3.svg"
+    },
+    {
+      "code": "MO",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F4.svg"
+    },
+    {
+      "code": "MP",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F5.svg"
+    },
+    {
+      "code": "MQ",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F6.svg"
+    },
+    {
+      "code": "MR",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F7.svg"
+    },
+    {
+      "code": "MS",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F8.svg"
+    },
+    {
+      "code": "MT",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1F9.svg"
+    },
+    {
+      "code": "MU",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FA.svg"
+    },
+    {
+      "code": "MV",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FB.svg"
+    },
+    {
+      "code": "MW",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FC.svg"
+    },
+    {
+      "code": "MX",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FD.svg"
+    },
+    {
+      "code": "MY",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FE.svg"
+    },
+    {
+      "code": "MZ",
+      "flagPath": "/assets/media/country-flag/1F1F2-1F1FF.svg"
+    },
+    {
+      "code": "NA",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1E6.svg"
+    },
+    {
+      "code": "NC",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1E8.svg"
+    },
+    {
+      "code": "NE",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1EA.svg"
+    },
+    {
+      "code": "NF",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1EB.svg"
+    },
+    {
+      "code": "NG",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1EC.svg"
+    },
+    {
+      "code": "NI",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1EE.svg"
+    },
+    {
+      "code": "NL",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1F1.svg"
+    },
+    {
+      "code": "NO",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1F4.svg"
+    },
+    {
+      "code": "NP",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1F5.svg"
+    },
+    {
+      "code": "NR",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1F7.svg"
+    },
+    {
+      "code": "NU",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1FA.svg"
+    },
+    {
+      "code": "NZ",
+      "flagPath": "/assets/media/country-flag/1F1F3-1F1FF.svg"
+    },
+    {
+      "code": "OM",
+      "flagPath": "/assets/media/country-flag/1F1F4-1F1F2.svg"
+    },
+    {
+      "code": "PA",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1E6.svg"
+    },
+    {
+      "code": "PE",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1EA.svg"
+    },
+    {
+      "code": "PF",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1EB.svg"
+    },
+    {
+      "code": "PG",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1EC.svg"
+    },
+    {
+      "code": "PH",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1ED.svg"
+    },
+    {
+      "code": "PK",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F0.svg"
+    },
+    {
+      "code": "PL",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F1.svg"
+    },
+    {
+      "code": "PM",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F2.svg"
+    },
+    {
+      "code": "PN",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F3.svg"
+    },
+    {
+      "code": "PR",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F7.svg"
+    },
+    {
+      "code": "PS",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F8.svg"
+    },
+    {
+      "code": "PT",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1F9.svg"
+    },
+    {
+      "code": "PW",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1FC.svg"
+    },
+    {
+      "code": "PY",
+      "flagPath": "/assets/media/country-flag/1F1F5-1F1FE.svg"
+    },
+    {
+      "code": "QA",
+      "flagPath": "/assets/media/country-flag/1F1F6-1F1E6.svg"
+    },
+    {
+      "code": "RE",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1EA.svg"
+    },
+    {
+      "code": "RO",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1F4.svg"
+    },
+    {
+      "code": "RS",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1F8.svg"
+    },
+    {
+      "code": "RU",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1FA.svg"
+    },
+    {
+      "code": "RW",
+      "flagPath": "/assets/media/country-flag/1F1F7-1F1FC.svg"
+    },
+    {
+      "code": "SA",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1E6.svg"
+    },
+    {
+      "code": "SB",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1E7.svg"
+    },
+    {
+      "code": "SC",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1E8.svg"
+    },
+    {
+      "code": "SD",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1E9.svg"
+    },
+    {
+      "code": "SE",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1EA.svg"
+    },
+    {
+      "code": "SG",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1EC.svg"
+    },
+    {
+      "code": "SH",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1ED.svg"
+    },
+    {
+      "code": "SI",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1EE.svg"
+    },
+    {
+      "code": "SJ",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1EF.svg"
+    },
+    {
+      "code": "SK",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F0.svg"
+    },
+    {
+      "code": "SL",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F1.svg"
+    },
+    {
+      "code": "SM",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F2.svg"
+    },
+    {
+      "code": "SN",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F3.svg"
+    },
+    {
+      "code": "SO",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F4.svg"
+    },
+    {
+      "code": "SR",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F7.svg"
+    },
+    {
+      "code": "SS",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F8.svg"
+    },
+    {
+      "code": "ST",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1F9.svg"
+    },
+    {
+      "code": "SV",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1FB.svg"
+    },
+    {
+      "code": "SX",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1FD.svg"
+    },
+    {
+      "code": "SY",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1FE.svg"
+    },
+    {
+      "code": "SZ",
+      "flagPath": "/assets/media/country-flag/1F1F8-1F1FF.svg"
+    },
+    {
+      "code": "TA",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1E6.svg"
+    },
+    {
+      "code": "TC",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1E8.svg"
+    },
+    {
+      "code": "TD",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1E9.svg"
+    },
+    {
+      "code": "TF",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1EB.svg"
+    },
+    {
+      "code": "TG",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1EC.svg"
+    },
+    {
+      "code": "TH",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1ED.svg"
+    },
+    {
+      "code": "TJ",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1EF.svg"
+    },
+    {
+      "code": "TK",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F0.svg"
+    },
+    {
+      "code": "TL",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F1.svg"
+    },
+    {
+      "code": "TM",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F2.svg"
+    },
+    {
+      "code": "TN",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F3.svg"
+    },
+    {
+      "code": "TO",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F4.svg"
+    },
+    {
+      "code": "TR",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F7.svg"
+    },
+    {
+      "code": "TT",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1F9.svg"
+    },
+    {
+      "code": "TV",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1FB.svg"
+    },
+    {
+      "code": "TW",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1FC.svg"
+    },
+    {
+      "code": "TZ",
+      "flagPath": "/assets/media/country-flag/1F1F9-1F1FF.svg"
+    },
+    {
+      "code": "UA",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1E6.svg"
+    },
+    {
+      "code": "UG",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1EC.svg"
+    },
+    {
+      "code": "UM",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1F2.svg"
+    },
+    {
+      "code": "UN",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1F3.svg"
+    },
+    {
+      "code": "US",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1F8.svg"
+    },
+    {
+      "code": "UY",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1FE.svg"
+    },
+    {
+      "code": "UZ",
+      "flagPath": "/assets/media/country-flag/1F1FA-1F1FF.svg"
+    },
+    {
+      "code": "VA",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1E6.svg"
+    },
+    {
+      "code": "VC",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1E8.svg"
+    },
+    {
+      "code": "VE",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1EA.svg"
+    },
+    {
+      "code": "VG",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1EC.svg"
+    },
+    {
+      "code": "VI",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1EE.svg"
+    },
+    {
+      "code": "VN",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1F3.svg"
+    },
+    {
+      "code": "VU",
+      "flagPath": "/assets/media/country-flag/1F1FB-1F1FA.svg"
+    },
+    {
+      "code": "WF",
+      "flagPath": "/assets/media/country-flag/1F1FC-1F1EB.svg"
+    },
+    {
+      "code": "WS",
+      "flagPath": "/assets/media/country-flag/1F1FC-1F1F8.svg"
+    },
+    {
+      "code": "XK",
+      "flagPath": "/assets/media/country-flag/1F1FD-1F1F0.svg"
+    },
+    {
+      "code": "YE",
+      "flagPath": "/assets/media/country-flag/1F1FE-1F1EA.svg"
+    },
+    {
+      "code": "YT",
+      "flagPath": "/assets/media/country-flag/1F1FE-1F1F9.svg"
+    },
+    {
+      "code": "ZA",
+      "flagPath": "/assets/media/country-flag/1F1FF-1F1E6.svg"
+    },
+    {
+      "code": "ZM",
+      "flagPath": "/assets/media/country-flag/1F1FF-1F1F2.svg"
+    },
+    {
+      "code": "ZW",
+      "flagPath": "/assets/media/country-flag/1F1FF-1F1FC.svg"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
 import com.pawsitters.security.RevokedTokenService;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,8 @@ import java.time.LocalDate;
 
 @Service
 public class AuthService {
+
+    private static final String INVALID_CREDENTIALS_MESSAGE = "Ungültige Credentials.";
 
     private final UserService userService;
     private final JwtService jwtService;
@@ -53,10 +56,15 @@ public class AuthService {
     }
 
     public AuthResult login(String email, String rawPassword) {
-        User user = userService.findByEmail(email);
+        User user;
+        try {
+            user = userService.findByEmail(email);
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
+        }
 
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Ungueltige Credentials.");
+            throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
         return toAuthResult(user);
