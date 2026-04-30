@@ -121,12 +121,13 @@ public class PetService {
         try {
             Files.createDirectories(uploadDir);
             String extension = extractExtension(image.getOriginalFilename());
-            Path target = uploadDir.resolve("pet-" + pet.getId() + "-" + UUID.randomUUID() + extension);
+            String filename = "pet-" + pet.getId() + "-" + UUID.randomUUID() + extension;
+            Path target = uploadDir.resolve(filename);
             Files.write(target, imageBytes);
 
             deleteOldImageIfPresent(pet.getImagePath());
 
-            pet.setImagePath(target.toString().replace("\\", "/"));
+            pet.setImagePath("/uploads/pets/" + filename);
             pet.setImageHash(imageHash);
             return petRepository.save(pet);
         } catch (IOException e) {
@@ -190,9 +191,18 @@ public class PetService {
             return;
         }
         try {
-            Files.deleteIfExists(Paths.get(oldImagePath));
+            Files.deleteIfExists(urlPathToFilesystemPath(oldImagePath));
         } catch (IOException ignored) {
             // Alte Dateien sind optionales Cleanup und sollen den Upload nicht blockieren.
         }
+    }
+
+    /**
+     * Converts a public URL path (e.g. "/uploads/pets/file.jpg") to a filesystem path
+     * relative to the application working directory (e.g. "uploads/pets/file.jpg").
+     */
+    private Path urlPathToFilesystemPath(String urlPath) {
+        String fsPath = urlPath.startsWith("/") ? urlPath.substring(1) : urlPath;
+        return Paths.get(fsPath);
     }
 }
