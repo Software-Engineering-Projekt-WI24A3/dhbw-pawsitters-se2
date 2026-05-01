@@ -25,7 +25,6 @@
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_projekt" value="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_se-projekt" value="3COcM1TZA3XHi3Ot37fwiS8brOF" />
       <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2" value="3CRYvqaA54AvrSJdBhLrsxpuaRw" />
-      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2/backend" value="3Cd6YlLREPX0cpUrxMcysg2wOAC" />
     </persistenceIdMap>
   </component>
   <component name="CopilotUserSelectedChatMode">
@@ -40,16 +39,16 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Class" />
         <option value="HTTP Public Environment File" />
         <option value="HTTP Request" />
-        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="j_feature_restapi" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -133,8 +132,7 @@
     "Shell Script.Projektstart.executor": "Run",
     "Spring Boot.PawsittersApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "j__feature__resterweiterung",
+    "git-widget-placeholder": "n__feature__implement-login-and-registration-logic",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
@@ -146,6 +144,7 @@
     "rest.client.default.execution.environment": "dev",
     "settings.editor.selected.configurable": "editor.preferences.tabs",
     "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/niklasulbrich/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -159,59 +158,16 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
       <recent name="$PROJECT_DIR$/frontend/src/media" />
+      <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
   </component>
   <component name="RunManager" selected="JUnit.PetIntegrationTest">
     <configuration name="MailExists | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="AuthIntegrationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.pawsitters.security.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
-      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.AuthIntegrationTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.pawsitters.security.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
-      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.AuthIntegrationTest" />
-      <option name="METHOD_NAME" value="sessionWithoutTokenReturnsLoggedInFalse" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="JwtServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.pawsitters.security.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.pawsitters.security" />
-      <option name="MAIN_CLASS_NAME" value="com.pawsitters.security.JwtServiceTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
+    <configuration name="All in getuserbyid" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" path="$PROJECT_DIR$/backend/src/main/resources/getuserbyid.http">
+      <method v="2" />
     </configuration>
     <configuration name="PetIntegrationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="pawsitters" />
@@ -234,9 +190,19 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="dhbw-pawsitters-se2" />
-      <option name="filePath" />
+    <configuration name="Projektstart" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/Projektstart" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/usr/bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
       <method v="2" />
     </configuration>
     <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
@@ -259,8 +225,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274" />
       </set>
     </attachedChunks>
   </component>

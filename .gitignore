@@ -41,5 +41,5 @@ test-results/
 **/.idea/dataSources/
 **/.idea/dataSources.local.xml
 
-# Uploaded files (runtime artifacts)
+# Uploaded pet images (user-uploaded content, not tracked in VCS)
 backend/uploads/

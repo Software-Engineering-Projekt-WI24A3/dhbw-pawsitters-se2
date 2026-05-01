@@ -56,6 +56,22 @@ Das Frontend kann dann:
 1. Das hochgeladene Bild unter `imagePath` anzeigen (falls vorhanden)
 2. Auf das Fallback-Bild unter `defaultImagePath` verweisen (wenn `imagePath` null/leer ist)
 
+## Format von `imagePath`
+
+Nach einem erfolgreichen Bild-Upload enthält `imagePath` einen **öffentlichen URL-Pfad** (kein Dateisystempfad), der direkt im Browser geladen werden kann. Beispiel:
+
+```
+/uploads/pets/pet-1-3f7a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c.jpg
+```
+
+Das Backend stellt Uploads unter dem Pfad `/uploads/**` öffentlich bereit (kein Login erforderlich). Der vollständige URL lautet also:
+
+```
+http://localhost:8080/uploads/pets/pet-1-<uuid>.jpg
+```
+
+Erlaubte Dateiformate: JPEG, PNG, GIF, WebP, BMP (max. 5 MB).
+
 ### Beispiel API-Response:
 
 ```json
@@ -66,7 +82,7 @@ Das Frontend kann dann:
   "breed": "Labrador",
   "age": 4,
   "specialNeeds": "Keine",
-  "imagePath": null,
+  "imagePath": "/uploads/pets/pet-1-3f7a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c.jpg",
   "defaultImagePath": "/images/pet_images/dog/"
 }
 ```
@@ -82,8 +98,9 @@ Das Frontend kann dann:
 
 ## Hinweise
 
-- Die Bilder sollten unter `src/main/resources/static/images/pet_images/` gespeichert werden
+- Die Fallback-Bilder sollten unter `src/main/resources/static/images/pet_images/` gespeichert werden
 - Sie werden dann automatisch unter `/images/pet_images/` erreichbar
+- Hochgeladene Benutzerbilder werden unter `uploads/pets/` gespeichert und sind unter `/uploads/pets/` erreichbar
 - Jede Tierart hat einen eigenen Ordner mit seinen Standardbildern
 - Das Frontend kann verschiedene Namen verwenden (z.B. `default.png`, `profile.jpg`, etc.)
 

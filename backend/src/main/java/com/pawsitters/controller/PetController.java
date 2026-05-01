@@ -85,6 +85,12 @@ public class PetController {
         }
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletePet(@PathVariable Long id, Authentication authentication) {
+        petService.deletePetForOwnerEmail(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
     public record PetRequest(
             @NotBlank String name,
             @NotNull PetChoice species,
@@ -104,11 +110,6 @@ public class PetController {
             String defaultImagePath
     ) {
         static PetResponse from(Pet pet) {
-            String defaultImagePath = "/images/pet_images/default/";
-            if (pet.getSpecies() != null) {
-                defaultImagePath = pet.getSpecies().getFallbackImagePath();
-            }
-            
             return new PetResponse(
                     pet.getId(),
                     pet.getName(),
@@ -117,7 +118,7 @@ public class PetController {
                     pet.getAge(),
                     pet.getSpecialNeeds(),
                     pet.getImagePath(),
-                    defaultImagePath
+                    pet.getSpecies() != null ? pet.getSpecies().getFallbackImagePath() : null
             );
         }
     }

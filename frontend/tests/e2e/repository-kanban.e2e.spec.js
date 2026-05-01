@@ -1,5 +1,10 @@
 const { test, expect } = require('@playwright/test');
 const { loadLiveRepository } = require('./support/repository');
+const {
+  expectNoLegacyLoginRouteLinks,
+  openLoginModal,
+  closeLoginModal
+} = require('./support/auth');
 
 test.describe('Repository kanban view', () => {
   test('should keep exactly one active board column and render matching cards', async ({ page }) => {
@@ -8,7 +13,7 @@ test.describe('Repository kanban view', () => {
     const nextColumn = snapshot.board.columns.find((column) => column.id !== firstColumn.id && column.cards.length > 0)
       ?? snapshot.board.columns[1];
 
-    await page.goto('/kanban');
+    await page.goto('/repository/kanban');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
     await expect(page).toHaveURL(/\/repository\/kanban$/);
@@ -28,6 +33,9 @@ test.describe('Repository kanban view', () => {
     await expect(page.locator('.board_showcase__label')).toHaveText(firstColumn.label);
     await expect(page.locator('.board_card')).toHaveCount(firstColumn.cards.length);
     await expect(page.locator('.board_card__description')).toHaveCount(0);
+    await expectNoLegacyLoginRouteLinks(page);
+    await openLoginModal(page, { locale: 'de' });
+    await closeLoginModal(page);
 
     if (firstColumn.cards.length > 0) {
       await expect(page.getByRole('heading', { name: firstColumn.cards[0].title })).toBeVisible();

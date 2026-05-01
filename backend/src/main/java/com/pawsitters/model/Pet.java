@@ -28,7 +28,7 @@ public class Pet {
     @Column
     private String imagePath;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 64)
     private String imageHash;
 
     @ManyToOne

@@ -12,6 +12,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,11 +78,13 @@ class PetIntegrationTest {
         Long firstPetId = createPet(token, "Luna", PetChoice.CAT, "British Shorthair", 2, "Keine");
         Long secondPetId = createPet(token, "Balu", PetChoice.DOG, "Mischling", 3, "Wenig Treppen steigen");
 
+        byte[] sharedImageBytes = createMinimalPng(0xFF0000);
+
         MockMultipartFile firstImage = new MockMultipartFile(
                 "image",
                 "cat.png",
                 "image/png",
-                "same-image-content".getBytes()
+                sharedImageBytes
         );
 
         mockMvc.perform(multipart("/api/pets/{id}/image", firstPetId)
@@ -96,7 +101,7 @@ class PetIntegrationTest {
                 "image",
                 "duplicate.png",
                 "image/png",
-                "same-image-content".getBytes()
+                sharedImageBytes
         );
 
         mockMvc.perform(multipart("/api/pets/{id}/image", secondPetId)
@@ -112,7 +117,7 @@ class PetIntegrationTest {
                 "image",
                 "dog.png",
                 "image/png",
-                "different-image-content".getBytes()
+                createMinimalPng(0x0000FF)
         );
 
         mockMvc.perform(multipart("/api/pets/{id}/image", secondPetId)
@@ -230,6 +235,18 @@ class PetIntegrationTest {
         payload.put("age", age);
         payload.put("specialNeeds", specialNeeds);
         return payload;
+    }
+
+    /**
+     * Creates a minimal 1x1 PNG image as a byte array with the given RGB color.
+     * Using distinct colors ensures each call with a different color produces a unique hash.
+     */
+    private byte[] createMinimalPng(int rgbColor) throws Exception {
+        BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        img.setRGB(0, 0, rgbColor);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", baos);
+        return baos.toByteArray();
     }
 }
 

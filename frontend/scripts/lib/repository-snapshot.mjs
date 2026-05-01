@@ -479,18 +479,87 @@ function createActivitySeries(activityCounts, range, locale = 'en') {
     }
   }
 
-  const maxCount = Math.max(...entries.map((entry) => entry.count), 0);
+  const nonZeroCounts = entries
+    .map((entry) => entry.count)
+    .filter((count) => count > 0);
+  const maxCount = Math.max(...nonZeroCounts, 0);
+  const minNonZeroCount = nonZeroCounts.length > 0
+    ? Math.min(...nonZeroCounts)
+    : 0;
+  const hasSpread = maxCount > minNonZeroCount;
+  const MIN_BAR_HEIGHT = 8;
+  const FLAT_BAR_HEIGHT = 58;
+  const MAX_BAR_HEIGHT = 100;
+  const TIE_SPREAD = 7;
 
-  return entries.map((entry) => {
+  const withBaseHeights = entries.map((entry) => {
     let height = 0;
+
     if (entry.count > 0 && maxCount > 0) {
-      height = Math.max(10, Math.round((entry.count / maxCount) * 100));
+      if (!hasSpread) {
+        height = FLAT_BAR_HEIGHT;
+      } else {
+        const logMin = Math.log1p(minNonZeroCount);
+        const logMax = Math.log1p(maxCount);
+        const logValue = Math.log1p(entry.count);
+        const ratio = (logValue - logMin) / (logMax - logMin);
+        const clampedRatio = Math.min(1, Math.max(0, ratio));
+        const easedRatio = Math.pow(clampedRatio, 0.85);
+        const scaledHeight = MIN_BAR_HEIGHT + (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT) * easedRatio;
+        height = scaledHeight;
+      }
     }
 
     return {
       ...entry,
-      style: `--bar-size:${height}%;`,
       height
+    };
+  });
+
+  const entriesByCount = withBaseHeights.reduce((map, entry, index) => {
+    if (entry.count <= 0) {
+      return map;
+    }
+
+    const group = map.get(entry.count) ?? [];
+    group.push({ index, entry });
+    map.set(entry.count, group);
+    return map;
+  }, new Map());
+
+  const adjustedHeights = withBaseHeights.map((entry) => entry.height);
+  entriesByCount.forEach((group, count) => {
+    if (group.length < 2) {
+      return;
+    }
+
+    const isMaxGroup = count === maxCount;
+    const denominator = Math.max(1, group.length - 1);
+
+    group.forEach(({ index }, groupIndex) => {
+      const position = groupIndex / denominator;
+      const baseHeight = adjustedHeights[index];
+      let offset = (position - 0.5) * TIE_SPREAD;
+
+      // Keep one true top bar at full height when multiple entries share the same max count.
+      if (isMaxGroup) {
+        offset = -(1 - position) * TIE_SPREAD;
+      }
+
+      const adjustedHeight = Math.min(
+        MAX_BAR_HEIGHT,
+        Math.max(MIN_BAR_HEIGHT, baseHeight + offset)
+      );
+      adjustedHeights[index] = adjustedHeight;
+    });
+  });
+
+  return withBaseHeights.map((entry, index) => {
+    const roundedHeight = Number(adjustedHeights[index].toFixed(1));
+    return {
+      ...entry,
+      style: `--bar-size:${roundedHeight}%;`,
+      height: roundedHeight
     };
   });
 }
@@ -1201,6 +1270,7 @@ export async function loadRepositorySnapshot(rootDir, options = {}) {
 
 export { localizeRepositorySnapshot };
 export const __repositorySnapshotInternals = {
+  createActivitySeries,
   parseCommitImport,
   parseBranchCommits,
   parseAuthorContributionStats

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="shellNoFooter(pageTitle, pageDescription, currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath, pageClass, mainContent)"
+      th:lang="${currentLocale}">
+<head th:replace="~{fragments/head :: siteHead(${pageTitle}, ${pageDescription})}"></head>
+<body class="page_surface" th:classappend="${pageClass}">
+<div id="app-shell" class="site_frame" v-cloak>
+    <transition-group name="site_notification_stack"
+                      tag="div"
+                      class="site_notifications"
+                      aria-live="polite"
+                      aria-atomic="false">
+        <article v-for="notification in notifications"
+                 :key="notification.id"
+                 class="site_notification"
+                 :class="'site_notification--' + notification.tone"
+                 :role="notification.tone === 'warning' ? 'alert' : 'status'">
+            <p class="site_notification__title" v-text="notification.title"></p>
+            <p v-if="notification.message"
+               class="site_notification__message"
+               v-text="notification.message"></p>
+        </article>
+    </transition-group>
+    <div class="site_background" aria-hidden="true">
+        <svg class="site_background__threads" data-thread-background viewBox="0 0 1600 2400" preserveAspectRatio="none">
+            <g class="site_background__glow"></g>
+            <g class="site_background__lines"></g>
+            <g class="site_background__nodes"></g>
+        </svg>
+    </div>
+    <div th:replace="~{partials/header :: siteHeader(${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath})}"></div>
+
+    <transition name="auth_modal_presence">
+        <div v-if="loginModalOpen"
+             class="auth_modal"
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeLoginModal()">
+            <article class="auth_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        @click="closeLoginModal()"
+                        th:attr="aria-label=#{auth.modal.closeAria}">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" th:text="#{auth.modal.close}">auth.modal.close</span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/favicon.png}"
+                             src="/assets/media/favicon.png"
+                             alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title" th:text="#{auth.modal.title}">auth.modal.title</h2>
+
+                <form class="auth_modal__form" novalidate @submit.prevent>
+                    <label class="corp_field auth_modal__field">
+                        <span class="sr-only" th:text="#{auth.modal.identifier}">auth.modal.identifier</span>
+                        <input class="corp_input"
+                               type="text"
+                               autocomplete="username"
+                               data-auth-login-identifier
+                               th:attr="aria-label=#{auth.modal.identifier},placeholder=#{auth.modal.identifier}">
+                        <span class="corp_field__label"
+                              th:text="#{auth.modal.identifier}">auth.modal.identifier</span>
+                    </label>
+                    <button class="button auth_modal__submit"
+                            type="submit"
+                            th:text="#{auth.modal.continue}">auth.modal.continue</button>
+                </form>
+            </article>
+        </div>
+    </transition>
+
+    <main id="main-content" class="main_container site_main">
+        <th:block th:replace="${mainContent}"></th:block>
+    </main>
+</div>
+<script type="module" th:src="@{/assets/js/site.js}"></script>
+</body>
+</html>

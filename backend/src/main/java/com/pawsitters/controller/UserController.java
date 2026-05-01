@@ -1,7 +1,7 @@
 package com.pawsitters.controller;
 
+import com.pawsitters.dto.RegisterRequest;
 import com.pawsitters.model.User;
-import com.pawsitters.model.UserRole;
 import com.pawsitters.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
+@RestController
 @Validated
 @RestController
 @RequestMapping("/api/users")
@@ -136,54 +137,4 @@ public class UserController {
         User user = userService.updateRole(id, request.role());
         return ResponseEntity.ok(user);
     }
-
-    @PostMapping(value = "/{id}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id,
-                                                @RequestPart("image") MultipartFile image,
-                                                Authentication authentication) {
-        try {
-            User user = userService.uploadProfileImageForEmail(id, authentication.getName(), image);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    // ===== Request Body Records =====
-    public record RegisterRequest(
-            @NotBlank @Email String email,
-            @NotBlank @Size(min = 8, max = 100) String password,
-            @NotBlank String firstName,
-            @NotBlank String lastName,
-            @NotBlank String phone,
-            @NotNull @Past LocalDate birthDate,
-            @NotBlank String emergencyContact,
-            @NotBlank String profilePicture,
-            @NotBlank String bio,
-            @NotNull UserRole role
-    ) {}
-
-    public record UpdateUserRequest(
-            @NotBlank String firstName,
-            @NotBlank String lastName,
-            @NotBlank String phone,
-            @NotNull @Past LocalDate birthDate,
-            @NotBlank String emergencyContact,
-            @NotBlank String profilePicture,
-            @NotBlank String bio,
-            String address
-    ) {}
-
-    public record PatchUserRequest(
-            String firstName,
-            String lastName,
-            String phone,
-            @Past LocalDate birthDate,
-            String emergencyContact,
-            String profilePicture,
-            String bio,
-            String address
-    ) {}
-
-    public record RolePatchRequest(@NotNull UserRole role) {}
 }

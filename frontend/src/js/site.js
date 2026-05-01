@@ -1,10 +1,11 @@
 import { compile, createApp, nextTick } from '/assets/vendor/vue.esm-browser.prod.js';
 
 let gitgraphLoader = null;
-const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu';
+const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu, details.header_search_field';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
-const DROPDOWN_CLOSE_DELAY_MS = 180;
+const DROPDOWN_CLOSE_DELAY_MS = 90;
+let dropdownIdSequence = 0;
 const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
 const GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX = 84;
 const GIT_GRAPH_LABEL_OFFSET_PX = 18;
@@ -12,6 +13,216 @@ const GIT_GRAPH_MIN_CONTENT_WIDTH_PX = 360;
 const METRIC_ANIMATION_DURATION_MS = 2200;
 const NOTIFICATION_LIMIT = 4;
 const NOTIFICATION_LIFETIME_MS = 7000;
+const HEADER_SCROLL_PROGRESS_DISTANCE_PX = 320;
+const HEADER_SCROLL_SPRING_STIFFNESS = 155;
+const HEADER_SCROLL_SPRING_DAMPING = 31;
+const HEADER_SCROLL_MAX_STEP_SECONDS = 0.028;
+const HEADER_COMPACT_ENTER_PROGRESS = 0.84;
+const HEADER_COMPACT_EXIT_PROGRESS = 0.68;
+const HEADER_SCROLL_SETTLE_VELOCITY = 0.0008;
+const HEADER_SCROLL_SETTLE_DISTANCE = 0.0012;
+const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
+const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
+const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
+    'PPL',
+    'PPLA',
+    'PPLA2',
+    'PPLA3',
+    'PPLA4',
+    'PPLC',
+    'PPLX',
+    'PPLG',
+    'PPLL'
+]);
+const DEFAULT_PET_CHOICES = [
+    'DOG',
+    'CAT',
+    'RABBIT',
+    'HAMSTER',
+    'GUINEA_PIG',
+    'PARROT',
+    'BUDGIE',
+    'CANARY',
+    'TURTLE',
+    'SNAKE',
+    'LIZARD',
+    'FERRET',
+    'RAT',
+    'MOUSE',
+    'FISH',
+    'HORSE',
+    'DONKEY',
+    'GOAT',
+    'CHICKEN',
+    'BIRD'
+];
+const PET_CHOICE_TRANSLATIONS = {
+    de: {
+        DOG: 'Hund',
+        CAT: 'Katze',
+        RABBIT: 'Kaninchen',
+        HAMSTER: 'Hamster',
+        GUINEA_PIG: 'Meerschweinchen',
+        PARROT: 'Papagei',
+        BUDGIE: 'Wellensittich',
+        CANARY: 'Kanarienvogel',
+        TURTLE: 'Schildkröte',
+        SNAKE: 'Schlange',
+        LIZARD: 'Eidechse',
+        FERRET: 'Frettchen',
+        RAT: 'Ratte',
+        MOUSE: 'Maus',
+        FISH: 'Fisch',
+        HORSE: 'Pferd',
+        DONKEY: 'Esel',
+        GOAT: 'Ziege',
+        CHICKEN: 'Huhn',
+        BIRD: 'Vogel'
+    },
+    en: {
+        DOG: 'Dog',
+        CAT: 'Cat',
+        RABBIT: 'Rabbit',
+        HAMSTER: 'Hamster',
+        GUINEA_PIG: 'Guinea pig',
+        PARROT: 'Parrot',
+        BUDGIE: 'Budgie',
+        CANARY: 'Canary',
+        TURTLE: 'Turtle',
+        SNAKE: 'Snake',
+        LIZARD: 'Lizard',
+        FERRET: 'Ferret',
+        RAT: 'Rat',
+        MOUSE: 'Mouse',
+        FISH: 'Fish',
+        HORSE: 'Horse',
+        DONKEY: 'Donkey',
+        GOAT: 'Goat',
+        CHICKEN: 'Chicken',
+        BIRD: 'Bird'
+    },
+    ro: {
+        DOG: 'Câine',
+        CAT: 'Pisică',
+        RABBIT: 'Iepure',
+        HAMSTER: 'Hamster',
+        GUINEA_PIG: 'Porcușor de Guineea',
+        PARROT: 'Papagal',
+        BUDGIE: 'Peruș',
+        CANARY: 'Canar',
+        TURTLE: 'Țestoasă',
+        SNAKE: 'Șarpe',
+        LIZARD: 'Șopârlă',
+        FERRET: 'Dihor',
+        RAT: 'Șobolan',
+        MOUSE: 'Șoarece',
+        FISH: 'Pește',
+        HORSE: 'Cal',
+        DONKEY: 'Măgar',
+        GOAT: 'Capră',
+        CHICKEN: 'Găină',
+        BIRD: 'Pasăre'
+    }
+};
+const PET_CHOICE_PLURAL_TRANSLATIONS = {
+    de: {
+        DOG: 'Hunde',
+        CAT: 'Katzen',
+        RABBIT: 'Kaninchen',
+        HAMSTER: 'Hamster',
+        GUINEA_PIG: 'Meerschweinchen',
+        PARROT: 'Papageien',
+        BUDGIE: 'Wellensittiche',
+        CANARY: 'Kanarienvögel',
+        TURTLE: 'Schildkröten',
+        SNAKE: 'Schlangen',
+        LIZARD: 'Eidechsen',
+        FERRET: 'Frettchen',
+        RAT: 'Ratten',
+        MOUSE: 'Mäuse',
+        FISH: 'Fische',
+        HORSE: 'Pferde',
+        DONKEY: 'Esel',
+        GOAT: 'Ziegen',
+        CHICKEN: 'Hühner',
+        BIRD: 'Vögel'
+    },
+    en: {
+        DOG: 'Dogs',
+        CAT: 'Cats',
+        RABBIT: 'Rabbits',
+        HAMSTER: 'Hamsters',
+        GUINEA_PIG: 'Guinea pigs',
+        PARROT: 'Parrots',
+        BUDGIE: 'Budgies',
+        CANARY: 'Canaries',
+        TURTLE: 'Turtles',
+        SNAKE: 'Snakes',
+        LIZARD: 'Lizards',
+        FERRET: 'Ferrets',
+        RAT: 'Rats',
+        MOUSE: 'Mice',
+        FISH: 'Fish',
+        HORSE: 'Horses',
+        DONKEY: 'Donkeys',
+        GOAT: 'Goats',
+        CHICKEN: 'Chickens',
+        BIRD: 'Birds'
+    },
+    ro: {
+        DOG: 'Câini',
+        CAT: 'Pisici',
+        RABBIT: 'Iepuri',
+        HAMSTER: 'Hamsteri',
+        GUINEA_PIG: 'Porcușori de Guineea',
+        PARROT: 'Papagali',
+        BUDGIE: 'Peruși',
+        CANARY: 'Canari',
+        TURTLE: 'Țestoase',
+        SNAKE: 'Șerpi',
+        LIZARD: 'Șopârle',
+        FERRET: 'Dihori',
+        RAT: 'Șobolani',
+        MOUSE: 'Șoareci',
+        FISH: 'Pești',
+        HORSE: 'Cai',
+        DONKEY: 'Măgari',
+        GOAT: 'Capre',
+        CHICKEN: 'Găini',
+        BIRD: 'Păsări'
+    }
+};
+const PET_CHOICE_EMOJI_ASSET_PATHS = {
+    DOG: '/assets/media/animal-mammal/1F436.svg',
+    CAT: '/assets/media/animal-mammal/1F431.svg',
+    RABBIT: '/assets/media/animal-mammal/1F430.svg',
+    HAMSTER: '/assets/media/animal-mammal/1F439.svg',
+    GUINEA_PIG: '/assets/media/animal-mammal/1F42D.svg',
+    PARROT: '/assets/media/animal-bird/1F99C.svg',
+    BUDGIE: '/assets/media/animal-bird/1F426.svg',
+    CANARY: '/assets/media/animal-bird/1F426.svg',
+    TURTLE: '/assets/media/animal-reptile/1F422.svg',
+    SNAKE: '/assets/media/animal-reptile/1F40D.svg',
+    LIZARD: '/assets/media/animal-reptile/1F98E.svg',
+    FERRET: '/assets/media/animal-mammal/1F9A1.svg',
+    RAT: '/assets/media/animal-mammal/1F400.svg',
+    MOUSE: '/assets/media/animal-mammal/1F401.svg',
+    FISH: '/assets/media/animal-marine/1F41F.svg',
+    HORSE: '/assets/media/animal-mammal/1F434.svg',
+    DONKEY: '/assets/media/animal-mammal/1FACF.svg',
+    GOAT: '/assets/media/animal-mammal/1F410.svg',
+    CHICKEN: '/assets/media/animal-bird/1F414.svg',
+    BIRD: '/assets/media/animal-bird/1F426.svg'
+};
+const PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH = '/assets/media/animal-mammal/1F43E.svg';
+const headerScrollAnimationState = {
+    progress: 0,
+    target: 0,
+    velocity: 0,
+    lastFrameTime: 0,
+    rafId: 0,
+    appliedProgress: Number.NaN
+};
 const METRIC_GROUP_FIELDS = {
     git: ['totalCommits', 'mergeCommits', 'contributorCount', 'branchCount'],
     board: ['openCount', 'assignedCount', 'ownerCount', 'criteriaCount'],
@@ -812,12 +1023,457 @@ function formatDurationMs(value) {
     return `${minutes}m ${seconds}s`;
 }
 
+function parseDateInputValue(value) {
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+        return null;
+    }
+
+    const year = Number.parseInt(match[1], 10);
+    const month = Number.parseInt(match[2], 10);
+    const day = Number.parseInt(match[3], 10);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+        return null;
+    }
+
+    const date = new Date(year, month - 1, day);
+    if (
+        Number.isNaN(date.getTime())
+        || date.getFullYear() !== year
+        || date.getMonth() !== month - 1
+        || date.getDate() !== day
+    ) {
+        return null;
+    }
+
+    return date;
+}
+
+function toDateInputValue(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return [
+        String(date.getFullYear()).padStart(4, '0'),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0')
+    ].join('-');
+}
+
+function normalizeDateInputValue(value) {
+    const date = parseDateInputValue(value);
+    if (!date) {
+        return '';
+    }
+
+    return toDateInputValue(date);
+}
+
+function getLocaleWeekStart(locale = document.documentElement.lang || 'de') {
+    try {
+        const localeInfo = new Intl.Locale(locale);
+        const firstDay = Number(localeInfo?.weekInfo?.firstDay);
+        if (Number.isInteger(firstDay) && firstDay >= 1 && firstDay <= 7) {
+            return firstDay % 7;
+        }
+    } catch {
+        // Use monday as stable fallback.
+    }
+
+    return 1;
+}
+
+function getCalendarWeekdayLabels(locale = document.documentElement.lang || 'de') {
+    const weekStart = getLocaleWeekStart(locale);
+    const formatter = new Intl.DateTimeFormat(locale, {
+        weekday: 'short'
+    });
+    const referenceSunday = new Date(Date.UTC(2024, 0, 7));
+
+    return Array.from({ length: 7 }, (_, index) => {
+        const dayOffset = (weekStart + index) % 7;
+        const weekdayDate = new Date(referenceSunday);
+        weekdayDate.setUTCDate(referenceSunday.getUTCDate() + dayOffset);
+
+        return formatter.format(weekdayDate).replace(/\.$/, '');
+    });
+}
+
+function formatCalendarMonthLabel(year, month, locale = document.documentElement.lang || 'de') {
+    const monthDate = new Date(year, month, 1);
+    if (Number.isNaN(monthDate.getTime())) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat(locale, {
+        month: 'long',
+        year: 'numeric'
+    }).format(monthDate);
+}
+
+function buildDateCalendarDays({
+    year,
+    month,
+    rangeStart = '',
+    rangeEnd = '',
+    locale = document.documentElement.lang || 'de'
+} = {}) {
+    const firstDayOfMonth = new Date(year, month, 1);
+    if (Number.isNaN(firstDayOfMonth.getTime())) {
+        return [];
+    }
+
+    const weekStart = getLocaleWeekStart(locale);
+    const leadingDays = (firstDayOfMonth.getDay() - weekStart + 7) % 7;
+    const gridStartDate = new Date(year, month, 1 - leadingDays);
+    const todayIso = toDateInputValue(new Date());
+    const normalizedStart = normalizeDateInputValue(rangeStart);
+    const normalizedEnd = normalizeDateInputValue(rangeEnd);
+    const hasFullRange = Boolean(normalizedStart && normalizedEnd);
+    const rangeMin = hasFullRange
+        ? (normalizedStart <= normalizedEnd ? normalizedStart : normalizedEnd)
+        : '';
+    const rangeMax = hasFullRange
+        ? (normalizedStart <= normalizedEnd ? normalizedEnd : normalizedStart)
+        : '';
+    const dayFormatter = new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+
+    return Array.from({ length: 42 }, (_, index) => {
+        const dayDate = new Date(
+            gridStartDate.getFullYear(),
+            gridStartDate.getMonth(),
+            gridStartDate.getDate() + index
+        );
+        const dayValue = toDateInputValue(dayDate);
+        const isSelectedStart = Boolean(normalizedStart && dayValue === normalizedStart);
+        const isSelectedEnd = Boolean(normalizedEnd && dayValue === normalizedEnd);
+        const isSingleDaySelection = Boolean(
+            normalizedStart
+            && normalizedEnd
+            && normalizedStart === normalizedEnd
+            && isSelectedStart
+            && isSelectedEnd
+        );
+
+        return {
+            iso: dayValue,
+            dayNumber: dayDate.getDate(),
+            isCurrentMonth: dayDate.getMonth() === month,
+            isToday: dayValue === todayIso,
+            isSelectedStart,
+            isSelectedEnd,
+            isSingleDaySelection,
+            isInRange: Boolean(hasFullRange && dayValue > rangeMin && dayValue < rangeMax),
+            ariaLabel: dayFormatter.format(dayDate)
+        };
+    });
+}
+
+function formatSearchDate(value, locale = document.documentElement.lang || 'de') {
+    const date = parseDateInputValue(value);
+    if (!date) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat(locale, {
+        day: '2-digit',
+        month: 'short'
+    }).format(date);
+}
+
+function normalizeCountryCode(value) {
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    const normalized = value.trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(normalized)) {
+        return '';
+    }
+
+    return normalized;
+}
+
+function countryCodeToFlagFileName(countryCode) {
+    const normalized = normalizeCountryCode(countryCode);
+    if (!normalized) {
+        return '';
+    }
+
+    const codepoints = normalized
+        .split('')
+        .map((letter) => letter.charCodeAt(0) - 65 + 0x1f1e6)
+        .map((codepoint) => codepoint.toString(16).toUpperCase());
+
+    if (codepoints.length !== 2) {
+        return '';
+    }
+
+    return `${codepoints[0]}-${codepoints[1]}.svg`;
+}
+
+function resolveCountryName(countryCode, locale = document.documentElement.lang || 'de') {
+    const normalized = normalizeCountryCode(countryCode);
+    if (!normalized) {
+        return '';
+    }
+
+    try {
+        const displayNames = new Intl.DisplayNames([locale], { type: 'region' });
+        return displayNames.of(normalized) || normalized;
+    } catch {
+        return normalized;
+    }
+}
+
+function isCityFeatureCode(featureCode) {
+    if (typeof featureCode !== 'string') {
+        return false;
+    }
+
+    const normalized = featureCode.trim().toUpperCase();
+    if (!normalized) {
+        return false;
+    }
+
+    return normalized.startsWith('PPL') || HEADER_SEARCH_CITY_FEATURE_CODES.has(normalized);
+}
+
+function normalizeCitySearchResults(payload = {}, locale = document.documentElement.lang || 'de') {
+    const sourceResults = Array.isArray(payload?.results) ? payload.results : [];
+    if (!sourceResults.length) {
+        return [];
+    }
+
+    const normalized = [];
+    const seen = new Set();
+
+    sourceResults.forEach((entry) => {
+        const source = entry && typeof entry === 'object' ? entry : {};
+        const cityName = typeof source.name === 'string' ? source.name.trim() : '';
+        if (!cityName || !isCityFeatureCode(source.feature_code)) {
+            return;
+        }
+
+        const countryCode = normalizeCountryCode(source.country_code);
+        const countryName = typeof source.country === 'string' && source.country.trim()
+            ? source.country.trim()
+            : resolveCountryName(countryCode, locale);
+        const regionName = typeof source.admin1 === 'string' ? source.admin1.trim() : '';
+        const fallbackFlagPath = countryCode
+            ? `/assets/media/country-flag/${countryCodeToFlagFileName(countryCode)}`
+            : '';
+        const locationId = [
+            cityName,
+            regionName,
+            countryCode,
+            Number.isFinite(Number(source.latitude)) ? Number(source.latitude).toFixed(3) : '',
+            Number.isFinite(Number(source.longitude)) ? Number(source.longitude).toFixed(3) : ''
+        ].join('|');
+
+        if (!locationId || seen.has(locationId)) {
+            return;
+        }
+
+        const labelParts = [cityName];
+        if (countryName) {
+            labelParts.push(countryName);
+        } else if (countryCode) {
+            labelParts.push(countryCode);
+        }
+
+        const label = labelParts.join(', ');
+        const searchName = [cityName, regionName, countryName, countryCode]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+        normalized.push({
+            id: locationId,
+            cityName,
+            countryName: countryName || countryCode,
+            regionName,
+            countryCode,
+            flagPath: fallbackFlagPath,
+            label,
+            searchName
+        });
+        seen.add(locationId);
+    });
+
+    return normalized.slice(0, 60);
+}
+
+function normalizePetChoices(rawValues = []) {
+    if (!Array.isArray(rawValues)) {
+        return [];
+    }
+
+    const normalized = [];
+    const seen = new Set();
+
+    rawValues.forEach((rawValue) => {
+        if (typeof rawValue !== 'string') {
+            return;
+        }
+
+        const value = rawValue.trim().toUpperCase();
+        if (!/^[A-Z][A-Z0-9_]*$/.test(value) || seen.has(value)) {
+            return;
+        }
+
+        normalized.push(value);
+        seen.add(value);
+    });
+
+    return normalized;
+}
+
+function normalizeUiLocaleCode(locale = document.documentElement.lang || 'de') {
+    if (typeof locale !== 'string') {
+        return 'de';
+    }
+
+    const normalized = locale.trim().slice(0, 2).toLowerCase();
+    if (!normalized) {
+        return 'de';
+    }
+
+    return normalized;
+}
+
+function formatPetChoiceLabel(value, locale = document.documentElement.lang || 'de') {
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    const normalizedValue = value.trim().toUpperCase();
+    if (!normalizedValue) {
+        return '';
+    }
+
+    const localeCode = normalizeUiLocaleCode(locale);
+    const byLocale = PET_CHOICE_TRANSLATIONS[localeCode] || PET_CHOICE_TRANSLATIONS.de;
+    const translated = byLocale?.[normalizedValue];
+
+    // Fallback for future backend enums: keep original backend constant unchanged.
+    if (typeof translated === 'string' && translated.trim()) {
+        return translated.trim();
+    }
+
+    return normalizedValue;
+}
+
+function formatPetChoiceCountLabel(value, count, locale = document.documentElement.lang || 'de') {
+    const normalizedCount = Number.isFinite(Number(count))
+        ? Math.max(0, Math.round(Number(count)))
+        : 0;
+
+    if (normalizedCount === 1) {
+        return formatPetChoiceLabel(value, locale);
+    }
+
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    const normalizedValue = value.trim().toUpperCase();
+    if (!normalizedValue) {
+        return '';
+    }
+
+    const localeCode = normalizeUiLocaleCode(locale);
+    const byLocale = PET_CHOICE_PLURAL_TRANSLATIONS[localeCode] || PET_CHOICE_PLURAL_TRANSLATIONS.de;
+    const pluralLabel = byLocale?.[normalizedValue];
+
+    if (typeof pluralLabel === 'string' && pluralLabel.trim()) {
+        return pluralLabel.trim();
+    }
+
+    // Fallback for future backend enums: keep original backend constant unchanged.
+    return formatPetChoiceLabel(normalizedValue, locale);
+}
+
+function resolvePetChoiceEmojiPath(value) {
+    if (typeof value !== 'string') {
+        return PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
+    }
+
+    const normalizedValue = value.trim().toUpperCase();
+    if (!normalizedValue) {
+        return PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
+    }
+
+    return PET_CHOICE_EMOJI_ASSET_PATHS[normalizedValue] || PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
+}
+
+async function fetchFirstJsonPayload(urls = []) {
+    for (const url of urls) {
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            });
+
+            if (!response.ok) {
+                continue;
+            }
+
+            return await response.json();
+        } catch {
+            continue;
+        }
+    }
+
+    return null;
+}
+
+async function fetchCitySearchResults(query, locale = document.documentElement.lang || 'de', signal = undefined) {
+    const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+    if (trimmedQuery.length < 2) {
+        return { results: [] };
+    }
+
+    const url = new URL(HEADER_SEARCH_CITY_ENDPOINT);
+    url.searchParams.set('name', trimmedQuery);
+    url.searchParams.set('count', '40');
+    url.searchParams.set('language', String(locale || 'de').slice(0, 2).toLowerCase());
+    url.searchParams.set('format', 'json');
+
+    const response = await fetch(url.toString(), {
+        headers: {
+            Accept: 'application/json'
+        },
+        cache: 'no-store',
+        signal
+    });
+
+    if (!response.ok) {
+        throw new Error(`City search failed with status ${response.status}`);
+    }
+
+    return response.json();
+}
+
 const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
 
 const appRoot = document.querySelector('#app-shell');
 const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
+const headerSearchRoot = document.querySelector('[data-header-search]');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
     pending: 'Pending',
@@ -841,15 +1497,46 @@ const localizedPlaywrightLoadingLabel = playwrightRunnerRoot?.getAttribute('data
 const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute('data-notification-title') || 'Playwright tests completed';
 const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
 const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
+const localizedHeaderSearchStrings = {
+    destinationDescription: headerSearchRoot?.dataset.destinationDescription || 'Vermietungsorte suchen',
+    destinationCompactEmpty: headerSearchRoot?.dataset.destinationCompactEmpty || 'Irgendwo',
+    dateDescription: headerSearchRoot?.dataset.dateDescription || 'Datum hinzufügen',
+    dateCompactEmpty: headerSearchRoot?.dataset.dateCompactEmpty || 'Jederzeit',
+    petDescription: headerSearchRoot?.dataset.petDescription || 'Haustiere',
+    petCompactEmpty: headerSearchRoot?.dataset.petCompactEmpty || 'Gäste hinzufügen',
+    destinationNoResults: headerSearchRoot?.dataset.destinationNoResults || 'Keine Städte gefunden',
+    destinationLoading: headerSearchRoot?.dataset.destinationLoading || 'Städte werden geladen',
+    petLoading: headerSearchRoot?.dataset.petLoading || 'Haustiere werden geladen',
+    petEmpty: headerSearchRoot?.dataset.petEmpty || 'Keine Haustiere verfügbar'
+};
 
 createApp({
     render: appShellRender,
     data() {
         const repository = normalizeRepository(initialRepository);
+        const todayDate = new Date();
 
         return {
             menuOpen: false,
+            loginModalOpen: false,
             scrolled: false,
+            headerSurfaceElement: null,
+            headerSearchInteractionExpanded: false,
+            headerSearchStrings: localizedHeaderSearchStrings,
+            locationQuery: '',
+            selectedLocation: null,
+            locationOptions: [],
+            locationOptionsLoading: false,
+            locationSearchDebounceHandle: null,
+            locationSearchAbortController: null,
+            locationSearchRequestId: 0,
+            dateRangeStart: '',
+            dateRangeEnd: '',
+            dateCalendarYear: todayDate.getFullYear(),
+            dateCalendarMonth: todayDate.getMonth(),
+            petChoices: [],
+            petChoicesLoading: false,
+            petChoiceCounts: {},
             threadBackgroundController: null,
             gitView: 'activity',
             boardView: pickPreferredBoard(repository),
@@ -923,10 +1610,125 @@ createApp({
             playwrightNotificationTitle: localizedPlaywrightNotificationTitle,
             notifications: [],
             notificationCounter: 0,
-            notificationTimers: {}
+            notificationTimers: {},
+            dropdownQueueHandle: null,
+            dropdownQueuedTargetId: ''
         };
     },
     computed: {
+        filteredLocationOptions() {
+            const query = typeof this.locationQuery === 'string' ? this.locationQuery.trim().toLowerCase() : '';
+            const options = Array.isArray(this.locationOptions) ? this.locationOptions : [];
+
+            if (!query) {
+                return options.slice(0, 70);
+            }
+
+            return options
+                .filter((option) => option.searchName.includes(query) || option.countryCode.toLowerCase().includes(query))
+                .slice(0, 70);
+        },
+        headerSearchCompactMode() {
+            return this.scrolled && !this.headerSearchInteractionExpanded;
+        },
+        locationDisplayValue() {
+            if (this.selectedLocation && this.selectedLocation.label) {
+                return this.selectedLocation.label;
+            }
+
+            if (this.headerSearchCompactMode) {
+                return this.headerSearchStrings.destinationCompactEmpty;
+            }
+
+            return this.headerSearchStrings.destinationDescription;
+        },
+        dateDisplayValue() {
+            const locale = document.documentElement.lang || 'de';
+            const startLabel = formatSearchDate(this.dateRangeStart, locale);
+            const endLabel = formatSearchDate(this.dateRangeEnd, locale);
+
+            if (startLabel && endLabel) {
+                if (this.dateRangeStart === this.dateRangeEnd) {
+                    return startLabel;
+                }
+
+                return `${startLabel} - ${endLabel}`;
+            }
+
+            if (startLabel) {
+                return startLabel;
+            }
+
+            if (endLabel) {
+                return endLabel;
+            }
+
+            if (this.headerSearchCompactMode) {
+                return this.headerSearchStrings.dateCompactEmpty;
+            }
+
+            return this.headerSearchStrings.dateDescription;
+        },
+        dateCalendarMonthLabel() {
+            const locale = document.documentElement.lang || 'de';
+            return formatCalendarMonthLabel(this.dateCalendarYear, this.dateCalendarMonth, locale);
+        },
+        dateCalendarWeekdayLabels() {
+            const locale = document.documentElement.lang || 'de';
+            return getCalendarWeekdayLabels(locale);
+        },
+        dateCalendarDays() {
+            const locale = document.documentElement.lang || 'de';
+            return buildDateCalendarDays({
+                year: this.dateCalendarYear,
+                month: this.dateCalendarMonth,
+                rangeStart: this.dateRangeStart,
+                rangeEnd: this.dateRangeEnd,
+                locale
+            });
+        },
+        dateSelectionStartLabel() {
+            const locale = document.documentElement.lang || 'de';
+            return formatSearchDate(this.dateRangeStart, locale) || '--';
+        },
+        dateSelectionEndLabel() {
+            const locale = document.documentElement.lang || 'de';
+            return formatSearchDate(this.dateRangeEnd, locale) || '--';
+        },
+        totalPetCount() {
+            return Object.values(this.petChoiceCounts).reduce((total, value) => {
+                const count = Number(value);
+                return total + (Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0);
+            }, 0);
+        },
+        petDisplayValue() {
+            if (this.totalPetCount <= 0) {
+                if (this.headerSearchCompactMode) {
+                    return this.headerSearchStrings.petCompactEmpty;
+                }
+
+                return this.headerSearchStrings.petDescription;
+            }
+
+            const selectedChoices = this.petChoices
+                .map((choice) => ({
+                    choice,
+                    count: Number(this.petChoiceCounts[choice.value]) || 0
+                }))
+                .filter((entry) => entry.count > 0);
+            const locale = document.documentElement.lang || 'de';
+
+            const summary = selectedChoices
+                .slice(0, 2)
+                .map((entry) => `${entry.count} ${formatPetChoiceCountLabel(entry.choice.value, entry.count, locale)}`)
+                .join(', ');
+
+            if (selectedChoices.length <= 2) {
+                return summary;
+            }
+
+            return `${summary} +${selectedChoices.length - 2}`;
+        },
         currentActivityBars() {
             return this.repository.git.activity[this.gitActivityRange] || [];
         },
@@ -1026,7 +1828,14 @@ createApp({
             return formatted || this.playwrightNeverLabel;
         }
     },
+    watch: {
+        locationQuery(nextValue) {
+            this.scheduleLocationSearch(nextValue);
+        }
+    },
     mounted() {
+        this.headerSurfaceElement = document.querySelector('#site-shell-header .header_surface');
+        this.initializeHeaderSearch();
         this.initializeRepositoryViews();
         this.initializeDropdowns();
         this.initializeThreadBackground();
@@ -1039,21 +1848,295 @@ createApp({
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.addEventListener('click', this.handleDocumentClick);
         document.addEventListener('keydown', this.handleDocumentKeydown);
+        this.patchLegacyLoginLinks();
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.syncScrollState);
         window.removeEventListener('resize', this.handleResize);
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
+        this.clearDropdownQueue();
         this.closeAllDropdowns({ immediate: true });
         this.destroyThreadBackground();
         this.stopPlaywrightPolling();
         this.stopAllMetricAnimations();
         this.clearNotificationTimers();
+        this.clearLocationSearchRuntime();
+        if (typeof headerScrollAnimationState.rafId === 'number' && headerScrollAnimationState.rafId > 0) {
+            window.cancelAnimationFrame(headerScrollAnimationState.rafId);
+        }
+        headerScrollAnimationState.rafId = 0;
+        headerScrollAnimationState.velocity = 0;
+        headerScrollAnimationState.lastFrameTime = 0;
+        headerScrollAnimationState.target = 0;
+        headerScrollAnimationState.progress = 0;
+        headerScrollAnimationState.appliedProgress = Number.NaN;
+        this.headerSurfaceElement = null;
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        initializeHeaderSearch() {
+            if (!headerSearchRoot) {
+                return;
+            }
+
+            this.locationOptions = [];
+            this.locationOptionsLoading = false;
+            this.syncDateCalendarView(this.dateRangeStart || this.dateRangeEnd);
+            this.loadPetChoices();
+        },
+        clearLocationSearchRuntime() {
+            if (typeof this.locationSearchDebounceHandle === 'number') {
+                window.clearTimeout(this.locationSearchDebounceHandle);
+            }
+            this.locationSearchDebounceHandle = null;
+
+            if (this.locationSearchAbortController) {
+                this.locationSearchAbortController.abort();
+                this.locationSearchAbortController = null;
+            }
+        },
+        scheduleLocationSearch(query) {
+            if (!headerSearchRoot) {
+                return;
+            }
+
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (typeof this.locationSearchDebounceHandle === 'number') {
+                window.clearTimeout(this.locationSearchDebounceHandle);
+                this.locationSearchDebounceHandle = null;
+            }
+
+            if (trimmedQuery.length < 2) {
+                if (this.locationSearchAbortController) {
+                    this.locationSearchAbortController.abort();
+                    this.locationSearchAbortController = null;
+                }
+                this.locationOptions = [];
+                this.locationOptionsLoading = false;
+                return;
+            }
+
+            this.locationSearchDebounceHandle = window.setTimeout(() => {
+                this.fetchLocationOptions(trimmedQuery);
+            }, 240);
+        },
+        async fetchLocationOptions(query) {
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (trimmedQuery.length < 2) {
+                this.locationOptions = [];
+                this.locationOptionsLoading = false;
+                return;
+            }
+
+            const requestId = this.locationSearchRequestId + 1;
+            this.locationSearchRequestId = requestId;
+            if (this.locationSearchAbortController) {
+                this.locationSearchAbortController.abort();
+            }
+
+            const abortController = new AbortController();
+            this.locationSearchAbortController = abortController;
+            this.locationOptionsLoading = true;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchCitySearchResults(trimmedQuery, locale, abortController.signal);
+                if (requestId !== this.locationSearchRequestId) {
+                    return;
+                }
+
+                this.locationOptions = normalizeCitySearchResults(payload, locale);
+            } catch (error) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+
+                if (requestId !== this.locationSearchRequestId) {
+                    return;
+                }
+
+                this.locationOptions = [];
+            } finally {
+                if (requestId === this.locationSearchRequestId) {
+                    this.locationOptionsLoading = false;
+                }
+
+                if (this.locationSearchAbortController === abortController) {
+                    this.locationSearchAbortController = null;
+                }
+            }
+        },
+        async loadPetChoices() {
+            this.petChoicesLoading = true;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchFirstJsonPayload(HEADER_SEARCH_PET_ENDPOINTS);
+                const rawChoices = Array.isArray(payload)
+                    ? payload
+                    : (Array.isArray(payload?.choices) ? payload.choices : []);
+                const normalizedValues = normalizePetChoices(rawChoices);
+                const effectiveValues = normalizedValues.length ? normalizedValues : [...DEFAULT_PET_CHOICES];
+                const nextCounts = {};
+
+                effectiveValues.forEach((value) => {
+                    const previousValue = Number(this.petChoiceCounts[value]);
+                    const normalizedCount = Number.isFinite(previousValue) ? Math.max(0, Math.round(previousValue)) : 0;
+                    nextCounts[value] = normalizedCount;
+                });
+
+                this.petChoices = effectiveValues.map((value) => ({
+                    value,
+                    label: formatPetChoiceLabel(value, locale),
+                    emojiPath: resolvePetChoiceEmojiPath(value)
+                }));
+                this.petChoiceCounts = nextCounts;
+            } finally {
+                this.petChoicesLoading = false;
+            }
+        },
+        selectLocation(option, event) {
+            if (!option || typeof option !== 'object') {
+                return;
+            }
+
+            this.selectedLocation = option;
+            this.locationQuery = '';
+            this.closeDetailsFromEvent(event);
+        },
+        syncDateCalendarView(referenceValue = '') {
+            const normalizedReference = normalizeDateInputValue(referenceValue);
+            const fallbackDate = new Date();
+            const viewDate = normalizedReference
+                ? parseDateInputValue(normalizedReference)
+                : fallbackDate;
+
+            if (!viewDate) {
+                return;
+            }
+
+            this.dateCalendarYear = viewDate.getFullYear();
+            this.dateCalendarMonth = viewDate.getMonth();
+        },
+        moveDateCalendar(monthOffset) {
+            const normalizedOffset = Number(monthOffset);
+            if (!Number.isFinite(normalizedOffset) || normalizedOffset === 0) {
+                return;
+            }
+
+            const nextViewDate = new Date(
+                this.dateCalendarYear,
+                this.dateCalendarMonth + Math.trunc(normalizedOffset),
+                1
+            );
+            this.dateCalendarYear = nextViewDate.getFullYear();
+            this.dateCalendarMonth = nextViewDate.getMonth();
+        },
+        selectDateCalendarDay(day) {
+            const selectedDateValue = normalizeDateInputValue(day?.iso);
+            if (!selectedDateValue) {
+                return;
+            }
+
+            if (this.dateRangeStart && selectedDateValue === this.dateRangeStart) {
+                this.clearDateRange();
+                return;
+            }
+
+            if (!this.dateRangeStart || this.dateRangeEnd) {
+                this.dateRangeStart = selectedDateValue;
+                this.dateRangeEnd = '';
+                this.syncDateCalendarView(selectedDateValue);
+                return;
+            }
+
+            if (selectedDateValue < this.dateRangeStart) {
+                this.dateRangeEnd = this.dateRangeStart;
+                this.dateRangeStart = selectedDateValue;
+            } else {
+                this.dateRangeEnd = selectedDateValue;
+            }
+
+            this.syncDateCalendarView(selectedDateValue);
+        },
+        setDateStart(value) {
+            const normalizedStart = normalizeDateInputValue(value);
+            this.dateRangeStart = normalizedStart;
+
+            if (!normalizedStart) {
+                this.dateRangeEnd = '';
+                this.syncDateCalendarView();
+                return;
+            }
+
+            if (this.dateRangeEnd && this.dateRangeEnd < normalizedStart) {
+                this.dateRangeEnd = normalizedStart;
+            }
+
+            this.syncDateCalendarView(normalizedStart);
+        },
+        setDateEnd(value) {
+            const normalizedEnd = normalizeDateInputValue(value);
+            this.dateRangeEnd = normalizedEnd;
+
+            if (!normalizedEnd) {
+                return;
+            }
+
+            if (!this.dateRangeStart) {
+                this.dateRangeStart = normalizedEnd;
+            }
+
+            if (this.dateRangeEnd < this.dateRangeStart) {
+                const previousStart = this.dateRangeStart;
+                this.dateRangeStart = this.dateRangeEnd;
+                this.dateRangeEnd = previousStart;
+            }
+
+            this.syncDateCalendarView(this.dateRangeStart || this.dateRangeEnd);
+        },
+        clearDateRange() {
+            this.dateRangeStart = '';
+            this.dateRangeEnd = '';
+            this.syncDateCalendarView();
+        },
+        getPetCount(value) {
+            const count = Number(this.petChoiceCounts[value]);
+            if (!Number.isFinite(count) || count < 0) {
+                return 0;
+            }
+
+            return Math.round(count);
+        },
+        incrementPetCount(value) {
+            if (!value) {
+                return;
+            }
+
+            const nextCount = this.getPetCount(value) + 1;
+            this.petChoiceCounts = {
+                ...this.petChoiceCounts,
+                [value]: nextCount
+            };
+        },
+        decrementPetCount(value) {
+            if (!value) {
+                return;
+            }
+
+            const nextCount = Math.max(0, this.getPetCount(value) - 1);
+            this.petChoiceCounts = {
+                ...this.petChoiceCounts,
+                [value]: nextCount
+            };
+        },
+        triggerHeaderSearch() {
+            this.closeAllDropdowns();
+        },
         pushNotification({ title = '', message = '', tone = 'info', lifetimeMs = NOTIFICATION_LIFETIME_MS } = {}) {
             const trimmedTitle = typeof title === 'string' ? title.trim() : '';
             const trimmedMessage = typeof message === 'string' ? message.trim() : '';
@@ -1493,16 +2576,154 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns();
         },
+        openLoginModal() {
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.activeGitCommitModalHash = '';
+            this.activeBoardCardKey = '';
+            this.loginModalOpen = true;
+            this.syncModalBodyLock();
+        },
+        openLoginModalFromMenu() {
+            this.menuOpen = false;
+            this.openLoginModal();
+        },
+        closeLoginModal() {
+            if (!this.loginModalOpen) {
+                return;
+            }
+
+            this.loginModalOpen = false;
+            this.syncModalBodyLock();
+        },
         syncModalBodyLock() {
             document.body.classList.toggle(
                 'body--modal-open',
-                Boolean(this.activeGitCommitModalHash || this.activeBoardCardKey)
+                Boolean(this.loginModalOpen || this.activeGitCommitModalHash || this.activeBoardCardKey)
             );
         },
         closeRepositoryModal() {
             this.activeGitCommitModalHash = '';
             this.activeBoardCardKey = '';
             this.syncModalBodyLock();
+        },
+        getDropdownId(details) {
+            if (!details) {
+                return '';
+            }
+
+            if (!details.dataset.dropdownId) {
+                dropdownIdSequence += 1;
+                details.dataset.dropdownId = `dropdown-${dropdownIdSequence}`;
+            }
+
+            return details.dataset.dropdownId;
+        },
+        findDropdownById(dropdownId) {
+            if (!dropdownId) {
+                return null;
+            }
+
+            return this.getDropdowns().find((details) => this.getDropdownId(details) === dropdownId) || null;
+        },
+        getOpenDropdowns(options = {}) {
+            const { exclude = null } = options;
+
+            return this.getDropdowns().filter((details) => {
+                if (details === exclude) {
+                    return false;
+                }
+
+                return details.open || details.classList.contains('is-open');
+            });
+        },
+        isHeaderSearchDropdown(details) {
+            return Boolean(details?.classList?.contains('header_search_field'));
+        },
+        setHeaderSearchInteractionExpanded(expanded) {
+            const nextExpanded = Boolean(expanded);
+            if (this.headerSearchInteractionExpanded === nextExpanded) {
+                return;
+            }
+
+            this.headerSearchInteractionExpanded = nextExpanded;
+            this.applyHeaderSurfaceScrollProgress();
+        },
+        syncHeaderSearchInteractionState() {
+            const hasOpenHeaderSearchDropdown = this.getOpenDropdowns()
+                .some((details) => this.isHeaderSearchDropdown(details));
+            const queuedTarget = this.findDropdownById(this.dropdownQueuedTargetId);
+            const hasQueuedHeaderSearchDropdown = this.isHeaderSearchDropdown(queuedTarget);
+            this.setHeaderSearchInteractionExpanded(hasOpenHeaderSearchDropdown || hasQueuedHeaderSearchDropdown);
+        },
+        clearDropdownQueue() {
+            if (typeof this.dropdownQueueHandle === 'number') {
+                window.clearTimeout(this.dropdownQueueHandle);
+            }
+
+            this.dropdownQueueHandle = null;
+            this.dropdownQueuedTargetId = '';
+            this.syncHeaderSearchInteractionState();
+        },
+        scheduleDropdownOpen(details) {
+            const targetId = this.getDropdownId(details);
+            if (!targetId) {
+                return;
+            }
+
+            this.clearDropdownQueue();
+            this.dropdownQueuedTargetId = targetId;
+            this.syncHeaderSearchInteractionState();
+            this.dropdownQueueHandle = window.setTimeout(() => {
+                this.dropdownQueueHandle = null;
+                const queuedTargetId = this.dropdownQueuedTargetId;
+                this.dropdownQueuedTargetId = '';
+                this.syncHeaderSearchInteractionState();
+
+                if (!queuedTargetId) {
+                    return;
+                }
+
+                const target = this.findDropdownById(queuedTargetId);
+                if (!target) {
+                    return;
+                }
+
+                if (this.getOpenDropdowns({ exclude: target }).length) {
+                    this.closeAllDropdowns({ exclude: target, preserveQueue: true });
+                    this.scheduleDropdownOpen(target);
+                    return;
+                }
+
+                this.performDropdownOpen(target);
+            }, DROPDOWN_CLOSE_DELAY_MS + 24);
+        },
+        performDropdownOpen(details) {
+            if (!details) {
+                return;
+            }
+
+            this.clearDropdownAnimation(details);
+            details.open = true;
+            this.setDropdownExpanded(details, true);
+            if (this.isHeaderSearchDropdown(details)) {
+                this.setHeaderSearchInteractionExpanded(true);
+            }
+
+            const frameIds = [];
+            const firstFrame = window.requestAnimationFrame(() => {
+                const secondFrame = window.requestAnimationFrame(() => {
+                    details.classList.add('is-open');
+                    dropdownFrames.delete(details);
+                    this.syncHeaderSearchInteractionState();
+                });
+
+                frameIds.push(secondFrame);
+                dropdownFrames.set(details, frameIds);
+            });
+
+            frameIds.push(firstFrame);
+            dropdownFrames.set(details, frameIds);
         },
         getDropdowns() {
             return Array.from(document.querySelectorAll(DROPDOWN_SELECTOR));
@@ -1516,12 +2737,16 @@ createApp({
                 }
 
                 details.dataset.dropdownInitialized = 'true';
+                this.getDropdownId(details);
                 details.classList.remove('is-open');
                 this.setDropdownExpanded(details, false);
 
                 summary.addEventListener('click', (event) => {
                     event.preventDefault();
-                    this.toggleDropdown(details);
+                    const isDateDropdown = details.classList.contains('header_search_field--date');
+                    this.toggleDropdown(details, {
+                        immediateSwitch: isDateDropdown
+                    });
                 });
             });
         },
@@ -1544,7 +2769,7 @@ createApp({
             frameIds.forEach((frameId) => window.cancelAnimationFrame(frameId));
             dropdownFrames.delete(details);
         },
-        toggleDropdown(details) {
+        toggleDropdown(details, options = {}) {
             if (!details) {
                 return;
             }
@@ -1554,23 +2779,29 @@ createApp({
                 return;
             }
 
-            this.openDropdown(details);
+            this.openDropdown(details, options);
         },
-        openDropdown(details) {
+        openDropdown(details, options = {}) {
             if (!details) {
                 return;
             }
 
-            this.closeAllDropdowns({ exclude: details });
-            this.clearDropdownAnimation(details);
-            details.open = true;
-            this.setDropdownExpanded(details, true);
+            const { immediateSwitch = false } = options;
+            if (this.getOpenDropdowns({ exclude: details }).length) {
+                if (immediateSwitch) {
+                    this.closeAllDropdowns({ exclude: details, immediate: true });
+                    this.clearDropdownQueue();
+                    this.performDropdownOpen(details);
+                    return;
+                }
 
-            const frameId = window.requestAnimationFrame(() => {
-                details.classList.add('is-open');
-                dropdownFrames.delete(details);
-            });
-            dropdownFrames.set(details, [frameId]);
+                this.closeAllDropdowns({ exclude: details, preserveQueue: true });
+                this.scheduleDropdownOpen(details);
+                return;
+            }
+
+            this.clearDropdownQueue();
+            this.performDropdownOpen(details);
         },
         closeDropdown(details, options = {}) {
             if (!details) {
@@ -1585,6 +2816,7 @@ createApp({
             if (immediate) {
                 details.classList.remove('is-open');
                 details.open = false;
+                this.syncHeaderSearchInteractionState();
                 return;
             }
 
@@ -1593,16 +2825,26 @@ createApp({
             }
 
             details.classList.remove('is-open');
+            this.syncHeaderSearchInteractionState();
 
             const timeoutId = window.setTimeout(() => {
                 details.open = false;
                 dropdownTimers.delete(details);
+                this.syncHeaderSearchInteractionState();
             }, DROPDOWN_CLOSE_DELAY_MS);
 
             dropdownTimers.set(details, timeoutId);
         },
         closeAllDropdowns(options = {}) {
-            const { exclude = null, immediate = false } = options;
+            const {
+                exclude = null,
+                immediate = false,
+                preserveQueue = false
+            } = options;
+
+            if (!preserveQueue) {
+                this.clearDropdownQueue();
+            }
 
             this.getDropdowns().forEach((details) => {
                 if (details === exclude) {
@@ -1611,6 +2853,7 @@ createApp({
 
                 this.closeDropdown(details, { immediate });
             });
+            this.syncHeaderSearchInteractionState();
         },
         handleDocumentPointerDown(event) {
             if (event.target.closest(DROPDOWN_SELECTOR)) {
@@ -1619,8 +2862,58 @@ createApp({
 
             this.closeAllDropdowns();
         },
+        isLegacyLoginPath(pathname) {
+            if (typeof pathname !== 'string') {
+                return false;
+            }
+
+            const normalizedPath = pathname.trim().replace(/\/+$/, '') || '/';
+            return normalizedPath === '/login' || /^\/(?:de|en|ro)\/login$/i.test(normalizedPath);
+        },
+        isLegacyLoginHref(href) {
+            if (typeof href !== 'string' || !href.trim()) {
+                return false;
+            }
+
+            try {
+                const parsed = new URL(href, window.location.origin);
+                return this.isLegacyLoginPath(parsed.pathname);
+            } catch {
+                return false;
+            }
+        },
+        patchLegacyLoginLinks() {
+            document.querySelectorAll('a[href]').forEach((linkElement) => {
+                const href = linkElement.getAttribute('href') || '';
+                if (!this.isLegacyLoginHref(href)) {
+                    return;
+                }
+
+                linkElement.dataset.legacyLoginModal = 'true';
+                linkElement.setAttribute('href', '#');
+            });
+        },
+        handleDocumentClick(event) {
+            const anchorElement = event.target?.closest?.('a[href]');
+            if (!anchorElement) {
+                return;
+            }
+
+            const href = anchorElement.getAttribute('href') || '';
+            if (!this.isLegacyLoginHref(href) && anchorElement.dataset.legacyLoginModal !== 'true') {
+                return;
+            }
+
+            event.preventDefault();
+            this.openLoginModal();
+        },
         handleDocumentKeydown(event) {
             if (event.key !== 'Escape') {
+                return;
+            }
+
+            if (this.loginModalOpen) {
+                this.closeLoginModal();
                 return;
             }
 
@@ -1873,6 +3166,9 @@ createApp({
                 return;
             }
 
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.loginModalOpen = false;
             this.activeBoardCardKey = cardKey;
             this.activeGitCommitModalHash = '';
             this.syncModalBodyLock();
@@ -2632,6 +3928,9 @@ createApp({
             }
 
             this.selectGitCommit(commitHash, options);
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.loginModalOpen = false;
             this.activeGitCommitModalHash = commitHash;
             this.activeBoardCardKey = '';
             this.syncModalBodyLock();
@@ -2856,8 +4155,86 @@ createApp({
 
             this.refreshThreadBackground();
         },
+        applyHeaderSurfaceScrollProgress(progressValue = headerScrollAnimationState.progress) {
+            const numericValue = Number(progressValue);
+            const clamped = Number.isFinite(numericValue)
+                ? Math.min(1, Math.max(0, numericValue))
+                : 0;
+            const effectiveProgress = this.headerSearchInteractionExpanded ? 0 : clamped;
+            if (Math.abs(effectiveProgress - headerScrollAnimationState.appliedProgress) < 0.0005) {
+                return;
+            }
+            const surfaceElement = this.headerSurfaceElement || document.querySelector('#site-shell-header .header_surface');
+            if (!surfaceElement) {
+                return;
+            }
+
+            this.headerSurfaceElement = surfaceElement;
+            headerScrollAnimationState.appliedProgress = effectiveProgress;
+            surfaceElement.style.setProperty('--header-scroll-progress', effectiveProgress.toFixed(4));
+        },
+        setHeaderScrollProgress(value) {
+            const numericValue = Number(value);
+            const clamped = Number.isFinite(numericValue)
+                ? Math.min(1, Math.max(0, numericValue))
+                : 0;
+
+            headerScrollAnimationState.progress = clamped;
+            if (this.scrolled) {
+                if (clamped <= HEADER_COMPACT_EXIT_PROGRESS) {
+                    this.scrolled = false;
+                }
+            } else if (clamped >= HEADER_COMPACT_ENTER_PROGRESS) {
+                this.scrolled = true;
+            }
+
+            this.applyHeaderSurfaceScrollProgress(clamped);
+        },
+        animateHeaderScrollProgress() {
+            if (typeof headerScrollAnimationState.rafId === 'number' && headerScrollAnimationState.rafId > 0) {
+                return;
+            }
+
+            const step = (timestamp) => {
+                const frameTime = Number(timestamp);
+                const previousFrameTime = headerScrollAnimationState.lastFrameTime || frameTime;
+                const elapsedSeconds = Math.max(
+                    1 / 240,
+                    Math.min(
+                        HEADER_SCROLL_MAX_STEP_SECONDS,
+                        (frameTime - previousFrameTime) / 1000
+                    )
+                );
+                headerScrollAnimationState.lastFrameTime = frameTime;
+
+                const displacement = headerScrollAnimationState.target - headerScrollAnimationState.progress;
+                const acceleration = (displacement * HEADER_SCROLL_SPRING_STIFFNESS)
+                    - (headerScrollAnimationState.velocity * HEADER_SCROLL_SPRING_DAMPING);
+                headerScrollAnimationState.velocity += acceleration * elapsedSeconds;
+                this.setHeaderScrollProgress(headerScrollAnimationState.progress + (headerScrollAnimationState.velocity * elapsedSeconds));
+
+                const settled = Math.abs(headerScrollAnimationState.velocity) <= HEADER_SCROLL_SETTLE_VELOCITY
+                    && Math.abs(headerScrollAnimationState.target - headerScrollAnimationState.progress) <= HEADER_SCROLL_SETTLE_DISTANCE;
+                if (settled) {
+                    this.setHeaderScrollProgress(headerScrollAnimationState.target);
+                    headerScrollAnimationState.velocity = 0;
+                    headerScrollAnimationState.lastFrameTime = 0;
+                    headerScrollAnimationState.rafId = 0;
+                    return;
+                }
+
+                headerScrollAnimationState.rafId = window.requestAnimationFrame(step);
+            };
+
+            headerScrollAnimationState.rafId = window.requestAnimationFrame(step);
+        },
         syncScrollState() {
-            this.scrolled = window.scrollY > 20;
+            const scrollY = Math.max(0, window.scrollY || 0);
+            const rawProgress = Math.min(1, scrollY / HEADER_SCROLL_PROGRESS_DISTANCE_PX);
+            const easedProgress = rawProgress * rawProgress * rawProgress
+                * ((rawProgress * ((rawProgress * 6) - 15)) + 10);
+            headerScrollAnimationState.target = easedProgress;
+            this.animateHeaderScrollProgress();
         },
         handleResize() {
             if (window.innerWidth >= 1024) {
@@ -2871,6 +4248,8 @@ createApp({
             if (this.gitView === 'graph') {
                 this.renderGitGraph(true);
             }
+
+            this.syncScrollState();
         }
     }
 }).mount('#app-shell');
