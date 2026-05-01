@@ -40,3 +40,6 @@ test-results/
 **/.idea/queries/
 **/.idea/dataSources/
 **/.idea/dataSources.local.xml
+
+# Uploaded files (runtime artifacts)
+backend/uploads/
