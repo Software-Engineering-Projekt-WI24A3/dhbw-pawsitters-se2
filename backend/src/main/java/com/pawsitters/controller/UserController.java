@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -60,12 +61,8 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
-        try {
-            User user = userService.getUserById(id);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/mailExists")
@@ -76,12 +73,8 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe(Authentication authentication) {
-        try {
-            User user = userService.getUserByEmail(authentication.getName());
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        User user = userService.getUserByEmail(authentication.getName());
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")
@@ -103,7 +96,7 @@ public class UserController {
             );
             return ResponseEntity.ok(user);
         } catch (IllegalArgumentException e) {
-            return mapUserError(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -126,30 +119,22 @@ public class UserController {
             );
             return ResponseEntity.ok(user);
         } catch (IllegalArgumentException e) {
-            return mapUserError(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
-        try {
-            userService.deleteUserForEmail(id, authentication.getName());
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return mapUserError(e);
-        }
+        userService.deleteUserForEmail(id, authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/roles")
     public ResponseEntity<?> updateRole(@PathVariable Long id,
-                                        @Valid @RequestBody RolePatchRequest request,
-                                        Authentication authentication) {
-        try {
-            User user = userService.updateRoleForEmail(id, authentication.getName(), request.role());
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return mapUserError(e);
-        }
+                                        @Valid @RequestBody RolePatchRequest request) {
+        User user = userService.updateRole(id, request.role());
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping(value = "/{id}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -160,11 +145,11 @@ public class UserController {
             User user = userService.uploadProfileImageForEmail(id, authentication.getName(), image);
             return ResponseEntity.ok(user);
         } catch (IllegalArgumentException e) {
-            return mapUserError(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // ===== Request Body Record =====
+    // ===== Request Body Records =====
     public record RegisterRequest(
             @NotBlank @Email String email,
             @NotBlank @Size(min = 8, max = 100) String password,
@@ -201,15 +186,4 @@ public class UserController {
     ) {}
 
     public record RolePatchRequest(@NotNull UserRole role) {}
-
-    private ResponseEntity<?> mapUserError(IllegalArgumentException e) {
-        String message = e.getMessage() == null ? "" : e.getMessage();
-        if (message.contains("nicht gefunden")) {
-            return ResponseEntity.notFound().build();
-        }
-        if (message.contains("Kein Zugriff")) {
-            return ResponseEntity.status(403).body(message);
-        }
-        return ResponseEntity.badRequest().body(message);
-    }
 }

@@ -1,5 +1,7 @@
 package com.pawsitters.service;
 
+import com.pawsitters.exception.ForbiddenException;
+import com.pawsitters.exception.NotFoundException;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
@@ -70,18 +72,19 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User mit ID " + id + " nicht gefunden."));
+                .orElseThrow(() -> new NotFoundException("User mit ID " + id + " nicht gefunden."));
     }
+
     public User findByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User mit E-Mail " + email + " nicht gefunden."));
+                .orElseThrow(() -> new NotFoundException("User mit E-Mail " + email + " nicht gefunden."));
     }
-    public boolean existsByEmail(String email){
-        return (userRepository.existsByEmailIgnoreCase(email));
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmailIgnoreCase(email);
     }
 
     public User getUserByEmail(String email) {
@@ -148,8 +151,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User updateRoleForEmail(Long id, String ownerEmail, UserRole role) {
-        User user = getUserByIdForEmail(id, ownerEmail);
+    public User updateRole(Long id, UserRole role) {
+        User user = getUserById(id);
         user.setRole(role);
         return userRepository.save(user);
     }
@@ -169,6 +172,13 @@ public class UserService {
         }
         if (image.getSize() > MAX_IMAGE_SIZE_BYTES) {
             throw new IllegalArgumentException("Das Bild darf maximal 5 MB groß sein.");
+        }
+        try {
+            if (!hasValidMagicBytes(image)) {
+                throw new IllegalArgumentException("Datei-Signatur stimmt nicht mit dem angegebenen Bildtyp überein.");
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Bild konnte nicht gelesen werden.");
         }
 
         User user = getUserByIdForEmail(id, ownerEmail);
@@ -192,9 +202,27 @@ public class UserService {
     private User getUserByIdForEmail(Long id, String ownerEmail) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(ownerEmail)) {
-            throw new IllegalArgumentException("Kein Zugriff auf diesen Benutzer.");
+            throw new ForbiddenException("Kein Zugriff auf diesen Benutzer.");
         }
         return user;
+    }
+
+    private static boolean hasValidMagicBytes(MultipartFile image) throws IOException {
+        byte[] header = new byte[12];
+        int read;
+        try (InputStream is = image.getInputStream()) {
+            read = is.readNBytes(header, 0, 12);
+        }
+        if (read < 3) return false;
+        // JPEG: FF D8 FF
+        if (header[0] == (byte) 0xFF && header[1] == (byte) 0xD8 && header[2] == (byte) 0xFF) return true;
+        // PNG: 89 50 4E 47
+        if (read >= 4 && header[0] == (byte) 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) return true;
+        // WebP: RIFF....WEBP (bytes 0-3 = 'RIFF', bytes 8-11 = 'WEBP')
+        if (read >= 12
+                && header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46
+                && header[8] == 0x57 && header[9] == 0x45 && header[10] == 0x42 && header[11] == 0x50) return true;
+        return false;
     }
 
     private static String extensionForContentType(String contentType) {
