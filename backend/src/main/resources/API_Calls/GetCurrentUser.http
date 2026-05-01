@@ -1,0 +1,6 @@
+### Eigene Benutzerdaten abrufen
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
+###
+

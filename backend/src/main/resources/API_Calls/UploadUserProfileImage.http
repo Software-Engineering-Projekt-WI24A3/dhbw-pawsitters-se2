@@ -1,0 +1,14 @@
+### Profilbild hochladen
+POST {{baseUrl}}/api/users/1/profile-image
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="profile.png"
+Content-Type: image/png
+
+< ./profile.png
+--boundary--
+
+###
+

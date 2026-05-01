@@ -1,0 +1,12 @@
+### Benutzer teilaktualisieren (PATCH)
+PATCH {{baseUrl}}/api/users/4
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Max",
+  "address": "Neue Strasse 2, 12345 Musterstadt"
+}
+
+###
+

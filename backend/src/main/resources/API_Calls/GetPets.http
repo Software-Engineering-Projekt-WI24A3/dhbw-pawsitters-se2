@@ -1,0 +1,6 @@
+### Haustiere abrufen
+GET {{baseUrl}}/api/pets
+Authorization: Bearer {{token}}
+
+###
+

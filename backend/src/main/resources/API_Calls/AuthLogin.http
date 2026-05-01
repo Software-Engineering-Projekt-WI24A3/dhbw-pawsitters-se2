@@ -1,0 +1,11 @@
+### Login (Auth)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max.mustermann@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+

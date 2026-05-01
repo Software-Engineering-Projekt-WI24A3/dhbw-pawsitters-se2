@@ -9,14 +9,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
-@RestController
 @Validated
+@RestController
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -71,6 +74,96 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(Authentication authentication) {
+        try {
+            User user = userService.getUserByEmail(authentication.getName());
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id,
+                                        @Valid @RequestBody UpdateUserRequest request,
+                                        Authentication authentication) {
+        try {
+            User user = userService.updateUserForEmail(
+                    id,
+                    authentication.getName(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.phone(),
+                    request.birthDate(),
+                    request.emergencyContact(),
+                    request.profilePicture(),
+                    request.bio(),
+                    request.address()
+            );
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return mapUserError(e);
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchUser(@PathVariable Long id,
+                                       @Valid @RequestBody PatchUserRequest request,
+                                       Authentication authentication) {
+        try {
+            User user = userService.patchUserForEmail(
+                    id,
+                    authentication.getName(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.phone(),
+                    request.birthDate(),
+                    request.emergencyContact(),
+                    request.profilePicture(),
+                    request.bio(),
+                    request.address()
+            );
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return mapUserError(e);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
+        try {
+            userService.deleteUserForEmail(id, authentication.getName());
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return mapUserError(e);
+        }
+    }
+
+    @PatchMapping("/{id}/roles")
+    public ResponseEntity<?> updateRole(@PathVariable Long id,
+                                        @Valid @RequestBody RolePatchRequest request,
+                                        Authentication authentication) {
+        try {
+            User user = userService.updateRoleForEmail(id, authentication.getName(), request.role());
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return mapUserError(e);
+        }
+    }
+
+    @PostMapping(value = "/{id}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id,
+                                                @RequestPart("image") MultipartFile image,
+                                                Authentication authentication) {
+        try {
+            User user = userService.uploadProfileImageForEmail(id, authentication.getName(), image);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return mapUserError(e);
+        }
+    }
+
     // ===== Request Body Record =====
     public record RegisterRequest(
             @NotBlank @Email String email,
@@ -84,4 +177,39 @@ public class UserController {
             @NotBlank String bio,
             @NotNull UserRole role
     ) {}
+
+    public record UpdateUserRequest(
+            @NotBlank String firstName,
+            @NotBlank String lastName,
+            @NotBlank String phone,
+            @NotNull @Past LocalDate birthDate,
+            @NotBlank String emergencyContact,
+            @NotBlank String profilePicture,
+            @NotBlank String bio,
+            String address
+    ) {}
+
+    public record PatchUserRequest(
+            String firstName,
+            String lastName,
+            String phone,
+            @Past LocalDate birthDate,
+            String emergencyContact,
+            String profilePicture,
+            String bio,
+            String address
+    ) {}
+
+    public record RolePatchRequest(@NotNull UserRole role) {}
+
+    private ResponseEntity<?> mapUserError(IllegalArgumentException e) {
+        String message = e.getMessage() == null ? "" : e.getMessage();
+        if (message.contains("nicht gefunden")) {
+            return ResponseEntity.notFound().build();
+        }
+        if (message.contains("Kein Zugriff")) {
+            return ResponseEntity.status(403).body(message);
+        }
+        return ResponseEntity.badRequest().body(message);
+    }
 }
