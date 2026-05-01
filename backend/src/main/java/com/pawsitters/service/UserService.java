@@ -3,22 +3,34 @@ package com.pawsitters.service;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class UserService {
 
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp"
+    );
+    private static final long MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.upload.dir:uploads/users}")
+    private String uploadDir;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -151,26 +163,26 @@ public class UserService {
         if (image == null || image.isEmpty()) {
             throw new IllegalArgumentException("Bitte ein Bild hochladen.");
         }
-        if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
-            throw new IllegalArgumentException("Nur Bilddateien sind erlaubt.");
+        String contentType = image.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Nur PNG-, JPEG- und WebP-Bilder sind erlaubt.");
+        }
+        if (image.getSize() > MAX_IMAGE_SIZE_BYTES) {
+            throw new IllegalArgumentException("Das Bild darf maximal 5 MB groß sein.");
         }
 
         User user = getUserByIdForEmail(id, ownerEmail);
 
-        byte[] imageBytes;
+        Path uploadPath = Paths.get(uploadDir);
         try {
-            imageBytes = image.getBytes();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Bild konnte nicht gelesen werden.");
-        }
-
-        Path uploadDir = Paths.get("uploads", "users");
-        try {
-            Files.createDirectories(uploadDir);
-            String extension = extractExtension(image.getOriginalFilename());
-            Path target = uploadDir.resolve("user-" + user.getId() + "-" + UUID.randomUUID() + extension);
-            Files.write(target, imageBytes);
-            user.setProfilePicture(target.toString().replace("\\", "/"));
+            Files.createDirectories(uploadPath);
+            String extension = extensionForContentType(contentType);
+            String fileName = "user-" + user.getId() + "-" + UUID.randomUUID() + extension;
+            Path target = uploadPath.resolve(fileName);
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            user.setProfilePicture(uploadDir.replace("\\", "/") + "/" + fileName);
             return userRepository.save(user);
         } catch (IOException e) {
             throw new IllegalArgumentException("Bild konnte nicht gespeichert werden.");
@@ -185,18 +197,11 @@ public class UserService {
         return user;
     }
 
-    private String extractExtension(String originalFilename) {
-        if (originalFilename == null || originalFilename.isBlank()) {
-            return ".bin";
-        }
-        int index = originalFilename.lastIndexOf('.');
-        if (index < 0 || index == originalFilename.length() - 1) {
-            return ".bin";
-        }
-        String raw = originalFilename.substring(index).toLowerCase();
-        if (raw.length() > 10) {
-            return ".bin";
-        }
-        return raw;
+    private static String extensionForContentType(String contentType) {
+        return switch (contentType) {
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> ".jpg"; // image/jpeg
+        };
     }
 }
