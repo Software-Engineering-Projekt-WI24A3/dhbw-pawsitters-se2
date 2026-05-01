@@ -182,7 +182,7 @@ public class UserService {
             try (InputStream inputStream = image.getInputStream()) {
                 Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
             }
-            user.setProfilePicture(uploadDir.replace("\\", "/") + "/" + fileName);
+            user.setProfilePicture(uploadPath.resolve(fileName).toString().replace("\\", "/"));
             return userRepository.save(user);
         } catch (IOException e) {
             throw new IllegalArgumentException("Bild konnte nicht gespeichert werden.");
@@ -199,9 +199,10 @@ public class UserService {
 
     private static String extensionForContentType(String contentType) {
         return switch (contentType) {
+            case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> ".jpg"; // image/jpeg
+            default -> throw new IllegalArgumentException("Nicht unterstützter Bildtyp: " + contentType);
         };
     }
 }
