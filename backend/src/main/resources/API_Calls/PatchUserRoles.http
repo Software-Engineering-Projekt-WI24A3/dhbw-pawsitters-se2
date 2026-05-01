@@ -1,0 +1,11 @@
+### Benutzerrolle aendern
+PATCH {{baseUrl}}/api/users/4/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "role": "HOST"
+}
+
+###
+

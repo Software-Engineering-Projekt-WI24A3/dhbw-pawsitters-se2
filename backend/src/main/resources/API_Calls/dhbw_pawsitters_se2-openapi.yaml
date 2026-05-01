@@ -1,16 +1,104 @@
 openapi: 3.0.3
 info:
-  title: User API
+  title: Pawsitters API
   version: 1.0.0
-  description: OpenAPI-Dokumentation fuer den UserController.
+  description: OpenAPI-Dokumentation fuer Auth-, User- und Pet-Endpunkte.
   contact:
     name: Pawsitters API Team
 servers:
   - url: http://localhost:8080
 tags:
+  - name: Auth
+    description: Endpunkte fuer Authentifizierung und Session.
   - name: Users
     description: Endpunkte zur Benutzerverwaltung.
+  - name: Pets
+    description: Endpunkte zur Haustierverwaltung.
 paths:
+  /api/auth/register:
+    post:
+      operationId: authRegister
+      tags:
+        - Auth
+      summary: Benutzer registrieren (Auth)
+      description: Erstellt einen neuen Benutzer und gibt ein Auth-Token zurueck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Benutzer erfolgreich registriert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/auth/login:
+    post:
+      operationId: authLogin
+      tags:
+        - Auth
+      summary: Benutzer anmelden
+      description: Gibt ein Auth-Token fuer gueltige Credentials zurueck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login erfolgreich.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Ungueltige Zugangsdaten.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/auth/logout:
+    post:
+      operationId: authLogout
+      tags:
+        - Auth
+      summary: Benutzer abmelden
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Logout erfolgreich.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/auth/session:
+    get:
+      operationId: authSession
+      tags:
+        - Auth
+      summary: Sessionstatus pruefen
+      responses:
+        "200":
+          description: Sessionstatus.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
   /api/users/register:
     post:
       operationId: registerUser
@@ -60,6 +148,212 @@ paths:
                 $ref: "#/components/schemas/User"
         "404":
           description: Benutzer nicht gefunden.
+    put:
+      operationId: updateUser
+      tags:
+        - Users
+      summary: Benutzer aktualisieren
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Benutzer aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+        "403":
+          description: Kein Zugriff.
+        "404":
+          description: Benutzer nicht gefunden.
+    patch:
+      operationId: patchUser
+      tags:
+        - Users
+      summary: Benutzer teilaktualisieren
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserRequest"
+      responses:
+        "200":
+          description: Benutzer aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+        "403":
+          description: Kein Zugriff.
+        "404":
+          description: Benutzer nicht gefunden.
+    delete:
+      operationId: deleteUser
+      tags:
+        - Users
+      summary: Benutzer loeschen
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Benutzer geloescht.
+        "401":
+          description: Nicht autorisiert.
+        "403":
+          description: Kein Zugriff.
+        "404":
+          description: Benutzer nicht gefunden.
+  /api/users/me:
+    get:
+      operationId: getCurrentUser
+      tags:
+        - Users
+      summary: Eigene Benutzerdaten abrufen
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Eigene Benutzerdaten.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Nicht autorisiert.
+        "404":
+          description: Benutzer nicht gefunden.
+  /api/users/{id}/roles:
+    patch:
+      operationId: updateUserRole
+      tags:
+        - Users
+      summary: Benutzerrolle aendern
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolePatchRequest"
+      responses:
+        "200":
+          description: Rolle aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+        "403":
+          description: Kein Zugriff.
+        "404":
+          description: Benutzer nicht gefunden.
+  /api/users/{id}/profile-image:
+    post:
+      operationId: uploadProfileImage
+      tags:
+        - Users
+      summary: Profilbild hochladen
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Profilbild aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+        "403":
+          description: Kein Zugriff.
+        "404":
+          description: Benutzer nicht gefunden.
   /api/users/mailExists:
     get:
       operationId: mailExists
@@ -83,7 +377,138 @@ paths:
                 type: boolean
         "400":
           description: Ungueltige E-Mail-Adresse oder fehlerhafte Anfrage.
+  /api/pets:
+    get:
+      operationId: getPets
+      tags:
+        - Pets
+      summary: Haustiere abrufen
+      description: Gibt alle Haustiere des eingeloggten Users zurueck.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Liste der Haustiere.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PetResponse"
+        "401":
+          description: Nicht autorisiert.
+    post:
+      operationId: createPet
+      tags:
+        - Pets
+      summary: Haustier erstellen
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetRequest"
+      responses:
+        "200":
+          description: Haustier erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetResponse"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+  /api/pets/{id}:
+    put:
+      operationId: updatePet
+      tags:
+        - Pets
+      summary: Haustier aktualisieren
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetRequest"
+      responses:
+        "200":
+          description: Haustier aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetResponse"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
+  /api/pets/{id}/image:
+    post:
+      operationId: uploadPetImage
+      tags:
+        - Pets
+      summary: Haustierbild hochladen
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Bild hochgeladen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetResponse"
+        "400":
+          description: Ungueltige Eingaben.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Nicht autorisiert.
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RegisterRequest:
       type: object
@@ -123,6 +548,38 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/UserRole"
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - role
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+    SessionResponse:
+      type: object
+      required:
+        - loggedIn
+      properties:
+        loggedIn:
+          type: boolean
+        email:
+          type: string
+          nullable: true
     User:
       type: object
       required:
@@ -162,6 +619,8 @@ components:
           format: uri
         bio:
           type: string
+        address:
+          type: string
         rating:
           type: number
           format: float
@@ -174,11 +633,119 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Pet"
+    PetRequest:
+      type: object
+      required:
+        - name
+        - species
+        - breed
+        - age
+        - specialNeeds
+      properties:
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/PetChoice"
+        breed:
+          type: string
+        age:
+          type: integer
+          format: int32
+          minimum: 0
+        specialNeeds:
+          type: string
+    PetResponse:
+      type: object
+      required:
+        - id
+        - name
+        - species
+        - breed
+        - age
+        - specialNeeds
+        - defaultImagePath
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/PetChoice"
+        breed:
+          type: string
+        age:
+          type: integer
+          format: int32
+        specialNeeds:
+          type: string
+        imagePath:
+          type: string
+          nullable: true
+        defaultImagePath:
+          type: string
     UserRole:
       type: string
       enum:
         - PET_OWNER
         - HOST
+    UpdateUserRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - phone
+        - birthDate
+        - emergencyContact
+        - profilePicture
+        - bio
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        address:
+          type: string
+    PatchUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        address:
+          type: string
+    RolePatchRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          $ref: "#/components/schemas/UserRole"
     Pet:
       type: object
       description: Eigentuermer (owner) wird hier nicht serialisiert, um Zyklen zu vermeiden.

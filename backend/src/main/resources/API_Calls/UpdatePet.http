@@ -1,0 +1,15 @@
+### Haustier aktualisieren
+PUT {{baseUrl}}/api/pets/5
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bello",
+  "species": "DOG",
+  "breed": "Labrador",
+  "age": 5,
+  "specialNeeds": "Keine"
+}
+
+###
+

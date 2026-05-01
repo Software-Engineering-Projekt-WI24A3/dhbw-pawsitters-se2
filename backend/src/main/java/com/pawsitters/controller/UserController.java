@@ -6,12 +6,22 @@ import com.pawsitters.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
 
 @RestController
 @Validated
+@RestController
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -52,17 +62,79 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
-        try {
-            User user = userService.getUserById(id);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/mailExists")
     public ResponseEntity<?> mailExists(@RequestParam @NotBlank @Email String mail) {
         boolean user = userService.existsByEmail(mail);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(Authentication authentication) {
+        User user = userService.getUserByEmail(authentication.getName());
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id,
+                                        @Valid @RequestBody UpdateUserRequest request,
+                                        Authentication authentication) {
+        try {
+            User user = userService.updateUserForEmail(
+                    id,
+                    authentication.getName(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.phone(),
+                    request.birthDate(),
+                    request.emergencyContact(),
+                    request.profilePicture(),
+                    request.bio(),
+                    request.address()
+            );
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchUser(@PathVariable Long id,
+                                       @Valid @RequestBody PatchUserRequest request,
+                                       Authentication authentication) {
+        try {
+            User user = userService.patchUserForEmail(
+                    id,
+                    authentication.getName(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.phone(),
+                    request.birthDate(),
+                    request.emergencyContact(),
+                    request.profilePicture(),
+                    request.bio(),
+                    request.address()
+            );
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
+        userService.deleteUserForEmail(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/roles")
+    public ResponseEntity<?> updateRole(@PathVariable Long id,
+                                        @Valid @RequestBody RolePatchRequest request) {
+        User user = userService.updateRole(id, request.role());
         return ResponseEntity.ok(user);
     }
 }
