@@ -1,6 +1,0 @@
-### Sessionstatus (Auth)
-GET {{baseUrl}}/api/auth/session
-Authorization: Bearer {{token}}
-
-###
-

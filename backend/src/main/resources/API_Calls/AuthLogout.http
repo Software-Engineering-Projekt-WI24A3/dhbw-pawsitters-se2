@@ -1,6 +1,0 @@
-### Logout (Auth)
-POST {{baseUrl}}/api/auth/logout
-Authorization: Bearer {{token}}
-
-###
-

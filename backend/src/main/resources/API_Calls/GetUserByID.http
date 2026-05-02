@@ -1,2 +1,2 @@
 ### Beispiel Request
-GET {{baseUrl}}/api/users/5
+GET {{baseUrl}}/api/users/1
