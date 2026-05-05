@@ -1,2 +1,1 @@
-### E-Mail pruefen
-GET {{baseUrl}}/api/users/mailExists?mail=anna.meier@example.com
+GET {{baseUrl}}/api/users/mailExists/anna.meier@example.com

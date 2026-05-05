@@ -42,9 +42,6 @@ public class User {
     @Column(nullable = false)
     private String bio;
 
-    @Column
-    private String address;
-
     @Column(nullable = false)
     private Float rating;
 
@@ -80,8 +77,6 @@ public class User {
 
     public String getBio() { return bio; }
 
-    public String getAddress() { return address; }
-
     public Float getRating() { return rating; }
 
     public Integer getNumberOfRatings() { return numberOfRatings; }
@@ -111,8 +106,6 @@ public class User {
     public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 
     public void setBio(String bio) { this.bio = bio; }
-
-    public void setAddress(String address) { this.address = address; }
 
     public void setRating(Float rating) { this.rating = rating; }
 

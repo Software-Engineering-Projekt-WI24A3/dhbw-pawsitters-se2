@@ -1,6 +1,0 @@
-### Benutzer loeschen
-DELETE {{baseUrl}}/api/users/1
-Authorization: Bearer {{token}}
-
-###
-
