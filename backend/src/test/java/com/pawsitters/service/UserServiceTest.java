@@ -1,22 +1,15 @@
 package com.pawsitters.service;
 
-import com.pawsitters.exception.ForbiddenException;
-import com.pawsitters.exception.NotFoundException;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -36,13 +29,6 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    @TempDir
-    Path tempDir;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(userService, "uploadDir", tempDir.toString());
-    }
 
     // ===== createUser =====
 
@@ -109,13 +95,42 @@ class UserServiceTest {
     // ===== getUserById =====
 
     @Test
-    void whenUserNotFound_thenGetUserByIdThrowsNotFoundException() {
+    void whenUserNotFound_thenGetUserByIdThrowsException() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> userService.getUserById(99L));
+        assertThrows(IllegalArgumentException.class, () -> userService.getUserById(99L));
     }
 
-    // ===== updateUserForEmail =====
+    // ===== findByEmail =====
+
+    @Test
+    void whenEmailNotFound_thenFindByEmailThrowsException() {
+        when(userRepository.findByEmailIgnoreCase("notfound@test.de")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> userService.findByEmail("notfound@test.de"));
+    }
+
+    // ===== existsByEmail =====
+
+    @Test
+    void whenEmailExists_thenExistsByEmailReturnsTrue() {
+        when(userRepository.existsByEmailIgnoreCase("exists@test.de")).thenReturn(true);
+
+        boolean result = userService.existsByEmail("exists@test.de");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void whenEmailNotExists_thenExistsByEmailReturnsFalse() {
+        when(userRepository.existsByEmailIgnoreCase("notexists@test.de")).thenReturn(false);
+
+        boolean result = userService.existsByEmail("notexists@test.de");
+
+        assertFalse(result);
+    }
+
+    // ===== updateUser =====
 
     @Test
     void whenOwnerUpdatesUser_thenUserIsSaved() {
@@ -123,33 +138,32 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.updateUserForEmail(
+        User result = userService.updateUser(
                 1L, "owner@test.de",
                 "NewFirst", "NewLast", "0123", LocalDate.of(1990, 1, 1),
-                "Emergency", "pic.jpg", "Bio text", "Street 1"
+                "Emergency", "pic.jpg", "Bio text"
         );
 
         assertEquals("NewFirst", result.getFirstName());
         assertEquals("NewLast", result.getLastName());
-        assertEquals("Street 1", result.getAddress());
         verify(userRepository).save(user);
     }
 
     @Test
-    void whenWrongEmailUpdatesUser_thenThrowsForbiddenException() {
+    void whenWrongEmailUpdatesUser_thenThrowsException() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(ForbiddenException.class, () ->
-                userService.updateUserForEmail(
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.updateUser(
                         1L, "attacker@test.de",
-                        "X", "X", "0", LocalDate.of(1990, 1, 1), "E", "p.jpg", "B", null
+                        "X", "X", "0", LocalDate.of(1990, 1, 1), "E", "p.jpg", "B"
                 )
         );
         verify(userRepository, never()).save(any());
     }
 
-    // ===== patchUserForEmail =====
+    // ===== patchUser =====
 
     @Test
     void whenNullFieldsPatched_thenFieldsRemainUnchanged() {
@@ -159,9 +173,9 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.patchUserForEmail(
+        User result = userService.patchUser(
                 1L, "owner@test.de",
-                null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null
         );
 
         assertEquals("Original", result.getFirstName());
@@ -175,49 +189,49 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.patchUserForEmail(
+        User result = userService.patchUser(
                 1L, "owner@test.de",
-                "Updated", null, null, null, null, null, null, null
+                "Updated", null, null, null, null, null, null
         );
 
         assertEquals("Updated", result.getFirstName());
     }
 
     @Test
-    void whenWrongEmailPatches_thenThrowsForbiddenException() {
+    void whenWrongEmailPatches_thenThrowsException() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(ForbiddenException.class, () ->
-                userService.patchUserForEmail(
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.patchUser(
                         1L, "attacker@test.de",
-                        "X", null, null, null, null, null, null, null
+                        "X", null, null, null, null, null, null
                 )
         );
         verify(userRepository, never()).save(any());
     }
 
-    // ===== deleteUserForEmail =====
+    // ===== deleteUser =====
 
     @Test
     void whenOwnerDeletes_thenUserIsDeleted() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        userService.deleteUserForEmail(1L, "owner@test.de");
+        userService.deleteUser(1L, "owner@test.de");
 
-        verify(userRepository).delete(user);
+        verify(userRepository).deleteById(1L);
     }
 
     @Test
-    void whenWrongEmailDeletes_thenThrowsForbiddenException() {
+    void whenWrongEmailDeletes_thenThrowsException() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(ForbiddenException.class, () ->
-                userService.deleteUserForEmail(1L, "attacker@test.de")
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.deleteUser(1L, "attacker@test.de")
         );
-        verify(userRepository, never()).delete(any());
+        verify(userRepository, never()).deleteById(any());
     }
 
     // ===== updateRole =====
@@ -236,123 +250,35 @@ class UserServiceTest {
     }
 
     @Test
-    void whenUserNotFoundForRoleUpdate_thenThrowsNotFoundException() {
+    void whenUserNotFoundForRoleUpdate_thenThrowsException() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> userService.updateRole(99L, UserRole.HOST));
+        assertThrows(IllegalArgumentException.class, () -> userService.updateRole(99L, UserRole.HOST));
     }
 
-    // ===== uploadProfileImageForEmail =====
+    // ===== updateProfileImage =====
 
     @Test
-    void whenImageIsEmpty_thenThrowsIllegalArgument() {
-        MockMultipartFile emptyFile = new MockMultipartFile("image", new byte[0]);
-
-        assertThrows(IllegalArgumentException.class, () ->
-                userService.uploadProfileImageForEmail(1L, "owner@test.de", emptyFile)
-        );
-    }
-
-    @Test
-    void whenContentTypeNotAllowed_thenThrowsIllegalArgument() {
-        MockMultipartFile gifFile = new MockMultipartFile(
-                "image", "test.gif", "image/gif", new byte[]{0x47, 0x49, 0x46, 0x38}
-        );
-
-        assertThrows(IllegalArgumentException.class, () ->
-                userService.uploadProfileImageForEmail(1L, "owner@test.de", gifFile)
-        );
-    }
-
-    @Test
-    void whenFileTooLarge_thenThrowsIllegalArgument() {
-        byte[] bigContent = new byte[6 * 1024 * 1024]; // 6 MB
-        // JPEG magic bytes at start so content-type check passes
-        bigContent[0] = (byte) 0xFF;
-        bigContent[1] = (byte) 0xD8;
-        bigContent[2] = (byte) 0xFF;
-        MockMultipartFile bigFile = new MockMultipartFile(
-                "image", "big.jpg", "image/jpeg", bigContent
-        );
-
-        assertThrows(IllegalArgumentException.class, () ->
-                userService.uploadProfileImageForEmail(1L, "owner@test.de", bigFile)
-        );
-    }
-
-    @Test
-    void whenMagicBytesInvalid_thenThrowsIllegalArgument() {
-        // Claims to be JPEG but has invalid magic bytes
-        byte[] fakeContent = new byte[]{0x00, 0x01, 0x02, 0x03, 0x04};
-        MockMultipartFile fakeJpeg = new MockMultipartFile(
-                "image", "fake.jpg", "image/jpeg", fakeContent
-        );
-
-        assertThrows(IllegalArgumentException.class, () ->
-                userService.uploadProfileImageForEmail(1L, "owner@test.de", fakeJpeg)
-        );
-    }
-
-    @Test
-    void whenWrongEmailUploads_thenThrowsForbiddenException() {
-        // Valid JPEG magic bytes
-        byte[] jpegContent = new byte[100];
-        jpegContent[0] = (byte) 0xFF;
-        jpegContent[1] = (byte) 0xD8;
-        jpegContent[2] = (byte) 0xFF;
-        MockMultipartFile validJpeg = new MockMultipartFile(
-                "image", "photo.jpg", "image/jpeg", jpegContent
-        );
-
-        User user = buildUser(1L, "owner@test.de");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        assertThrows(ForbiddenException.class, () ->
-                userService.uploadProfileImageForEmail(1L, "attacker@test.de", validJpeg)
-        );
-        verify(userRepository, never()).save(any());
-    }
-
-    @Test
-    void whenValidJpegUploaded_thenProfilePictureIsSet() throws Exception {
-        byte[] jpegContent = new byte[100];
-        jpegContent[0] = (byte) 0xFF;
-        jpegContent[1] = (byte) 0xD8;
-        jpegContent[2] = (byte) 0xFF;
-        MockMultipartFile validJpeg = new MockMultipartFile(
-                "image", "photo.jpg", "image/jpeg", jpegContent
-        );
-
+    void whenOwnerUpdatesProfileImage_thenProfilePictureIsUpdated() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.uploadProfileImageForEmail(1L, "owner@test.de", validJpeg);
+        User result = userService.updateProfileImage(1L, "owner@test.de", "new-pic.jpg");
 
-        assertNotNull(result.getProfilePicture());
-        assertTrue(result.getProfilePicture().endsWith(".jpg"));
+        assertEquals("new-pic.jpg", result.getProfilePicture());
         verify(userRepository).save(user);
     }
 
     @Test
-    void whenValidPngUploaded_thenProfilePictureIsSet() throws Exception {
-        byte[] pngContent = new byte[100];
-        pngContent[0] = (byte) 0x89;
-        pngContent[1] = 0x50;
-        pngContent[2] = 0x4E;
-        pngContent[3] = 0x47;
-        MockMultipartFile validPng = new MockMultipartFile(
-                "image", "photo.png", "image/png", pngContent
-        );
-
+    void whenWrongEmailUpdatesProfileImage_thenThrowsException() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.uploadProfileImageForEmail(1L, "owner@test.de", validPng);
-
-        assertNotNull(result.getProfilePicture());
-        assertTrue(result.getProfilePicture().endsWith(".png"));
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.updateProfileImage(1L, "attacker@test.de", "pic.jpg")
+        );
+        verify(userRepository, never()).save(any());
     }
 
     // ===== Helpers =====
@@ -368,7 +294,6 @@ class UserServiceTest {
         user.setEmergencyContact("Emergency");
         user.setProfilePicture("pic.jpg");
         user.setBio("Bio");
-        user.setAddress(null);
         user.setRating(0f);
         user.setNumberOfRatings(0);
         user.setRole(UserRole.PET_OWNER);

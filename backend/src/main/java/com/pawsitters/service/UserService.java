@@ -64,4 +64,63 @@ public class UserService {
     public boolean existsByEmail(String email){
         return (userRepository.existsByEmailIgnoreCase(email));
     }
+
+    public User updateUser(Long id, String email, String firstName, String lastName, String phone,
+                           LocalDate birthDate, String emergencyContact, String profilePicture, String bio) {
+        User user = getUserById(id);
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profil bearbeiten.");
+        }
+        
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPhone(phone);
+        user.setBirthDate(birthDate);
+        user.setEmergencyContact(emergencyContact);
+        user.setProfilePicture(profilePicture);
+        user.setBio(bio);
+        
+        return userRepository.save(user);
+    }
+
+    public User patchUser(Long id, String email, String firstName, String lastName, String phone,
+                          LocalDate birthDate, String emergencyContact, String profilePicture, String bio) {
+        User user = getUserById(id);
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profil bearbeiten.");
+        }
+        
+        if (firstName != null) user.setFirstName(firstName);
+        if (lastName != null) user.setLastName(lastName);
+        if (phone != null) user.setPhone(phone);
+        if (birthDate != null) user.setBirthDate(birthDate);
+        if (emergencyContact != null) user.setEmergencyContact(emergencyContact);
+        if (profilePicture != null) user.setProfilePicture(profilePicture);
+        if (bio != null) user.setBio(bio);
+        
+        return userRepository.save(user);
+    }
+
+    public void deleteUser(Long id, String email) {
+        User user = getUserById(id);
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Konto löschen.");
+        }
+        userRepository.deleteById(id);
+    }
+
+    public User updateRole(Long id, UserRole role) {
+        User user = getUserById(id);
+        user.setRole(role);
+        return userRepository.save(user);
+    }
+
+    public User updateProfileImage(Long id, String email, String profilePicture) {
+        User user = getUserById(id);
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profilbild bearbeiten.");
+        }
+        user.setProfilePicture(profilePicture);
+        return userRepository.save(user);
+    }
 }

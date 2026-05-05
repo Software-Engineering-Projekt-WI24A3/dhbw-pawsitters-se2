@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -27,8 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // kein Session-State
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Login/Register offen
-                        .requestMatchers("/h2-console/**").permitAll() // H2 offen
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll() // Login/Register offen
+                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll() // H2 offen
                         .anyRequest().authenticated() // alles andere geschützt
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
