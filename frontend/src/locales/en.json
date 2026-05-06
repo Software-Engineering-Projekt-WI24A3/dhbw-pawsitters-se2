@@ -56,11 +56,21 @@
     "repositoryPlaywright": "Playwright",
     "repositoryBoard": "Kanban Board",
     "ariaLocale": "Locale switcher",
+    "ariaQuickMenu": "Quick menu",
+    "openQuickMenu": "Open quick menu",
     "login": "Sign in",
     "menu": "Menu",
     "close": "Close menu"
   },
   "header": {
+    "tabs": {
+      "aria": "Header views",
+      "discover": "Discover offers",
+      "about": "About this project"
+    },
+    "about": {
+      "welcome": "Welcome to Pawsitters. This project connects pet owners and hosts through a clear, modern interface for fast and trustworthy matching."
+    },
     "search": {
       "destination": {
         "label": "Where",

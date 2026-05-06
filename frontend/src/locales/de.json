@@ -56,11 +56,21 @@
     "repositoryPlaywright": "Playwright",
     "repositoryBoard": "Kanban Board",
     "ariaLocale": "Sprachauswahl",
+    "ariaQuickMenu": "Schnellmenü",
+    "openQuickMenu": "Schnellmenü öffnen",
     "login": "Einloggen",
     "menu": "Menü",
     "close": "Menü schließen"
   },
   "header": {
+    "tabs": {
+      "aria": "Header Ansichten",
+      "discover": "Angebote entdecken",
+      "about": "Über dieses Projekt"
+    },
+    "about": {
+      "welcome": "Willkommen bei Pawsitters. Dieses Projekt verbindet Tierhalter und Gastgeber in einer klaren, modernen Oberfläche für eine schnelle und vertrauensvolle Vermittlung."
+    },
     "search": {
       "destination": {
         "label": "Wohin",

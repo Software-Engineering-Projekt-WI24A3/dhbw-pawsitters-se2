@@ -18,6 +18,7 @@ const watchTargets = [
   'src/locales',
   'src/js',
   'src/media',
+  '../README.md',
   '../backend/src/main/java/com/pawsitters/model',
   'scripts/build-site.mjs',
   'scripts/check-thymeleaf.mjs',
@@ -485,9 +486,20 @@ function queueBuild() {
 }
 
 function startFileWatchers() {
-  return watchTargets.map((target) => watch(path.join(rootDir, target), { recursive: true }, () => {
-    queueBuild();
-  }));
+  return watchTargets.map((target) => {
+    const targetPath = path.join(rootDir, target);
+    let recursive = false;
+
+    try {
+      recursive = statSync(targetPath).isDirectory();
+    } catch {
+      recursive = false;
+    }
+
+    return watch(targetPath, { recursive }, () => {
+      queueBuild();
+    });
+  });
 }
 
 function contentType(filePath) {
