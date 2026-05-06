@@ -1,5 +1,7 @@
 package com.pawsitters.service;
 
+import com.pawsitters.exception.ForbiddenException;
+import com.pawsitters.exception.NotFoundException;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
@@ -53,12 +55,12 @@ public class UserService {
     }
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new NotFoundException(
                         "User mit ID " + id + " nicht gefunden."));
     }
     public User findByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new NotFoundException(
                         "User mit E-Mail " + email + " nicht gefunden."));
     }
     public boolean existsByEmail(String email){
@@ -69,7 +71,7 @@ public class UserService {
                            LocalDate birthDate, String emergencyContact, String profilePicture, String bio) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profil bearbeiten.");
+            throw new ForbiddenException("User kann nur sein eigenes Profil bearbeiten.");
         }
         
         user.setFirstName(firstName);
@@ -87,7 +89,7 @@ public class UserService {
                           LocalDate birthDate, String emergencyContact, String profilePicture, String bio) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profil bearbeiten.");
+            throw new ForbiddenException("User kann nur sein eigenes Profil bearbeiten.");
         }
         
         if (firstName != null) user.setFirstName(firstName);
@@ -104,7 +106,7 @@ public class UserService {
     public void deleteUser(Long id, String email) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Konto löschen.");
+            throw new ForbiddenException("User kann nur sein eigenes Konto loeschen.");
         }
         userRepository.deleteById(id);
     }
@@ -118,7 +120,7 @@ public class UserService {
     public User updateProfileImage(Long id, String email, String profilePicture) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new IllegalArgumentException("Unauthorized: User kann nur sein eigenes Profilbild bearbeiten.");
+            throw new ForbiddenException("User kann nur sein eigenes Profilbild bearbeiten.");
         }
         user.setProfilePicture(profilePicture);
         return userRepository.save(user);

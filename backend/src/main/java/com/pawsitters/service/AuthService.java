@@ -1,5 +1,6 @@
 package com.pawsitters.service;
 
+import com.pawsitters.exception.NotFoundException;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
@@ -59,7 +60,7 @@ public class AuthService {
         User user;
         try {
             user = userService.findByEmail(email);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundException e) {
             throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 

@@ -49,12 +49,14 @@ class PetIntegrationTest {
         mockMvc.perform(get("/api/pets")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(petId))
-                .andExpect(jsonPath("$[0].breed").value("Labrador"))
-                .andExpect(jsonPath("$[0].age").value(4))
-                .andExpect(jsonPath("$[0].specialNeeds").value("Braucht taeglich Bewegung"))
-                .andExpect(jsonPath("$[0].defaultImagePath").value("/images/pet_images/dog/"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].id").value(petId))
+                .andExpect(jsonPath("$.data[0].breed").value("Labrador"))
+                .andExpect(jsonPath("$.data[0].age").value(4))
+                .andExpect(jsonPath("$.data[0].specialNeeds").value("Braucht taeglich Bewegung"))
+                .andExpect(jsonPath("$.data[0].defaultImagePath").value("/images/pet_images/dog/"))
+                .andExpect(jsonPath("$.meta.total").value(1));
 
         Map<String, Object> updatePayload = buildPetPayload("Milo", PetChoice.DOG, "Golden Retriever", 5, "Vertraegt nur Spezialfutter");
 
@@ -63,11 +65,12 @@ class PetIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePayload)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(petId))
-                .andExpect(jsonPath("$.breed").value("Golden Retriever"))
-                .andExpect(jsonPath("$.age").value(5))
-                .andExpect(jsonPath("$.specialNeeds").value("Vertraegt nur Spezialfutter"))
-                .andExpect(jsonPath("$.defaultImagePath").value("/images/pet_images/dog/"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(petId))
+                .andExpect(jsonPath("$.data.breed").value("Golden Retriever"))
+                .andExpect(jsonPath("$.data.age").value(5))
+                .andExpect(jsonPath("$.data.specialNeeds").value("Vertraegt nur Spezialfutter"))
+                .andExpect(jsonPath("$.data.defaultImagePath").value("/images/pet_images/dog/"));
     }
 
     @Test
@@ -95,7 +98,8 @@ class PetIntegrationTest {
                         })
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.imagePath").isString());
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.imagePath").isString());
 
         MockMultipartFile duplicateImage = new MockMultipartFile(
                 "image",
@@ -111,7 +115,10 @@ class PetIntegrationTest {
                             return request;
                         })
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
 
         MockMultipartFile uniqueImage = new MockMultipartFile(
                 "image",
@@ -128,8 +135,9 @@ class PetIntegrationTest {
                         })
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(secondPetId))
-                .andExpect(jsonPath("$.imagePath").isString());
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(secondPetId))
+                .andExpect(jsonPath("$.data.imagePath").isString());
     }
 
     @Test
@@ -146,7 +154,7 @@ class PetIntegrationTest {
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        JsonNode pets = objectMapper.readTree(responseBody);
+        JsonNode pets = objectMapper.readTree(responseBody).get("data");
 
         boolean foundCat = false;
         boolean foundBudgie = false;
@@ -192,10 +200,11 @@ class PetIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
                 .andReturn();
 
         JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
-        return json.get("id").asLong();
+        return json.get("data").get("id").asLong();
     }
 
     private String registerUser(String email, String password) throws Exception {
@@ -215,12 +224,12 @@ class PetIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isString())
+                .andExpect(jsonPath("$.data.token").isString())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        return objectMapper.readTree(response).get("token").asText();
+        return objectMapper.readTree(response).get("data").get("token").asText();
     }
 
     private Map<String, Object> buildPetPayload(String name,
