@@ -28,9 +28,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // kein Session-State
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll() // Login/Register offen
-                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll() // H2 offen
-                        .anyRequest().authenticated() // alles andere geschützt
+                        // Öffentliche Auth-Endpoints
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/logout")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/session")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/users/mailExists")).permitAll()
+                        // H2 Konsole Zugang
+                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                        // Alle anderen Requests brauchen Authentifizierung
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

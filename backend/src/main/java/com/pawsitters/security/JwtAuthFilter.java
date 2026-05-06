@@ -9,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -18,10 +17,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final RevokedTokenService revokedTokenService;
+    private final JwtTokenResolver jwtTokenResolver;
 
-    public JwtAuthFilter(JwtService jwtService, RevokedTokenService revokedTokenService) {
+    public JwtAuthFilter(JwtService jwtService,
+                         RevokedTokenService revokedTokenService,
+                         JwtTokenResolver jwtTokenResolver) {
         this.jwtService = jwtService;
-        this.revokedTokenService = revokedTokenService;
+        this.revokedTokenService = revokedTokenService; // Korrekt benannt
+        this.jwtTokenResolver = jwtTokenResolver;
     }
 
     @Override
@@ -30,15 +33,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Token aus Header lesen: "Authorization: Bearer <token>"
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        var tokenOptional = jwtTokenResolver.resolve(request);
+        if (tokenOptional.isEmpty()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7); // "Bearer " entfernen
+        String token = tokenOptional.get();
 
         if (revokedTokenService.isRevoked(token)) {
             filterChain.doFilter(request, response);

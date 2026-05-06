@@ -145,7 +145,7 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
         try {
             userService.deleteUser(id, authentication.getName());
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(new DeleteUserResponse(true, id, "User wurde erfolgreich gelöscht."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -195,4 +195,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    public record DeleteUserResponse(boolean deleted, Long id, String message) {}
 }

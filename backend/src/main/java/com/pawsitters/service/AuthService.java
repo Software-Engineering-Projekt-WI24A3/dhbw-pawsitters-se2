@@ -70,12 +70,11 @@ public class AuthService {
         return toAuthResult(user);
     }
 
-    public void logout(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
             return;
         }
 
-        String token = authorizationHeader.substring(7);
         if (!jwtService.isTokenValid(token)) {
             return;
         }
