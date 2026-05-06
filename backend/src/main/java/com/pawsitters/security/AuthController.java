@@ -1,6 +1,9 @@
 package com.pawsitters.security;
 
+import com.pawsitters.dto.ApiResponse;
+import com.pawsitters.dto.AuthResponse;
 import com.pawsitters.dto.RegisterRequest;
+import com.pawsitters.dto.SessionResponse;
 import com.pawsitters.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -8,13 +11,17 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
@@ -32,66 +39,71 @@ public class AuthController {
         this.jwtTokenResolver = jwtTokenResolver;
     }
 
-    /** POST /api/auth/register */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            AuthService.AuthResult result = authService.register(
-                    request.email(), request.password(),
-                    request.firstName(), request.lastName(),
-                    request.phone(), request.birthDate(),
-                    request.emergencyContact(), request.profilePicture(),
-                    request.bio(), request.role()
-            );
-            return withAuthCookie(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request,
+                                                              HttpServletRequest servletRequest) {
+        AuthService.AuthResult result = authService.register(
+                request.email(), request.password(),
+                request.firstName(), request.lastName(),
+                request.phone(), request.birthDate(),
+                request.emergencyContact(), request.profilePicture(),
+                request.bio(), request.role()
+        );
+        return withAuthCookie(result, "Registration successful.", servletRequest);
     }
 
-    /** POST /api/auth/login */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            AuthService.AuthResult result = authService.login(request.email(), request.password());
-            return withAuthCookie(result);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Ungültige Credentials.");
-        }
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request,
+                                                           HttpServletRequest servletRequest) {
+        AuthService.AuthResult result = authService.login(request.email(), request.password());
+        return withAuthCookie(result, "Login successful.", servletRequest);
     }
 
-    /** POST /api/auth/logout */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         jwtTokenResolver.resolve(request).ifPresent(authService::logout);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, expiredAuthCookie().toString())
-                .body("Logout erfolgreich.");
+                .body(ApiResponse.success(
+                        HttpStatus.OK,
+                        "Logout erfolgreich.",
+                        null,
+                        request.getRequestURI()
+                ));
     }
 
-    /** GET /api/auth/session */
     @GetMapping("/session")
-    public ResponseEntity<?> session() {
+    public ResponseEntity<ApiResponse<SessionResponse>> session(HttpServletRequest servletRequest) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            return ResponseEntity.ok(new SessionResponse(true, auth.getName()));
-        }
-        return ResponseEntity.ok(new SessionResponse(false, null));
+        SessionResponse session = auth != null
+                && auth.isAuthenticated()
+                && !(auth instanceof AnonymousAuthenticationToken)
+                ? new SessionResponse(true, auth.getName())
+                : new SessionResponse(false, null);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Session retrieved successfully.",
+                session,
+                servletRequest.getRequestURI()
+        ));
     }
 
-    // ===== Records =====
     public record LoginRequest(
             @NotBlank @Email String email,
             @NotBlank String password) {}
 
-    public record AuthResponse(String token, String role) {}
-
-    public record SessionResponse(boolean loggedIn, String email) {}
-
-    private ResponseEntity<AuthResponse> withAuthCookie(AuthService.AuthResult result) {
+    private ResponseEntity<ApiResponse<AuthResponse>> withAuthCookie(AuthService.AuthResult result,
+                                                                     String message,
+                                                                     HttpServletRequest servletRequest) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, authCookie(result.token()).toString())
-                .body(new AuthResponse(result.token(), result.role()));
+                .body(ApiResponse.success(
+                        HttpStatus.OK,
+                        message,
+                        new AuthResponse(result.token(), result.role()),
+                        servletRequest.getRequestURI()
+                ));
     }
 
     private ResponseCookie authCookie(String token) {

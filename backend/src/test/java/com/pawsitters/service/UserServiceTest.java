@@ -1,5 +1,7 @@
 package com.pawsitters.service;
 
+import com.pawsitters.exception.ForbiddenException;
+import com.pawsitters.exception.NotFoundException;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
@@ -98,7 +100,7 @@ class UserServiceTest {
     void whenUserNotFound_thenGetUserByIdThrowsException() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> userService.getUserById(99L));
+        assertThrows(NotFoundException.class, () -> userService.getUserById(99L));
     }
 
     // ===== findByEmail =====
@@ -107,7 +109,7 @@ class UserServiceTest {
     void whenEmailNotFound_thenFindByEmailThrowsException() {
         when(userRepository.findByEmailIgnoreCase("notfound@test.de")).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> userService.findByEmail("notfound@test.de"));
+        assertThrows(NotFoundException.class, () -> userService.findByEmail("notfound@test.de"));
     }
 
     // ===== existsByEmail =====
@@ -154,7 +156,7 @@ class UserServiceTest {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 userService.updateUser(
                         1L, "attacker@test.de",
                         "X", "X", "0", LocalDate.of(1990, 1, 1), "E", "p.jpg", "B"
@@ -202,7 +204,7 @@ class UserServiceTest {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 userService.patchUser(
                         1L, "attacker@test.de",
                         "X", null, null, null, null, null, null
@@ -228,7 +230,7 @@ class UserServiceTest {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 userService.deleteUser(1L, "attacker@test.de")
         );
         verify(userRepository, never()).deleteById(any());
@@ -253,7 +255,7 @@ class UserServiceTest {
     void whenUserNotFoundForRoleUpdate_thenThrowsException() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> userService.updateRole(99L, UserRole.HOST));
+        assertThrows(NotFoundException.class, () -> userService.updateRole(99L, UserRole.HOST));
     }
 
     // ===== updateProfileImage =====
@@ -275,7 +277,7 @@ class UserServiceTest {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 userService.updateProfileImage(1L, "attacker@test.de", "pic.jpg")
         );
         verify(userRepository, never()).save(any());
