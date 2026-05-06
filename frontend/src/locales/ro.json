@@ -56,11 +56,21 @@
     "repositoryPlaywright": "Playwright",
     "repositoryBoard": "Panou Kanban",
     "ariaLocale": "Selector de limbă",
+    "ariaQuickMenu": "Meniu rapid",
+    "openQuickMenu": "Deschide meniul rapid",
     "login": "Autentificare",
     "menu": "Meniu",
     "close": "Închide meniul"
   },
   "header": {
+    "tabs": {
+      "aria": "Vizualizări antet",
+      "discover": "Descoperă oferte",
+      "about": "Despre acest proiect"
+    },
+    "about": {
+      "welcome": "Bine ai venit la Pawsitters. Acest proiect conectează proprietarii de animale cu gazdele printr-o interfață clară și modernă, pentru potriviri rapide și de încredere."
+    },
     "search": {
       "destination": {
         "label": "Unde",

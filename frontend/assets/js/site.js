@@ -10,19 +10,16 @@ const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60',
 const GIT_GRAPH_FALLBACK_EDGE_GUTTER_PX = 84;
 const GIT_GRAPH_LABEL_OFFSET_PX = 18;
 const GIT_GRAPH_MIN_CONTENT_WIDTH_PX = 360;
+const GIT_GRAPH_TOOLTIP_MARGIN_PX = 8;
+const GIT_GRAPH_TOOLTIP_POINTER_OFFSET_X_PX = 10;
+const GIT_GRAPH_TOOLTIP_POINTER_OFFSET_Y_PX = 12;
+const GIT_GRAPH_TOOLTIP_MAX_WIDTH_REM = 21;
 const METRIC_ANIMATION_DURATION_MS = 2200;
 const NOTIFICATION_LIMIT = 4;
 const NOTIFICATION_LIFETIME_MS = 7000;
-const HEADER_SCROLL_PROGRESS_DISTANCE_PX = 320;
-const HEADER_SCROLL_SPRING_STIFFNESS = 155;
-const HEADER_SCROLL_SPRING_DAMPING = 31;
-const HEADER_SCROLL_MAX_STEP_SECONDS = 0.028;
-const HEADER_COMPACT_ENTER_PROGRESS = 0.84;
-const HEADER_COMPACT_EXIT_PROGRESS = 0.68;
-const HEADER_SCROLL_SETTLE_VELOCITY = 0.0008;
-const HEADER_SCROLL_SETTLE_DISTANCE = 0.0012;
 const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
 const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
+const HEADER_SEARCH_SESSION_STORAGE_KEY = 'pawsitters.header-search-state';
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
     'PPL',
     'PPLA',
@@ -215,12 +212,11 @@ const PET_CHOICE_EMOJI_ASSET_PATHS = {
     BIRD: '/assets/media/animal-bird/1F426.svg'
 };
 const PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH = '/assets/media/animal-mammal/1F43E.svg';
+const HEADER_SCROLL_PROGRESS_RANGE_PX = 84;
+const HEADER_SCROLL_COMPACT_ENTER_PX = 22;
+const HEADER_SCROLL_COMPACT_EXIT_PX = 8;
 const headerScrollAnimationState = {
     progress: 0,
-    target: 0,
-    velocity: 0,
-    lastFrameTime: 0,
-    rafId: 0,
     appliedProgress: Number.NaN
 };
 const METRIC_GROUP_FIELDS = {
@@ -555,7 +551,6 @@ function createThreadBackgroundController() {
         lastViewHeight: 0,
         lastCoverageTarget: 0,
         handleOrientationChange: null,
-        handleScroll: null,
         handleLoad: null
     };
 
@@ -626,15 +621,11 @@ function createThreadBackgroundController() {
     state.handleOrientationChange = () => {
         scheduleRender(true);
     };
-    state.handleScroll = () => {
-        scheduleRender(false);
-    };
     state.handleLoad = () => {
         scheduleRender(true);
     };
 
     window.addEventListener('orientationchange', state.handleOrientationChange, { passive: true });
-    window.addEventListener('scroll', state.handleScroll, { passive: true });
     window.addEventListener('load', state.handleLoad, { passive: true, once: true });
 
     if (document.fonts?.ready) {
@@ -671,9 +662,6 @@ function createThreadBackgroundController() {
             }
             if (state.handleOrientationChange) {
                 window.removeEventListener('orientationchange', state.handleOrientationChange);
-            }
-            if (state.handleScroll) {
-                window.removeEventListener('scroll', state.handleScroll);
             }
             if (state.handleLoad) {
                 window.removeEventListener('load', state.handleLoad);
@@ -1339,6 +1327,171 @@ function normalizePetChoices(rawValues = []) {
     return normalized;
 }
 
+function normalizeHeaderSearchSelectedLocation(value) {
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    const cityName = typeof value.cityName === 'string' ? value.cityName.trim() : '';
+    const regionName = typeof value.regionName === 'string' ? value.regionName.trim() : '';
+    const countryCode = normalizeCountryCode(value.countryCode);
+    const countryName = typeof value.countryName === 'string' ? value.countryName.trim() : '';
+    const label = typeof value.label === 'string' ? value.label.trim() : '';
+    const searchName = typeof value.searchName === 'string' ? value.searchName.trim().toLowerCase() : '';
+    const flagPath = typeof value.flagPath === 'string' ? value.flagPath.trim() : '';
+    const fallbackLabel = [cityName, countryName || countryCode].filter(Boolean).join(', ');
+    const nextLabel = label || fallbackLabel;
+    const nextId = typeof value.id === 'string' && value.id.trim()
+        ? value.id.trim()
+        : [cityName, regionName, countryCode, nextLabel].filter(Boolean).join('|');
+    const nextSearchName = searchName || [cityName, regionName, countryName, countryCode]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+    if (!nextId || !nextLabel) {
+        return null;
+    }
+
+    return {
+        id: nextId,
+        cityName: cityName || nextLabel,
+        countryName: countryName || countryCode,
+        regionName,
+        countryCode,
+        flagPath,
+        label: nextLabel,
+        searchName: nextSearchName
+    };
+}
+
+function normalizeHeaderSearchPetCounts(value) {
+    if (!value || typeof value !== 'object') {
+        return {};
+    }
+
+    return Object.entries(value).reduce((accumulator, [rawKey, rawCount]) => {
+        if (typeof rawKey !== 'string') {
+            return accumulator;
+        }
+
+        const key = rawKey.trim().toUpperCase();
+        if (!/^[A-Z][A-Z0-9_]*$/.test(key)) {
+            return accumulator;
+        }
+
+        const count = Number(rawCount);
+        if (!Number.isFinite(count) || count <= 0) {
+            return accumulator;
+        }
+
+        accumulator[key] = Math.round(count);
+        return accumulator;
+    }, {});
+}
+
+function resolveSessionStorage() {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        return window.sessionStorage || null;
+    } catch {
+        return null;
+    }
+}
+
+function readHeaderSearchSessionState() {
+    const sessionStorage = resolveSessionStorage();
+    if (!sessionStorage) {
+        return {
+            headerCenterTab: 'discover',
+            locationQuery: '',
+            selectedLocation: null,
+            dateRangeStart: '',
+            dateRangeEnd: '',
+            petChoiceCounts: {}
+        };
+    }
+
+    try {
+        const rawState = sessionStorage.getItem(HEADER_SEARCH_SESSION_STORAGE_KEY);
+        if (!rawState) {
+            return {
+                headerCenterTab: 'discover',
+                locationQuery: '',
+                selectedLocation: null,
+                dateRangeStart: '',
+                dateRangeEnd: '',
+                petChoiceCounts: {}
+            };
+        }
+
+        const parsedState = JSON.parse(rawState);
+        const headerCenterTab = parsedState?.headerCenterTab === 'about' ? 'about' : 'discover';
+        const locationQuery = typeof parsedState?.locationQuery === 'string'
+            ? parsedState.locationQuery
+            : '';
+        const selectedLocation = normalizeHeaderSearchSelectedLocation(parsedState?.selectedLocation);
+        const dateRangeStart = normalizeDateInputValue(parsedState?.dateRangeStart);
+        let dateRangeEnd = normalizeDateInputValue(parsedState?.dateRangeEnd);
+        const petChoiceCounts = normalizeHeaderSearchPetCounts(parsedState?.petChoiceCounts);
+
+        if (!dateRangeStart) {
+            dateRangeEnd = '';
+        } else if (dateRangeEnd && dateRangeEnd < dateRangeStart) {
+            dateRangeEnd = dateRangeStart;
+        }
+
+        return {
+            headerCenterTab,
+            locationQuery,
+            selectedLocation,
+            dateRangeStart,
+            dateRangeEnd,
+            petChoiceCounts
+        };
+    } catch {
+        return {
+            headerCenterTab: 'discover',
+            locationQuery: '',
+            selectedLocation: null,
+            dateRangeStart: '',
+            dateRangeEnd: '',
+            petChoiceCounts: {}
+        };
+    }
+}
+
+function writeHeaderSearchSessionState(state = {}) {
+    const sessionStorage = resolveSessionStorage();
+    if (!sessionStorage) {
+        return;
+    }
+
+    const payload = {
+        headerCenterTab: state?.headerCenterTab === 'about' ? 'about' : 'discover',
+        locationQuery: typeof state?.locationQuery === 'string' ? state.locationQuery : '',
+        selectedLocation: normalizeHeaderSearchSelectedLocation(state?.selectedLocation),
+        dateRangeStart: normalizeDateInputValue(state?.dateRangeStart),
+        dateRangeEnd: normalizeDateInputValue(state?.dateRangeEnd),
+        petChoiceCounts: normalizeHeaderSearchPetCounts(state?.petChoiceCounts)
+    };
+
+    if (!payload.dateRangeStart) {
+        payload.dateRangeEnd = '';
+    } else if (payload.dateRangeEnd && payload.dateRangeEnd < payload.dateRangeStart) {
+        payload.dateRangeEnd = payload.dateRangeStart;
+    }
+
+    try {
+        sessionStorage.setItem(HEADER_SEARCH_SESSION_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+        // Ignore storage quota or privacy mode errors.
+    }
+}
+
 function normalizeUiLocaleCode(locale = document.documentElement.lang || 'de') {
     if (typeof locale !== 'string') {
         return 'de';
@@ -1509,6 +1662,7 @@ const localizedHeaderSearchStrings = {
     petLoading: headerSearchRoot?.dataset.petLoading || 'Haustiere werden geladen',
     petEmpty: headerSearchRoot?.dataset.petEmpty || 'Keine Haustiere verfügbar'
 };
+const initialHeaderSearchState = readHeaderSearchSessionState();
 
 createApp({
     render: appShellRender,
@@ -1520,23 +1674,29 @@ createApp({
             menuOpen: false,
             loginModalOpen: false,
             scrolled: false,
+            headerScrollSyncFrame: 0,
+            headerScrollPendingY: 0,
             headerSurfaceElement: null,
+            headerSearchTabsResizeObserver: null,
             headerSearchInteractionExpanded: false,
+            headerCenterTab: initialHeaderSearchState.headerCenterTab,
             headerSearchStrings: localizedHeaderSearchStrings,
-            locationQuery: '',
-            selectedLocation: null,
+            locationQuery: initialHeaderSearchState.locationQuery,
+            selectedLocation: initialHeaderSearchState.selectedLocation,
             locationOptions: [],
             locationOptionsLoading: false,
             locationSearchDebounceHandle: null,
             locationSearchAbortController: null,
             locationSearchRequestId: 0,
-            dateRangeStart: '',
-            dateRangeEnd: '',
+            dateRangeStart: initialHeaderSearchState.dateRangeStart,
+            dateRangeEnd: initialHeaderSearchState.dateRangeEnd,
             dateCalendarYear: todayDate.getFullYear(),
             dateCalendarMonth: todayDate.getMonth(),
             petChoices: [],
             petChoicesLoading: false,
-            petChoiceCounts: {},
+            petChoiceCounts: {
+                ...initialHeaderSearchState.petChoiceCounts
+            },
             threadBackgroundController: null,
             gitView: 'activity',
             boardView: pickPreferredBoard(repository),
@@ -1629,7 +1789,7 @@ createApp({
                 .slice(0, 70);
         },
         headerSearchCompactMode() {
-            return this.scrolled && !this.headerSearchInteractionExpanded;
+            return this.headerCenterTab === 'discover' && this.scrolled && !this.headerSearchInteractionExpanded;
         },
         locationDisplayValue() {
             if (this.selectedLocation && this.selectedLocation.label) {
@@ -1831,6 +1991,28 @@ createApp({
     watch: {
         locationQuery(nextValue) {
             this.scheduleLocationSearch(nextValue);
+            this.persistHeaderSearchState();
+        },
+        selectedLocation: {
+            deep: true,
+            handler() {
+                this.persistHeaderSearchState();
+            }
+        },
+        dateRangeStart() {
+            this.persistHeaderSearchState();
+        },
+        dateRangeEnd() {
+            this.persistHeaderSearchState();
+        },
+        petChoiceCounts: {
+            deep: true,
+            handler() {
+                this.persistHeaderSearchState();
+            }
+        },
+        headerCenterTab() {
+            this.persistHeaderSearchState();
         }
     },
     mounted() {
@@ -1858,6 +2040,10 @@ createApp({
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
         document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
+        if (this.headerSearchTabsResizeObserver) {
+            this.headerSearchTabsResizeObserver.disconnect();
+            this.headerSearchTabsResizeObserver = null;
+        }
         this.clearDropdownQueue();
         this.closeAllDropdowns({ immediate: true });
         this.destroyThreadBackground();
@@ -1865,28 +2051,73 @@ createApp({
         this.stopAllMetricAnimations();
         this.clearNotificationTimers();
         this.clearLocationSearchRuntime();
-        if (typeof headerScrollAnimationState.rafId === 'number' && headerScrollAnimationState.rafId > 0) {
-            window.cancelAnimationFrame(headerScrollAnimationState.rafId);
+        if (this.headerScrollSyncFrame > 0) {
+            window.cancelAnimationFrame(this.headerScrollSyncFrame);
+            this.headerScrollSyncFrame = 0;
         }
-        headerScrollAnimationState.rafId = 0;
-        headerScrollAnimationState.velocity = 0;
-        headerScrollAnimationState.lastFrameTime = 0;
-        headerScrollAnimationState.target = 0;
         headerScrollAnimationState.progress = 0;
         headerScrollAnimationState.appliedProgress = Number.NaN;
         this.headerSurfaceElement = null;
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        persistHeaderSearchState() {
+            writeHeaderSearchSessionState({
+                headerCenterTab: this.headerCenterTab,
+                locationQuery: this.locationQuery,
+                selectedLocation: this.selectedLocation,
+                dateRangeStart: this.dateRangeStart,
+                dateRangeEnd: this.dateRangeEnd,
+                petChoiceCounts: this.petChoiceCounts
+            });
+        },
         initializeHeaderSearch() {
-            if (!headerSearchRoot) {
+            const headerSearchElement = document.querySelector('[data-header-search]');
+            if (!headerSearchElement) {
                 return;
             }
 
             this.locationOptions = [];
             this.locationOptionsLoading = false;
             this.syncDateCalendarView(this.dateRangeStart || this.dateRangeEnd);
+            this.scheduleLocationSearch(this.locationQuery);
             this.loadPetChoices();
+            this.syncHeaderSearchTabsGeometry();
+            this.$nextTick(() => {
+                this.syncHeaderSearchTabsGeometry();
+            });
+
+            if (typeof ResizeObserver === 'function') {
+                const tabsElement = headerSearchElement.querySelector('.header_search_tabs');
+                if (tabsElement) {
+                    if (this.headerSearchTabsResizeObserver) {
+                        this.headerSearchTabsResizeObserver.disconnect();
+                    }
+
+                    this.headerSearchTabsResizeObserver = new ResizeObserver(() => {
+                        this.syncHeaderSearchTabsGeometry();
+                    });
+                    this.headerSearchTabsResizeObserver.observe(tabsElement);
+                }
+            }
+        },
+        syncHeaderSearchTabsGeometry() {
+            const headerSearchElement = document.querySelector('[data-header-search]');
+            if (!headerSearchElement) {
+                return;
+            }
+
+            const tabsElement = headerSearchElement.querySelector('.header_search_tabs');
+            if (!tabsElement) {
+                return;
+            }
+
+            const width = tabsElement.getBoundingClientRect().width;
+            if (!Number.isFinite(width) || width <= 0) {
+                return;
+            }
+
+            headerSearchElement.style.setProperty('--header-search-tabs-bridge-width', `${width.toFixed(3)}px`);
         },
         clearLocationSearchRuntime() {
             if (typeof this.locationSearchDebounceHandle === 'number') {
@@ -2588,6 +2819,24 @@ createApp({
             this.menuOpen = false;
             this.openLoginModal();
         },
+        setHeaderCenterTab(tab) {
+            const nextTab = tab === 'about' ? 'about' : 'discover';
+
+            if (this.headerCenterTab === nextTab) {
+                return;
+            }
+
+            this.headerCenterTab = nextTab;
+
+            if (nextTab === 'about') {
+                this.closeHeaderSearchDropdowns({ immediate: true });
+            }
+
+            this.applyHeaderSurfaceScrollProgress();
+            this.$nextTick(() => {
+                this.syncHeaderSearchTabsGeometry();
+            });
+        },
         closeLoginModal() {
             if (!this.loginModalOpen) {
                 return;
@@ -2727,6 +2976,15 @@ createApp({
         },
         getDropdowns() {
             return Array.from(document.querySelectorAll(DROPDOWN_SELECTOR));
+        },
+        closeHeaderSearchDropdowns(options = {}) {
+            const { immediate = false } = options;
+
+            this.getDropdowns()
+                .filter((details) => this.isHeaderSearchDropdown(details))
+                .forEach((details) => this.closeDropdown(details, { immediate }));
+
+            this.syncHeaderSearchInteractionState();
         },
         initializeDropdowns() {
             this.getDropdowns().forEach((details) => {
@@ -3609,7 +3867,7 @@ createApp({
             this.gitGraphTooltip.visible = false;
         },
         showGitGraphTooltip(commitHash, target, pointer = null) {
-            const panel = document.querySelector('.git_graph_canvas_panel');
+            const panel = this.getGitGraphPanel();
             const details = this.readGraphCommitDetails(commitHash);
 
             if (!panel || !target || !details) {
@@ -3619,23 +3877,66 @@ createApp({
 
             const panelRect = panel.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
+            const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize || '16') || 16;
+            const maxTooltipWidth = Math.max(
+                0,
+                Math.min(
+                    Math.round(GIT_GRAPH_TOOLTIP_MAX_WIDTH_REM * rootFontSize),
+                    panel.clientWidth - (GIT_GRAPH_TOOLTIP_MARGIN_PX * 2)
+                )
+            );
+            const maxTooltipHeight = Math.max(0, panel.clientHeight - (GIT_GRAPH_TOOLTIP_MARGIN_PX * 2));
             const sourceX = Number.isFinite(pointer?.x)
-                ? Math.round(pointer.x - panelRect.left)
-                : Math.round(targetRect.left - panelRect.left + (targetRect.width / 2));
+                ? Math.round(pointer.x - panelRect.left - panel.clientLeft + panel.scrollLeft)
+                : Math.round(targetRect.left - panelRect.left - panel.clientLeft + panel.scrollLeft + (targetRect.width / 2));
             const sourceY = Number.isFinite(pointer?.y)
-                ? Math.round(pointer.y - panelRect.top)
-                : Math.round(targetRect.top - panelRect.top + (targetRect.height / 2));
-            const targetX = Math.min(Math.max(sourceX + 10, 8), Math.max(panelRect.width - 280, 8));
-            const targetY = Math.max(sourceY - 12, 10);
-            const anchorX = sourceX - targetX;
+                ? Math.round(pointer.y - panelRect.top - panel.clientTop + panel.scrollTop)
+                : Math.round(targetRect.top - panelRect.top - panel.clientTop + panel.scrollTop + (targetRect.height / 2));
+
+            const clamp = (value, min, max) => {
+                if (!Number.isFinite(value)) {
+                    return min;
+                }
+
+                if (max < min) {
+                    return min;
+                }
+
+                return Math.min(Math.max(value, min), max);
+            };
+
+            const resolvePlacement = (targetPanel, tooltipWidth, tooltipHeight) => {
+                const viewportWidth = Math.max(0, targetPanel.clientWidth);
+                const viewportHeight = Math.max(0, targetPanel.clientHeight);
+                const safeWidth = Math.max(0, Math.min(tooltipWidth, maxTooltipWidth));
+                const safeHeight = Math.max(0, Math.min(tooltipHeight, maxTooltipHeight));
+                const minX = targetPanel.scrollLeft + GIT_GRAPH_TOOLTIP_MARGIN_PX;
+                const maxX = targetPanel.scrollLeft + viewportWidth - safeWidth - GIT_GRAPH_TOOLTIP_MARGIN_PX;
+                const minY = targetPanel.scrollTop + GIT_GRAPH_TOOLTIP_MARGIN_PX;
+                const maxY = targetPanel.scrollTop + viewportHeight - safeHeight - GIT_GRAPH_TOOLTIP_MARGIN_PX;
+                const preferredX = sourceX + GIT_GRAPH_TOOLTIP_POINTER_OFFSET_X_PX;
+                const preferredAboveY = sourceY - safeHeight - GIT_GRAPH_TOOLTIP_POINTER_OFFSET_Y_PX;
+                const preferredBelowY = sourceY + GIT_GRAPH_TOOLTIP_POINTER_OFFSET_Y_PX;
+                const alignedY = preferredAboveY < minY ? preferredBelowY : preferredAboveY;
+                const x = Math.round(clamp(preferredX, minX, maxX));
+                const y = Math.round(clamp(alignedY, minY, maxY));
+
+                return {
+                    x,
+                    y,
+                    anchorX: Math.round(sourceX - x)
+                };
+            };
+
+            const initialPlacement = resolvePlacement(panel, maxTooltipWidth, maxTooltipHeight);
 
             this.gitGraphTooltip = {
                 visible: true,
-                x: targetX,
-                y: targetY,
+                x: initialPlacement.x,
+                y: initialPlacement.y,
                 sourceX,
                 sourceY,
-                anchorX,
+                anchorX: initialPlacement.anchorX,
                 shortSha: details.shortSha,
                 dateLabel: details.dateLabel,
                 subject: details.subject,
@@ -3644,6 +3945,47 @@ createApp({
                 authorInitials: details.authorInitials,
                 mergeInfo: details.mergeInfo
             };
+
+            nextTick(() => {
+                if (!this.gitGraphTooltip.visible || this.hoveredGitCommitHash !== commitHash) {
+                    return;
+                }
+
+                const currentPanel = this.getGitGraphPanel();
+                if (!currentPanel) {
+                    return;
+                }
+
+                const tooltipElement = currentPanel.querySelector('.git_graph_tooltip');
+                if (!tooltipElement) {
+                    return;
+                }
+
+                const measuredWidth = Math.max(0, Math.ceil(tooltipElement.offsetWidth || 0));
+                const measuredHeight = Math.max(0, Math.ceil(tooltipElement.offsetHeight || 0));
+                const refinedPlacement = resolvePlacement(
+                    currentPanel,
+                    measuredWidth || maxTooltipWidth,
+                    measuredHeight || maxTooltipHeight
+                );
+
+                if (
+                    refinedPlacement.x === this.gitGraphTooltip.x
+                    && refinedPlacement.y === this.gitGraphTooltip.y
+                    && refinedPlacement.anchorX === this.gitGraphTooltip.anchorX
+                ) {
+                    return;
+                }
+
+                this.gitGraphTooltip = {
+                    ...this.gitGraphTooltip,
+                    x: refinedPlacement.x,
+                    y: refinedPlacement.y,
+                    sourceX,
+                    sourceY,
+                    anchorX: refinedPlacement.anchorX
+                };
+            });
         },
         isVisibleGraphNode(element) {
             if (!element || typeof element.getBoundingClientRect !== 'function') {
@@ -4173,68 +4515,48 @@ createApp({
             headerScrollAnimationState.appliedProgress = effectiveProgress;
             surfaceElement.style.setProperty('--header-scroll-progress', effectiveProgress.toFixed(4));
         },
-        setHeaderScrollProgress(value) {
+        setHeaderScrollProgress(value, forcedScrolled = null) {
             const numericValue = Number(value);
             const clamped = Number.isFinite(numericValue)
                 ? Math.min(1, Math.max(0, numericValue))
                 : 0;
+            const nextScrolled = typeof forcedScrolled === 'boolean'
+                ? forcedScrolled
+                : clamped > 0;
+            const wasScrolled = this.scrolled;
 
             headerScrollAnimationState.progress = clamped;
-            if (this.scrolled) {
-                if (clamped <= HEADER_COMPACT_EXIT_PROGRESS) {
-                    this.scrolled = false;
-                }
-            } else if (clamped >= HEADER_COMPACT_ENTER_PROGRESS) {
-                this.scrolled = true;
+            this.scrolled = nextScrolled;
+
+            if (!wasScrolled && this.scrolled && this.headerCenterTab !== 'discover') {
+                this.setHeaderCenterTab('discover');
             }
 
             this.applyHeaderSurfaceScrollProgress(clamped);
         },
-        animateHeaderScrollProgress() {
-            if (typeof headerScrollAnimationState.rafId === 'number' && headerScrollAnimationState.rafId > 0) {
+        syncScrollState() {
+            const scrollY = Math.max(0, window.scrollY || 0);
+            this.headerScrollPendingY = scrollY;
+
+            if (this.headerScrollSyncFrame > 0) {
                 return;
             }
 
-            const step = (timestamp) => {
-                const frameTime = Number(timestamp);
-                const previousFrameTime = headerScrollAnimationState.lastFrameTime || frameTime;
-                const elapsedSeconds = Math.max(
-                    1 / 240,
-                    Math.min(
-                        HEADER_SCROLL_MAX_STEP_SECONDS,
-                        (frameTime - previousFrameTime) / 1000
-                    )
-                );
-                headerScrollAnimationState.lastFrameTime = frameTime;
-
-                const displacement = headerScrollAnimationState.target - headerScrollAnimationState.progress;
-                const acceleration = (displacement * HEADER_SCROLL_SPRING_STIFFNESS)
-                    - (headerScrollAnimationState.velocity * HEADER_SCROLL_SPRING_DAMPING);
-                headerScrollAnimationState.velocity += acceleration * elapsedSeconds;
-                this.setHeaderScrollProgress(headerScrollAnimationState.progress + (headerScrollAnimationState.velocity * elapsedSeconds));
-
-                const settled = Math.abs(headerScrollAnimationState.velocity) <= HEADER_SCROLL_SETTLE_VELOCITY
-                    && Math.abs(headerScrollAnimationState.target - headerScrollAnimationState.progress) <= HEADER_SCROLL_SETTLE_DISTANCE;
-                if (settled) {
-                    this.setHeaderScrollProgress(headerScrollAnimationState.target);
-                    headerScrollAnimationState.velocity = 0;
-                    headerScrollAnimationState.lastFrameTime = 0;
-                    headerScrollAnimationState.rafId = 0;
+            this.headerScrollSyncFrame = window.requestAnimationFrame(() => {
+                this.headerScrollSyncFrame = 0;
+                const pendingY = Math.max(0, this.headerScrollPendingY || 0);
+                const nextProgress = Math.min(1, pendingY / HEADER_SCROLL_PROGRESS_RANGE_PX);
+                const compactThreshold = this.scrolled
+                    ? HEADER_SCROLL_COMPACT_EXIT_PX
+                    : HEADER_SCROLL_COMPACT_ENTER_PX;
+                const nextScrolled = pendingY > compactThreshold;
+                const progressUnchanged = Math.abs(nextProgress - headerScrollAnimationState.progress) < 0.0005;
+                if (progressUnchanged && nextScrolled === this.scrolled) {
                     return;
                 }
 
-                headerScrollAnimationState.rafId = window.requestAnimationFrame(step);
-            };
-
-            headerScrollAnimationState.rafId = window.requestAnimationFrame(step);
-        },
-        syncScrollState() {
-            const scrollY = Math.max(0, window.scrollY || 0);
-            const rawProgress = Math.min(1, scrollY / HEADER_SCROLL_PROGRESS_DISTANCE_PX);
-            const easedProgress = rawProgress * rawProgress * rawProgress
-                * ((rawProgress * ((rawProgress * 6) - 15)) + 10);
-            headerScrollAnimationState.target = easedProgress;
-            this.animateHeaderScrollProgress();
+                this.setHeaderScrollProgress(nextProgress, nextScrolled);
+            });
         },
         handleResize() {
             if (window.innerWidth >= 1024) {
@@ -4250,6 +4572,7 @@ createApp({
             }
 
             this.syncScrollState();
+            this.syncHeaderSearchTabsGeometry();
         }
     }
 }).mount('#app-shell');
