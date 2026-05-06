@@ -25,6 +25,12 @@ public class Pet {
     @Column(nullable = false)
     private String specialNeeds;
 
+    @Column
+    private String imagePath;
+
+    @Column(unique = true, length = 64)
+    private String imageHash;
+
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     @JsonBackReference
@@ -56,6 +62,14 @@ public class Pet {
         return specialNeeds;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public String getImageHash() {
+        return imageHash;
+    }
+
     public User getOwner() {
         return owner;
     }
@@ -82,6 +96,14 @@ public class Pet {
 
     public void setSpecialNeeds(String specialNeeds) {
         this.specialNeeds = specialNeeds;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
     }
 
     public void setOwner(User owner) {

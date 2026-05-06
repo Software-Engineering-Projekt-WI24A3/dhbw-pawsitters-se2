@@ -3,6 +3,8 @@ package com.pawsitters.repository;
 import com.pawsitters.model.Pet;
 import com.pawsitters.model.PetChoice;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 import java.util.List;
 
 public interface PetRepository extends JpaRepository<Pet, Long> {
@@ -12,4 +14,8 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     // Tiere nach Art filtern (z.B. alle Hunde)
     List<Pet> findBySpecies(PetChoice species);
+
+    Optional<Pet> findByIdAndOwnerId(Long id, Long ownerId);
+
+    boolean existsByImageHash(String imageHash);
 }

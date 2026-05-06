@@ -40,3 +40,6 @@ test-results/
 **/.idea/queries/
 **/.idea/dataSources/
 **/.idea/dataSources.local.xml
+
+# Uploaded pet images (user-uploaded content, not tracked in VCS)
+backend/uploads/
