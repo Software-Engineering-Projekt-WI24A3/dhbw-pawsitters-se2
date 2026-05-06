@@ -1,0 +1,14 @@
+### Haustier erstellen
+POST {{baseUrl}}/api/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bello",
+  "species": "DOG",
+  "breed": "Labrador",
+  "age": 4,
+  "specialNeeds": "Keine"
+}
+
+###

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockCookie;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -77,12 +79,99 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void mailExistsReturnsTrueForExistingEmailWithoutToken() throws Exception {
+        String baseEmail = "mail.exists." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "StrongPass123!");
+
+        mockMvc.perform(get("/api/users/mailExists")
+                        .param("mail", baseEmail.toUpperCase()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void mailExistsReturnsFalseForUnknownEmailWithoutToken() throws Exception {
+        String baseEmail = "mail.missing." + UUID.randomUUID() + "@test.de";
+
+        mockMvc.perform(get("/api/users/mailExists")
+                        .param("mail", baseEmail))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
+    }
+
+    @Test
     void sessionWithValidJwtReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session." + UUID.randomUUID() + "@test.de";
         String token = registerUser(baseEmail, "StrongPass123!");
 
         mockMvc.perform(get("/api/auth/session")
                         .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loggedIn").value(true))
+                .andExpect(jsonPath("$.email").value(baseEmail));
+    }
+
+    @Test
+    void sessionWithValidJwtCookieReturnsLoggedInTrue() throws Exception {
+        String baseEmail = "session.cookie." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(baseEmail, "StrongPass123!");
+
+        mockMvc.perform(get("/api/auth/session")
+                        .cookie(new MockCookie(JwtTokenResolver.AUTH_COOKIE_NAME, token)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loggedIn").value(true))
+                .andExpect(jsonPath("$.email").value(baseEmail));
+    }
+
+    @Test
+    void sessionAfterRegisterUsesAuthCookie() throws Exception {
+        String baseEmail = "session.register.cookie." + UUID.randomUUID() + "@test.de";
+        MockHttpServletResponse registerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRegisterPayload(baseEmail, "StrongPass123!"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
+                .andReturn()
+                .getResponse();
+
+        mockMvc.perform(get("/api/auth/session")
+                        .cookie(registerResponse.getCookie(JwtTokenResolver.AUTH_COOKIE_NAME)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loggedIn").value(true))
+                .andExpect(jsonPath("$.email").value(baseEmail));
+    }
+
+    @Test
+    void sessionAfterLoginUsesAuthCookie() throws Exception {
+        String baseEmail = "session.login.cookie." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "StrongPass123!");
+
+        Map<String, String> loginPayload = new HashMap<>();
+        loginPayload.put("email", baseEmail);
+        loginPayload.put("password", "StrongPass123!");
+
+        MockHttpServletResponse loginResponse = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginPayload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
+                .andReturn()
+                .getResponse();
+
+        mockMvc.perform(get("/api/auth/session")
+                        .cookie(loginResponse.getCookie(JwtTokenResolver.AUTH_COOKIE_NAME)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loggedIn").value(true))
+                .andExpect(jsonPath("$.email").value(baseEmail));
+    }
+
+    @Test
+    void sessionWithRawAuthorizationTokenReturnsLoggedInTrue() throws Exception {
+        String baseEmail = "session.raw." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(baseEmail, "StrongPass123!");
+
+        mockMvc.perform(get("/api/auth/session")
+                        .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.loggedIn").value(true))
                 .andExpect(jsonPath("$.email").value(baseEmail));
