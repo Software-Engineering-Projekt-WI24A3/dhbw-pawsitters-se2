@@ -10,6 +10,7 @@ export const defaultLocale = 'de';
 const templateCache = new Map();
 const fragmentCache = new Map();
 const messageCache = new Map();
+const aboutProjectHtmlCache = new Map();
 const localeTokenPattern = /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$/;
 const localizedAttributeNames = new Set(['aria-label', 'placeholder', 'title', 'alt', 'value']);
 const pageDefinitions = [
@@ -136,6 +137,218 @@ function normalizeTextContent(value) {
 
 function isTokenPlaceholder(value) {
   return localeTokenPattern.test(value);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll('"', '&quot;');
+}
+
+function applyInlineEmphasis(escapedText) {
+  return escapedText
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+
+function parseInlineMarkdown(input) {
+  const segments = String(input).split(/(`[^`]+`)/g);
+
+  return segments.map((segment) => {
+    if (segment.startsWith('`') && segment.endsWith('`') && segment.length > 1) {
+      return `<code>${escapeHtml(segment.slice(1, -1))}</code>`;
+    }
+
+    const linkPattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+    let html = '';
+    let lastIndex = 0;
+    let match = null;
+
+    while ((match = linkPattern.exec(segment)) !== null) {
+      const [fullMatch, label, href] = match;
+      html += applyInlineEmphasis(escapeHtml(segment.slice(lastIndex, match.index)));
+      html += `<a href="${escapeAttribute(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+      lastIndex = match.index + fullMatch.length;
+    }
+
+    html += applyInlineEmphasis(escapeHtml(segment.slice(lastIndex)));
+    return html;
+  }).join('');
+}
+
+function renderMarkdownToHtml(markdown) {
+  const lines = String(markdown).replace(/\r\n/g, '\n').split('\n');
+  const output = [];
+  const paragraphLines = [];
+  const listItems = [];
+  let currentListType = null;
+  let codeFenceLanguage = '';
+  let codeFenceLines = null;
+
+  const flushParagraph = () => {
+    if (!paragraphLines.length) {
+      return;
+    }
+
+    output.push(`<p>${parseInlineMarkdown(paragraphLines.join(' '))}</p>`);
+    paragraphLines.length = 0;
+  };
+
+  const flushList = () => {
+    if (!currentListType || !listItems.length) {
+      currentListType = null;
+      listItems.length = 0;
+      return;
+    }
+
+    output.push(`<${currentListType}>`);
+    for (const item of listItems) {
+      output.push(`<li>${parseInlineMarkdown(item)}</li>`);
+    }
+    output.push(`</${currentListType}>`);
+
+    currentListType = null;
+    listItems.length = 0;
+  };
+
+  const flushCodeFence = () => {
+    if (!codeFenceLines) {
+      return;
+    }
+
+    const languageClass = codeFenceLanguage
+      ? ` class="language-${escapeAttribute(codeFenceLanguage.toLowerCase())}"`
+      : '';
+    output.push(`<pre><code${languageClass}>${codeFenceLines.map((line) => escapeHtml(line)).join('\n')}</code></pre>`);
+
+    codeFenceLanguage = '';
+    codeFenceLines = null;
+  };
+
+  const pushListItem = (listType, item) => {
+    if (currentListType && currentListType !== listType) {
+      flushList();
+    }
+
+    if (!currentListType) {
+      currentListType = listType;
+    }
+
+    listItems.push(item);
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (codeFenceLines) {
+      if (trimmed.startsWith('```')) {
+        flushCodeFence();
+      } else {
+        codeFenceLines.push(line);
+      }
+      continue;
+    }
+
+    if (trimmed.startsWith('```')) {
+      flushParagraph();
+      flushList();
+      codeFenceLanguage = trimmed.slice(3).trim();
+      codeFenceLines = [];
+      continue;
+    }
+
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const headingText = headingMatch[2].trim();
+      flushParagraph();
+      flushList();
+      output.push(`<h${level}>${parseInlineMarkdown(headingText)}</h${level}>`);
+      continue;
+    }
+
+    const unorderedListMatch = line.match(/^\s*-\s+(.+)$/);
+    if (unorderedListMatch) {
+      flushParagraph();
+      pushListItem('ul', unorderedListMatch[1].trim());
+      continue;
+    }
+
+    const orderedListMatch = line.match(/^\s*\d+\.\s+(.+)$/);
+    if (orderedListMatch) {
+      flushParagraph();
+      pushListItem('ol', orderedListMatch[1].trim());
+      continue;
+    }
+
+    if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+      flushParagraph();
+      flushList();
+      output.push(line);
+      continue;
+    }
+
+    paragraphLines.push(trimmed);
+  }
+
+  flushParagraph();
+  flushList();
+  flushCodeFence();
+
+  return output.join('\n');
+}
+
+async function resolveAboutReadmePath(rootDir) {
+  const candidatePaths = [
+    path.resolve(rootDir, '..', 'README.md'),
+    path.resolve(rootDir, '..', 'readme.md'),
+    path.join(rootDir, 'README.md'),
+    path.join(rootDir, 'readme.md')
+  ];
+
+  for (const candidatePath of candidatePaths) {
+    try {
+      const stats = await fs.stat(candidatePath);
+      if (stats.isFile()) {
+        return candidatePath;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error(`Could not find project README.md. Checked: ${candidatePaths.join(', ')}`);
+}
+
+async function loadAboutProjectHtml(rootDir) {
+  const readmePath = await resolveAboutReadmePath(rootDir);
+  const readmeStats = await fs.stat(readmePath);
+  const cacheKey = `${rootDir}::${readmePath}`;
+  const cached = aboutProjectHtmlCache.get(cacheKey);
+
+  if (cached && cached.mtimeMs === readmeStats.mtimeMs) {
+    return cached.html;
+  }
+
+  const markdown = await fs.readFile(readmePath, 'utf8');
+  const html = renderMarkdownToHtml(markdown);
+  aboutProjectHtmlCache.set(cacheKey, {
+    mtimeMs: readmeStats.mtimeMs,
+    html
+  });
+
+  return html;
 }
 
 function resolveLocaleAssetCandidates(rootDir, assetPath) {
@@ -967,6 +1180,7 @@ async function writeSearchDataAssets(rootDir) {
 async function buildPageContext(rootDir, locale, pageKey) {
   const messages = await loadMessages(rootDir, locale);
   const repositorySnapshot = localizeRepositorySnapshot(await loadRepositorySnapshot(rootDir), locale, messages);
+  const aboutProjectHtml = await loadAboutProjectHtml(rootDir);
 
   return {
     currentLocale: locale,
@@ -987,6 +1201,7 @@ async function buildPageContext(rootDir, locale, pageKey) {
     repositoryGitPath: resolveLocalizedPath(locale, 'repositoryGit'),
     repositoryPlaywrightPath: resolveLocalizedPath(locale, 'repositoryPlaywright'),
     repositoryBoardPath: resolveLocalizedPath(locale, 'repositoryKanban'),
+    aboutProjectHtml,
     repositorySnapshot,
     __messages: messages
   };
