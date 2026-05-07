@@ -1,6 +1,7 @@
 package com.pawsitters.service;
 
 import com.pawsitters.exception.NotFoundException;
+import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -40,7 +42,10 @@ public class AuthService {
                                String emergencyContact,
                                String profilePicture,
                                String bio,
-                               UserRole role) {
+                               UserRole role,
+                               String postalCode,
+                               String city,
+                               Set<PetChoice> acceptedPetSpecies) {
         User user = userService.createUser(
                 email,
                 rawPassword,
@@ -51,7 +56,10 @@ public class AuthService {
                 emergencyContact,
                 profilePicture,
                 bio,
-                role
+                role,
+                postalCode,
+                city,
+                acceptedPetSpecies
         );
         return toAuthResult(user);
     }

@@ -9,9 +9,17 @@ CREATE TABLE IF NOT EXISTS users (
 	emergency_contact VARCHAR(255) NOT NULL,
 	profile_picture VARCHAR(255) NOT NULL,
 	bio VARCHAR(255) NOT NULL,
-    rating DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+	rating DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     number_of_ratings INTEGER NOT NULL DEFAULT 0,
-	role VARCHAR(255)
+	role VARCHAR(255),
+	postal_code VARCHAR(255),
+	city VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS user_accepted_pet_species (
+	user_id BIGINT NOT NULL,
+	species VARCHAR(255) NOT NULL,
+	CONSTRAINT fk_user_accepted_pet_species_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 CREATE TABLE IF NOT EXISTS pet (
@@ -45,8 +53,29 @@ CREATE TABLE IF NOT EXISTS request (
 INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role)
 VALUES ('anna.meier@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Anna', 'Meier', '01711234567', '1994-03-12', 'Peter Meier', 'anna.png', 'Tierfreundin mit viel Hundeerfahrung.', 0.0, 0, 'PET_OWNER');
 
-INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role)
-VALUES ('lukas.schmidt@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Lukas', 'Schmidt', '01721234567', '1991-08-05', 'Maria Schmidt', 'lukas.png', 'Aktiver Tiersitter fuer Wochenendbetreuung.', 0.0, 0, 'HOST');
+INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role, postal_code, city)
+VALUES ('lukas.schmidt@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Lukas', 'Schmidt', '01721234567', '1991-08-05', 'Maria Schmidt', 'lukas.png', 'Aktiver Tiersitter fuer Wochenendbetreuung.', 4.8, 12, 'HOST', '68159', 'Mannheim');
+
+INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role, postal_code, city)
+VALUES ('mia.fischer@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Mia', 'Fischer', '01741234567', '1992-06-17', 'Ben Fischer', 'mia.png', 'Ruhige Betreuung fuer Katzen und Kleintiere.', 4.6, 8, 'HOST', '69115', 'Heidelberg');
+
+INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role, postal_code, city)
+VALUES ('noah.becker@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Noah', 'Becker', '01751234567', '1988-02-24', 'Eva Becker', 'noah.png', 'Erfahrener Gastgeber mit grossem Garten.', 4.9, 21, 'HOST', '68159', 'Mannheim');
+
+INSERT INTO user_accepted_pet_species (user_id, species)
+VALUES ((SELECT id FROM users WHERE email = 'lukas.schmidt@example.com'), 'DOG');
+
+INSERT INTO user_accepted_pet_species (user_id, species)
+VALUES ((SELECT id FROM users WHERE email = 'lukas.schmidt@example.com'), 'CAT');
+
+INSERT INTO user_accepted_pet_species (user_id, species)
+VALUES ((SELECT id FROM users WHERE email = 'mia.fischer@example.com'), 'CAT');
+
+INSERT INTO user_accepted_pet_species (user_id, species)
+VALUES ((SELECT id FROM users WHERE email = 'mia.fischer@example.com'), 'RABBIT');
+
+INSERT INTO user_accepted_pet_species (user_id, species)
+VALUES ((SELECT id FROM users WHERE email = 'noah.becker@example.com'), 'DOG');
 
 INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role)
 VALUES ('sara.wagner@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Sara', 'Wagner', '01731234567', '1997-11-21', 'Tom Wagner', 'sara.png', 'Katzenliebhaberin und flexibel verfuegbar.', 0.0, 0, 'PET_OWNER');

@@ -47,7 +47,8 @@ public class AuthController {
                 request.firstName(), request.lastName(),
                 request.phone(), request.birthDate(),
                 request.emergencyContact(), request.profilePicture(),
-                request.bio(), request.role()
+                request.bio(), request.role(),
+                request.postalCode(), request.city(), request.acceptedPetSpecies()
         );
         return withAuthCookie(result, "Registration successful.", servletRequest);
     }
