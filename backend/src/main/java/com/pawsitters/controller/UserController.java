@@ -63,7 +63,10 @@ public class UserController {
                 request.emergencyContact(),
                 request.profilePicture(),
                 request.bio(),
-                request.role()
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
         );
 
         return ResponseEntity.ok(ApiResponse.success(
