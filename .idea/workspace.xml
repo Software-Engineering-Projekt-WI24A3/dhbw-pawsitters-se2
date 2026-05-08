@@ -4,294 +4,70 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
+    <list default="true" id="65b88918-6401-4dc0-bf04-bf8797f1ec51" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projektstart" beforeDir="false" afterPath="$PROJECT_DIR$/Projektstart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="CopilotPersistence">
-    <persistenceIdMap>
-      <entry key="_/Users/niklasulbrich/Desktop/dhbw_projekt" value="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
-      <entry key="_/Users/niklasulbrich/Desktop/dhbw_se-projekt" value="3COcM1TZA3XHi3Ot37fwiS8brOF" />
-      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2" value="3CRYvqaA54AvrSJdBhLrsxpuaRw" />
-      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2/backend" value="3DLjL6mu7J2NWFpGOQq4soiW8QX" />
-    </persistenceIdMap>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="j_feature_marketmain" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="HttpClientOnboardingState">{
-  &quot;isOnboardingCommentShown&quot;: true
-}</component>
   <component name="HttpClientSelectedEnvironments">
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogout.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreatePet.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeleteUser.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetCurrentUser.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetPets.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUser.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUserRoles.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdatePet.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdateUser.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadPetImage.http" environment="dev" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7,
-  "fromUser": false
-}]]></component>
-  <component name="ProjectId" id="3DQunZAuDgmA2wgUkJL71ucQaF1" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
-  <component name="ProjectViewState">
-    <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showLibraryContents" value="true" />
-  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "HTTP Request.All in AuthLogin.executor": "Run",
-    "HTTP Request.All in AuthLogout.executor": "Run",
-    "HTTP Request.All in AuthRegister.executor": "Run",
-    "HTTP Request.All in AuthSession.executor": "Run",
-    "HTTP Request.All in DeleteUser.executor": "Run",
-    "HTTP Request.All in GetUserByID.executor": "Run",
-    "HTTP Request.All in RegisterUser.executor": "Run",
-    "HTTP Request.All in getuserbyid.executor": "Run",
-    "HTTP Request.AuthLogin | Login (Auth).executor": "Run",
-    "HTTP Request.AuthLogout | Logout (Auth).executor": "Run",
-    "HTTP Request.AuthRegister | Registrieren (Auth).executor": "Run",
-    "HTTP Request.AuthSession | Sessionstatus (Auth).executor": "Run",
-    "HTTP Request.CreatePet | Haustier erstellen.executor": "Run",
-    "HTTP Request.DeleteUser | Benutzer loeschen.executor": "Run",
-    "HTTP Request.GetCurrentUser | Eigene Benutzerdaten abrufen.executor": "Run",
-    "HTTP Request.GetPets | Haustiere abrufen.executor": "Run",
-    "HTTP Request.GetUserByID | #1.executor": "Run",
-    "HTTP Request.GetUserByID | Beispiel Request.executor": "Run",
-    "HTTP Request.MailExists | #1.executor": "Run",
-    "HTTP Request.MailExists | E-Mail pruefen.executor": "Run",
-    "HTTP Request.PatchUser | Benutzer teilaktualisieren (PATCH).executor": "Run",
-    "HTTP Request.PatchUserRoles | Benutzerrolle aendern.executor": "Run",
-    "HTTP Request.UpdatePet | Haustier aktualisieren.executor": "Run",
-    "HTTP Request.UpdateUser | Benutzer aktualisieren (PUT).executor": "Run",
-    "HTTP Request.UploadPetImage | Haustierbild hochladen.executor": "Run",
-    "HTTP Request.getuserbyid | Beispiel Request.executor": "Run",
-    "JUnit.AuthIntegrationTest.executor": "Run",
-    "JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse.executor": "Run",
-    "JUnit.JwtServiceTest.executor": "Run",
-    "JUnit.PetIntegrationTest.executor": "Run",
-    "JavaScript Debug.index.html.executor": "Run",
-    "Maven.PawsittersApplication.executor": "Run",
-    "Maven.pawsitters [clean].executor": "Run",
-    "Maven.pawsitters [install,--non-recursive].executor": "Run",
-    "Maven.pawsitters [install].executor": "Run",
-    "Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found": "New/updated database configurations found",
-    "Notification.DoNotAsk-DatabaseConfigFileWatcher.found": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "j__feature__API__korrektur",
-    "ignore.virus.scanning.warn.message": "true",
+    "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
+    "Shell Script.Projektstart.executor": "Run",
+    "git-widget-placeholder": "n__feature__updating-projektstart.-shell",
     "javascript.preferred.runtime.type.id": "node",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "rest.client.default.execution.environment": "dev",
-    "settings.editor.selected.configurable": "ml.llm.LLMThirdPartyAiProvidersConfigurable",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "/Users/niklasulbrich/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
-    "vue.rearranger.settings.migration": "true"
+    "nodejs_package_manager_path": "npm"
   }
-}</component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/frontend/src/media" />
-      <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
-    </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="configurationStatuses">
-      <map>
-        <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <map>
-              <entry key="AuthLogin | Login (Auth)" value="STOPPED" />
-              <entry key="AuthLogout | Logout (Auth)" value="STOPPED" />
-              <entry key="AuthRegister | Registrieren (Auth)" value="STOPPED" />
-              <entry key="AuthSession | Sessionstatus (Auth)" value="STOPPED" />
-              <entry key="UploadPetImage | Haustierbild hochladen" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="RunManager" selected="Spring Boot.PawsittersApplication">
-    <configuration name="AuthLogin | Login (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" executionIdentifier="Login (Auth)" runType="Run single request">
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Projektstart" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/Projektstart" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/usr/bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
       <method v="2" />
-    </configuration>
-    <configuration name="AuthLogout | Logout (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogout.http" executionIdentifier="Logout (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="AuthRegister | Registrieren (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" executionIdentifier="Registrieren (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="AuthSession | Sessionstatus (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" executionIdentifier="Sessionstatus (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="UploadPetImage | Haustierbild hochladen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadPetImage.http" executionIdentifier="Haustierbild hochladen" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="dhbw-pawsitters-se2" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.pawsitters.PawsittersApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="HTTP Request.AuthSession | Sessionstatus (Auth)" />
-        <item itemvalue="HTTP Request.AuthLogout | Logout (Auth)" />
-        <item itemvalue="HTTP Request.AuthRegister | Registrieren (Auth)" />
-        <item itemvalue="HTTP Request.AuthLogin | Login (Auth)" />
-        <item itemvalue="HTTP Request.UploadPetImage | Haustierbild hochladen" />
+        <item itemvalue="Shell Script.Projektstart" />
       </list>
     </recent_temporary>
   </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
-      </set>
-    </attachedChunks>
-  </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="780f0107-0306-46df-9347-d368b4cbd3f2" name="Changes" comment="fix for the recently created search container" />
-      <created>1778226782947</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1776253936853</updated>
-      <workItem from="1776253937958" duration="18000" />
-      <workItem from="1776260005699" duration="13912000" />
-      <workItem from="1776341609724" duration="5718000" />
-      <workItem from="1776350058328" duration="5134000" />
-      <workItem from="1776412419552" duration="9551000" />
-      <workItem from="1776458488018" duration="5183000" />
-      <workItem from="1776703128940" duration="455000" />
-      <workItem from="1776886188541" duration="1227000" />
-      <workItem from="1776965326628" duration="1958000" />
-      <workItem from="1777145461181" duration="2722000" />
-      <workItem from="1777291810767" duration="1147000" />
-      <workItem from="1777553794592" duration="1341000" />
-      <workItem from="1778068149833" duration="238000" />
-      <workItem from="1778068511967" duration="187000" />
-      <workItem from="1778068780073" duration="1271000" />
-      <workItem from="1778071626409" duration="103000" />
-      <workItem from="1778072069127" duration="3880000" />
-      <workItem from="1778081885180" duration="2517000" />
-    </task>
-    <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
-      <option name="closed" value="true" />
-      <created>1776966706173</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1776966706173</updated>
-    </task>
-    <task id="LOCAL-00002" summary="feat: implement authentication service with registration and login functionality - userstory finalisierung">
-      <option name="closed" value="true" />
-      <created>1777146680398</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1777146680398</updated>
-    </task>
-    <task id="LOCAL-00003" summary="feat: implement logout functionality with token revocation and session invalidation">
-      <option name="closed" value="true" />
-      <created>1777147697912</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1777147697912</updated>
-    </task>
-    <task id="LOCAL-00004" summary="api fixxes">
-      <option name="closed" value="true" />
-      <created>1778075656959</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1778075656959</updated>
-    </task>
-    <task id="LOCAL-00005" summary="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
-      <option name="closed" value="true" />
-      <created>1778096721400</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1778096721401</updated>
-    </task>
-    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: add JWT authentication with registration and login endpoints" />
-    <MESSAGE value="feat: implement authentication service with registration and login functionality - userstory finalisierung" />
-    <MESSAGE value="feat: implement logout functionality with token revocation and session invalidation" />
-    <MESSAGE value="api fixxes" />
-    <MESSAGE value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
-  </component>
-  <component name="XSLT-Support.FileAssociations.UIState">
-    <expand />
-    <select />
-  </component>
-  <component name="github-copilot-workspace">
-    <instructionFileLocations>
-      <option value=".github/instructions" />
-      <option value=".github/instructions" />
-    </instructionFileLocations>
-    <promptFileLocations>
-      <option value=".github/prompts" />
-    </promptFileLocations>
+    <MESSAGE value="added the &quot;/repository/api&quot; underpage" />
+    <option name="LAST_COMMIT_MESSAGE" value="added the &quot;/repository/api&quot; underpage" />
   </component>
 </project>
