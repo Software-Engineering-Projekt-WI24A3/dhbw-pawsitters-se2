@@ -2245,6 +2245,7 @@
 
     .repo_intro__eyebrow,
     .git_metric__label,
+    .api_metric__label,
     .board_metric__label,
     .git_panel__eyebrow,
     .board_column__label,
@@ -2358,24 +2359,200 @@
     }
 
     .git_metrics,
+    .api_metrics,
     .board_metrics {
         @apply relative z-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4;
     }
 
     .git_metric,
+    .api_metric,
     .board_metric {
         @apply rounded-[1.7rem] border border-black/10 p-4;
         background: rgba(255, 255, 255, 0.72);
     }
 
     .git_metric__value,
+    .api_metric__value,
     .board_metric__value {
         @apply block text-3xl font-semibold tracking-[-0.06em] text-black;
     }
 
     .git_metric__label,
+    .api_metric__label,
     .board_metric__label {
         @apply mt-2 block;
+    }
+
+    .api_overview {
+        @apply relative z-10 mt-6 grid gap-5;
+    }
+
+    .api_overview__header {
+        @apply grid gap-3 rounded-[2rem] border border-black/10 p-5;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 247, 250, 0.9) 100%);
+    }
+
+    .api_overview__titleline {
+        @apply flex flex-wrap items-center gap-2;
+    }
+
+    .api_overview__title {
+        @apply m-0 text-[clamp(1.9rem,5vw,2.5rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-black;
+    }
+
+    .api_overview__version {
+        @apply inline-flex items-center rounded-full border border-black/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.12em];
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.76);
+    }
+
+    .api_overview__source {
+        @apply flex flex-wrap items-center gap-2 text-sm;
+        color: var(--text-secondary);
+    }
+
+    .api_overview__source-label {
+        @apply text-[0.68rem] font-semibold uppercase tracking-[0.18em];
+        color: var(--text-tertiary);
+    }
+
+    .api_overview__source-path {
+        @apply rounded-full border border-black/10 px-3 py-1 text-[0.72rem];
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
+        word-break: break-all;
+    }
+
+    .api_overview__warning {
+        @apply m-0 rounded-[1rem] border border-amber-200 bg-amber-50 px-3 py-2 text-sm;
+        color: #854d0e;
+    }
+
+    .api_methods {
+        @apply mt-1 flex flex-wrap gap-2;
+    }
+
+    .api_method_badge {
+        @apply inline-flex items-center gap-2 rounded-full border border-black/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.11em];
+        background: rgba(255, 255, 255, 0.74);
+        color: #111114;
+    }
+
+    .api_method_badge__count {
+        @apply inline-flex min-w-[1.5rem] items-center justify-center rounded-full border border-black/10 px-2 py-[0.08rem] text-[0.66rem];
+        letter-spacing: 0.08em;
+        background: rgba(17, 17, 19, 0.05);
+    }
+
+    .api_method_badge[data-method="GET"],
+    .api_operation__method[data-method="GET"] {
+        --api-method-bg: rgba(15, 118, 110, 0.1);
+        --api-method-border: rgba(15, 118, 110, 0.22);
+        --api-method-ink: #0f766e;
+    }
+
+    .api_method_badge[data-method="POST"],
+    .api_operation__method[data-method="POST"] {
+        --api-method-bg: rgba(47, 90, 168, 0.1);
+        --api-method-border: rgba(47, 90, 168, 0.24);
+        --api-method-ink: #2f5aa8;
+    }
+
+    .api_method_badge[data-method="PUT"],
+    .api_method_badge[data-method="PATCH"],
+    .api_operation__method[data-method="PUT"],
+    .api_operation__method[data-method="PATCH"] {
+        --api-method-bg: rgba(138, 90, 32, 0.1);
+        --api-method-border: rgba(138, 90, 32, 0.24);
+        --api-method-ink: #8a5a20;
+    }
+
+    .api_method_badge[data-method="DELETE"],
+    .api_operation__method[data-method="DELETE"] {
+        --api-method-bg: rgba(139, 61, 96, 0.1);
+        --api-method-border: rgba(139, 61, 96, 0.24);
+        --api-method-ink: #8b3d60;
+    }
+
+    .api_method_badge {
+        background: var(--api-method-bg, rgba(17, 17, 19, 0.06));
+        border-color: var(--api-method-border, rgba(17, 17, 19, 0.14));
+        color: var(--api-method-ink, #111114);
+    }
+
+    .api_tags {
+        @apply grid gap-4 xl:grid-cols-2;
+    }
+
+    .api_tag {
+        @apply rounded-[2rem] border border-black/10 p-4 sm:p-5;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 247, 249, 0.9) 100%);
+    }
+
+    .api_tag__header {
+        @apply mb-3 flex items-center justify-between gap-3 border-b border-black/10 pb-3;
+    }
+
+    .api_tag__title {
+        @apply m-0 text-xl font-semibold tracking-[-0.04em] text-black;
+    }
+
+    .api_tag__count {
+        @apply text-[0.72rem] font-semibold uppercase tracking-[0.18em];
+        color: var(--text-secondary);
+    }
+
+    .api_tag__operations {
+        @apply grid gap-3;
+    }
+
+    .api_tag__empty,
+    .api_overview__empty {
+        @apply m-0 rounded-[1.1rem] border border-dashed border-black/10 px-4 py-6 text-sm;
+        color: var(--text-secondary);
+    }
+
+    .api_operation {
+        @apply rounded-[1.4rem] border border-black/10 bg-white/80 p-4;
+    }
+
+    .api_operation__route {
+        @apply flex flex-wrap items-center gap-2;
+    }
+
+    .api_operation__method {
+        @apply inline-flex min-w-[3.75rem] items-center justify-center rounded-full border px-2 py-[0.2rem] text-[0.66rem] font-semibold uppercase tracking-[0.12em];
+        background: var(--api-method-bg, rgba(17, 17, 19, 0.08));
+        border-color: var(--api-method-border, rgba(17, 17, 19, 0.2));
+        color: var(--api-method-ink, #111114);
+    }
+
+    .api_operation__path {
+        @apply text-[0.78rem] font-medium;
+        color: #111114;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+        word-break: break-all;
+    }
+
+    .api_operation__summary {
+        @apply mb-0 mt-3 text-sm leading-6;
+        color: var(--text-secondary);
+    }
+
+    .api_operation__chips {
+        @apply mt-3 flex flex-wrap items-center gap-2;
+    }
+
+    .api_operation__chip {
+        @apply inline-flex items-center gap-1 rounded-full border border-black/10 px-2 py-[0.2rem] text-[0.68rem] font-medium;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    .api_operation__chip--code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+        color: #111114;
     }
 
     .repository_workspace--playwright::before {

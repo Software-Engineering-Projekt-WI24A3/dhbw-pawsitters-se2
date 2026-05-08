@@ -15,6 +15,121 @@ function removeJavaComments(value) {
     .replace(/\/\/.*$/gm, '');
 }
 
+function splitJavaTopLevelByComma(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    return [];
+  }
+
+  const segments = [];
+  let current = '';
+  let parenDepth = 0;
+  let braceDepth = 0;
+  let bracketDepth = 0;
+  let inString = false;
+  let stringQuote = '';
+  let escaped = false;
+
+  for (const char of value) {
+    if (inString) {
+      current += char;
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (char === stringQuote) {
+        inString = false;
+        stringQuote = '';
+      }
+
+      continue;
+    }
+
+    if (char === '"' || char === '\'') {
+      inString = true;
+      stringQuote = char;
+      current += char;
+      continue;
+    }
+
+    if (char === '(') {
+      parenDepth += 1;
+      current += char;
+      continue;
+    }
+
+    if (char === ')') {
+      if (parenDepth > 0) {
+        parenDepth -= 1;
+      }
+      current += char;
+      continue;
+    }
+
+    if (char === '{') {
+      braceDepth += 1;
+      current += char;
+      continue;
+    }
+
+    if (char === '}') {
+      if (braceDepth > 0) {
+        braceDepth -= 1;
+      }
+      current += char;
+      continue;
+    }
+
+    if (char === '[') {
+      bracketDepth += 1;
+      current += char;
+      continue;
+    }
+
+    if (char === ']') {
+      if (bracketDepth > 0) {
+        bracketDepth -= 1;
+      }
+      current += char;
+      continue;
+    }
+
+    if (char === ',' && parenDepth === 0 && braceDepth === 0 && bracketDepth === 0) {
+      const segment = current.trim();
+      if (segment) {
+        segments.push(segment);
+      }
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  const trailingSegment = current.trim();
+  if (trailingSegment) {
+    segments.push(trailingSegment);
+  }
+
+  return segments;
+}
+
+function extractJavaEnumConstantName(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const withoutAnnotations = value.replace(/^(?:\s*@[\w.]+(?:\([^)]*\))?\s*)+/, '').trim();
+  const match = withoutAnnotations.match(/^[A-Z][A-Z0-9_]*(?=\s*(?:$|\(|\{))/);
+  return match ? match[0] : '';
+}
+
 function toUpperAlphaCountryCode(value) {
   if (typeof value !== 'string') {
     return '';
@@ -110,10 +225,12 @@ export async function loadPetChoices(frontendRootDir) {
   }
 
   const enumBody = removeJavaComments(match[1]);
-  const rawConstants = enumBody
-    .split(',')
-    .map((value) => value.trim())
-    .map((value) => value.split(/\s|;/)[0].trim())
+  const enumConstantsSection = enumBody.includes(';')
+    ? enumBody.slice(0, enumBody.indexOf(';'))
+    : enumBody;
+
+  const rawConstants = splitJavaTopLevelByComma(enumConstantsSection)
+    .map((value) => extractJavaEnumConstantName(value))
     .filter(Boolean);
 
   const choices = [];

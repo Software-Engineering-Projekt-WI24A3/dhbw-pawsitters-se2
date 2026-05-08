@@ -533,6 +533,10 @@ function resolveFilePath(urlPath) {
     return { redirect: '/repository/playwright' };
   }
 
+  if (urlPath === '/api-overview' || urlPath === '/api-overview/' || urlPath === '/api-uebersicht' || urlPath === '/api-uebersicht/') {
+    return { redirect: '/repository/api' };
+  }
+
   const localePrefixed = urlPath.match(/^\/(de|en|ro)(\/.*)?$/);
   if (localePrefixed) {
     const locale = localePrefixed[1];

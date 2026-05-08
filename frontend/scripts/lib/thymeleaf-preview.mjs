@@ -18,6 +18,7 @@ const pageDefinitions = [
   { key: 'register', templatePath: 'pages/register.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
   { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
+  { key: 'repositoryApi', templatePath: 'pages/repository-api.html' },
   { key: 'repositoryKanban', templatePath: 'pages/repository-kanban.html' },
   { key: 'notFound', templatePath: 'pages/not-found.html' }
 ];
@@ -26,6 +27,7 @@ const routeToPageKey = new Map([
   ['/register', 'register'],
   ['/repository/git', 'repositoryGit'],
   ['/repository/playwright', 'repositoryPlaywright'],
+  ['/repository/api', 'repositoryApi'],
   ['/repository/kanban', 'repositoryKanban'],
   ['/404', 'notFound'],
   ['/404.html', 'notFound']
@@ -538,6 +540,8 @@ function resolveLocalizedPath(locale, pageKey) {
       return `/repository/git${query}`;
     case 'repositoryPlaywright':
       return `/repository/playwright${query}`;
+    case 'repositoryApi':
+      return `/repository/api${query}`;
     case 'repositoryKanban':
       return `/repository/kanban${query}`;
     case 'notFound':
@@ -566,6 +570,11 @@ function resolveOutputPaths(locale, pageKey) {
       return [
         path.join('repository', 'playwright', 'index.html'),
         path.join('playwright', 'index.html')
+      ];
+    case 'repositoryApi':
+      return [
+        path.join('repository', 'api', 'index.html'),
+        path.join('api-overview', 'index.html')
       ];
     case 'repositoryKanban':
       return [
@@ -1200,6 +1209,7 @@ async function buildPageContext(rootDir, locale, pageKey) {
     registerPath: resolveLocalizedPath(locale, 'register'),
     repositoryGitPath: resolveLocalizedPath(locale, 'repositoryGit'),
     repositoryPlaywrightPath: resolveLocalizedPath(locale, 'repositoryPlaywright'),
+    repositoryApiPath: resolveLocalizedPath(locale, 'repositoryApi'),
     repositoryBoardPath: resolveLocalizedPath(locale, 'repositoryKanban'),
     aboutProjectHtml,
     repositorySnapshot,
@@ -1283,6 +1293,11 @@ export async function buildPreview(rootDir) {
   await fs.writeFile(
     path.join(rootDir, 'playwright', 'index.html'),
     buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title')),
+    'utf8'
+  );
+  await fs.writeFile(
+    path.join(rootDir, 'api-overview', 'index.html'),
+    buildRedirectPage('/repository/api', defaultLocale, getMessage(defaultMessages, 'meta.repositoryApi.title')),
     'utf8'
   );
 }

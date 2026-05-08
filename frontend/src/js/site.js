@@ -221,11 +221,13 @@ const headerScrollAnimationState = {
 };
 const METRIC_GROUP_FIELDS = {
     git: ['totalCommits', 'mergeCommits', 'contributorCount', 'branchCount'],
+    api: ['operationCount', 'pathCount', 'methodCount', 'tagCount'],
     board: ['openCount', 'assignedCount', 'ownerCount', 'criteriaCount'],
     playwright: ['total', 'passed', 'failed', 'pending']
 };
 const METRIC_GROUP_SELECTORS = {
     git: '.git_metrics',
+    api: '.api_metrics',
     board: '.board_metrics',
     playwright: '.playwright_metrics'
 };
@@ -714,6 +716,23 @@ function createEmptyRepository() {
             lastCommitDate: '',
             lastCommitLabel: ''
         },
+        api: {
+            source: '',
+            info: {
+                title: '',
+                version: ''
+            },
+            summary: {
+                operationCount: 0,
+                pathCount: 0,
+                methodCount: 0,
+                tagCount: 0
+            },
+            methods: [],
+            tags: [],
+            operations: [],
+            parseError: ''
+        },
         board: {
             cards: [],
             columns: [],
@@ -755,6 +774,9 @@ function normalizeRepository(repository) {
     const sourceGitRepository = sourceGit.repository && typeof sourceGit.repository === 'object' ? sourceGit.repository : {};
     const sourceGitActivity = sourceGit.activity && typeof sourceGit.activity === 'object' ? sourceGit.activity : {};
     const sourceGitRanges = sourceGit.activityRanges && typeof sourceGit.activityRanges === 'object' ? sourceGit.activityRanges : {};
+    const sourceApi = source.api && typeof source.api === 'object' ? source.api : {};
+    const sourceApiInfo = sourceApi.info && typeof sourceApi.info === 'object' ? sourceApi.info : {};
+    const sourceApiSummary = sourceApi.summary && typeof sourceApi.summary === 'object' ? sourceApi.summary : {};
     const sourceBoard = source.board && typeof source.board === 'object' ? source.board : {};
     const sourceBoardSummary = sourceBoard.summary && typeof sourceBoard.summary === 'object' ? sourceBoard.summary : {};
 
@@ -868,6 +890,21 @@ function normalizeRepository(repository) {
                     : []
             }
         },
+        api: {
+            ...empty.api,
+            ...sourceApi,
+            info: {
+                ...empty.api.info,
+                ...sourceApiInfo
+            },
+            summary: {
+                ...empty.api.summary,
+                ...sourceApiSummary
+            },
+            methods: Array.isArray(sourceApi.methods) ? sourceApi.methods : [],
+            tags: Array.isArray(sourceApi.tags) ? sourceApi.tags : [],
+            operations: Array.isArray(sourceApi.operations) ? sourceApi.operations : []
+        },
         board: {
             ...empty.board,
             ...sourceBoard,
@@ -964,7 +1001,7 @@ function sanitizePopupText(value) {
     }
 
     const knownPopupNoise = [
-        /Repository\s+DE\s+Einloggen\s+Playwright(?:-Tests)?\s+Git\s+Kanban Board/i,
+        /Repository\s+DE\s+Einloggen\s+Playwright(?:-Tests)?\s+Git\s+API(?:-Übersicht)?\s+Kanban Board/i,
         /GESAMTER\s+PROJEKTGRAPH/i,
         /PAWSITTERS\.\s*RUHIGES INTERFACE/i
     ];
@@ -1752,12 +1789,14 @@ createApp({
             animatedMetrics: createMetricAnimationState(),
             metricAnimationFrames: {
                 git: 0,
+                api: 0,
                 board: 0,
                 playwright: 0
             },
             metricAnimationTargets: createMetricAnimationState(),
             metricAnimationHasPlayed: {
                 git: false,
+                api: false,
                 board: false,
                 playwright: false
             },
@@ -2473,6 +2512,15 @@ createApp({
                     mergeCommits: this.repository.git.mergeCommits,
                     contributorCount: this.repository.git.contributorCount,
                     branchCount: this.repository.git.branchCount
+                };
+            }
+
+            if (group === 'api') {
+                return {
+                    operationCount: this.repository.api.summary.operationCount,
+                    pathCount: this.repository.api.summary.pathCount,
+                    methodCount: this.repository.api.summary.methodCount,
+                    tagCount: this.repository.api.summary.tagCount
                 };
             }
 
@@ -3358,6 +3406,7 @@ createApp({
                 this.repositoryError = '';
                 shouldSyncRepositoryState = true;
                 this.animateMetricGroup('git');
+                this.animateMetricGroup('api');
                 this.animateMetricGroup('board');
             } catch (error) {
                 if (error?.name === 'AbortError') {
