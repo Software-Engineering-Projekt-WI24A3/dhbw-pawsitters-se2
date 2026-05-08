@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/data.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +57,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git&quot;,
-    &quot;accountId&quot;: &quot;e565500c-3744-4956-a65a-4e8885d0e92d&quot;
+    &quot;accountId&quot;: &quot;74660bd1-6a97-45d8-be70-0e7c1701c587&quot;
   }
 }</component>
   <component name="HttpClientOnboardingState">{
@@ -77,6 +79,9 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdatePet.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdateUser.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadPetImage.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" environment="dev" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -126,6 +131,8 @@
     "HTTP Request.CreatePet | Haustier erstellen.executor": "Run",
     "HTTP Request.DeleteUser | Benutzer loeschen.executor": "Run",
     "HTTP Request.GetCurrentUser | Eigene Benutzerdaten abrufen.executor": "Run",
+    "HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen.executor": "Run",
+    "HTTP Request.GetMarketplaceHosts | Gastgeber abrufen.executor": "Run",
     "HTTP Request.GetPets | Haustiere abrufen.executor": "Run",
     "HTTP Request.GetUserByID | #1.executor": "Run",
     "HTTP Request.GetUserByID | Beispiel Request.executor": "Run",
@@ -133,6 +140,8 @@
     "HTTP Request.MailExists | E-Mail pruefen.executor": "Run",
     "HTTP Request.PatchUser | Benutzer teilaktualisieren (PATCH).executor": "Run",
     "HTTP Request.PatchUserRoles | Benutzerrolle aendern.executor": "Run",
+    "HTTP Request.SearchMarketplaceHosts | #2.executor": "Run",
+    "HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen.executor": "Run",
     "HTTP Request.UpdatePet | Haustier aktualisieren.executor": "Run",
     "HTTP Request.UpdateUser | Benutzer aktualisieren (PUT).executor": "Run",
     "HTTP Request.UploadPetImage | Haustierbild hochladen.executor": "Run",
@@ -161,7 +170,7 @@
     "Spring Boot.PawsittersApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "j__feature__API__korrektur",
+    "git-widget-placeholder": "j__feature__marketpost",
     "ignore.virus.scanning.warn.message": "true",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
@@ -177,15 +186,15 @@
     "ts.external.directory.path": "/Users/niklasulbrich/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;h2&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "h2"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;H2&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "H2"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src/media" />
@@ -198,11 +207,11 @@
         <entry key="HttpClient.HttpRequestRunConfigurationType">
           <value>
             <map>
-              <entry key="AuthLogin | Login (Auth)" value="STOPPED" />
-              <entry key="AuthLogout | Logout (Auth)" value="STOPPED" />
               <entry key="AuthRegister | Registrieren (Auth)" value="STOPPED" />
-              <entry key="AuthSession | Sessionstatus (Auth)" value="STOPPED" />
-              <entry key="UploadPetImage | Haustierbild hochladen" value="STOPPED" />
+              <entry key="GetMarketplaceFilters | Marketplace-Filter abrufen" value="STOPPED" />
+              <entry key="GetMarketplaceHosts | Gastgeber abrufen" value="STOPPED" />
+              <entry key="SearchMarketplaceHosts | #2" value="STOPPED" />
+              <entry key="SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" value="STOPPED" />
             </map>
           </value>
         </entry>
@@ -210,19 +219,19 @@
     </option>
   </component>
   <component name="RunManager" selected="Spring Boot.PawsittersApplication">
-    <configuration name="AuthLogin | Login (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" executionIdentifier="Login (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="AuthLogout | Logout (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogout.http" executionIdentifier="Logout (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
     <configuration name="AuthRegister | Registrieren (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" executionIdentifier="Registrieren (Auth)" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="AuthSession | Sessionstatus (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" executionIdentifier="Sessionstatus (Auth)" runType="Run single request">
+    <configuration name="GetMarketplaceFilters | Marketplace-Filter abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" executionIdentifier="Marketplace-Filter abrufen" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="UploadPetImage | Haustierbild hochladen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadPetImage.http" executionIdentifier="Haustierbild hochladen" runType="Run single request">
+    <configuration name="GetMarketplaceHosts | Gastgeber abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" executionIdentifier="Gastgeber abrufen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="Gastgeber nach Tierart und Postleitzahl suchen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="SearchMarketplaceHosts | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="#2" index="2" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration default="true" type="JetRunConfigurationType">
@@ -240,11 +249,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="HTTP Request.AuthSession | Sessionstatus (Auth)" />
-        <item itemvalue="HTTP Request.AuthLogout | Logout (Auth)" />
+        <item itemvalue="HTTP Request.SearchMarketplaceHosts | #2" />
+        <item itemvalue="HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" />
+        <item itemvalue="HTTP Request.GetMarketplaceHosts | Gastgeber abrufen" />
+        <item itemvalue="HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen" />
         <item itemvalue="HTTP Request.AuthRegister | Registrieren (Auth)" />
-        <item itemvalue="HTTP Request.AuthLogin | Login (Auth)" />
-        <item itemvalue="HTTP Request.UploadPetImage | Haustierbild hochladen" />
       </list>
     </recent_temporary>
   </component>
@@ -280,7 +289,9 @@
       <workItem from="1778068780073" duration="1271000" />
       <workItem from="1778071626409" duration="103000" />
       <workItem from="1778072069127" duration="3880000" />
-      <workItem from="1778081885180" duration="2517000" />
+      <workItem from="1778081885180" duration="3376000" />
+      <workItem from="1778144058606" duration="1594000" />
+      <workItem from="1778226595943" duration="775000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
@@ -322,7 +333,23 @@
       <option name="project" value="LOCAL" />
       <updated>1778096721401</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
+      <option name="closed" value="true" />
+      <created>1778097031008</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1778097031008</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test">
+      <option name="closed" value="true" />
+      <created>1778145757113</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1778145757113</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -345,7 +372,8 @@
     <MESSAGE value="feat: implement logout functionality with token revocation and session invalidation" />
     <MESSAGE value="api fixxes" />
     <MESSAGE value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
+    <MESSAGE value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
