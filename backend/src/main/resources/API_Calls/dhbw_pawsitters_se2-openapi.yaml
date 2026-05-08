@@ -1,23 +1,99 @@
 openapi: 3.0.3
 info:
-  title: User API
-  version: 1.0.0
-  description: OpenAPI-Dokumentation fuer den UserController.
+  title: Pawsitters API
+  version: 1.1.0
+  description: OpenAPI-Dokumentation fuer die Pawsitters JSON-API mit einheitlichem Response-Envelope.
   contact:
     name: Pawsitters API Team
 servers:
   - url: http://localhost:8080
 tags:
+  - name: Auth
+    description: Endpunkte fuer Login, Logout, Registrierung und Sessionstatus.
   - name: Users
     description: Endpunkte zur Benutzerverwaltung.
+  - name: Pets
+    description: Endpunkte zur Haustierverwaltung.
+  - name: Marketplace
+    description: Endpunkte zur Gastgeber-Uebersicht, Suche und Filteroptionen.
 paths:
+  /api/auth/register:
+    post:
+      operationId: authRegister
+      tags: [Auth]
+      summary: Registrieren und einloggen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Registrierung erfolgreich.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/auth/login:
+    post:
+      operationId: authLogin
+      tags: [Auth]
+      summary: Einloggen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login erfolgreich.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/auth/logout:
+    post:
+      operationId: authLogout
+      tags: [Auth]
+      summary: Ausloggen
+      responses:
+        "200":
+          description: Logout erfolgreich.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyApiResponse"
+  /api/auth/session:
+    get:
+      operationId: authSession
+      tags: [Auth]
+      summary: Sessionstatus abrufen
+      responses:
+        "200":
+          description: Sessionstatus.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionApiResponse"
   /api/users/register:
     post:
       operationId: registerUser
-      tags:
-        - Users
+      tags: [Users]
       summary: Benutzer registrieren
-      description: Erstellt einen neuen Benutzer und gibt das User-Objekt zurueck.
       requestBody:
         required: true
         content:
@@ -30,43 +106,101 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserApiResponse"
         "400":
-          description: Ungueltige Eingaben.
-          content:
-            text/plain:
-              schema:
-                type: string
+          $ref: "#/components/responses/BadRequest"
   /api/users/{id}:
     get:
       operationId: getUserById
-      tags:
-        - Users
+      tags: [Users]
       summary: Benutzer abrufen
-      description: Gibt einen Benutzer anhand seiner ID zurueck.
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
           description: Benutzer gefunden.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
-          description: Benutzer nicht gefunden.
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateUser
+      tags: [Users]
+      summary: Benutzer vollstaendig aktualisieren
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: Benutzer aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    patch:
+      operationId: patchUser
+      tags: [Users]
+      summary: Benutzer partiell aktualisieren
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPatchRequest"
+      responses:
+        "200":
+          description: Benutzer aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      operationId: deleteUser
+      tags: [Users]
+      summary: Benutzer loeschen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Benutzer geloescht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteApiResponse"
+  /api/users/me:
+    get:
+      operationId: getCurrentUser
+      tags: [Users]
+      summary: Aktuellen Benutzer abrufen
+      responses:
+        "200":
+          description: Aktueller Benutzer.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /api/users/mailExists:
     get:
       operationId: mailExists
-      tags:
-        - Users
+      tags: [Users]
       summary: E-Mail pruefen
-      description: Prueft, ob eine E-Mail bereits registriert ist.
       parameters:
         - name: mail
           in: query
@@ -80,24 +214,413 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: "#/components/schemas/MailExistsApiResponse"
         "400":
-          description: Ungueltige E-Mail-Adresse oder fehlerhafte Anfrage.
+          $ref: "#/components/responses/BadRequest"
+  /api/users/{id}/roles:
+    patch:
+      operationId: updateUserRole
+      tags: [Users]
+      summary: Benutzerrolle aendern
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdateRequest"
+      responses:
+        "200":
+          description: Rolle aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/users/{id}/profile-image:
+    post:
+      operationId: uploadUserProfileImage
+      tags: [Users]
+      summary: Profilbild hochladen
+      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Profilbild aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/pets:
+    get:
+      operationId: getPets
+      tags: [Pets]
+      summary: Eigene Haustiere abrufen
+      responses:
+        "200":
+          description: Haustierliste.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetListApiResponse"
+    post:
+      operationId: createPet
+      tags: [Pets]
+      summary: Haustier erstellen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetRequest"
+      responses:
+        "200":
+          description: Haustier erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/pets/{id}:
+    put:
+      operationId: updatePet
+      tags: [Pets]
+      summary: Haustier aktualisieren
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetRequest"
+      responses:
+        "200":
+          description: Haustier aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deletePet
+      tags: [Pets]
+      summary: Haustier loeschen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Haustier geloescht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteApiResponse"
+  /api/pets/{id}/image:
+    post:
+      operationId: uploadPetImage
+      tags: [Pets]
+      summary: Haustierbild hochladen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Bild aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetApiResponse"
+  /api/marketplace/hosts:
+    get:
+      operationId: getMarketplaceHosts
+      tags: [Marketplace]
+      summary: Gastgeber abrufen
+      responses:
+        "200":
+          description: Gastgeber-Uebersicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/marketplace/hosts/search:
+    get:
+      operationId: searchMarketplaceHosts
+      tags: [Marketplace]
+      summary: Gastgeber nach Tierart und Postleitzahl suchen
+      parameters:
+        - name: species
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PetChoice"
+        - name: postalCode
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+        - name: zipCode
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+        - name: plz
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+      responses:
+        "200":
+          description: Gefilterte Gastgeber-Uebersicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostListApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/marketplace/filters:
+    get:
+      operationId: getMarketplaceFilters
+      tags: [Marketplace]
+      summary: Verfuegbare Marketplace-Filter abrufen
+      responses:
+        "200":
+          description: Dynamisch verfuegbare Filteroptionen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceFiltersApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 components:
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    BadRequest:
+      description: Ungueltige Anfrage.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorApiResponse"
+          examples:
+            validation:
+              $ref: "#/components/examples/ValidationError"
+    Unauthorized:
+      description: Authentifizierung erforderlich oder fehlgeschlagen.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorApiResponse"
+    Forbidden:
+      description: Zugriff verweigert.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorApiResponse"
+    NotFound:
+      description: Ressource nicht gefunden.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorApiResponse"
   schemas:
+    ApiMeta:
+      type: object
+      required: [timestamp, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+        total:
+          type: integer
+          nullable: true
+    FieldErrorDetail:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    ApiError:
+      type: object
+      required: [code, details]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_FAILED
+        details:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldErrorDetail"
+    EmptyApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: object
+              nullable: true
+    ErrorApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          required: [error]
+          properties:
+            success:
+              type: boolean
+              example: false
+            data:
+              type: object
+              nullable: true
+            error:
+              $ref: "#/components/schemas/ApiError"
+    ApiResponseBase:
+      type: object
+      required: [success, status, message, meta]
+      properties:
+        success:
+          type: boolean
+        status:
+          type: integer
+        message:
+          type: string
+        error:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ApiError"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+    AuthApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/AuthResponse"
+    SessionApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/SessionResponse"
+    UserApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/UserResponse"
+    PetApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/PetResponse"
+    PetListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/PetResponse"
+    HostListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/HostResponse"
+    MarketplaceFiltersApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/MarketplaceFiltersResponse"
+    MailExistsApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/MailExistsResponse"
+    DeleteApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/DeleteResponse"
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
     RegisterRequest:
       type: object
-      required:
-        - email
-        - password
-        - firstName
-        - lastName
-        - phone
-        - birthDate
-        - emergencyContact
-        - profilePicture
-        - bio
-        - role
+      required: [email, password, firstName, lastName, phone, birthDate, emergencyContact, profilePicture, bio, role]
       properties:
         email:
           type: string
@@ -118,27 +641,119 @@ components:
           type: string
         profilePicture:
           type: string
-          format: uri
         bio:
           type: string
         role:
           $ref: "#/components/schemas/UserRole"
-    User:
+        postalCode:
+          type: string
+          pattern: "^\\d{5}$"
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        acceptedPetSpecies:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetChoice"
+    UserUpdateRequest:
       type: object
-      required:
-        - id
-        - email
-        - firstName
-        - lastName
-        - phone
-        - birthDate
-        - emergencyContact
-        - profilePicture
-        - bio
-        - rating
-        - numberOfRatings
-        - role
-        - pets
+      required: [firstName, lastName, phone, birthDate, emergencyContact, profilePicture, bio]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+        bio:
+          type: string
+    UserPatchRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        emergencyContact:
+          type: string
+        profilePicture:
+          type: string
+        bio:
+          type: string
+    RoleUpdateRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          $ref: "#/components/schemas/UserRole"
+    PetRequest:
+      type: object
+      required: [name, species, breed, age, specialNeeds]
+      properties:
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/PetChoice"
+        breed:
+          type: string
+        age:
+          type: integer
+          format: int32
+          minimum: 0
+        specialNeeds:
+          type: string
+    AuthResponse:
+      type: object
+      required: [token, role]
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+    SessionResponse:
+      type: object
+      required: [loggedIn]
+      properties:
+        loggedIn:
+          type: boolean
+        email:
+          type: string
+          format: email
+          nullable: true
+    MailExistsResponse:
+      type: object
+      required: [exists]
+      properties:
+        exists:
+          type: boolean
+    DeleteResponse:
+      type: object
+      required: [deleted, id, message]
+      properties:
+        deleted:
+          type: boolean
+        id:
+          type: integer
+          format: int64
+        message:
+          type: string
+    UserResponse:
+      type: object
+      description: Oeffentliche User-Daten. passwordHash wird nie ausgeliefert.
+      required: [id, email, firstName, lastName, phone, birthDate, emergencyContact, profilePicture, bio, rating, numberOfRatings, role, pets]
       properties:
         id:
           type: integer
@@ -159,7 +774,6 @@ components:
           type: string
         profilePicture:
           type: string
-          format: uri
         bio:
           type: string
         rating:
@@ -170,25 +784,70 @@ components:
           format: int32
         role:
           $ref: "#/components/schemas/UserRole"
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        acceptedPetSpecies:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetChoice"
         pets:
           type: array
           items:
-            $ref: "#/components/schemas/Pet"
-    UserRole:
-      type: string
-      enum:
-        - PET_OWNER
-        - HOST
-    Pet:
+            $ref: "#/components/schemas/PetResponse"
+    HostResponse:
       type: object
-      description: Eigentuermer (owner) wird hier nicht serialisiert, um Zyklen zu vermeiden.
-      required:
-        - id
-        - name
-        - species
-        - breed
-        - age
-        - specialNeeds
+      required: [id, firstName, lastName, profilePicture, bio, rating, numberOfRatings, acceptedPetSpecies]
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstName:
+          type: string
+        lastName:
+          type: string
+        profilePicture:
+          type: string
+        bio:
+          type: string
+        rating:
+          type: number
+          format: float
+        numberOfRatings:
+          type: integer
+          format: int32
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        acceptedPetSpecies:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetChoice"
+    MarketplaceFiltersResponse:
+      type: object
+      required: [species, postalCodes, cities]
+      properties:
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetChoice"
+        postalCodes:
+          type: array
+          items:
+            type: string
+        cities:
+          type: array
+          items:
+            type: string
+    PetResponse:
+      type: object
+      required: [id, name, species, breed, age, specialNeeds, defaultImagePath]
       properties:
         id:
           type: integer
@@ -204,27 +863,113 @@ components:
           format: int32
         specialNeeds:
           type: string
+        imagePath:
+          type: string
+          nullable: true
+        defaultImagePath:
+          type: string
+    UserRole:
+      type: string
+      enum: [PET_OWNER, HOST, ADMIN]
     PetChoice:
       type: string
-      enum:
-        - DOG
-        - CAT
-        - RABBIT
-        - HAMSTER
-        - GUINEA_PIG
-        - PARROT
-        - BUDGIE
-        - CANARY
-        - TURTLE
-        - SNAKE
-        - LIZARD
-        - FERRET
-        - RAT
-        - MOUSE
-        - FISH
-        - HORSE
-        - DONKEY
-        - GOAT
-        - CHICKEN
-        - BIRD
-
+      enum: [DOG, CAT, RABBIT, HAMSTER, GUINEA_PIG, PARROT, BUDGIE, CANARY, TURTLE, SNAKE, LIZARD, FERRET, RAT, MOUSE, FISH, HORSE, DONKEY, GOAT, CHICKEN, BIRD]
+  examples:
+    AuthSuccess:
+      summary: Auth-Erfolg
+      value:
+        success: true
+        status: 200
+        message: Login successful.
+        data:
+          token: eyJhbGciOiJIUzI1NiJ9.example
+          role: PET_OWNER
+        error: null
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/auth/login
+    SessionSuccess:
+      summary: Sessionstatus
+      value:
+        success: true
+        status: 200
+        message: Session retrieved successfully.
+        data:
+          loggedIn: true
+          email: max.mustermann@example.com
+        error: null
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/auth/session
+    UserSuccess:
+      summary: User-Response
+      value:
+        success: true
+        status: 200
+        message: User retrieved successfully.
+        data:
+          id: 1
+          email: max.mustermann@example.com
+          firstName: Max
+          lastName: Mustermann
+          phone: "+49 123 456789"
+          birthDate: "1990-05-15"
+          emergencyContact: "+49 987 654321"
+          profilePicture: max.png
+          bio: Ich liebe Haustiere.
+          rating: 0.0
+          numberOfRatings: 0
+          role: PET_OWNER
+          pets: []
+        error: null
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/users/me
+    PetSuccess:
+      summary: Pet-Response
+      value:
+        success: true
+        status: 200
+        message: Pet created successfully.
+        data:
+          id: 10
+          name: Bello
+          species: DOG
+          breed: Labrador
+          age: 4
+          specialNeeds: Keine
+          imagePath: null
+          defaultImagePath: /images/pet_images/dog/
+        error: null
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/pets
+    DeleteSuccess:
+      summary: Delete-Response
+      value:
+        success: true
+        status: 200
+        message: Pet deleted successfully.
+        data:
+          deleted: true
+          id: 10
+          message: Pet deleted successfully.
+        error: null
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/pets/10
+    ValidationError:
+      summary: Validierungsfehler
+      value:
+        success: false
+        status: 400
+        message: Validation failed.
+        data: null
+        error:
+          code: VALIDATION_FAILED
+          details:
+            - field: email
+              message: must be a well-formed email address
+        meta:
+          timestamp: "2026-05-06T19:30:00Z"
+          path: /api/auth/register

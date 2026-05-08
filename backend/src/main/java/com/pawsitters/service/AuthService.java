@@ -1,5 +1,7 @@
 package com.pawsitters.service;
 
+import com.pawsitters.exception.NotFoundException;
+import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
@@ -9,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -39,7 +42,10 @@ public class AuthService {
                                String emergencyContact,
                                String profilePicture,
                                String bio,
-                               UserRole role) {
+                               UserRole role,
+                               String postalCode,
+                               String city,
+                               Set<PetChoice> acceptedPetSpecies) {
         User user = userService.createUser(
                 email,
                 rawPassword,
@@ -50,7 +56,10 @@ public class AuthService {
                 emergencyContact,
                 profilePicture,
                 bio,
-                role
+                role,
+                postalCode,
+                city,
+                acceptedPetSpecies
         );
         return toAuthResult(user);
     }
@@ -59,7 +68,7 @@ public class AuthService {
         User user;
         try {
             user = userService.findByEmail(email);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundException e) {
             throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
@@ -70,12 +79,11 @@ public class AuthService {
         return toAuthResult(user);
     }
 
-    public void logout(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
             return;
         }
 
-        String token = authorizationHeader.substring(7);
         if (!jwtService.isTokenValid(token)) {
             return;
         }

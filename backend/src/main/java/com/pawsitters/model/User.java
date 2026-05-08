@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users") // "user" ist ein reserviertes SQL-Wort!
@@ -51,6 +53,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    private String postalCode;
+
+    private String city;
+
+    @ElementCollection(targetClass = PetChoice.class)
+    @CollectionTable(name = "user_accepted_pet_species", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "species", nullable = false)
+    private Set<PetChoice> acceptedPetSpecies = new LinkedHashSet<>();
+
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Pet> pets = new ArrayList<>();
@@ -83,6 +95,12 @@ public class User {
 
     public UserRole getRole() { return role; }
 
+    public String getPostalCode() { return postalCode; }
+
+    public String getCity() { return city; }
+
+    public Set<PetChoice> getAcceptedPetSpecies() { return acceptedPetSpecies; }
+
     public List<Pet> getPets() { return pets; }
 
     // ===== SETTER =====
@@ -112,6 +130,14 @@ public class User {
     public void setNumberOfRatings(Integer numberOfRatings) { this.numberOfRatings = numberOfRatings; }
 
     public void setRole(UserRole role) { this.role = role; }
+
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+
+    public void setCity(String city) { this.city = city; }
+
+    public void setAcceptedPetSpecies(Set<PetChoice> acceptedPetSpecies) {
+        this.acceptedPetSpecies = acceptedPetSpecies == null ? new LinkedHashSet<>() : acceptedPetSpecies;
+    }
 
     public void setPets(List<Pet> pets) { this.pets = pets; }
 

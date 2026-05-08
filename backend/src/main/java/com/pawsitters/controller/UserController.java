@@ -1,20 +1,36 @@
 package com.pawsitters.controller;
 
+import com.pawsitters.dto.ApiResponse;
+import com.pawsitters.dto.DeleteResponse;
+import com.pawsitters.dto.MailExistsResponse;
 import com.pawsitters.dto.RegisterRequest;
 import com.pawsitters.dto.RoleUpdateRequest;
 import com.pawsitters.dto.UserPatchRequest;
+import com.pawsitters.dto.UserResponse;
 import com.pawsitters.dto.UserUpdateRequest;
 import com.pawsitters.model.User;
 import com.pawsitters.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,165 +50,176 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
-     * Registriert einen neuen User.
-     * POST /api/users/register
-     */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            User user = userService.createUser(
-                    request.email(),
-                    request.password(),
-                    request.firstName(),
-                    request.lastName(),
-                    request.phone(),
-                    request.birthDate(),
-                    request.emergencyContact(),
-                    request.profilePicture(),
-                    request.bio(),
-                    request.role()
-            );
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody RegisterRequest request,
+                                                              HttpServletRequest servletRequest) {
+        User user = userService.createUser(
+                request.email(),
+                request.password(),
+                request.firstName(),
+                request.lastName(),
+                request.phone(),
+                request.birthDate(),
+                request.emergencyContact(),
+                request.profilePicture(),
+                request.bio(),
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User registered successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Gibt einen User anhand seiner ID zurück.
-     * GET /api/users/{id}
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable Long id,
+                                                             HttpServletRequest servletRequest) {
         User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User retrieved successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
     @GetMapping("/mailExists")
-    public ResponseEntity<?> mailExists(@RequestParam @NotBlank @Email String mail) {
-        boolean user = userService.existsByEmail(mail);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ApiResponse<MailExistsResponse>> mailExists(@RequestParam @NotBlank @Email String mail,
+                                                                      HttpServletRequest servletRequest) {
+        boolean exists = userService.existsByEmail(mail);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Mail existence checked successfully.",
+                new MailExistsResponse(exists),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Gibt den aktuellen angemeldeten User zurück.
-     * GET /api/users/me
-     */
     @GetMapping("/me")
-    public ResponseEntity<?> getMe(Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserResponse>> getMe(Authentication authentication,
+                                                           HttpServletRequest servletRequest) {
         User user = userService.findByEmail(authentication.getName());
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Current user retrieved successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Aktualisiert den User vollständig (PUT).
-     * PUT /api/users/{id}
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id,
-                                        @Valid @RequestBody UserUpdateRequest request,
-                                        Authentication authentication) {
-        try {
-            User user = userService.updateUser(
-                    id,
-                    authentication.getName(),
-                    request.firstName(),
-                    request.lastName(),
-                    request.phone(),
-                    request.birthDate(),
-                    request.emergencyContact(),
-                    request.profilePicture(),
-                    request.bio()
-            );
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@PathVariable Long id,
+                                                                @Valid @RequestBody UserUpdateRequest request,
+                                                                Authentication authentication,
+                                                                HttpServletRequest servletRequest) {
+        User user = userService.updateUser(
+                id,
+                authentication.getName(),
+                request.firstName(),
+                request.lastName(),
+                request.phone(),
+                request.birthDate(),
+                request.emergencyContact(),
+                request.profilePicture(),
+                request.bio()
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User updated successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Aktualisiert den User partiell (PATCH).
-     * PATCH /api/users/{id}
-     */
     @PatchMapping("/{id}")
-    public ResponseEntity<?> patchUser(@PathVariable Long id,
-                                       @Valid @RequestBody UserPatchRequest request,
-                                       Authentication authentication) {
-        try {
-            User user = userService.patchUser(
-                    id,
-                    authentication.getName(),
-                    request.firstName(),
-                    request.lastName(),
-                    request.phone(),
-                    request.birthDate(),
-                    request.emergencyContact(),
-                    request.profilePicture(),
-                    request.bio()
-            );
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<UserResponse>> patchUser(@PathVariable Long id,
+                                                               @Valid @RequestBody UserPatchRequest request,
+                                                               Authentication authentication,
+                                                               HttpServletRequest servletRequest) {
+        User user = userService.patchUser(
+                id,
+                authentication.getName(),
+                request.firstName(),
+                request.lastName(),
+                request.phone(),
+                request.birthDate(),
+                request.emergencyContact(),
+                request.profilePicture(),
+                request.bio()
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User patched successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Löscht einen User.
-     * DELETE /api/users/{id}
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
-        try {
-            userService.deleteUser(id, authentication.getName());
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<DeleteResponse>> deleteUser(@PathVariable Long id,
+                                                                  Authentication authentication,
+                                                                  HttpServletRequest servletRequest) {
+        userService.deleteUser(id, authentication.getName());
+        String message = "User wurde erfolgreich geloescht.";
+        DeleteResponse deleted = new DeleteResponse(true, id, message);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                message,
+                deleted,
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Aktualisiert die Benutzerrolle (Tierhalter ↔ Gastgeber).
-     * PATCH /api/users/{id}/roles
-     */
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/roles")
-    public ResponseEntity<?> updateRole(@PathVariable Long id,
-                                        @Valid @RequestBody RoleUpdateRequest request) {
-        try {
-            User user = userService.updateRole(id, request.role());
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<UserResponse>> updateRole(@PathVariable Long id,
+                                                                @Valid @RequestBody RoleUpdateRequest request,
+                                                                HttpServletRequest servletRequest) {
+        User user = userService.updateRole(id, request.role());
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User role updated successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
-    /**
-     * Lädt ein Profilbild hoch.
-     * POST /api/users/{id}/profile-image
-     */
     @PostMapping("/{id}/profile-image")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id,
-                                                 @RequestParam("file") MultipartFile file,
-                                                 Authentication authentication) {
-        try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Datei ist leer.");
-            }
+    public ResponseEntity<ApiResponse<UserResponse>> uploadProfileImage(@PathVariable Long id,
+                                                                        @RequestParam(value = "file", required = false) MultipartFile file,
+                                                                        @RequestParam(value = "image", required = false) MultipartFile image,
+                                                                        Authentication authentication,
+                                                                        HttpServletRequest servletRequest) {
+        MultipartFile upload = file != null ? file : image;
+        if (upload == null || upload.isEmpty()) {
+            throw new IllegalArgumentException("Datei ist leer.");
+        }
 
-            // Datei speichern
-            String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
+        try {
+            String filename = UUID.randomUUID() + "-" + upload.getOriginalFilename();
             Path uploadPath = Paths.get(uploadDir);
             Files.createDirectories(uploadPath);
-            Files.write(uploadPath.resolve(filename), file.getBytes());
+            Files.write(uploadPath.resolve(filename), upload.getBytes());
 
-            // User aktualisieren
             User user = userService.updateProfileImage(id, authentication.getName(), filename);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(ApiResponse.success(
+                    HttpStatus.OK,
+                    "Profile image uploaded successfully.",
+                    UserResponse.from(user),
+                    servletRequest.getRequestURI()
+            ));
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("Fehler beim Speichern der Datei: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Fehler beim Speichern der Datei: " + e.getMessage(),
+                    e
+            );
         }
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,12 +14,19 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final ApiAuthenticationEntryPoint authenticationEntryPoint;
+    private final ApiAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          ApiAuthenticationEntryPoint authenticationEntryPoint,
+                          ApiAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -27,10 +35,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // JWT braucht kein CSRF
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // kein Session-State
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll() // Login/Register offen
-                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll() // H2 offen
-                        .anyRequest().authenticated() // alles andere geschützt
+                        // Öffentliche Auth-Endpoints
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/logout")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/session")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/users/mailExists")).permitAll()
+                        // H2 Konsole Zugang
+                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                        // Alle anderen Requests brauchen Authentifizierung
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
