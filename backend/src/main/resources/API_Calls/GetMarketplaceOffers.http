@@ -1,0 +1,3 @@
+### Get published marketplace offers
+GET {{baseUrl}}/api/marketplace/offers
+Authorization: Bearer {{authToken}}

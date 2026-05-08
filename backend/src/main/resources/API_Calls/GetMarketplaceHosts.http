@@ -1,0 +1,5 @@
+### Gastgeber abrufen
+GET {{baseUrl}}/api/marketplace/hosts
+Authorization: Bearer {{token}}
+
+###

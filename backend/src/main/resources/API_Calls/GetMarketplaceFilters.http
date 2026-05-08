@@ -1,0 +1,5 @@
+### Marketplace-Filter abrufen
+GET {{baseUrl}}/api/marketplace/filters
+Authorization: Bearer {{token}}
+
+###
