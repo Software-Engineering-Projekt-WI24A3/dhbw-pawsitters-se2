@@ -1,0 +1,3 @@
+### Withdraw offer
+PATCH {{baseUrl}}/api/offers/1/withdraw
+Authorization: Bearer {{token}}

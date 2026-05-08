@@ -1,0 +1,20 @@
+### Create offer draft
+POST {{baseUrl}}/api/offers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Hundebetreuung Deluxe",
+  "description": "Tagesbetreuung inklusive Spaziergang, Fuetterung und Ruhezeiten.",
+  "pricePerDay": 39.90,
+  "acceptedPetSpecies": ["DOG"],
+  "services": ["Spaziergang", "Fuetterung", "Tagesbetreuung"]
+}
+
+> {%
+    client.global.set("offerId", response.body.data.id);
+%}
+
+### Get created offer
+GET {{baseUrl}}/api/offers/1
+Authorization: Bearer {{token}}

@@ -1,0 +1,3 @@
+### Publish offer
+PATCH {{baseUrl}}/api/offers/1/publish
+Authorization: Bearer {{token}}

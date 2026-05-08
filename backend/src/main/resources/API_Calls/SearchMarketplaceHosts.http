@@ -1,0 +1,11 @@
+### Gastgeber nach Tierart und Postleitzahl suchen
+GET {{baseUrl}}/api/marketplace/hosts/search?species=DOG&postalCode=68159
+Authorization: Bearer {{token}}
+
+###
+
+### Gastgeber mit PLZ-Alias suchen
+GET {{baseUrl}}/api/marketplace/hosts/search?species=CAT&plz=69115
+Authorization: Bearer {{token}}
+
+###

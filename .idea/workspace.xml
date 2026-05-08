@@ -4,6 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
     <list default="true" id="65b88918-6401-4dc0-bf04-bf8797f1ec51" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Projektstart" beforeDir="false" afterPath="$PROJECT_DIR$/Projektstart" afterDir="false" />
@@ -13,6 +14,32 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/niklasulbrich/Desktop/dhbw_projekt" value="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
+      <entry key="_/Users/niklasulbrich/Desktop/dhbw_se-projekt" value="3COcM1TZA3XHi3Ot37fwiS8brOF" />
+      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2" value="3CRYvqaA54AvrSJdBhLrsxpuaRw" />
+      <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2/backend" value="3DLjL6mu7J2NWFpGOQq4soiW8QX" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="agent-panel" value="GPT-5.2-Codex" />
+      <entry key="chat-panel" value="GPT-5.2-Codex" />
+    </selectedModels>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="HTTP Public Environment File" />
+        <option value="HTTP Request" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -21,9 +48,165 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;xJvstvs&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git&quot;,
+    &quot;accountId&quot;: &quot;74660bd1-6a97-45d8-be70-0e7c1701c587&quot;
+  }
+}</component>
+  <component name="HttpClientOnboardingState">{
+  &quot;isOnboardingCommentShown&quot;: true
+}</component>
   <component name="HttpClientSelectedEnvironments">
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUser.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUserRoles.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdatePet.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UpdateUser.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadPetImage.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" environment="dev" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="customMavenHome" value="C:\Users\krahl\Downloads\apache-maven-3.9.14" />
+        <option name="mavenHomeTypeForPersistence" value="CUSTOM" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="MavenRunner">
+    <option name="delegateBuildToMaven" value="true" />
+    <option name="jreName" value="openjdk-25" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;HTTP Request.All in AuthLogin.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in AuthLogout.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in AuthRegister.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in AuthSession.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in DeleteUser.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in GetUserByID.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in RegisterUser.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.All in getuserbyid.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogin | Login (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogout | Logout (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthRegister | Registrieren (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthSession | Sessionstatus (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreatePet | Haustier erstellen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.DeleteUser | Benutzer loeschen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetCurrentUser | Eigene Benutzerdaten abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetMarketplaceHosts | Gastgeber abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetPets | Haustiere abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetUserByID | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetUserByID | Beispiel Request.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.MailExists | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.MailExists | E-Mail pruefen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.PatchUser | Benutzer teilaktualisieren (PATCH).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.PatchUserRoles | Benutzerrolle aendern.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.SearchMarketplaceHosts | #2.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.UpdatePet | Haustier aktualisieren.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.UpdateUser | Benutzer aktualisieren (PUT).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.UploadPetImage | Haustierbild hochladen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.getuserbyid | Beispiel Request.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.AuthIntegrationTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.JwtServiceTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.PetIntegrationTest.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.PawsittersApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pawsitters [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pawsitters [install,--non-recursive].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pawsitters [install].executor&quot;: &quot;Run&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;New/updated database configurations found&quot;,
+    &quot;Notification.DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck&quot;,
+    &quot;Shell Script.Projektstart.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PawsittersApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;j__feature__marketpost&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;rest.client.default.execution.environment&quot;: &quot;dev&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.LLMThirdPartyAiProvidersConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/niklasulbrich/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;h2&quot;
+    ],
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
+      &quot;H2&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/frontend/src/media" />
+      <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.PawsittersApplication">
+    <configuration name="AuthRegister | Registrieren (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" executionIdentifier="Registrieren (Auth)" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="GetMarketplaceFilters | Marketplace-Filter abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" executionIdentifier="Marketplace-Filter abrufen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="GetMarketplaceHosts | Gastgeber abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" executionIdentifier="Gastgeber abrufen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="Gastgeber nach Tierart und Postleitzahl suchen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="SearchMarketplaceHosts | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="#2" index="2" runType="Run single request">
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -59,14 +242,122 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="HTTP Request.SearchMarketplaceHosts | #2" />
+        <item itemvalue="HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" />
+        <item itemvalue="HTTP Request.GetMarketplaceHosts | Gastgeber abrufen" />
+        <item itemvalue="HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen" />
+        <item itemvalue="HTTP Request.AuthRegister | Registrieren (Auth)" />
         <item itemvalue="Shell Script.Projektstart" />
       </list>
     </recent_temporary>
   </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="" />
+      <created>1776253936853</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776253936853</updated>
+      <workItem from="1776253937958" duration="18000" />
+      <workItem from="1776260005699" duration="13912000" />
+      <workItem from="1776341609724" duration="5718000" />
+      <workItem from="1776350058328" duration="5134000" />
+      <workItem from="1776412419552" duration="9551000" />
+      <workItem from="1776458488018" duration="5183000" />
+      <workItem from="1776703128940" duration="455000" />
+      <workItem from="1776886188541" duration="1227000" />
+      <workItem from="1776965326628" duration="1958000" />
+      <workItem from="1777145461181" duration="2722000" />
+      <workItem from="1777291810767" duration="1147000" />
+      <workItem from="1777553794592" duration="1341000" />
+      <workItem from="1778068149833" duration="238000" />
+      <workItem from="1778068511967" duration="187000" />
+      <workItem from="1778068780073" duration="1271000" />
+      <workItem from="1778071626409" duration="103000" />
+      <workItem from="1778072069127" duration="3880000" />
+      <workItem from="1778081885180" duration="3376000" />
+      <workItem from="1778144058606" duration="1594000" />
+      <workItem from="1778226595943" duration="775000" />
+    </task>
+    <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
+      <option name="closed" value="true" />
+      <created>1776966706173</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776966706173</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat: implement authentication service with registration and login functionality - userstory finalisierung">
+      <option name="closed" value="true" />
+      <created>1777146680398</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777146680398</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: implement logout functionality with token revocation and session invalidation">
+      <option name="closed" value="true" />
+      <created>1777147697912</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1777147697912</updated>
+    </task>
+    <task id="LOCAL-00004" summary="api fixxes">
+      <option name="closed" value="true" />
+      <created>1778075656959</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1778075656959</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
+      <option name="closed" value="true" />
+      <created>1778096721400</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1778096721401</updated>
+    </task>
+    <task id="LOCAL-00006" summary="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows.">
+      <option name="closed" value="true" />
+      <created>1778097031008</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1778097031008</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test">
+      <option name="closed" value="true" />
+      <created>1778145757113</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1778145757113</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat: add JWT authentication with registration and login endpoints" />
+    <MESSAGE value="feat: implement authentication service with registration and login functionality - userstory finalisierung" />
+    <MESSAGE value="feat: implement logout functionality with token revocation and session invalidation" />
+    <MESSAGE value="api fixxes" />
+    <MESSAGE value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
+    <MESSAGE value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
     <MESSAGE value="added the &quot;/repository/api&quot; underpage" />
     <option name="LAST_COMMIT_MESSAGE" value="added the &quot;/repository/api&quot; underpage" />
   </component>
