@@ -58,6 +58,15 @@ class OfferIntegrationTest {
                 .get("id")
                 .asLong();
 
+        mockMvc.perform(get("/api/offers/{id}", offerId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Offer retrieved successfully."))
+                .andExpect(jsonPath("$.data.id").value(offerId))
+                .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"));
+
         assertMarketplaceDoesNotContain(token, title);
 
         mockMvc.perform(patch("/api/offers/{id}/publish", offerId)

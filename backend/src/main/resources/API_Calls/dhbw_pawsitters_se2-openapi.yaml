@@ -14,8 +14,10 @@ tags:
     description: Endpunkte zur Benutzerverwaltung.
   - name: Pets
     description: Endpunkte zur Haustierverwaltung.
+  - name: Offers
+    description: Endpunkte zum Erstellen und Verwalten von Betreuungspaketen.
   - name: Marketplace
-    description: Endpunkte zur Gastgeber-Uebersicht, Suche und Filteroptionen.
+    description: Endpunkte zur Gastgeber- und Angebotsuebersicht, Suche und Filteroptionen.
 paths:
   /api/auth/register:
     post:
@@ -366,6 +368,82 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PetApiResponse"
+  /api/offers:
+    post:
+      operationId: createOffer
+      tags: [Offers]
+      summary: Betreuungspaket als Entwurf erstellen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferCreateRequest"
+      responses:
+        "200":
+          description: Angebot erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/offers/{id}:
+    get:
+      operationId: getOffer
+      tags: [Offers]
+      summary: Eigenes Betreuungspaket abrufen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Angebot gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/offers/{id}/publish:
+    patch:
+      operationId: publishOffer
+      tags: [Offers]
+      summary: Betreuungspaket veroeffentlichen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Angebot veroeffentlicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/offers/{id}/withdraw:
+    patch:
+      operationId: withdrawOffer
+      tags: [Offers]
+      summary: Betreuungspaket zurueckziehen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Angebot zurueckgezogen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/marketplace/hosts:
     get:
       operationId: getMarketplaceHosts
@@ -378,6 +456,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HostListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/marketplace/offers:
+    get:
+      operationId: getMarketplaceOffers
+      tags: [Marketplace]
+      summary: Veroeffentlichte Betreuungspakete abrufen
+      responses:
+        "200":
+          description: Veroeffentlichte Angebote.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferListApiResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
   /api/marketplace/hosts/search:
@@ -569,6 +661,13 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/PetResponse"
+    OfferApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/OfferResponse"
     PetListApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -578,6 +677,15 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/PetResponse"
+    OfferListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/OfferResponse"
     HostListApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -715,6 +823,30 @@ components:
           minimum: 0
         specialNeeds:
           type: string
+    OfferCreateRequest:
+      type: object
+      required: [title, description, pricePerDay, acceptedPetSpecies, services]
+      properties:
+        title:
+          type: string
+          example: Hundebetreuung Deluxe
+        description:
+          type: string
+          maxLength: 1000
+        pricePerDay:
+          type: number
+          format: double
+          minimum: 0.01
+        acceptedPetSpecies:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PetChoice"
+        services:
+          type: array
+          minItems: 1
+          items:
+            type: string
     AuthResponse:
       type: object
       required: [token, role]
@@ -845,6 +977,37 @@ components:
           type: array
           items:
             type: string
+    OfferResponse:
+      type: object
+      required: [id, hostId, hostFirstName, hostLastName, title, description, pricePerDay, acceptedPetSpecies, services, status]
+      properties:
+        id:
+          type: integer
+          format: int64
+        hostId:
+          type: integer
+          format: int64
+        hostFirstName:
+          type: string
+        hostLastName:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        pricePerDay:
+          type: number
+          format: double
+        acceptedPetSpecies:
+          type: array
+          items:
+            $ref: "#/components/schemas/PetChoice"
+        services:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: "#/components/schemas/OfferStatus"
     PetResponse:
       type: object
       required: [id, name, species, breed, age, specialNeeds, defaultImagePath]
@@ -871,6 +1034,10 @@ components:
     UserRole:
       type: string
       enum: [PET_OWNER, HOST, ADMIN]
+    OfferStatus:
+      type: string
+      description: DRAFT entspricht Entwurf, PUBLISHED entspricht Veroeffentlicht.
+      enum: [DRAFT, PUBLISHED]
     PetChoice:
       type: string
       enum: [DOG, CAT, RABBIT, HAMSTER, GUINEA_PIG, PARROT, BUDGIE, CANARY, TURTLE, SNAKE, LIZARD, FERRET, RAT, MOUSE, FISH, HORSE, DONKEY, GOAT, CHICKEN, BIRD]

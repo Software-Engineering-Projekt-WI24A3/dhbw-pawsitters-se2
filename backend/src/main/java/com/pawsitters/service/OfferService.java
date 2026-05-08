@@ -56,6 +56,11 @@ public class OfferService {
         return offerRepository.save(offer);
     }
 
+    @Transactional(readOnly = true)
+    public Offer getOfferForHostEmail(Long offerId, String hostEmail) {
+        return getOwnedOffer(offerId, hostEmail);
+    }
+
     @Transactional
     public Offer withdrawOfferForHostEmail(Long offerId, String hostEmail) {
         Offer offer = getOwnedOffer(offerId, hostEmail);
