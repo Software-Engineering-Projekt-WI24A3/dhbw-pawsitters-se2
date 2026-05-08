@@ -117,3 +117,47 @@ test('createActivitySeries applies tie-breaking for duplicate max counts', () =>
   assert.notEqual(maxBars[0].height, maxBars[1].height);
   assert.equal(Math.max(...maxBars.map((entry) => entry.height)), 100);
 });
+
+test('parseOpenApiYamlSnapshot extracts dynamic operations and tags', () => {
+  const yaml = `
+openapi: 3.0.3
+info:
+  title: Demo API
+  version: 2.1.0
+paths:
+  /pets:
+    get:
+      summary: List pets
+      tags:
+        - Catalog
+      responses:
+        "200":
+          description: ok
+    post:
+      operationId: createPet
+      requestBody:
+        required: true
+      responses:
+        "201":
+          description: created
+  /pets/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+      responses:
+        "200":
+          description: ok
+`;
+
+  const snapshot = __repositorySnapshotInternals.parseOpenApiYamlSnapshot(yaml, 'demo.yaml');
+
+  assert.equal(snapshot.info.title, 'Demo API');
+  assert.equal(snapshot.info.version, '2.1.0');
+  assert.equal(snapshot.summary.operationCount, 3);
+  assert.equal(snapshot.summary.pathCount, 2);
+  assert.equal(snapshot.summary.methodCount, 2);
+  assert.ok(snapshot.summary.tagCount >= 1);
+  assert.equal(snapshot.operations.find((operation) => operation.operationId === 'createPet')?.requestBodyRequired, true);
+  assert.equal(snapshot.operations.find((operation) => operation.path === '/pets/{id}')?.pathParamCount, 1);
+});

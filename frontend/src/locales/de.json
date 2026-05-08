@@ -12,6 +12,10 @@
       "title": "Pawsitters | Repository | Playwright-Tests",
       "description": "Playwright-Kontrollraum mit Testlauf, Live-Logs und Status pro E2E-Test."
     },
+    "repositoryApi": {
+      "title": "Pawsitters | Repository | API-Übersicht",
+      "description": "Dynamische API-Übersicht direkt aus der OpenAPI-Datei mit Endpunkten, Methoden und Statuscodes."
+    },
     "repositoryKanban": {
       "title": "Pawsitters | Repository | Kanban",
       "description": "Reduzierte Kanban-Unterseite mit farbcodierten Autoren und Issue-Informationen."
@@ -54,6 +58,7 @@
     "repository": "Repository",
     "repositoryGit": "Git",
     "repositoryPlaywright": "Playwright",
+    "repositoryApi": "API-Übersicht",
     "repositoryBoard": "Kanban Board",
     "ariaLocale": "Sprachauswahl",
     "ariaQuickMenu": "Schnellmenü",
@@ -121,6 +126,23 @@
         "year": "Dieses Jahr"
       },
       "recent": "Neueste Commits"
+    },
+    "api": {
+      "label": "API-Übersicht",
+      "source": "Quelle",
+      "parameters": "Parameter",
+      "responses": "Status",
+      "requestBody": "Request Body",
+      "empty": "Keine Endpunkte gefunden.",
+      "noSummary": "Keine Beschreibung vorhanden.",
+      "tagFallback": "Allgemein",
+      "parseError": "OpenAPI-Datei konnte nicht gelesen werden",
+      "metrics": {
+        "operations": "Endpunkte",
+        "paths": "Pfade",
+        "methods": "Methoden",
+        "tags": "Tags"
+      }
     },
     "board": {
       "label": "Kanban Board",

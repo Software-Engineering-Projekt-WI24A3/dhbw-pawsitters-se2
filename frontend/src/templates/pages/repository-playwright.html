@@ -19,6 +19,14 @@
                             <span th:text="#{repository.playwright.label}">repository.playwright.label</span>
                         </a>
                         <a class="repository_switch__button"
+                           th:href="${repositoryApiPath}">
+                            <img class="repository_switch__icon"
+                                 src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.api.label}">repository.api.label</span>
+                        </a>
+                        <a class="repository_switch__button"
                            th:href="${repositoryGitPath}">
                             <img class="repository_switch__icon"
                                  src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"

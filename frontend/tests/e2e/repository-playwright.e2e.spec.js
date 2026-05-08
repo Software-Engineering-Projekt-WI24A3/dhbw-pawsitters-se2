@@ -83,8 +83,9 @@ test.describe('Repository playwright view', () => {
 
     await expect(page).toHaveURL(/\/repository\/playwright$/);
     await expect(page.locator('.repository_switch__button').nth(0)).toContainText(token('de', 'repository.playwright.label'));
-    await expect(page.locator('.repository_switch__button').nth(1)).toContainText(token('de', 'repository.git.label'));
-    await expect(page.locator('.repository_switch__button').nth(2)).toContainText(token('de', 'repository.board.label'));
+    await expect(page.locator('.repository_switch__button').nth(1)).toContainText(token('de', 'repository.api.label'));
+    await expect(page.locator('.repository_switch__button').nth(2)).toContainText(token('de', 'repository.git.label'));
+    await expect(page.locator('.repository_switch__button').nth(3)).toContainText(token('de', 'repository.board.label'));
     await expect(page.locator('.repository_switch__button--active')).toContainText(token('de', 'repository.playwright.label'));
     await expect(page.getByRole('heading', { name: token('de', 'repository.playwright.title') })).toBeVisible();
     await expect(page.getByRole('button', { name: token('de', 'repository.playwright.run') })).toBeVisible();
@@ -117,12 +118,16 @@ test.describe('Repository playwright view', () => {
     });
     expect(switchLinks).toEqual([
       '/repository/playwright',
+      '/repository/api',
       '/repository/git',
       '/repository/kanban'
     ]);
 
     await page.getByRole('link', { name: token('de', 'repository.git.label') }).click();
     await expect(page).toHaveURL(/\/repository\/git$/);
+
+    await page.getByRole('link', { name: token('de', 'repository.api.label') }).click();
+    await expect(page).toHaveURL(/\/repository\/api$/);
 
     await page.getByRole('link', { name: token('de', 'repository.board.label') }).click();
     await expect(page).toHaveURL(/\/repository\/kanban$/);

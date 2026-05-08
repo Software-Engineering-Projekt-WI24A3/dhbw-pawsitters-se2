@@ -12,6 +12,10 @@
       "title": "Pawsitters | Repozitoriu | Teste Playwright",
       "description": "Centru de control Playwright cu rulare din browser, loguri live și stare pentru fiecare test E2E."
     },
+    "repositoryApi": {
+      "title": "Pawsitters | Repozitoriu | Prezentare API",
+      "description": "Prezentare API dinamică din fișierul OpenAPI cu endpoint-uri, metode și coduri de răspuns."
+    },
     "repositoryKanban": {
       "title": "Pawsitters | Repozitoriu | Kanban",
       "description": "Pagină Kanban redusă cu responsabili colorați și detalii despre issue-uri."
@@ -54,6 +58,7 @@
     "repository": "Repozitoriu",
     "repositoryGit": "Git",
     "repositoryPlaywright": "Playwright",
+    "repositoryApi": "Prezentare API",
     "repositoryBoard": "Panou Kanban",
     "ariaLocale": "Selector de limbă",
     "ariaQuickMenu": "Meniu rapid",
@@ -121,6 +126,23 @@
         "year": "Anul acesta"
       },
       "recent": "Ultimele commit-uri"
+    },
+    "api": {
+      "label": "Prezentare API",
+      "source": "Sursă",
+      "parameters": "Parametri",
+      "responses": "Status",
+      "requestBody": "Request Body",
+      "empty": "Nu au fost găsite endpoint-uri.",
+      "noSummary": "Nu există descriere disponibilă.",
+      "tagFallback": "General",
+      "parseError": "Fișierul OpenAPI nu a putut fi procesat",
+      "metrics": {
+        "operations": "Endpoint-uri",
+        "paths": "Căi",
+        "methods": "Metode",
+        "tags": "Tag-uri"
+      }
     },
     "board": {
       "label": "Panou Kanban",

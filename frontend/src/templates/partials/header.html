@@ -299,6 +299,15 @@
                             <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
                         </a>
                         <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryApi'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryApiPath}">
+                            <img class="repo_menu__item-icon"
+                                 src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryApi}">nav.repositoryApi</span>
+                        </a>
+                        <a class="repo_menu__item"
                            th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
                            th:href="${repositoryGitPath}">
                             <img class="repo_menu__item-icon"
@@ -346,6 +355,16 @@
                                  alt=""
                                  aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
+                        </a>
+                        <a class="repo_menu__item"
+                           th:classappend="${currentPageKey == 'repositoryApi'} ? ' repo_menu__item--active' : ''"
+                           th:href="${repositoryApiPath}"
+                           @click="closeMenu()">
+                            <img class="repo_menu__item-icon"
+                                 src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.repositoryApi}">nav.repositoryApi</span>
                         </a>
                         <a class="repo_menu__item"
                            th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"

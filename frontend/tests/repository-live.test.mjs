@@ -22,6 +22,7 @@ test('live repository snapshot exposes real git and board data', async () => {
   const totalCriteria = snapshot.board.columns.reduce((total, column) => {
     return total + column.cards.reduce((columnTotal, card) => columnTotal + card.criteria.length, 0);
   }, 0);
+  const totalApiOperationsByTag = snapshot.api.tags.reduce((total, tag) => total + tag.operations.length, 0);
 
   assert.ok(snapshot.repository.owner.length > 0);
   assert.ok(snapshot.repository.name.length > 0);
@@ -48,15 +49,27 @@ test('live repository snapshot exposes real git and board data', async () => {
   assert.ok(snapshot.git.branchGraphs[snapshot.git.defaultBranch]);
   assert.ok(snapshot.git.branchGraphs[snapshot.git.defaultBranch].graphImport.length > 0);
   assert.ok(snapshot.git.branchGraphs[snapshot.git.defaultBranch].recentCommits.length > 0);
+
+  assert.ok(snapshot.api.source.endsWith('dhbw_pawsitters_se2-openapi.yaml'));
+  assert.ok(snapshot.api.summary.operationCount > 0);
+  assert.ok(snapshot.api.summary.pathCount > 0);
+  assert.ok(snapshot.api.summary.methodCount > 0);
+  assert.ok(snapshot.api.summary.tagCount > 0);
+  assert.equal(snapshot.api.summary.operationCount, snapshot.api.operations.length);
+  assert.equal(snapshot.api.summary.operationCount, totalApiOperationsByTag);
+  assert.ok(snapshot.api.methods.every((method) => method.count > 0));
 });
 
 test('repository pages do not embed static snapshot payloads', async () => {
   const gitTemplate = await readFile(path.join(rootDir, 'src/templates/pages/repository-git.html'), 'utf8');
+  const apiTemplate = await readFile(path.join(rootDir, 'src/templates/pages/repository-api.html'), 'utf8');
   const kanbanTemplate = await readFile(path.join(rootDir, 'src/templates/pages/repository-kanban.html'), 'utf8');
 
   assert.ok(gitTemplate.includes('data-repository-bootstrap hidden>{}</div>'));
+  assert.ok(apiTemplate.includes('data-repository-bootstrap hidden>{}</div>'));
   assert.ok(kanbanTemplate.includes('data-repository-bootstrap hidden>{}</div>'));
   assert.ok(!gitTemplate.includes('repositorySnapshotJson'));
+  assert.ok(!apiTemplate.includes('repositorySnapshotJson'));
   assert.ok(!kanbanTemplate.includes('repositorySnapshotJson'));
 });
 

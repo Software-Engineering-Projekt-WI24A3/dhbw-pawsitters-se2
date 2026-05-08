@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -37,6 +38,9 @@ const COLUMN_PALETTE = {
   docs: { accent: '#0F766E', soft: 'rgba(15, 118, 110, 0.06)', border: 'rgba(15, 118, 110, 0.14)', ink: '#0F766E' },
   misc: { accent: '#4B5563', soft: 'rgba(75, 85, 99, 0.06)', border: 'rgba(75, 85, 99, 0.14)', ink: '#4B5563' }
 };
+const OPENAPI_RELATIVE_PATH = 'backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml';
+const HTTP_METHOD_ORDER = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'TRACE'];
+const HTTP_METHODS = new Set(HTTP_METHOD_ORDER.map((method) => method.toLowerCase()));
 
 function hasOwnEntry(object, key) {
   return Object.prototype.hasOwnProperty.call(object, key);
@@ -183,6 +187,403 @@ function parseRemote(remoteUrl = '') {
     owner: match[1],
     repo: match[2]
   };
+}
+
+function parseYamlScalar(value = '') {
+  const trimmed = normalizeWhitespace(value);
+  if (!trimmed) {
+    return '';
+  }
+
+  const quoteWrapped = (
+    (trimmed.startsWith('"') && trimmed.endsWith('"'))
+    || (trimmed.startsWith('\'') && trimmed.endsWith('\''))
+  );
+  if (!quoteWrapped) {
+    return trimmed;
+  }
+
+  return trimmed
+    .slice(1, -1)
+    .replaceAll('\\"', '"')
+    .replaceAll("\\'", '\'');
+}
+
+function parseResponseCode(token = '') {
+  const cleaned = parseYamlScalar(token.replace(/:$/, ''));
+  if (!cleaned) {
+    return '';
+  }
+
+  if (/^\d{3}$/.test(cleaned)) {
+    return cleaned;
+  }
+
+  if (/^default$/i.test(cleaned)) {
+    return 'default';
+  }
+
+  return '';
+}
+
+function pathMethodComparator(left, right) {
+  if (left.path !== right.path) {
+    return left.path.localeCompare(right.path);
+  }
+
+  const leftOrder = HTTP_METHOD_ORDER.indexOf(left.method);
+  const rightOrder = HTTP_METHOD_ORDER.indexOf(right.method);
+  const safeLeftOrder = leftOrder >= 0 ? leftOrder : Number.POSITIVE_INFINITY;
+  const safeRightOrder = rightOrder >= 0 ? rightOrder : Number.POSITIVE_INFINITY;
+
+  if (safeLeftOrder !== safeRightOrder) {
+    return safeLeftOrder - safeRightOrder;
+  }
+
+  return left.method.localeCompare(right.method);
+}
+
+function buildOpenApiFallbackSnapshot(sourcePath, errorMessage = '') {
+  const fallbackTags = [{
+    name: 'General',
+    operationCount: 0,
+    operations: []
+  }];
+
+  return {
+    source: sourcePath,
+    info: {
+      title: '',
+      version: ''
+    },
+    summary: {
+      operationCount: 0,
+      pathCount: 0,
+      methodCount: 0,
+      tagCount: 1
+    },
+    methods: [],
+    tags: fallbackTags,
+    operations: [],
+    parseError: errorMessage
+  };
+}
+
+function parseOpenApiYamlSnapshot(yamlContent, sourcePath) {
+  const lines = String(yamlContent)
+    .replace(/\r\n/g, '\n')
+    .split('\n');
+  const operations = [];
+  const info = {
+    title: '',
+    version: ''
+  };
+
+  let inInfo = false;
+  let inPaths = false;
+  let currentPath = '';
+  let currentOperation = null;
+  let mode = '';
+  let currentParameter = null;
+  let inRequestBody = false;
+
+  const closeMethodSection = () => {
+    if (!currentOperation) {
+      return;
+    }
+
+    const uniqueTags = [...new Set(currentOperation.tags.filter(Boolean))];
+    const uniqueResponses = [...new Set(currentOperation.responses.filter(Boolean))];
+    const parameters = currentOperation.parameters.map((parameter) => ({
+      name: parameter.name,
+      in: parameter.in
+    }));
+
+    currentOperation.tags = uniqueTags.length ? uniqueTags : ['General'];
+    currentOperation.responses = uniqueResponses;
+    currentOperation.parameters = parameters;
+    currentOperation.pathParamCount = parameters.filter((parameter) => parameter.in === 'path').length;
+    currentOperation.queryParamCount = parameters.filter((parameter) => parameter.in === 'query').length;
+    currentOperation.hasParameters = parameters.length > 0;
+    currentOperation.summary = currentOperation.summary || `${currentOperation.method} ${currentOperation.path}`;
+    operations.push(currentOperation);
+    currentOperation = null;
+  };
+
+  for (const line of lines) {
+    const indentMatch = line.match(/^ */);
+    const indent = indentMatch ? indentMatch[0].length : 0;
+    const rawTrimmed = line.trim();
+    if (!rawTrimmed || rawTrimmed.startsWith('#')) {
+      continue;
+    }
+
+    if (indent === 0 && rawTrimmed === 'info:') {
+      inInfo = true;
+      inPaths = false;
+      closeMethodSection();
+      currentPath = '';
+      mode = '';
+      inRequestBody = false;
+      continue;
+    }
+
+    if (indent === 0 && rawTrimmed === 'paths:') {
+      inPaths = true;
+      inInfo = false;
+      closeMethodSection();
+      currentPath = '';
+      mode = '';
+      inRequestBody = false;
+      continue;
+    }
+
+    if (indent === 0 && rawTrimmed !== 'paths:' && inPaths) {
+      inPaths = false;
+      closeMethodSection();
+      currentPath = '';
+      mode = '';
+      inRequestBody = false;
+    }
+
+    if (inInfo) {
+      if (indent === 2 && rawTrimmed.startsWith('title:')) {
+        info.title = parseYamlScalar(rawTrimmed.slice('title:'.length));
+      } else if (indent === 2 && rawTrimmed.startsWith('version:')) {
+        info.version = parseYamlScalar(rawTrimmed.slice('version:'.length));
+      } else if (indent <= 0) {
+        inInfo = false;
+      }
+      continue;
+    }
+
+    if (!inPaths) {
+      continue;
+    }
+
+    if (indent === 2 && rawTrimmed.endsWith(':') && rawTrimmed.startsWith('/')) {
+      closeMethodSection();
+      currentPath = rawTrimmed.slice(0, -1).trim();
+      mode = '';
+      inRequestBody = false;
+      continue;
+    }
+
+    if (!currentPath) {
+      continue;
+    }
+
+    if (indent === 4 && rawTrimmed.endsWith(':')) {
+      closeMethodSection();
+      const methodName = rawTrimmed.slice(0, -1).trim().toLowerCase();
+      if (!HTTP_METHODS.has(methodName)) {
+        continue;
+      }
+
+      currentOperation = {
+        key: '',
+        method: methodName.toUpperCase(),
+        path: currentPath,
+        summary: '',
+        operationId: '',
+        tags: [],
+        responses: [],
+        parameters: [],
+        requestBodyRequired: false
+      };
+      currentOperation.key = `${currentOperation.method} ${currentOperation.path}`;
+      mode = '';
+      inRequestBody = false;
+      currentParameter = null;
+      continue;
+    }
+
+    if (!currentOperation) {
+      continue;
+    }
+
+    if (indent <= 4) {
+      closeMethodSection();
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed.startsWith('summary:')) {
+      currentOperation.summary = parseYamlScalar(rawTrimmed.slice('summary:'.length));
+      mode = '';
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed.startsWith('operationId:')) {
+      currentOperation.operationId = parseYamlScalar(rawTrimmed.slice('operationId:'.length));
+      mode = '';
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed === 'tags:') {
+      mode = 'tags';
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed === 'responses:') {
+      mode = 'responses';
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed === 'parameters:') {
+      mode = 'parameters';
+      currentParameter = null;
+      continue;
+    }
+
+    if (indent === 6 && rawTrimmed === 'requestBody:') {
+      inRequestBody = true;
+      mode = '';
+      continue;
+    }
+
+    if (indent === 6) {
+      inRequestBody = false;
+    }
+
+    if (inRequestBody && indent >= 8 && rawTrimmed === 'required: true') {
+      currentOperation.requestBodyRequired = true;
+      continue;
+    }
+
+    if (mode === 'tags') {
+      if (indent === 8 && rawTrimmed.startsWith('- ')) {
+        const tag = parseYamlScalar(rawTrimmed.slice(2));
+        if (tag) {
+          currentOperation.tags.push(tag);
+        }
+        continue;
+      }
+
+      if (indent <= 6) {
+        mode = '';
+      }
+    }
+
+    if (mode === 'responses') {
+      if (indent === 8 && rawTrimmed.endsWith(':')) {
+        const code = parseResponseCode(rawTrimmed);
+        if (code) {
+          currentOperation.responses.push(code);
+        }
+        continue;
+      }
+
+      if (indent <= 6) {
+        mode = '';
+      }
+    }
+
+    if (mode === 'parameters') {
+      if (indent === 8 && rawTrimmed.startsWith('- ')) {
+        currentParameter = {
+          name: '',
+          in: ''
+        };
+        currentOperation.parameters.push(currentParameter);
+        const inline = rawTrimmed.slice(2).trim();
+        if (inline.startsWith('name:')) {
+          currentParameter.name = parseYamlScalar(inline.slice('name:'.length));
+        }
+        continue;
+      }
+
+      if (!currentParameter) {
+        if (indent <= 6) {
+          mode = '';
+        }
+        continue;
+      }
+
+      if (indent >= 10 && rawTrimmed.startsWith('name:')) {
+        currentParameter.name = parseYamlScalar(rawTrimmed.slice('name:'.length));
+        continue;
+      }
+
+      if (indent >= 10 && rawTrimmed.startsWith('in:')) {
+        currentParameter.in = parseYamlScalar(rawTrimmed.slice('in:'.length)).toLowerCase();
+        continue;
+      }
+
+      if (indent <= 6) {
+        mode = '';
+        currentParameter = null;
+      }
+    }
+  }
+
+  closeMethodSection();
+
+  const sortedOperations = operations.sort(pathMethodComparator);
+  const pathCount = new Set(sortedOperations.map((operation) => operation.path)).size;
+  const methodCounter = new Map();
+  const tagBuckets = new Map();
+
+  sortedOperations.forEach((operation) => {
+    methodCounter.set(operation.method, (methodCounter.get(operation.method) ?? 0) + 1);
+    operation.tags.forEach((tag) => {
+      const bucket = tagBuckets.get(tag) ?? [];
+      bucket.push(operation);
+      tagBuckets.set(tag, bucket);
+    });
+  });
+
+  const methods = [...methodCounter.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((left, right) => {
+      const leftOrder = HTTP_METHOD_ORDER.indexOf(left.name);
+      const rightOrder = HTTP_METHOD_ORDER.indexOf(right.name);
+      if (leftOrder !== rightOrder) {
+        return leftOrder - rightOrder;
+      }
+      return left.name.localeCompare(right.name);
+    });
+
+  const tags = [...tagBuckets.entries()]
+    .map(([name, entries]) => ({
+      name,
+      operationCount: entries.length,
+      operations: [...entries].sort(pathMethodComparator)
+    }))
+    .sort((left, right) => right.operationCount - left.operationCount || left.name.localeCompare(right.name));
+
+  const normalizedTags = tags.length > 0
+    ? tags
+    : [{
+      name: 'General',
+      operationCount: 0,
+      operations: []
+    }];
+
+  return {
+    source: sourcePath,
+    info,
+    summary: {
+      operationCount: sortedOperations.length,
+      pathCount,
+      methodCount: methods.length,
+      tagCount: normalizedTags.length
+    },
+    methods,
+    tags: normalizedTags,
+    operations: sortedOperations
+  };
+}
+
+async function buildOpenApiSnapshot(workspaceRoot) {
+  const sourcePath = path.join(workspaceRoot, OPENAPI_RELATIVE_PATH);
+
+  try {
+    const yamlContent = await fs.readFile(sourcePath, 'utf8');
+    return parseOpenApiYamlSnapshot(yamlContent, OPENAPI_RELATIVE_PATH);
+  } catch (error) {
+    const detail = error?.message || 'unknown error';
+    return buildOpenApiFallbackSnapshot(OPENAPI_RELATIVE_PATH, `OpenAPI parsing failed: ${detail}`);
+  }
 }
 
 async function run(command, args, cwd) {
@@ -1133,7 +1534,10 @@ function mapIssues(rawIssues, identityIndex) {
 
 async function buildRepositorySnapshot(rootDir) {
   const workspaceRoot = path.resolve(rootDir, '..');
-  const gitSnapshot = await buildGitSnapshot(workspaceRoot);
+  const [gitSnapshot, apiSnapshot] = await Promise.all([
+    buildGitSnapshot(workspaceRoot),
+    buildOpenApiSnapshot(workspaceRoot)
+  ]);
   const rawIssues = Array.isArray(gitSnapshot.__rawIssues) ? gitSnapshot.__rawIssues : [];
   const githubUsers = Array.isArray(gitSnapshot.__githubUsers)
     ? gitSnapshot.__githubUsers
@@ -1154,7 +1558,8 @@ async function buildRepositorySnapshot(rootDir) {
     git: Object.fromEntries(
       Object.entries(gitSnapshot).filter(([key]) => !key.startsWith('__'))
     ),
-    board
+    board,
+    api: apiSnapshot
   };
 }
 
@@ -1175,6 +1580,17 @@ function localizeBoardCard(card, locale, messages) {
 function localizeRepositorySnapshot(snapshot, locale, messages) {
   const localizedBoardCards = snapshot.board.cards.map((card) => localizeBoardCard(card, locale, messages));
   const localizedCardMap = new Map(localizedBoardCards.map((card) => [card.key, card]));
+  const localizedApi = {
+    ...snapshot.api,
+    tags: (snapshot.api?.tags ?? []).map((tag) => ({
+      ...tag,
+      name: tag.name || lookupMessage(messages, 'repository.api.tagFallback', 'General')
+    })),
+    operations: (snapshot.api?.operations ?? []).map((operation) => ({
+      ...operation,
+      summary: operation.summary || lookupMessage(messages, 'repository.api.noSummary', 'No summary')
+    }))
+  };
 
   return {
     ...snapshot,
@@ -1233,7 +1649,8 @@ function localizeRepositorySnapshot(snapshot, locale, messages) {
         label: lookupMessage(messages, `repository.board.column.${column.id}`, column.label),
         cards: column.cards.map((card) => localizedCardMap.get(card.key) ?? card)
       }))
-    }
+    },
+    api: localizedApi
   };
 }
 
@@ -1273,5 +1690,6 @@ export const __repositorySnapshotInternals = {
   createActivitySeries,
   parseCommitImport,
   parseBranchCommits,
-  parseAuthorContributionStats
+  parseAuthorContributionStats,
+  parseOpenApiYamlSnapshot
 };
