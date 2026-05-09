@@ -33,6 +33,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // JWT braucht kein CSRF
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // kein Session-State
                 .exceptionHandling(exceptions -> exceptions
@@ -45,6 +47,9 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/api/auth/logout")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/auth/session")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/users/mailExists")).permitAll()
+                        // Technischer Health-Check fuer CI/CD und Container-Orchestrierung
+                        .requestMatchers(new AntPathRequestMatcher("/actuator/health")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/actuator/health/**")).permitAll()
                         // H2 Konsole Zugang
                         .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                         // Alle anderen Requests brauchen Authentifizierung

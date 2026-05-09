@@ -1,0 +1,30 @@
+services:
+  backend:
+    image: ghcr.io/software-engineering-projekt-wi24a3/dhbw-pawsitters-se2-backend:${IMAGE_TAG:-develop}
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET before starting staging}
+      SPRING_PROFILES_ACTIVE: staging
+      APP_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - pawsitters_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  frontend:
+    image: ghcr.io/software-engineering-projekt-wi24a3/dhbw-pawsitters-se2-frontend:${IMAGE_TAG:-develop}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8081:80"
+
+volumes:
+  pawsitters_uploads:

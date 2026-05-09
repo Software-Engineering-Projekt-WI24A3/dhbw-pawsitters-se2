@@ -1,0 +1,135 @@
+name: Pawsitters Staging Deploy
+
+on:
+  workflow_run:
+    workflows:
+      - Pawsitters Container Images
+    types:
+      - completed
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy, for example develop or sha-<commit-sha>.
+        required: false
+        default: develop
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy staging stack
+    runs-on: ubuntu-latest
+    environment: staging
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve deployment tag
+        id: deployment
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            image_tag="sha-${WORKFLOW_RUN_SHA}"
+            deployed_sha="${WORKFLOW_RUN_SHA}"
+          else
+            image_tag="${MANUAL_IMAGE_TAG:-develop}"
+            deployed_sha="${image_tag#sha-}"
+          fi
+
+          echo "image-tag=${image_tag}" >> "$GITHUB_OUTPUT"
+          echo "deployed-sha=${deployed_sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare SSH credentials
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        shell: bash
+        run: |
+          : "${STAGING_HOST:?Set STAGING_HOST in the staging environment}"
+          : "${STAGING_SSH_KEY:?Set STAGING_SSH_KEY in the staging environment}"
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$STAGING_SSH_KEY" > ~/.ssh/staging_key
+          chmod 600 ~/.ssh/staging_key
+          ssh-keyscan -H "$STAGING_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload Compose configuration
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+        shell: bash
+        run: |
+          : "${STAGING_USER:?Set STAGING_USER in the staging environment}"
+          ssh -i ~/.ssh/staging_key "$STAGING_USER@$STAGING_HOST" 'mkdir -p ~/pawsitters'
+          scp -i ~/.ssh/staging_key docker-compose.staging.yml "$STAGING_USER@$STAGING_HOST:~/pawsitters/docker-compose.yml"
+
+      - name: Deploy stack
+        env:
+          IMAGE_TAG: ${{ steps.deployment.outputs.image-tag }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        shell: bash
+        run: |
+          : "${JWT_SECRET:?Set JWT_SECRET in the staging environment}"
+
+          {
+            printf 'IMAGE_TAG=%q\n' "$IMAGE_TAG"
+            printf 'JWT_SECRET=%q\n' "$JWT_SECRET"
+            printf 'GHCR_USERNAME=%q\n' "$GHCR_USERNAME"
+            printf 'GHCR_TOKEN=%q\n' "$GHCR_TOKEN"
+          } > staging.env
+
+          scp -i ~/.ssh/staging_key staging.env "$STAGING_USER@$STAGING_HOST:~/pawsitters/.env"
+
+          ssh -i ~/.ssh/staging_key "$STAGING_USER@$STAGING_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          cd ~/pawsitters
+          set -a
+          . ./.env
+          set +a
+
+          if [ -n "${GHCR_TOKEN:-}" ] && [ -n "${GHCR_USERNAME:-}" ]; then
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+          fi
+
+          docker compose -f docker-compose.yml pull
+          docker compose -f docker-compose.yml up -d --remove-orphans
+
+          healthy=0
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$healthy" != "1" ]; then
+            docker compose -f docker-compose.yml logs --tail=100
+            exit 1
+          fi
+
+          curl -fsS http://127.0.0.1:8081/ > /dev/null
+          REMOTE
+
+      - name: Summarize deployment
+        run: |
+          echo "Deployed image tag: ${{ steps.deployment.outputs.image-tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed SHA: ${{ steps.deployment.outputs.deployed-sha }}" >> "$GITHUB_STEP_SUMMARY"
