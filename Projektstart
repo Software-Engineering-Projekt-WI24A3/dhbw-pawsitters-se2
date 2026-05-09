@@ -12,6 +12,7 @@ FRONTEND_HOST="127.0.0.1"
 FRONTEND_PORT="4173"
 BACKEND_HOST="127.0.0.1"
 BACKEND_PORT="8080"
+BACKEND_MAIN_CLASS="com.pawsitters.PawsittersApplication"
 
 FRONTEND_PID=""
 BACKEND_PID=""
@@ -39,6 +40,7 @@ wait_for_http() {
   local host="$1"
   local port="$2"
   local timeout_seconds="$3"
+  local observed_pid="${4:-}"
   local elapsed=0
 
   while (( elapsed < timeout_seconds )); do
@@ -47,11 +49,56 @@ wait_for_http() {
     if [[ "$status_code" != "000" ]]; then
       return 0
     fi
+
+    if [[ -n "$observed_pid" ]] && ! kill -0 "$observed_pid" >/dev/null 2>&1; then
+      return 2
+    fi
+
     sleep 1
     (( elapsed += 1 ))
   done
 
   return 1
+}
+
+print_log_hint() {
+  local log_file="$1"
+  if [[ -f "$log_file" ]]; then
+    print_status "Letzte Logzeilen aus ${log_file}:"
+    tail -n 30 "$log_file" || true
+  fi
+}
+
+print_compile_error_hint() {
+  local log_file="$1"
+  if [[ -f "$log_file" ]] && grep -q "COMPILATION ERROR" "$log_file"; then
+    print_status "Erste Compiler-Fehler:"
+    grep -E '^\[ERROR\] .+\.java:\[[0-9]+,[0-9]+\]' "$log_file" | head -n 12 || true
+  fi
+}
+
+has_compiled_backend_classes() {
+  find "$BACKEND_DIR/target/classes" -type f -name '*.class' -print -quit 2>/dev/null | grep -q .
+}
+
+start_backend_with_maven() {
+  local startup_mode="$1"
+  (
+    cd "$BACKEND_DIR"
+    if [[ "$startup_mode" == "precompiled" ]]; then
+      mvn -q \
+        -Dmaven.main.skip=true \
+        -Dmaven.test.skip=true \
+        -Dspring-boot.run.main-class="$BACKEND_MAIN_CLASS" \
+        spring-boot:run
+    else
+      mvn -q -DskipTests \
+        -Dspring-boot.run.main-class="$BACKEND_MAIN_CLASS" \
+        spring-boot:run
+    fi
+  ) >"$BACKEND_LOG" 2>&1 &
+  BACKEND_PID=$!
+  STARTED_BACKEND=1
 }
 
 cleanup() {
@@ -101,18 +148,45 @@ if port_is_busy "$BACKEND_PORT"; then
   print_status "Backend bereits erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
 else
   print_status "Backend wird gestartet ..."
-  (
-    cd "$BACKEND_DIR"
-    mvn -q -DskipTests spring-boot:run
-  ) >"$BACKEND_LOG" 2>&1 &
-  BACKEND_PID=$!
-  STARTED_BACKEND=1
+  start_backend_with_maven "default"
 
-  if ! wait_for_http "$BACKEND_HOST" "$BACKEND_PORT" 300; then
-    print_status "Backend-Start fehlgeschlagen. Log: $BACKEND_LOG"
-    exit 1
+  if wait_for_http "$BACKEND_HOST" "$BACKEND_PORT" 300 "$BACKEND_PID"; then
+    print_status "Backend gestartet & erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
+  else
+    wait_result=$?
+
+    if [[ "$wait_result" -eq 2 ]] && has_compiled_backend_classes; then
+      print_status "Backend-Compile fehlgeschlagen, versuche Start aus bestehenden Klassen ..."
+      print_status "Log: $BACKEND_LOG"
+      start_backend_with_maven "precompiled"
+
+      if wait_for_http "$BACKEND_HOST" "$BACKEND_PORT" 120 "$BACKEND_PID"; then
+        print_status "Backend gestartet (Fallback) & erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
+      else
+        wait_result=$?
+        if [[ "$wait_result" -eq 2 ]]; then
+          print_status "Backend-Fallback wurde vorzeitig beendet. Log: $BACKEND_LOG"
+        else
+          print_status "Backend-Fallback fehlgeschlagen (Timeout). Log: $BACKEND_LOG"
+        fi
+        print_compile_error_hint "$BACKEND_LOG"
+        print_log_hint "$BACKEND_LOG"
+        exit 1
+      fi
+    else
+      if [[ "$wait_result" -eq 2 ]]; then
+        print_status "Backend-Prozess wurde vorzeitig beendet. Log: $BACKEND_LOG"
+      else
+        print_status "Backend-Start fehlgeschlagen (Timeout). Log: $BACKEND_LOG"
+      fi
+      print_compile_error_hint "$BACKEND_LOG"
+      if ! has_compiled_backend_classes; then
+        print_status "Keine vorkompilierten Backend-Klassen gefunden (target/classes enthält keine *.class-Dateien)."
+      fi
+      print_log_hint "$BACKEND_LOG"
+      exit 1
+    fi
   fi
-  print_status "Backend gestartet & erreichbar unter: http://${BACKEND_HOST}:${BACKEND_PORT}"
 fi
 
 if port_is_busy "$FRONTEND_PORT"; then
@@ -131,11 +205,18 @@ else
   FRONTEND_PID=$!
   STARTED_FRONTEND=1
 
-  if ! wait_for_http "$FRONTEND_HOST" "$FRONTEND_PORT" 300; then
-    print_status "Frontend-Start fehlgeschlagen. Log: $FRONTEND_LOG"
+  if wait_for_http "$FRONTEND_HOST" "$FRONTEND_PORT" 300 "$FRONTEND_PID"; then
+    print_status "Frontend gestartet & erreichbar unter: http://${FRONTEND_HOST}:${FRONTEND_PORT}"
+  else
+    wait_result=$?
+    if [[ "$wait_result" -eq 2 ]]; then
+      print_status "Frontend-Prozess wurde vorzeitig beendet. Log: $FRONTEND_LOG"
+    else
+      print_status "Frontend-Start fehlgeschlagen (Timeout). Log: $FRONTEND_LOG"
+    fi
+    print_log_hint "$FRONTEND_LOG"
     exit 1
   fi
-  print_status "Frontend gestartet & erreichbar unter: http://${FRONTEND_HOST}:${FRONTEND_PORT}"
 fi
 
 while true; do

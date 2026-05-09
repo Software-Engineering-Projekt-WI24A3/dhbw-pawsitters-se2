@@ -4,14 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="post für den market">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+    <list default="true" id="65b88918-6401-4dc0-bf04-bf8797f1ec51" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/security/AuthIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/security/AuthIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projektstart" beforeDir="false" afterPath="$PROJECT_DIR$/Projektstart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +43,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="j_feature_marketmain" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -68,15 +64,7 @@
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
   <component name="HttpClientSelectedEnvironments">
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogout.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreatePet.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeleteUser.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetUserByID.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetCurrentUser.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetPets.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUser.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PatchUserRoles.http" environment="dev" />
@@ -244,39 +232,47 @@
     <configuration name="PublishOffer | Publish offer" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" executionIdentifier="Publish offer" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="WithdrawOffer | Withdraw offer" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawOffer.http" executionIdentifier="Withdraw offer" runType="Run single request">
+    <configuration name="SearchMarketplaceHosts | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="#2" index="2" runType="Run single request">
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
+    "Shell Script.Projektstart.executor": "Run",
+    "git-widget-placeholder": "n__feature__updating-projektstart.-shell",
+    "javascript.preferred.runtime.type.id": "node",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Projektstart" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/Projektstart" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/usr/bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
       <method v="2" />
-    </configuration>
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="dhbw-pawsitters-se2" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.pawsitters.PawsittersApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
     </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="HTTP Request.CreateOffer | Create offer draft" />
         <item itemvalue="HTTP Request.AuthRegister | Registrieren (Auth)" />
-        <item itemvalue="HTTP Request.GetMarketplaceOffers | Get published marketplace offers" />
-        <item itemvalue="HTTP Request.WithdrawOffer | Withdraw offer" />
-        <item itemvalue="HTTP Request.PublishOffer | Publish offer" />
+        <item itemvalue="Shell Script.Projektstart" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -391,20 +387,6 @@
     <option name="localTasksCounter" value="11" />
     <servers />
   </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: add JWT authentication with registration and login endpoints" />
     <MESSAGE value="feat: implement authentication service with registration and login functionality - userstory finalisierung" />
@@ -426,5 +408,7 @@
     <promptFileLocations>
       <option value=".github/prompts" />
     </promptFileLocations>
+    <MESSAGE value="added the &quot;/repository/api&quot; underpage" />
+    <option name="LAST_COMMIT_MESSAGE" value="added the &quot;/repository/api&quot; underpage" />
   </component>
 </project>
