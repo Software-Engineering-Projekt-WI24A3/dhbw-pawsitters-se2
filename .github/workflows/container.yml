@@ -1,0 +1,106 @@
+name: Pawsitters Container Images
+
+on:
+  workflow_run:
+    workflows:
+      - Pawsitters CI
+    types:
+      - completed
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: container-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  BACKEND_IMAGE: ghcr.io/software-engineering-projekt-wi24a3/dhbw-pawsitters-se2-backend
+  FRONTEND_IMAGE: ghcr.io/software-engineering-projekt-wi24a3/dhbw-pawsitters-se2-frontend
+
+jobs:
+  build-push-and-smoke-test:
+    name: Build, push and smoke test images
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Resolve image tags
+        id: image-tags
+        shell: bash
+        env:
+          SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          ref_tag="$(printf '%s' "${SOURCE_BRANCH}" | tr '[:upper:]/' '[:lower:]-' | sed 's/[^a-z0-9_.-]/-/g')"
+          echo "sha-tag=sha-${SOURCE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "ref-tag=${ref_tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ steps.image-tags.outputs.sha-tag }}
+            ${{ env.BACKEND_IMAGE }}:${{ steps.image-tags.outputs.ref-tag }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.image-tags.outputs.sha-tag }}
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.image-tags.outputs.ref-tag }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+      - name: Smoke test pushed images with Docker Compose
+        env:
+          IMAGE_TAG: ${{ steps.image-tags.outputs.sha-tag }}
+          JWT_SECRET: ci-only-pawsitters-jwt-secret-change-me-123456
+        shell: bash
+        run: |
+          docker compose -f docker-compose.staging.yml pull
+          docker compose -f docker-compose.staging.yml up -d
+
+          healthy=0
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+
+          test "$healthy" = "1"
+          curl -fsS http://127.0.0.1:8081/ > /dev/null
+
+      - name: Stop smoke-test stack
+        if: always()
+        env:
+          IMAGE_TAG: ${{ steps.image-tags.outputs.sha-tag }}
+          JWT_SECRET: ci-only-pawsitters-jwt-secret-change-me-123456
+        run: docker compose -f docker-compose.staging.yml down -v --remove-orphans

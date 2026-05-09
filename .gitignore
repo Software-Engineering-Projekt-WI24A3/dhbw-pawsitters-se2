@@ -43,3 +43,5 @@ test-results/
 
 # Uploaded pet images (user-uploaded content, not tracked in VCS)
 backend/uploads/
+
+workspace.xml

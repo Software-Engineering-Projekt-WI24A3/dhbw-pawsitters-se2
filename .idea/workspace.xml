@@ -74,6 +74,10 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceOffers.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateOffer.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawOffer.http" environment="dev" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -120,11 +124,14 @@
     &quot;HTTP Request.AuthLogout | Logout (Auth).executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.AuthRegister | Registrieren (Auth).executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.AuthSession | Sessionstatus (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateOffer | Create offer draft.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateOffer | Get created offer.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.CreatePet | Haustier erstellen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.DeleteUser | Benutzer loeschen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetCurrentUser | Eigene Benutzerdaten abrufen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetMarketplaceHosts | Gastgeber abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetMarketplaceOffers | Get published marketplace offers.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetPets | Haustiere abrufen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetUserByID | #1.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetUserByID | Beispiel Request.executor&quot;: &quot;Run&quot;,
@@ -132,11 +139,13 @@
     &quot;HTTP Request.MailExists | E-Mail pruefen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.PatchUser | Benutzer teilaktualisieren (PATCH).executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.PatchUserRoles | Benutzerrolle aendern.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.PublishOffer | Publish offer.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.SearchMarketplaceHosts | #2.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.UpdatePet | Haustier aktualisieren.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.UpdateUser | Benutzer aktualisieren (PUT).executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.UploadPetImage | Haustierbild hochladen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.WithdrawOffer | Withdraw offer.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.getuserbyid | Beispiel Request.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.AuthIntegrationTest.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse.executor&quot;: &quot;Run&quot;,
@@ -193,17 +202,34 @@
       <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
   </component>
+  <component name="RunDashboard">
+    <option name="configurationStatuses">
+      <map>
+        <entry key="HttpClient.HttpRequestRunConfigurationType">
+          <value>
+            <map>
+              <entry key="AuthRegister | Registrieren (Auth)" value="STOPPED" />
+              <entry key="CreateOffer | Create offer draft" value="STOPPED" />
+              <entry key="GetMarketplaceOffers | Get published marketplace offers" value="STOPPED" />
+              <entry key="PublishOffer | Publish offer" value="STOPPED" />
+              <entry key="WithdrawOffer | Withdraw offer" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="RunManager" selected="Spring Boot.PawsittersApplication">
     <configuration name="AuthRegister | Registrieren (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" executionIdentifier="Registrieren (Auth)" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="GetMarketplaceFilters | Marketplace-Filter abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceFilters.http" executionIdentifier="Marketplace-Filter abrufen" runType="Run single request">
+    <configuration name="CreateOffer | Create offer draft" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateOffer.http" executionIdentifier="Create offer draft" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="GetMarketplaceHosts | Gastgeber abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceHosts.http" executionIdentifier="Gastgeber abrufen" runType="Run single request">
+    <configuration name="GetMarketplaceOffers | Get published marketplace offers" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceOffers.http" executionIdentifier="Get published marketplace offers" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="Gastgeber nach Tierart und Postleitzahl suchen" runType="Run single request">
+    <configuration name="PublishOffer | Publish offer" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" executionIdentifier="Publish offer" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="SearchMarketplaceHosts | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="#2" index="2" runType="Run single request">
@@ -242,10 +268,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="HTTP Request.SearchMarketplaceHosts | #2" />
-        <item itemvalue="HTTP Request.SearchMarketplaceHosts | Gastgeber nach Tierart und Postleitzahl suchen" />
-        <item itemvalue="HTTP Request.GetMarketplaceHosts | Gastgeber abrufen" />
-        <item itemvalue="HTTP Request.GetMarketplaceFilters | Marketplace-Filter abrufen" />
+        <item itemvalue="HTTP Request.CreateOffer | Create offer draft" />
         <item itemvalue="HTTP Request.AuthRegister | Registrieren (Auth)" />
         <item itemvalue="Shell Script.Projektstart" />
       </list>
@@ -278,6 +301,8 @@
       <workItem from="1778081885180" duration="3376000" />
       <workItem from="1778144058606" duration="1594000" />
       <workItem from="1778226595943" duration="775000" />
+      <workItem from="1778230144850" duration="2649000" />
+      <workItem from="1778334655193" duration="3501000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
@@ -335,7 +360,31 @@
       <option name="project" value="LOCAL" />
       <updated>1778145757113</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <option name="closed" value="true" />
+      <created>1778227765932</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1778227765932</updated>
+    </task>
+    <task id="LOCAL-00009" summary="post für den market">
+      <option name="closed" value="true" />
+      <created>1778228027586</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1778228027586</updated>
+    </task>
+    <task id="LOCAL-00010" summary="post für den market">
+      <option name="closed" value="true" />
+      <created>1778230084248</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1778230084248</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -345,7 +394,8 @@
     <MESSAGE value="api fixxes" />
     <MESSAGE value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
     <MESSAGE value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
+    <MESSAGE value="post für den market" />
+    <option name="LAST_COMMIT_MESSAGE" value="post für den market" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

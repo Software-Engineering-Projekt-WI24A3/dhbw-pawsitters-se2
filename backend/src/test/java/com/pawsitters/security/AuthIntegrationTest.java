@@ -152,6 +152,13 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void actuatorHealthIsPublicForDeploymentChecks() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
     void sessionWithValidJwtReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session." + UUID.randomUUID() + "@test.de";
         String token = registerUser(baseEmail, "StrongPass123!");
