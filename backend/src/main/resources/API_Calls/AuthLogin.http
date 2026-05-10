@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "email": "max.mustermann@example.com",
-  "password": "SecurePhrase123!"
+  "password": "SecurePhrase123d!"
 }
 
 > {%
