@@ -1,16 +1,16 @@
 package com.pawsitters.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawsitters.model.PetChoice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -42,7 +42,7 @@ class PetIntegrationTest {
     @Test
     void petProfileCanBeCreatedReadAndUpdated() throws Exception {
         String email = "pet." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
 
         Long petId = createPet(token, "Milo", PetChoice.DOG, "Labrador", 4, "Braucht taeglich Bewegung");
 
@@ -76,7 +76,7 @@ class PetIntegrationTest {
     @Test
     void imageMustBeUniqueAcrossPets() throws Exception {
         String email = "img." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
 
         Long firstPetId = createPet(token, "Luna", PetChoice.CAT, "British Shorthair", 2, "Keine");
         Long secondPetId = createPet(token, "Balu", PetChoice.DOG, "Mischling", 3, "Wenig Treppen steigen");
@@ -143,7 +143,7 @@ class PetIntegrationTest {
     @Test
     void petResponseIncludesFallbackImagePath() throws Exception {
         String email = "fallback." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
 
         createPet(token, "Fluffy", PetChoice.CAT, "Persian", 3, "Keine");
         createPet(token, "Tweety", PetChoice.BUDGIE, "Wellensittich", 1, "Käfig nachts abdecken");

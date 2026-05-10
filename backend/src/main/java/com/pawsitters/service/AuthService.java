@@ -6,6 +6,7 @@ import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.security.JwtService;
 import com.pawsitters.security.RevokedTokenService;
+import com.pawsitters.validation.PasswordNormalizer;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,7 @@ public class AuthService {
             throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
-        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+        if (!passwordEncoder.matches(PasswordNormalizer.normalize(rawPassword), user.getPasswordHash())) {
             throw new BadCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
@@ -93,10 +94,10 @@ public class AuthService {
 
     private AuthResult toAuthResult(User user) {
         String token = jwtService.generateToken(user.getEmail(), user.getRole().name());
-        return new AuthResult(token, user.getRole().name());
+        return new AuthResult(token, user.getRole().name(), user.isPasswordChangeRequired());
     }
 
-    public record AuthResult(String token, String role) {
+    public record AuthResult(String token, String role, boolean passwordChangeRequired) {
     }
 }
 

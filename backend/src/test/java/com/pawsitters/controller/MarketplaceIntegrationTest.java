@@ -1,12 +1,12 @@
 package com.pawsitters.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -95,7 +95,7 @@ class MarketplaceIntegrationTest {
     private Map<String, Object> buildRegisterPayload(String email) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("email", email);
-        payload.put("password", "StrongPass123!");
+        payload.put("password", "StrongPhrase123!");
         payload.put("firstName", "Max");
         payload.put("lastName", "Muster");
         payload.put("phone", "0123456789");

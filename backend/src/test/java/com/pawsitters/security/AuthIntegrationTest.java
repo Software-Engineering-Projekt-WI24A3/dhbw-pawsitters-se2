@@ -1,14 +1,14 @@
 package com.pawsitters.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -53,11 +53,11 @@ class AuthIntegrationTest {
     @Test
     void loginWithUppercaseEmailSucceedsAfterRegister() throws Exception {
         String baseEmail = "auth." + UUID.randomUUID() + "@test.de";
-        registerUser(baseEmail, "StrongPass123!");
+        registerUser(baseEmail, "StrongPhrase123!");
 
         Map<String, String> loginPayload = new HashMap<>();
         loginPayload.put("email", baseEmail.toUpperCase());
-        loginPayload.put("password", "StrongPass123!");
+        loginPayload.put("password", "StrongPhrase123!");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,15 +65,33 @@ class AuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.token").isString())
-                .andExpect(jsonPath("$.data.role").value("PET_OWNER"));
+                .andExpect(jsonPath("$.data.role").value("PET_OWNER"))
+                .andExpect(jsonPath("$.data.passwordChangeRequired").value(false));
+    }
+
+    @Test
+    void loginUsesUnicodeNormalizedPassword() throws Exception {
+        String baseEmail = "unicode." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "Cafe\u0301 autumn meadow");
+
+        Map<String, String> loginPayload = new HashMap<>();
+        loginPayload.put("email", baseEmail);
+        loginPayload.put("password", "Caf\u00e9 autumn meadow");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginPayload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.token").isString());
     }
 
     @Test
     void registerDuplicateEmailDifferentCaseReturnsBadRequest() throws Exception {
         String baseEmail = "dup." + UUID.randomUUID() + "@test.de";
-        registerUser(baseEmail, "StrongPass123!");
+        registerUser(baseEmail, "StrongPhrase123!");
 
-        Map<String, Object> secondRegister = buildRegisterPayload(baseEmail.toUpperCase(), "StrongPass123!");
+        Map<String, Object> secondRegister = buildRegisterPayload(baseEmail.toUpperCase(), "StrongPhrase123!");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +104,7 @@ class AuthIntegrationTest {
     @Test
     void loginWithWrongPasswordReturnsInvalidCredentialsEnvelope() throws Exception {
         String baseEmail = "wrong.password." + UUID.randomUUID() + "@test.de";
-        registerUser(baseEmail, "StrongPass123!");
+        registerUser(baseEmail, "StrongPhrase123!");
 
         Map<String, String> loginPayload = new HashMap<>();
         loginPayload.put("email", baseEmail);
@@ -100,6 +118,30 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.data").value(nullValue()))
                 .andExpect(jsonPath("$.error.code").value("AUTH_INVALID_CREDENTIALS"));
+    }
+
+    @Test
+    void repeatedFailedLoginAttemptsAreRateLimited() throws Exception {
+        String baseEmail = "rate.limit." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "StrongPhrase123!");
+
+        Map<String, String> loginPayload = new HashMap<>();
+        loginPayload.put("email", baseEmail);
+        loginPayload.put("password", "WrongPhrase123!");
+
+        for (int attempt = 0; attempt < 5; attempt++) {
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(loginPayload)))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("AUTH_INVALID_CREDENTIALS"));
+        }
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginPayload)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("TOO_MANY_REQUESTS"));
     }
 
     @Test
@@ -129,9 +171,118 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void registerWithTooShortPasswordReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("short.password." + UUID.randomUUID() + "@test.de", "Short1!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithNistStylePassphraseWithoutCharacterMixSucceeds() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("passphrase." + UUID.randomUUID() + "@test.de",
+                "correct horse battery staple");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.token").isString());
+    }
+
+    @Test
+    void registerWithPasswordContainingEmailLocalPartReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("max.mustermann@test.de", "Max.Mustermann123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithPasswordLongerThanBcryptLimitReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("long.password." + UUID.randomUUID() + "@test.de",
+                "VerySecurePhrase123!" + "a".repeat(55));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithProjectNamePasswordVariantReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("project.password." + UUID.randomUUID() + "@test.de",
+                "Pawsitters2026!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithPasswordContainingFirstNameReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("name.password." + UUID.randomUUID() + "@test.de",
+                "BlueMaxCloud9!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithSequentialPasswordReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("sequence.password." + UUID.randomUUID() + "@test.de",
+                "Abcdef98765!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
+    void registerWithLongRepetitionPasswordReturnsPasswordValidationError() throws Exception {
+        Map<String, Object> payload = buildRegisterPayload("repeat.password." + UUID.randomUUID() + "@test.de",
+                "AaaaSecure123!");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details[0].field").value("password"));
+    }
+
+    @Test
     void mailExistsReturnsTrueForExistingEmailWithoutToken() throws Exception {
         String baseEmail = "mail.exists." + UUID.randomUUID() + "@test.de";
-        registerUser(baseEmail, "StrongPass123!");
+        registerUser(baseEmail, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/users/mailExists")
                         .param("mail", baseEmail.toUpperCase()))
@@ -161,7 +312,7 @@ class AuthIntegrationTest {
     @Test
     void sessionWithValidJwtReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(baseEmail, "StrongPass123!");
+        String token = registerUser(baseEmail, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/auth/session")
                         .header("Authorization", "Bearer " + token))
@@ -174,7 +325,7 @@ class AuthIntegrationTest {
     @Test
     void sessionWithValidJwtCookieReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session.cookie." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(baseEmail, "StrongPass123!");
+        String token = registerUser(baseEmail, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/auth/session")
                         .cookie(new MockCookie(JwtTokenResolver.AUTH_COOKIE_NAME, token)))
@@ -189,7 +340,7 @@ class AuthIntegrationTest {
         String baseEmail = "session.register.cookie." + UUID.randomUUID() + "@test.de";
         MockHttpServletResponse registerResponse = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRegisterPayload(baseEmail, "StrongPass123!"))))
+                        .content(objectMapper.writeValueAsString(buildRegisterPayload(baseEmail, "StrongPhrase123!"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.token").isString())
@@ -207,11 +358,11 @@ class AuthIntegrationTest {
     @Test
     void sessionAfterLoginUsesAuthCookie() throws Exception {
         String baseEmail = "session.login.cookie." + UUID.randomUUID() + "@test.de";
-        registerUser(baseEmail, "StrongPass123!");
+        registerUser(baseEmail, "StrongPhrase123!");
 
         Map<String, String> loginPayload = new HashMap<>();
         loginPayload.put("email", baseEmail);
-        loginPayload.put("password", "StrongPass123!");
+        loginPayload.put("password", "StrongPhrase123!");
 
         MockHttpServletResponse loginResponse = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -233,7 +384,7 @@ class AuthIntegrationTest {
     @Test
     void sessionWithRawAuthorizationTokenReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session.raw." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(baseEmail, "StrongPass123!");
+        String token = registerUser(baseEmail, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/auth/session")
                         .header("Authorization", token))
@@ -246,7 +397,7 @@ class AuthIntegrationTest {
     @Test
     void logoutInvalidatesTokenForSessionCheck() throws Exception {
         String baseEmail = "logout." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(baseEmail, "StrongPass123!");
+        String token = registerUser(baseEmail, "StrongPhrase123!");
 
         mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "Bearer " + token))

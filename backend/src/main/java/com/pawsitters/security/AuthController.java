@@ -4,6 +4,7 @@ import com.pawsitters.dto.ApiResponse;
 import com.pawsitters.dto.AuthResponse;
 import com.pawsitters.dto.RegisterRequest;
 import com.pawsitters.dto.SessionResponse;
+import com.pawsitters.service.AuthenticationRateLimiter;
 import com.pawsitters.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,13 +32,17 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtTokenResolver jwtTokenResolver;
+    private final AuthenticationRateLimiter authenticationRateLimiter;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public AuthController(AuthService authService, JwtTokenResolver jwtTokenResolver) {
+    public AuthController(AuthService authService,
+                          JwtTokenResolver jwtTokenResolver,
+                          AuthenticationRateLimiter authenticationRateLimiter) {
         this.authService = authService;
         this.jwtTokenResolver = jwtTokenResolver;
+        this.authenticationRateLimiter = authenticationRateLimiter;
     }
 
     @PostMapping("/register")
@@ -56,7 +62,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request,
                                                            HttpServletRequest servletRequest) {
-        AuthService.AuthResult result = authService.login(request.email(), request.password());
+        String clientIp = clientIp(servletRequest);
+        authenticationRateLimiter.assertLoginAllowed(request.email(), clientIp);
+        AuthService.AuthResult result;
+        try {
+            result = authService.login(request.email(), request.password());
+        } catch (BadCredentialsException e) {
+            authenticationRateLimiter.recordFailure(request.email(), clientIp);
+            throw e;
+        }
+        authenticationRateLimiter.recordSuccess(request.email(), clientIp);
         return withAuthCookie(result, "Login successful.", servletRequest);
     }
 
@@ -102,7 +117,7 @@ public class AuthController {
                 .body(ApiResponse.success(
                         HttpStatus.OK,
                         message,
-                        new AuthResponse(result.token(), result.role()),
+                        new AuthResponse(result.token(), result.role(), result.passwordChangeRequired()),
                         servletRequest.getRequestURI()
                 ));
     }
@@ -125,5 +140,13 @@ public class AuthController {
                 .path("/")
                 .maxAge(0)
                 .build();
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",", 2)[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

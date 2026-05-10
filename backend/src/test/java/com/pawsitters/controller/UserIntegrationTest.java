@@ -1,13 +1,13 @@
 package com.pawsitters.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ class UserIntegrationTest {
     @Test
     void currentUserResponseContainsPublicFieldsOnly() throws Exception {
         String email = "user.public." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/users/me")
                         .header("Authorization", "Bearer " + token))
@@ -52,7 +52,7 @@ class UserIntegrationTest {
     @Test
     void deleteUserReturnsEnvelopeWithDeleteResponse() throws Exception {
         String email = "user.delete." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
         Long userId = currentUserId(token);
 
         mockMvc.perform(delete("/api/users/{id}", userId)
@@ -86,7 +86,7 @@ class UserIntegrationTest {
     @Test
     void nonAdminCannotUpdateRoles() throws Exception {
         String email = "user.role." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
         Long userId = currentUserId(token);
 
         mockMvc.perform(patch("/api/users/{id}/roles", userId)
@@ -101,7 +101,7 @@ class UserIntegrationTest {
     @Test
     void missingUserReturnsNotFoundEnvelope() throws Exception {
         String email = "user.missing." + UUID.randomUUID() + "@test.de";
-        String token = registerUser(email, "StrongPass123!");
+        String token = registerUser(email, "StrongPhrase123!");
 
         mockMvc.perform(get("/api/users/{id}", 999999L)
                         .header("Authorization", "Bearer " + token))

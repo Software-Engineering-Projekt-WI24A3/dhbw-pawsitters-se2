@@ -10,7 +10,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -42,16 +41,16 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         // Öffentliche Auth-Endpoints
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/logout")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/session")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/users/mailExists")).permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/session").permitAll()
+                        .requestMatchers("/api/users/mailExists").permitAll()
                         // Technischer Health-Check fuer CI/CD und Container-Orchestrierung
-                        .requestMatchers(new AntPathRequestMatcher("/actuator/health")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/actuator/health/**")).permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
                         // H2 Konsole Zugang
-                        .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
                         // Alle anderen Requests brauchen Authentifizierung
                         .anyRequest().authenticated()
                 )

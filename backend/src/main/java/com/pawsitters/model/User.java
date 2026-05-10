@@ -53,6 +53,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @Column(nullable = false)
+    private Boolean passwordChangeRequired = false;
+
     private String postalCode;
 
     private String city;
@@ -95,6 +98,8 @@ public class User {
 
     public UserRole getRole() { return role; }
 
+    public boolean isPasswordChangeRequired() { return Boolean.TRUE.equals(passwordChangeRequired); }
+
     public String getPostalCode() { return postalCode; }
 
     public String getCity() { return city; }
@@ -130,6 +135,8 @@ public class User {
     public void setNumberOfRatings(Integer numberOfRatings) { this.numberOfRatings = numberOfRatings; }
 
     public void setRole(UserRole role) { this.role = role; }
+
+    public void setPasswordChangeRequired(Boolean passwordChangeRequired) { this.passwordChangeRequired = passwordChangeRequired; }
 
     public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
 
