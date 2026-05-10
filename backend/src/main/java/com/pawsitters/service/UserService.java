@@ -6,6 +6,7 @@ import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
+import com.pawsitters.validation.PasswordNormalizer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +74,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setPasswordHash(passwordEncoder.encode(PasswordNormalizer.normalize(rawPassword)));
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPhone(phone);
@@ -84,6 +85,7 @@ public class UserService {
         user.setRating(0f);
         user.setNumberOfRatings(0);
         user.setRole(role);
+        user.setPasswordChangeRequired(false);
         user.setPostalCode(normalizeBlank(postalCode));
         user.setCity(normalizeBlank(city));
         user.setAcceptedPetSpecies(acceptedPetSpecies);

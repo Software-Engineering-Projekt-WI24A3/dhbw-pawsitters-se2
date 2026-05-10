@@ -2,5 +2,6 @@ package com.pawsitters.dto;
 
 public record AuthResponse(
         String token,
-        String role
+        String role,
+        boolean passwordChangeRequired
 ) {}

@@ -736,6 +736,9 @@ components:
         password:
           type: string
           format: password
+          minLength: 15
+          maxLength: 72
+          description: Muss mindestens 15 Zeichen lang sein, maximal 72 Byte haben und darf weder E-Mail, Namensbestandteile, Pawsitters-Kontextbegriffe noch bekannte schwache Passwortmuster enthalten. Passphrases und Leerzeichen sind erlaubt.
         firstName:
           type: string
         lastName:
@@ -849,12 +852,15 @@ components:
             type: string
     AuthResponse:
       type: object
-      required: [token, role]
+      required: [token, role, passwordChangeRequired]
       properties:
         token:
           type: string
         role:
           type: string
+        passwordChangeRequired:
+          type: boolean
+          description: True, wenn der Benutzer sein Passwort wegen eines Kompromittierungsverdachts aendern muss.
     SessionResponse:
       type: object
       required: [loggedIn]
@@ -1051,6 +1057,7 @@ components:
         data:
           token: eyJhbGciOiJIUzI1NiJ9.example
           role: PET_OWNER
+          passwordChangeRequired: false
         error: null
         meta:
           timestamp: "2026-05-06T19:30:00Z"

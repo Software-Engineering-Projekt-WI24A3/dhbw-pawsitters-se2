@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+    </list>
     <list default="true" id="65b88918-6401-4dc0-bf04-bf8797f1ec51" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Projektstart" beforeDir="false" afterPath="$PROJECT_DIR$/Projektstart" afterDir="false" />
@@ -233,6 +234,8 @@
       <method v="2" />
     </configuration>
     <configuration name="SearchMarketplaceHosts | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceHosts.http" executionIdentifier="#2" index="2" runType="Run single request">
+      <method v="2" />
+    </configuration>
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
