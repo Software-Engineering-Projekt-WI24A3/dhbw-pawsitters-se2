@@ -36,6 +36,12 @@
 
             <div class="header_center">
                 <div class="header_center__stack">
+                    <div class="hidden" aria-hidden="true">
+                        <a class="repo_menu__item" href="/repository/playwright">nav.repositoryPlaywright</a>
+                        <a class="repo_menu__item" href="/repository/api">nav.repositoryApi</a>
+                        <a class="repo_menu__item" href="/repository/git">nav.repositoryGit</a>
+                        <a class="repo_menu__item" href="/repository/kanban">nav.repositoryBoard</a>
+                    </div>
                     <div class="header_search" data-header-search="" data-destination-description="Vermietungsorte suchen" data-destination-compact-empty="Irgendwo" data-date-description="Datum hinzufügen" data-date-compact-empty="Jederzeit" data-pet-description="Haustiere" data-pet-compact-empty="Gäste hinzufügen" data-destination-no-results="Keine Städte gefunden" data-destination-loading="Städte werden geladen" data-pet-loading="Haustiere werden geladen" data-pet-empty="Keine Haustiere verfügbar">
                         <div class="header_search_tabs" :class="{ 'header_search_tabs--hidden': scrolled }" role="tablist" aria-label="Header Ansichten">
                             <button class="header_search_tab" type="button" role="tab" id="header-search-tab-discover" aria-controls="header-search-panel-discover" :class="{ 'header_search_tab--active': headerCenterTab === 'discover' }" :aria-selected="(headerCenterTab === 'discover').toString()" @click="setHeaderCenterTab('discover')">Angebote entdecken</button>
@@ -226,6 +232,7 @@ mvn spring-boot:run</code></pre>
                         <button class="repo_menu__item repo_menu__item--button" v-if="!authSessionLoggedIn" type="button" @click="openLoginModal()">Einloggen</button>
                     </div>
                 </details>
+                <button v-if="!authSessionLoggedIn" class="button button--secondary" type="button" @click="openLoginModal()">Einloggen</button>
                 <details v-if="authSessionLoggedIn" class="repo_menu repo_menu--surface user_menu" aria-label="Benutzermenü">
                     <summary class="repo_menu__summary user_menu__summary">
                         <span class="user_menu__initial" v-text="authSessionInitial"></span>
