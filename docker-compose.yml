@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-pawsitters}
+      MYSQL_USER: ${MYSQL_USER:-pawsitters}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pawsitters}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-pawsitters-root}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - pawsitters_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  pawsitters_mysql_data:
