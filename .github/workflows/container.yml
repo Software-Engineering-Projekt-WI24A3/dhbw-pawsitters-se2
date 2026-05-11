@@ -69,8 +69,13 @@ jobs:
       - name: Build and push frontend image
         uses: docker/build-push-action@v7
         with:
-          context: ./frontend
+          context: .
+          file: ./frontend/Dockerfile
           push: true
+          build-args: |
+            GITHUB_REF_NAME=${{ github.event.workflow_run.head_branch }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+            GITHUB_SHA=${{ github.event.workflow_run.head_sha }}
           tags: |
             ${{ env.FRONTEND_IMAGE }}:${{ steps.image-tags.outputs.sha-tag }}
             ${{ env.FRONTEND_IMAGE }}:${{ steps.image-tags.outputs.ref-tag }}
