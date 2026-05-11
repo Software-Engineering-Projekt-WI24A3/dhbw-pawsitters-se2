@@ -42,6 +42,14 @@ const E2E_RUNNER = {
   child: null
 };
 let e2eInventoryPromise = null;
+const tailwindBaseArgs = [
+  '-c',
+  'tailwind.config.js',
+  '-i',
+  './src/tailwind/site.css',
+  '-o',
+  './assets/css/site.css'
+];
 
 function binPath(name) {
   const executable = process.platform === 'win32' ? `${name}.cmd` : name;
@@ -53,6 +61,10 @@ function runProcess(command, args, label) {
     const child = spawn(command, args, {
       cwd: rootDir,
       stdio: 'inherit'
+    });
+
+    child.on('error', (error) => {
+      reject(new Error(`${label} failed to start: ${error.message}`));
     });
 
     child.on('exit', (code) => {
@@ -98,6 +110,64 @@ function runCapture(command, args, options = {}) {
       });
     });
   });
+}
+
+function resolveTailwindCommand() {
+  const primaryBin = binPath('tailwindcss');
+  if (existsSync(primaryBin)) {
+    return {
+      command: primaryBin,
+      argsPrefix: [],
+      source: 'tailwindcss'
+    };
+  }
+
+  const legacyBin = binPath('tailwind');
+  if (existsSync(legacyBin)) {
+    return {
+      command: legacyBin,
+      argsPrefix: [],
+      source: 'tailwind'
+    };
+  }
+
+  const scopedCliEntry = path.join(rootDir, 'node_modules', '@tailwindcss', 'cli', 'dist', 'index.mjs');
+  if (existsSync(scopedCliEntry)) {
+    return {
+      command: process.execPath,
+      argsPrefix: [scopedCliEntry],
+      source: '@tailwindcss/cli'
+    };
+  }
+
+  throw new Error(
+    [
+      'Tailwind CLI not found in this frontend install.',
+      'Expected one of:',
+      `- ${primaryBin}`,
+      `- ${legacyBin}`,
+      `- ${scopedCliEntry}`,
+      '',
+      'Fix:',
+      '1) Ensure you are in the frontend folder.',
+      '2) Run `rm -rf node_modules package-lock.json && npm install`.',
+      '3) Start again with `npm run dev`.'
+    ].join('\n')
+  );
+}
+
+function startTailwindWatcher(tailwindCommand, args) {
+  const child = spawn(tailwindCommand.command, [...tailwindCommand.argsPrefix, ...args], {
+    cwd: rootDir,
+    stdio: 'inherit'
+  });
+
+  child.on('error', (error) => {
+    console.error(`tailwind watch failed to start (${tailwindCommand.source}): ${error.message}`);
+    process.exit(1);
+  });
+
+  return child;
 }
 
 function sendJson(response, statusCode, payload) {
@@ -631,32 +701,21 @@ async function servePetChoices(response) {
 }
 
 async function main() {
-  await runProcess(binPath('tailwindcss'), [
-    '-c',
-    'tailwind.config.js',
-    '-i',
-    './src/tailwind/site.css',
-    '-o',
-    './assets/css/site.css',
-    '--minify'
-  ], 'tailwind build');
+  const tailwindCommand = resolveTailwindCommand();
+  const tailwindBuildArgs = [...tailwindBaseArgs, '--minify'];
+  const tailwindWatchArgs = [...tailwindBaseArgs, '--watch'];
+
+  await runProcess(
+    tailwindCommand.command,
+    [...tailwindCommand.argsPrefix, ...tailwindBuildArgs],
+    `tailwind build (${tailwindCommand.source})`
+  );
 
   await buildSite();
 
   const tailwindWatcher = noWatch
     ? null
-    : spawn(binPath('tailwindcss'), [
-      '-c',
-      'tailwind.config.js',
-      '-i',
-      './src/tailwind/site.css',
-      '-o',
-      './assets/css/site.css',
-      '--watch'
-    ], {
-      cwd: rootDir,
-      stdio: 'inherit'
-    });
+    : startTailwindWatcher(tailwindCommand, tailwindWatchArgs);
 
   const watchers = noWatch ? [] : startFileWatchers();
 
