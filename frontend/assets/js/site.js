@@ -4101,6 +4101,66 @@ createApp({
 
             return targetWidth;
         },
+        ensureGitGraphTopAnchorCanBeCentered(options = {}) {
+            const container = this.getGitGraphContainer();
+            const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (!container || !panel || !labelLayer) {
+                return false;
+            }
+
+            const requestedViewportWidth = Number.isFinite(options.viewportWidth)
+                ? Math.round(options.viewportWidth)
+                : 0;
+            const viewportWidth = requestedViewportWidth > 0
+                ? requestedViewportWidth
+                : this.getGitGraphViewportWidth();
+            if (viewportWidth <= 0) {
+                return false;
+            }
+
+            const topAnchorX = this.resolveTopGraphAnchorX();
+            if (!Number.isFinite(topAnchorX)) {
+                return false;
+            }
+
+            const edgeGap = this.resolveGitGraphSymmetricEdgeGap();
+            if (!Number.isFinite(edgeGap)) {
+                return false;
+            }
+
+            const maxLabelRight = this.readRightMostGraphLabelRight(labelLayer);
+            if (maxLabelRight <= 0) {
+                return false;
+            }
+
+            const svg = container.querySelector('svg');
+            const svgBBox = typeof svg?.getBBox === 'function' ? svg.getBBox() : null;
+            const svgRight = svgBBox && Number.isFinite(svgBBox.width)
+                ? Math.ceil(svgBBox.x + svgBBox.width)
+                : 0;
+            const maxContentRight = Math.max(maxLabelRight, svgRight);
+            const requiredEdgeGap = Math.max(
+                0,
+                Math.ceil((viewportWidth / 2) - (maxContentRight - topAnchorX))
+            );
+            if (requiredEdgeGap <= edgeGap) {
+                return false;
+            }
+
+            if (!container.dataset.basePaddingLeftPx) {
+                const baselinePaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+                container.dataset.basePaddingLeftPx = Number.isFinite(baselinePaddingLeft)
+                    ? String(baselinePaddingLeft)
+                    : '0';
+            }
+
+            const currentPaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+            const safePaddingLeft = Number.isFinite(currentPaddingLeft) ? currentPaddingLeft : 0;
+            const delta = requiredEdgeGap - edgeGap;
+            container.style.paddingLeft = `${Math.ceil(safePaddingLeft + delta)}px`;
+            return true;
+        },
         resolveTopGraphAnchorX() {
             const labels = Array.from(document.querySelectorAll('.git_graph_branch_label'));
             if (!labels.length) {
@@ -4217,7 +4277,7 @@ createApp({
             const panel = this.getGitGraphPanel();
             const labelLayer = document.querySelector('[data-git-branch-labels]');
             if (!container || !panel || !labelLayer) {
-                return;
+                return 0;
             }
 
             labelLayer.innerHTML = '';
@@ -4225,11 +4285,12 @@ createApp({
             const branches = this.repository.git.branches
                 .filter((branch) => typeof branch?.name === 'string' && branch.name.trim() && typeof branch?.hash === 'string' && branch.hash.trim());
             if (!branches.length) {
-                return;
+                return 0;
             }
 
             const labelLayerRect = labelLayer.getBoundingClientRect();
             const labelOffset = GIT_GRAPH_LABEL_OFFSET_PX;
+            let renderedLabelCount = 0;
 
             branches.forEach((branch) => {
                 const headNode = this.getGraphCommitNode(branch.hash);
@@ -4257,11 +4318,13 @@ createApp({
                 });
 
                 labelLayer.append(label);
+                renderedLabelCount += 1;
             });
 
             this.syncGitGraphHorizontalSpace({
                 viewportWidth: this.getGitGraphViewportWidth()
             });
+            return renderedLabelCount;
         },
         bindGitGraphBranchLabelTracking() {
             const panel = this.getGitGraphPanel();
@@ -4887,6 +4950,16 @@ createApp({
             const estimatedWidth = this.calculateGitGraphMinContentWidth(viewportWidth);
             container.style.width = `${estimatedWidth}px`;
             container.style.minWidth = `${estimatedWidth}px`;
+            if (!container.dataset.basePaddingLeftPx) {
+                const baselinePaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+                container.dataset.basePaddingLeftPx = Number.isFinite(baselinePaddingLeft)
+                    ? String(baselinePaddingLeft)
+                    : '0';
+            }
+            const basePaddingLeft = Number.parseFloat(container.dataset.basePaddingLeftPx || '0');
+            if (Number.isFinite(basePaddingLeft)) {
+                container.style.paddingLeft = `${basePaddingLeft}px`;
+            }
             const labelLayer = document.querySelector('[data-git-branch-labels]');
             if (labelLayer) {
                 labelLayer.style.width = `${estimatedWidth}px`;
@@ -4922,13 +4995,42 @@ createApp({
                         return;
                     }
 
-                    this.syncGitGraphPanelHeight();
-                    this.renderCustomGitBranchLabels();
-                    this.syncGitGraphHorizontalSpace({
-                        viewportWidth
-                    });
-                    this.centerGitGraphOnTopAnchor();
-                    this.syncGraphCommitHighlight();
+                    const finalizeLayout = (attempt = 0) => {
+                        if (renderToken !== this.gitGraphRenderToken) {
+                            return;
+                        }
+
+                        this.syncGitGraphPanelHeight();
+                        let labelCount = this.renderCustomGitBranchLabels();
+                        this.syncGitGraphHorizontalSpace({
+                            viewportWidth
+                        });
+
+                        for (let i = 0; i < 2; i += 1) {
+                            const adjustedForCentering = this.ensureGitGraphTopAnchorCanBeCentered({
+                                viewportWidth
+                            });
+                            if (!adjustedForCentering) {
+                                break;
+                            }
+
+                            labelCount = this.renderCustomGitBranchLabels();
+                            this.syncGitGraphHorizontalSpace({
+                                viewportWidth
+                            });
+                        }
+
+                        this.centerGitGraphOnTopAnchor();
+                        this.syncGraphCommitHighlight();
+
+                        if (labelCount === 0 && attempt < 6) {
+                            window.requestAnimationFrame(() => {
+                                finalizeLayout(attempt + 1);
+                            });
+                        }
+                    };
+
+                    finalizeLayout(0);
                 });
             });
         },
