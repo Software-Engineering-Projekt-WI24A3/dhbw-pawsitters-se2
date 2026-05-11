@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { promises as fs } from 'node:fs';
+import { existsSync, promises as fs } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -177,6 +177,19 @@ function toDateKey(value) {
   return `${year}-${month}-${day}`;
 }
 
+function resolveWorkspaceRoot(rootDir) {
+  const parentRoot = path.resolve(rootDir, '..');
+  if (existsSync(path.join(parentRoot, '.git'))) {
+    return parentRoot;
+  }
+
+  if (existsSync(path.join(rootDir, '.git'))) {
+    return rootDir;
+  }
+
+  return rootDir;
+}
+
 function parseRemote(remoteUrl = '') {
   const match = remoteUrl.match(/github\.com[:/](.+?)\/(.+?)(?:\.git)?$/i);
   if (!match) {
@@ -186,6 +199,61 @@ function parseRemote(remoteUrl = '') {
   return {
     owner: match[1],
     repo: match[2]
+  };
+}
+
+function buildGitSnapshotFallback({
+  remoteUrl = '',
+  owner = '',
+  repo = '',
+  currentBranch = '',
+  totalCommitsRaw = '0',
+  mergeCommitsRaw = '0',
+  lastCommitDate = '',
+  reason = ''
+} = {}) {
+  const activityCounts = new Map();
+  const repositoryOwner = normalizeWhitespace(owner);
+  const repositoryName = normalizeWhitespace(repo);
+  const repositoryLabel = repositoryOwner && repositoryName
+    ? `${repositoryOwner}/${repositoryName}`
+    : '';
+  const parsedTotalCommits = Number.parseInt(totalCommitsRaw || '0', 10);
+  const parsedMergeCommits = Number.parseInt(mergeCommitsRaw || '0', 10);
+
+  return {
+    remoteUrl,
+    repository: {
+      owner: repositoryOwner,
+      name: repositoryName,
+      label: repositoryLabel
+    },
+    branch: currentBranch,
+    defaultBranch: currentBranch,
+    totalCommits: Number.isFinite(parsedTotalCommits) ? parsedTotalCommits : 0,
+    mergeCommits: Number.isFinite(parsedMergeCommits) ? parsedMergeCommits : 0,
+    branchCount: 0,
+    contributorCount: 0,
+    authors: [],
+    activity: {
+      week: createActivitySeries(activityCounts, 'week'),
+      month: createActivitySeries(activityCounts, 'month'),
+      year: createActivitySeries(activityCounts, 'year')
+    },
+    branches: [],
+    branchGraphs: {},
+    projectGraph: {
+      branch: currentBranch,
+      graphImport: [],
+      recentCommits: [],
+      lastCommitDate,
+      lastCommitLabel: displayDate(lastCommitDate)
+    },
+    lastCommitDate,
+    lastCommitLabel: displayDate(lastCommitDate),
+    buildWarning: reason,
+    __rawIssues: [],
+    __githubUsers: []
   };
 }
 
@@ -1224,15 +1292,42 @@ async function buildGitSnapshot(workspaceRoot) {
     runOptional('git', ['for-each-ref', '--format=%(refname:short)\t%(objectname)', 'refs/tags'], workspaceRoot)
   ]);
 
-  const { owner, repo } = parseRemote(remoteUrl);
-  const issues = await runJsonRequired(
-    'gh',
-    ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
-    workspaceRoot,
-    'GitHub issues API'
-  );
-  const rawIssues = issues.filter((issue) => !issue.pull_request);
-  const githubUsers = await fetchGithubUsers(owner, repo, rawIssues, workspaceRoot);
+  let owner = '';
+  let repo = '';
+
+  try {
+    ({ owner, repo } = parseRemote(remoteUrl));
+  } catch (error) {
+    return buildGitSnapshotFallback({
+      remoteUrl,
+      currentBranch,
+      totalCommitsRaw,
+      mergeCommitsRaw,
+      lastCommitDate,
+      reason: error?.message || 'git remote metadata is unavailable'
+    });
+  }
+
+  let rawIssues = [];
+  try {
+    const issues = await runJsonRequired(
+      'gh',
+      ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
+      workspaceRoot,
+      'GitHub issues API'
+    );
+    rawIssues = issues.filter((issue) => !issue.pull_request);
+  } catch {
+    rawIssues = [];
+  }
+
+  let githubUsers = [];
+  try {
+    githubUsers = await fetchGithubUsers(owner, repo, rawIssues, workspaceRoot);
+  } catch {
+    githubUsers = [];
+  }
+
   const identityIndex = new Map();
 
   githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
@@ -1533,7 +1628,7 @@ function mapIssues(rawIssues, identityIndex) {
 }
 
 async function buildRepositorySnapshot(rootDir) {
-  const workspaceRoot = path.resolve(rootDir, '..');
+  const workspaceRoot = resolveWorkspaceRoot(rootDir);
   const [gitSnapshot, apiSnapshot] = await Promise.all([
     buildGitSnapshot(workspaceRoot),
     buildOpenApiSnapshot(workspaceRoot)
