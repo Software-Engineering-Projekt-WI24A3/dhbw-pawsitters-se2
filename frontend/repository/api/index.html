@@ -2,14 +2,14 @@
 <html lang="de"><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f5f7">
-    <meta name="description" content="Monochrome Registrierungs-Seite für das lokalisierte Pawsitters Frontend.">
-    <title>Pawsitters | Registrieren</title>
+    <meta name="description" content="Dynamische API-Übersicht direkt aus der OpenAPI-Datei mit Endpunkten, Methoden und Statuscodes.">
+    <title>Pawsitters | Repository | API-Übersicht</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/site.css">
     <link rel="icon" type="image/png" href="/assets/media/favicon.png"></head>
-<body class="page_surface page-auth">
+<body class="page_surface page-repository page-repository--api">
 <div id="app-shell" class="site_frame" v-cloak="">
     <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
         <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
@@ -217,7 +217,7 @@ mvn spring-boot:run</code></pre>
                             <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Playwright</span>
                         </a>
-                        <a class="repo_menu__item" href="/repository/api">
+                        <a class="repo_menu__item repo_menu__item--active" href="/repository/api">
                             <img class="repo_menu__item-icon" src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">API-Übersicht</span>
                         </a>
@@ -250,13 +250,13 @@ mvn spring-boot:run</code></pre>
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" href="/register" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" href="/repository/api" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" href="/register?locale=en">
+                        </a><a class="locale_menu__item" href="/repository/api?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/register?locale=ro">
+                        </a><a class="locale_menu__item" href="/repository/api?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -281,7 +281,7 @@ mvn spring-boot:run</code></pre>
                             <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Playwright</span>
                         </a>
-                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/api">
+                        <a class="repo_menu__item repo_menu__item--active" @click="closeMenu()" href="/repository/api">
                             <img class="repo_menu__item-icon" src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">API-Übersicht</span>
                         </a>
@@ -300,13 +300,13 @@ mvn spring-boot:run</code></pre>
                         <span class="locale_menu__summary-code">DE</span>
                     </summary>
                     <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/register" aria-current="true">
+                        <a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/repository/api" aria-current="true">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
                             <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/register?locale=en">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/api?locale=en">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
                             <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" @click="closeMenu()" href="/register?locale=ro">
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/repository/api?locale=ro">
                             <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
                             <span class="locale_menu__item-label">Română</span>
                         </a>
@@ -353,55 +353,117 @@ mvn spring-boot:run</code></pre>
     </transition>
 
     <main id="main-content" class="main_container site_main">
-        <section class="auth_layout">
-        <div class="auth_shell">
-            <section class="auth_intro">
-                <div>
-                    <p class="auth_intro__eyebrow">Neues Erscheinungsbild</p>
-                    <h2 class="auth_intro__title">Ruhiger Zugriff auf die wichtigsten Flows.</h2>
-                    <p class="auth_intro__text">Die Oberfläche setzt auf klare Typografie, weiche Graustufen und direkte Orientierung statt Effekte und blauen Flächen.</p>
-                </div>
-                <ul class="auth_intro__list">
-                    <li class="auth_intro__item">Klare Lesbarkeit in jeder Sektion</li>
-                    <li class="auth_intro__item">Fokussierte Eingaben ohne visuelle Ablenkung</li>
-                    <li class="auth_intro__item">Konsistente Navigation über alle lokalisierten Seiten</li>
-                </ul>
-            </section>
+        <section class="repo_stage">
+        <div class="repo_stack repo_stack--page">
+            <section class="repository_workspace repository_workspace--page" data-repository-live="">
+                <div data-repository-bootstrap="" hidden="">{}</div>
 
-            <section class="auth_card">
-                <div class="auth_card__header">
-                    <p class="auth_card__eyebrow">Pawsitters</p>
-                    <h1 class="auth_card__title">Registrieren</h1>
-                    <p class="auth_card__text">Lege deinen Zugang für die nächsten Frontend-Flows an.</p>
-                </div>
-
-                <form class="auth_form" novalidate="" @submit.prevent="handleRegisterSubmit" data-auth-register-name-required="Bitte gib deinen Namen ein." data-auth-register-email-required="Bitte gib eine gültige E-Mail-Adresse ein." data-auth-register-password-required="Bitte gib ein Passwort ein." data-auth-register-error-title="Registrierung fehlgeschlagen" data-auth-register-failed-message="Die Registrierung konnte nicht abgeschlossen werden." data-auth-register-success-title="Registrierung erfolgreich" data-auth-register-success-message="Dein Konto wurde erstellt.">
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Name</span>
-                        <input class="auth_input corp_input" type="text" autocomplete="name" data-auth-register-name="" v-model="registerFullName" aria-label="Name" placeholder="Pawsitters Nutzer">
-                        <span class="auth_field__label corp_field__label">Pawsitters Nutzer</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">E-Mail</span>
-                        <input class="auth_input corp_input" type="email" autocomplete="email" data-auth-register-email="" v-model="registerEmail" aria-label="E-Mail" placeholder="name@example.com">
-                        <span class="auth_field__label corp_field__label">name@example.com</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Passwort</span>
-                        <input class="auth_input corp_input" type="password" autocomplete="new-password" data-auth-register-password="" v-model="registerPassword" aria-label="Passwort" placeholder="••••••••">
-                        <span class="auth_field__label corp_field__label">••••••••</span>
-                    </label>
-                    <button class="button button--primary auth_submit" :disabled="registerSubmitPending" type="submit">Registrieren</button>
-                </form>
-
-                <div class="auth_link_card">
-                    <div>
-                        <p class="auth_link_card__eyebrow">Bereits dabei</p>
-                        <h2 class="auth_link_card__title">Einloggen</h2>
-                        <p class="auth_link_card__text">Öffne deinen bestehenden Zugang und fahre direkt fort.</p>
+                <div class="repository_compactbar">
+                    <div class="repository_switch repository_switch--page">
+                        <a class="repository_switch__button" href="/repository/playwright">
+                            <img class="repository_switch__icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span>Playwright</span>
+                        </a>
+                        <a class="repository_switch__button repository_switch__button--active" href="/repository/api">
+                            <img class="repository_switch__icon" src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png" alt="" aria-hidden="true">
+                            <span>API-Übersicht</span>
+                        </a>
+                        <a class="repository_switch__button" href="/repository/git">
+                            <img class="repository_switch__icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span>Git</span>
+                        </a>
+                        <a class="repository_switch__button" href="/repository/kanban">Kanban Board</a>
+                        <button class="repository_switch__refresh" type="button" @click="triggerRepositoryRefresh()" :disabled="repositoryRefreshing || repositoryLoading" :aria-busy="String(repositoryRefreshing || repositoryLoading)" :class="{ 'repository_switch__refresh--loading': repositoryRefreshing || repositoryLoading }" aria-label="Git neu laden">
+                            <span class="repository_switch__refresh-label">Git neu laden</span>
+                            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
+                                <path d="M20 4v6h-6"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <button class="button button--secondary auth_link_card__action" type="button" @click="openLoginModal()">Zum Login</button>
                 </div>
+
+                <div class="api_metrics">
+                    <article class="api_metric">
+                        <span class="api_metric__value" v-text="animatedMetrics.api.operationCount"></span>
+                        <span class="api_metric__label">Endpunkte</span>
+                    </article>
+                    <article class="api_metric">
+                        <span class="api_metric__value" v-text="animatedMetrics.api.pathCount"></span>
+                        <span class="api_metric__label">Pfade</span>
+                    </article>
+                    <article class="api_metric">
+                        <span class="api_metric__value" v-text="animatedMetrics.api.methodCount"></span>
+                        <span class="api_metric__label">Methoden</span>
+                    </article>
+                    <article class="api_metric">
+                        <span class="api_metric__value" v-text="animatedMetrics.api.tagCount"></span>
+                        <span class="api_metric__label">Tags</span>
+                    </article>
+                </div>
+
+                <section class="api_overview">
+                    <header class="api_overview__header">
+                        <div class="api_overview__titleline">
+                            <h1 class="api_overview__title" v-if="repository.api.info.title" v-text="repository.api.info.title"></h1>
+                            <h1 class="api_overview__title" v-else="">API-Übersicht</h1>
+                            <span class="api_overview__version" v-if="repository.api.info.version" v-text="repository.api.info.version"></span>
+                        </div>
+
+                        <div class="api_overview__source" v-if="repository.api.source">
+                            <span class="api_overview__source-label">Quelle</span>
+                            <span class="api_overview__source-path" v-text="repository.api.source"></span>
+                        </div>
+
+                        <p class="api_overview__warning" v-if="repository.api.parseError">
+                            <span>OpenAPI-Datei konnte nicht gelesen werden</span>
+                            <span class="api_operation__chip--code" v-text="repository.api.parseError"></span>
+                        </p>
+
+                        <div class="api_methods" v-if="repository.api.methods.length">
+                            <span class="api_method_badge" v-for="method in repository.api.methods" :key="method.name" :data-method="method.name">
+                                <span v-text="method.name"></span>
+                                <span class="api_method_badge__count" v-text="method.count"></span>
+                            </span>
+                        </div>
+                    </header>
+
+                    <div class="api_tags" v-if="repository.api.tags.length">
+                        <article class="api_tag" v-for="tag in repository.api.tags" :key="tag.name">
+                            <header class="api_tag__header">
+                                <h2 class="api_tag__title" v-text="tag.name"></h2>
+                                <span class="api_tag__count" v-text="tag.operationCount"></span>
+                            </header>
+
+                            <div class="api_tag__operations" v-if="tag.operations.length">
+                                <article class="api_operation" v-for="operation in tag.operations" :key="operation.key">
+                                    <div class="api_operation__route">
+                                        <span class="api_operation__method" :data-method="operation.method" v-text="operation.method"></span>
+                                        <span class="api_operation__path" v-text="operation.path"></span>
+                                    </div>
+                                    <p class="api_operation__summary" v-text="operation.summary"></p>
+                                    <div class="api_operation__chips">
+                                        <span class="api_operation__chip" v-if="operation.hasParameters">
+                                            <span>Parameter</span>
+                                            <span class="api_operation__chip--code" v-text="operation.parameters.length"></span>
+                                        </span>
+                                        <span class="api_operation__chip" v-if="operation.responses.length">
+                                            <span>Status</span>
+                                            <span class="api_operation__chip--code" v-text="operation.responses.join(', ')"></span>
+                                        </span>
+                                        <span class="api_operation__chip" v-if="operation.requestBodyRequired">
+                                            <span>Request Body</span>
+                                        </span>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <p class="api_tag__empty" v-else="">Keine Endpunkte gefunden.</p>
+                        </article>
+                    </div>
+
+                    <p class="api_overview__empty" v-else="">Keine Endpunkte gefunden.</p>
+                </section>
             </section>
         </div>
     </section>

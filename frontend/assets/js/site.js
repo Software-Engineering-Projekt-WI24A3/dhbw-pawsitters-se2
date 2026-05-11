@@ -1664,6 +1664,8 @@ const initialRepository = readRepositoryBootstrap();
 const appRoot = document.querySelector('#app-shell');
 const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
 const headerSearchRoot = document.querySelector('[data-header-search]');
+const authModalFormRoot = document.querySelector('.auth_modal__form');
+const registerFormRoot = document.querySelector('.auth_form');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
     pending: 'Pending',
@@ -1687,6 +1689,22 @@ const localizedPlaywrightLoadingLabel = playwrightRunnerRoot?.getAttribute('data
 const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute('data-notification-title') || 'Playwright tests completed';
 const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
 const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
+const localizedAuthModalStrings = {
+    passwordRequired: authModalFormRoot?.dataset.authPasswordRequired || 'Please enter a password.',
+    loginErrorTitle: authModalFormRoot?.dataset.authLoginErrorTitle || 'Sign in failed',
+    loginFailedMessage: authModalFormRoot?.dataset.authLoginFailedMessage || 'Sign in could not be completed.',
+    loginSuccessTitle: authModalFormRoot?.dataset.authLoginSuccessTitle || 'Signed in',
+    loginSuccessMessage: authModalFormRoot?.dataset.authLoginSuccessMessage || 'You are now signed in.'
+};
+const localizedRegisterStrings = {
+    nameRequired: registerFormRoot?.dataset.authRegisterNameRequired || 'Please enter your name.',
+    emailRequired: registerFormRoot?.dataset.authRegisterEmailRequired || 'Please enter an email address.',
+    passwordRequired: registerFormRoot?.dataset.authRegisterPasswordRequired || 'Please enter a password.',
+    registerErrorTitle: registerFormRoot?.dataset.authRegisterErrorTitle || 'Registration failed',
+    registerFailedMessage: registerFormRoot?.dataset.authRegisterFailedMessage || 'Registration could not be completed.',
+    registerSuccessTitle: registerFormRoot?.dataset.authRegisterSuccessTitle || 'Registration successful',
+    registerSuccessMessage: registerFormRoot?.dataset.authRegisterSuccessMessage || 'Your account has been created.'
+};
 const localizedHeaderSearchStrings = {
     destinationDescription: headerSearchRoot?.dataset.destinationDescription || 'Vermietungsorte suchen',
     destinationCompactEmpty: headerSearchRoot?.dataset.destinationCompactEmpty || 'Irgendwo',
@@ -1710,6 +1728,19 @@ createApp({
         return {
             menuOpen: false,
             loginModalOpen: false,
+            authSessionLoggedIn: false,
+            authSessionEmail: '',
+            authSessionRequestId: 0,
+            loginIdentifier: '',
+            loginPassword: '',
+            loginPasswordVisible: false,
+            loginLookupPending: false,
+            loginLookupRequestId: 0,
+            loginMailCheckedFor: '',
+            registerFullName: '',
+            registerEmail: '',
+            registerPassword: '',
+            registerSubmitPending: false,
             scrolled: false,
             headerScrollSyncFrame: 0,
             headerScrollPendingY: 0,
@@ -2025,6 +2056,13 @@ createApp({
             const reference = this.playwrightFinishedAt || this.playwrightStartedAt;
             const formatted = formatLocalDateTime(reference);
             return formatted || this.playwrightNeverLabel;
+        },
+        authSessionInitial() {
+            const sourceEmail = typeof this.authSessionEmail === 'string' ? this.authSessionEmail.trim() : '';
+            const localPart = sourceEmail.includes('@') ? sourceEmail.split('@')[0] : sourceEmail;
+            const compactLocalPart = localPart.replace(/[^a-zA-Z0-9]/g, '');
+            const firstCharacter = compactLocalPart.charAt(0) || localPart.charAt(0) || 'U';
+            return firstCharacter.toUpperCase();
         }
     },
     watch: {
@@ -2065,6 +2103,7 @@ createApp({
         this.handleResize();
         this.animateVisibleMetricGroups({ fromZero: true });
         this.refreshRepositoryData();
+        this.refreshAuthSession();
         this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
@@ -2855,13 +2894,420 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns();
         },
+        async refreshAuthSession() {
+            const requestId = this.authSessionRequestId + 1;
+            this.authSessionRequestId = requestId;
+
+            try {
+                const response = await fetch('/api/auth/session', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (requestId !== this.authSessionRequestId) {
+                    return;
+                }
+
+                if (!response.ok || payload?.success === false) {
+                    this.authSessionLoggedIn = false;
+                    this.authSessionEmail = '';
+                    return;
+                }
+
+                const sessionLoggedIn = payload?.data?.loggedIn === true;
+                const sessionEmail = typeof payload?.data?.email === 'string'
+                    ? payload.data.email.trim()
+                    : '';
+                this.authSessionLoggedIn = sessionLoggedIn;
+                this.authSessionEmail = sessionLoggedIn ? sessionEmail : '';
+
+                if (sessionLoggedIn && this.isRegisterPath(window.location.pathname)) {
+                    window.location.assign(this.buildHomeRedirectPath());
+                }
+            } catch {
+                if (requestId !== this.authSessionRequestId) {
+                    return;
+                }
+                this.authSessionLoggedIn = false;
+                this.authSessionEmail = '';
+            }
+        },
+        openCurrentUserProfile() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign('/api/users/me');
+        },
+        async logoutCurrentUser() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    return;
+                }
+
+                this.authSessionLoggedIn = false;
+                this.authSessionEmail = '';
+                this.menuOpen = false;
+                this.closeAllDropdowns({ immediate: true });
+                this.refreshAuthSession();
+            } catch {
+                return;
+            }
+        },
+        resetLoginModalState() {
+            this.loginLookupRequestId += 1;
+            this.loginIdentifier = '';
+            this.loginPassword = '';
+            this.loginPasswordVisible = false;
+            this.loginLookupPending = false;
+            this.loginMailCheckedFor = '';
+        },
+        focusLoginIdentifierField() {
+            nextTick(() => {
+                document.querySelector('[data-auth-login-identifier]')?.focus();
+            });
+        },
+        focusLoginPasswordField() {
+            nextTick(() => {
+                document.querySelector('[data-auth-login-password]')?.focus();
+            });
+        },
+        normalizeLoginIdentifier(value) {
+            return typeof value === 'string' ? value.trim() : '';
+        },
+        splitRegisterName(fullName) {
+            const normalizedName = typeof fullName === 'string' ? fullName.trim() : '';
+            if (!normalizedName) {
+                return {
+                    firstName: '',
+                    lastName: ''
+                };
+            }
+
+            const parts = normalizedName.split(/\s+/).filter(Boolean);
+            if (parts.length === 1) {
+                return {
+                    firstName: parts[0],
+                    lastName: parts[0]
+                };
+            }
+
+            return {
+                firstName: parts.slice(0, -1).join(' '),
+                lastName: parts.at(-1)
+            };
+        },
+        buildRegisterPayload() {
+            const normalizedName = typeof this.registerFullName === 'string' ? this.registerFullName.trim() : '';
+            const normalizedEmail = this.normalizeLoginIdentifier(this.registerEmail).toLowerCase();
+            const normalizedPassword = typeof this.registerPassword === 'string' ? this.registerPassword : '';
+            const { firstName, lastName } = this.splitRegisterName(normalizedName);
+
+            return {
+                email: normalizedEmail,
+                password: normalizedPassword,
+                firstName,
+                lastName,
+                phone: '+490000000000',
+                birthDate: '1990-01-01',
+                emergencyContact: 'Emergency contact',
+                profilePicture: '/assets/media/favicon.png',
+                bio: 'Pawsitters account',
+                role: 'PET_OWNER',
+                postalCode: null,
+                city: null,
+                acceptedPetSpecies: ['DOG']
+            };
+        },
+        async handleRegisterSubmit() {
+            if (this.registerSubmitPending) {
+                return;
+            }
+
+            const normalizedName = typeof this.registerFullName === 'string' ? this.registerFullName.trim() : '';
+            const normalizedEmail = this.normalizeLoginIdentifier(this.registerEmail).toLowerCase();
+            const normalizedPassword = typeof this.registerPassword === 'string' ? this.registerPassword.trim() : '';
+
+            this.registerFullName = normalizedName;
+            this.registerEmail = normalizedEmail;
+
+            if (!normalizedName) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.nameRequired,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            if (!this.isEmailIdentifier(normalizedEmail)) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.emailRequired,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            if (!normalizedPassword) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.passwordRequired,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            this.registerSubmitPending = true;
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify(this.buildRegisterPayload())
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    const backendMessage = typeof payload?.message === 'string'
+                        ? payload.message.trim()
+                        : '';
+                    this.pushNotification({
+                        title: localizedRegisterStrings.registerErrorTitle,
+                        message: backendMessage || localizedRegisterStrings.registerFailedMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerSuccessTitle,
+                    message: localizedRegisterStrings.registerSuccessMessage,
+                    tone: 'success'
+                });
+                this.registerPassword = '';
+                await this.refreshAuthSession();
+            } catch {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.registerFailedMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.registerSubmitPending = false;
+            }
+        },
+        isEmailIdentifier(value) {
+            if (typeof value !== 'string') {
+                return false;
+            }
+
+            const trimmedValue = value.trim();
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue);
+        },
+        isRegisterPath(pathname) {
+            if (typeof pathname !== 'string') {
+                return false;
+            }
+
+            const normalizedPath = pathname.trim().replace(/\/+$/, '') || '/';
+            return normalizedPath === '/register' || /^\/(?:de|en|ro)\/register$/i.test(normalizedPath);
+        },
+        buildHomeRedirectPath() {
+            const localePrefixMatch = window.location.pathname.match(/^\/(de|en|ro)(?:\/|$)/i);
+            const localePrefix = localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
+            const homePath = localePrefix || '/';
+            const currentUrl = new URL(window.location.href);
+            const homeUrl = new URL(homePath, window.location.origin);
+            const localeParam = currentUrl.searchParams.get('locale');
+
+            if (localeParam) {
+                homeUrl.searchParams.set('locale', localeParam);
+            }
+
+            return `${homeUrl.pathname}${homeUrl.search}`;
+        },
+        buildRegisterRedirectPath() {
+            const localePrefixMatch = window.location.pathname.match(/^\/(de|en|ro)(?:\/|$)/i);
+            const localePrefix = localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
+            const registerPath = localePrefix ? `${localePrefix}/register` : '/register';
+            const currentUrl = new URL(window.location.href);
+            const registerUrl = new URL(registerPath, window.location.origin);
+            const localeParam = currentUrl.searchParams.get('locale');
+
+            if (localeParam) {
+                registerUrl.searchParams.set('locale', localeParam);
+            }
+
+            return `${registerUrl.pathname}${registerUrl.search}`;
+        },
+        handleLoginIdentifierInput() {
+            if (!this.loginPasswordVisible) {
+                return;
+            }
+
+            const normalizedIdentifier = this.normalizeLoginIdentifier(this.loginIdentifier).toLowerCase();
+            if (normalizedIdentifier === this.loginMailCheckedFor) {
+                return;
+            }
+
+            this.loginPasswordVisible = false;
+            this.loginPassword = '';
+            this.loginMailCheckedFor = '';
+        },
+        async handleLoginModalSubmit() {
+            if (this.loginLookupPending) {
+                return;
+            }
+
+            const normalizedIdentifier = this.normalizeLoginIdentifier(this.loginIdentifier);
+            this.loginIdentifier = normalizedIdentifier;
+
+            if (!this.isEmailIdentifier(normalizedIdentifier)) {
+                return;
+            }
+
+            if (this.loginPasswordVisible) {
+                const normalizedPassword = typeof this.loginPassword === 'string' ? this.loginPassword : '';
+                if (!normalizedPassword.trim()) {
+                    this.pushNotification({
+                        title: localizedAuthModalStrings.loginErrorTitle,
+                        message: localizedAuthModalStrings.passwordRequired,
+                        tone: 'warning'
+                    });
+                    this.focusLoginPasswordField();
+                    return;
+                }
+
+                const requestId = this.loginLookupRequestId + 1;
+                this.loginLookupRequestId = requestId;
+                this.loginLookupPending = true;
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        cache: 'no-store',
+                        body: JSON.stringify({
+                            email: normalizedIdentifier,
+                            password: normalizedPassword
+                        })
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+                    if (requestId !== this.loginLookupRequestId) {
+                        return;
+                    }
+
+                    if (!response.ok || payload?.success === false) {
+                        const backendMessage = typeof payload?.message === 'string'
+                            ? payload.message.trim()
+                            : '';
+                        this.pushNotification({
+                            title: localizedAuthModalStrings.loginErrorTitle,
+                            message: backendMessage || localizedAuthModalStrings.loginFailedMessage,
+                            tone: 'warning'
+                        });
+                        this.loginPassword = '';
+                        this.focusLoginPasswordField();
+                        return;
+                    }
+
+                    this.pushNotification({
+                        title: localizedAuthModalStrings.loginSuccessTitle,
+                        message: localizedAuthModalStrings.loginSuccessMessage,
+                        tone: 'success'
+                    });
+                    this.closeLoginModal();
+                    this.refreshAuthSession();
+                } catch {
+                    this.pushNotification({
+                        title: localizedAuthModalStrings.loginErrorTitle,
+                        message: localizedAuthModalStrings.loginFailedMessage,
+                        tone: 'warning'
+                    });
+                } finally {
+                    if (requestId === this.loginLookupRequestId) {
+                        this.loginLookupPending = false;
+                    }
+                }
+
+                return;
+            }
+
+            const requestId = this.loginLookupRequestId + 1;
+            this.loginLookupRequestId = requestId;
+            this.loginLookupPending = true;
+
+            try {
+                const response = await fetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedIdentifier)}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (requestId !== this.loginLookupRequestId) {
+                    return;
+                }
+
+                if (!response.ok || payload?.success === false) {
+                    return;
+                }
+
+                const emailExists = payload?.data?.exists === true;
+                if (!emailExists) {
+                    window.location.assign(this.buildRegisterRedirectPath());
+                    return;
+                }
+
+                this.loginPasswordVisible = true;
+                this.loginMailCheckedFor = normalizedIdentifier.toLowerCase();
+                this.focusLoginPasswordField();
+            } catch {
+                // Mail lookup errors are intentionally silent in the modal flow.
+            } finally {
+                if (requestId === this.loginLookupRequestId) {
+                    this.loginLookupPending = false;
+                }
+            }
+        },
         openLoginModal() {
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
             this.activeGitCommitModalHash = '';
             this.activeBoardCardKey = '';
+            this.resetLoginModalState();
             this.loginModalOpen = true;
             this.syncModalBodyLock();
+            this.focusLoginIdentifierField();
         },
         openLoginModalFromMenu() {
             this.menuOpen = false;
@@ -2892,6 +3338,7 @@ createApp({
 
             this.loginModalOpen = false;
             this.syncModalBodyLock();
+            this.resetLoginModalState();
         },
         syncModalBodyLock() {
             document.body.classList.toggle(
@@ -3476,6 +3923,7 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
             this.loginModalOpen = false;
+            this.resetLoginModalState();
             this.activeBoardCardKey = cardKey;
             this.activeGitCommitModalHash = '';
             this.syncModalBodyLock();
@@ -3653,6 +4101,66 @@ createApp({
 
             return targetWidth;
         },
+        ensureGitGraphTopAnchorCanBeCentered(options = {}) {
+            const container = this.getGitGraphContainer();
+            const panel = this.getGitGraphPanel();
+            const labelLayer = document.querySelector('[data-git-branch-labels]');
+            if (!container || !panel || !labelLayer) {
+                return false;
+            }
+
+            const requestedViewportWidth = Number.isFinite(options.viewportWidth)
+                ? Math.round(options.viewportWidth)
+                : 0;
+            const viewportWidth = requestedViewportWidth > 0
+                ? requestedViewportWidth
+                : this.getGitGraphViewportWidth();
+            if (viewportWidth <= 0) {
+                return false;
+            }
+
+            const topAnchorX = this.resolveTopGraphAnchorX();
+            if (!Number.isFinite(topAnchorX)) {
+                return false;
+            }
+
+            const edgeGap = this.resolveGitGraphSymmetricEdgeGap();
+            if (!Number.isFinite(edgeGap)) {
+                return false;
+            }
+
+            const maxLabelRight = this.readRightMostGraphLabelRight(labelLayer);
+            if (maxLabelRight <= 0) {
+                return false;
+            }
+
+            const svg = container.querySelector('svg');
+            const svgBBox = typeof svg?.getBBox === 'function' ? svg.getBBox() : null;
+            const svgRight = svgBBox && Number.isFinite(svgBBox.width)
+                ? Math.ceil(svgBBox.x + svgBBox.width)
+                : 0;
+            const maxContentRight = Math.max(maxLabelRight, svgRight);
+            const requiredEdgeGap = Math.max(
+                0,
+                Math.ceil((viewportWidth / 2) - (maxContentRight - topAnchorX))
+            );
+            if (requiredEdgeGap <= edgeGap) {
+                return false;
+            }
+
+            if (!container.dataset.basePaddingLeftPx) {
+                const baselinePaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+                container.dataset.basePaddingLeftPx = Number.isFinite(baselinePaddingLeft)
+                    ? String(baselinePaddingLeft)
+                    : '0';
+            }
+
+            const currentPaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+            const safePaddingLeft = Number.isFinite(currentPaddingLeft) ? currentPaddingLeft : 0;
+            const delta = requiredEdgeGap - edgeGap;
+            container.style.paddingLeft = `${Math.ceil(safePaddingLeft + delta)}px`;
+            return true;
+        },
         resolveTopGraphAnchorX() {
             const labels = Array.from(document.querySelectorAll('.git_graph_branch_label'));
             if (!labels.length) {
@@ -3769,7 +4277,7 @@ createApp({
             const panel = this.getGitGraphPanel();
             const labelLayer = document.querySelector('[data-git-branch-labels]');
             if (!container || !panel || !labelLayer) {
-                return;
+                return 0;
             }
 
             labelLayer.innerHTML = '';
@@ -3777,11 +4285,12 @@ createApp({
             const branches = this.repository.git.branches
                 .filter((branch) => typeof branch?.name === 'string' && branch.name.trim() && typeof branch?.hash === 'string' && branch.hash.trim());
             if (!branches.length) {
-                return;
+                return 0;
             }
 
             const labelLayerRect = labelLayer.getBoundingClientRect();
             const labelOffset = GIT_GRAPH_LABEL_OFFSET_PX;
+            let renderedLabelCount = 0;
 
             branches.forEach((branch) => {
                 const headNode = this.getGraphCommitNode(branch.hash);
@@ -3809,11 +4318,13 @@ createApp({
                 });
 
                 labelLayer.append(label);
+                renderedLabelCount += 1;
             });
 
             this.syncGitGraphHorizontalSpace({
                 viewportWidth: this.getGitGraphViewportWidth()
             });
+            return renderedLabelCount;
         },
         bindGitGraphBranchLabelTracking() {
             const panel = this.getGitGraphPanel();
@@ -4322,6 +4833,7 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
             this.loginModalOpen = false;
+            this.resetLoginModalState();
             this.activeGitCommitModalHash = commitHash;
             this.activeBoardCardKey = '';
             this.syncModalBodyLock();
@@ -4438,6 +4950,16 @@ createApp({
             const estimatedWidth = this.calculateGitGraphMinContentWidth(viewportWidth);
             container.style.width = `${estimatedWidth}px`;
             container.style.minWidth = `${estimatedWidth}px`;
+            if (!container.dataset.basePaddingLeftPx) {
+                const baselinePaddingLeft = Number.parseFloat(window.getComputedStyle(container).paddingLeft || '0');
+                container.dataset.basePaddingLeftPx = Number.isFinite(baselinePaddingLeft)
+                    ? String(baselinePaddingLeft)
+                    : '0';
+            }
+            const basePaddingLeft = Number.parseFloat(container.dataset.basePaddingLeftPx || '0');
+            if (Number.isFinite(basePaddingLeft)) {
+                container.style.paddingLeft = `${basePaddingLeft}px`;
+            }
             const labelLayer = document.querySelector('[data-git-branch-labels]');
             if (labelLayer) {
                 labelLayer.style.width = `${estimatedWidth}px`;
@@ -4473,13 +4995,42 @@ createApp({
                         return;
                     }
 
-                    this.syncGitGraphPanelHeight();
-                    this.renderCustomGitBranchLabels();
-                    this.syncGitGraphHorizontalSpace({
-                        viewportWidth
-                    });
-                    this.centerGitGraphOnTopAnchor();
-                    this.syncGraphCommitHighlight();
+                    const finalizeLayout = (attempt = 0) => {
+                        if (renderToken !== this.gitGraphRenderToken) {
+                            return;
+                        }
+
+                        this.syncGitGraphPanelHeight();
+                        let labelCount = this.renderCustomGitBranchLabels();
+                        this.syncGitGraphHorizontalSpace({
+                            viewportWidth
+                        });
+
+                        for (let i = 0; i < 2; i += 1) {
+                            const adjustedForCentering = this.ensureGitGraphTopAnchorCanBeCentered({
+                                viewportWidth
+                            });
+                            if (!adjustedForCentering) {
+                                break;
+                            }
+
+                            labelCount = this.renderCustomGitBranchLabels();
+                            this.syncGitGraphHorizontalSpace({
+                                viewportWidth
+                            });
+                        }
+
+                        this.centerGitGraphOnTopAnchor();
+                        this.syncGraphCommitHighlight();
+
+                        if (labelCount === 0 && attempt < 6) {
+                            window.requestAnimationFrame(() => {
+                                finalizeLayout(attempt + 1);
+                            });
+                        }
+                    };
+
+                    finalizeLayout(0);
                 });
             });
         },

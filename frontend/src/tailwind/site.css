@@ -1875,6 +1875,54 @@
         min-width: 15.8rem;
     }
 
+    .user_menu {
+        @apply ml-1;
+    }
+
+    .repo_menu--surface .user_menu__summary {
+        width: 2.85rem;
+        height: 2.85rem;
+        min-width: 2.85rem;
+        min-height: 2.85rem;
+        justify-content: center;
+        padding: 0;
+        flex-shrink: 0;
+        aspect-ratio: 1 / 1;
+    }
+
+    .user_menu__initial {
+        @apply inline-flex items-center justify-center rounded-full text-[0.95rem] font-semibold uppercase;
+        width: 2.08rem;
+        height: 2.08rem;
+        border: 1px solid rgba(17, 17, 19, 0.2);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(245, 248, 252, 0.98));
+        color: rgba(17, 17, 19, 0.92);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.94),
+            0 1px 2px rgba(17, 17, 19, 0.06);
+    }
+
+    .user_menu__panel {
+        min-width: 12.4rem;
+    }
+
+    .user_menu__divider {
+        display: block;
+        width: calc(100% - 2rem);
+        height: 1px;
+        margin: 0.5rem auto;
+        background: rgba(17, 17, 19, 0.12);
+    }
+
+    .user_menu__logout {
+        color: #b91c1c;
+    }
+
+    .user_menu__logout:hover {
+        background: rgba(185, 28, 28, 0.08);
+        color: #991b1b;
+    }
+
     .header_quick_menu__category {
         @apply m-0 px-4 pb-2 pt-1 text-[0.67rem] font-semibold uppercase;
         letter-spacing: 0.14em;

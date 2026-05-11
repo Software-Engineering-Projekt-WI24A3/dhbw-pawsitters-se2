@@ -36,6 +36,12 @@
 
             <div class="header_center">
                 <div class="header_center__stack">
+                    <div class="hidden" aria-hidden="true">
+                        <a class="repo_menu__item" href="/repository/playwright">nav.repositoryPlaywright</a>
+                        <a class="repo_menu__item" href="/repository/api">nav.repositoryApi</a>
+                        <a class="repo_menu__item" href="/repository/git">nav.repositoryGit</a>
+                        <a class="repo_menu__item" href="/repository/kanban">nav.repositoryBoard</a>
+                    </div>
                     <div class="header_search" data-header-search="" data-destination-description="Vermietungsorte suchen" data-destination-compact-empty="Irgendwo" data-date-description="Datum hinzufügen" data-date-compact-empty="Jederzeit" data-pet-description="Haustiere" data-pet-compact-empty="Gäste hinzufügen" data-destination-no-results="Keine Städte gefunden" data-destination-loading="Städte werden geladen" data-pet-loading="Haustiere werden geladen" data-pet-empty="Keine Haustiere verfügbar">
                         <div class="header_search_tabs" :class="{ 'header_search_tabs--hidden': scrolled }" role="tablist" aria-label="Header Ansichten">
                             <button class="header_search_tab" type="button" role="tab" id="header-search-tab-discover" aria-controls="header-search-panel-discover" :class="{ 'header_search_tab--active': headerCenterTab === 'discover' }" :aria-selected="(headerCenterTab === 'discover').toString()" @click="setHeaderCenterTab('discover')">Angebote entdecken</button>
@@ -196,24 +202,6 @@ mvn spring-boot:run</code></pre>
             </div>
 
             <div class="header_actions hidden lg:flex">
-                <details class="locale_menu" aria-label="Sprachauswahl">
-                    <summary class="locale_menu__summary">
-                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
-                        <span class="locale_menu__summary-code">DE</span>
-                    </summary>
-                    <div class="locale_menu__panel">
-                        <a class="locale_menu__item locale_menu__item--active" href="/repository/git" aria-current="true">
-                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
-                            <span class="locale_menu__item-label">Deutsch</span>
-                        </a><a class="locale_menu__item" href="/repository/git?locale=en">
-                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
-                            <span class="locale_menu__item-label">English</span>
-                        </a><a class="locale_menu__item" href="/repository/git?locale=ro">
-                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
-                            <span class="locale_menu__item-label">Română</span>
-                        </a>
-                    </div>
-                </details>
                 <details class="repo_menu repo_menu--surface header_quick_menu" aria-label="Schnellmenü">
                     <summary class="repo_menu__summary header_quick_menu__summary">
                         <span class="header_quick_menu__bars" aria-hidden="true">
@@ -240,8 +228,38 @@ mvn spring-boot:run</code></pre>
                         <a class="repo_menu__item" href="/repository/kanban">
                             <span class="repo_menu__item-label">Kanban Board</span>
                         </a>
-                        <span class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
-                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openLoginModal()">Einloggen</button>
+                        <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button" v-if="!authSessionLoggedIn" type="button" @click="openLoginModal()">Einloggen</button>
+                    </div>
+                </details>
+                <button v-if="!authSessionLoggedIn" class="button button--secondary" type="button" @click="openLoginModal()">Einloggen</button>
+                <details v-if="authSessionLoggedIn" class="repo_menu repo_menu--surface user_menu" aria-label="Benutzermenü">
+                    <summary class="repo_menu__summary user_menu__summary">
+                        <span class="user_menu__initial" v-text="authSessionInitial"></span>
+                        <span class="sr-only">Benutzermenü öffnen</span>
+                    </summary>
+                    <div class="repo_menu__panel user_menu__panel">
+                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">Profil ansehen</button>
+                        <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">Ausloggen</button>
+                    </div>
+                </details>
+                <details class="locale_menu" aria-label="Sprachauswahl">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                        <span class="locale_menu__summary-code">DE</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a class="locale_menu__item locale_menu__item--active" href="/repository/git" aria-current="true">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                            <span class="locale_menu__item-label">Deutsch</span>
+                        </a><a class="locale_menu__item" href="/repository/git?locale=en">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                            <span class="locale_menu__item-label">English</span>
+                        </a><a class="locale_menu__item" href="/repository/git?locale=ro">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
+                            <span class="locale_menu__item-label">Română</span>
+                        </a>
                     </div>
                 </details>
             </div>
@@ -294,7 +312,7 @@ mvn spring-boot:run</code></pre>
                         </a>
                     </div>
                 </details>
-                <button class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()">Einloggen</button>
+                <button v-if="!authSessionLoggedIn" class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()">Einloggen</button>
             </div>
         </div>
     </div>
@@ -317,13 +335,18 @@ mvn spring-boot:run</code></pre>
                 </div>
                 <h2 class="auth_modal__title">Einloggen oder registrieren</h2>
 
-                <form class="auth_modal__form" novalidate="" @submit.prevent="">
+                <form class="auth_modal__form" novalidate="" @submit.prevent="handleLoginModalSubmit" data-auth-password-required="Bitte ein Passwort eingeben." data-auth-login-error-title="Login fehlgeschlagen" data-auth-login-failed-message="Der Login konnte nicht abgeschlossen werden." data-auth-login-success-title="Erfolgreich eingeloggt" data-auth-login-success-message="Du bist jetzt eingeloggt.">
                     <label class="corp_field auth_modal__field">
                         <span class="sr-only">Telefonnummer oder E-Mail Adresse</span>
-                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
                         <span class="corp_field__label">Telefonnummer oder E-Mail Adresse</span>
                     </label>
-                    <button class="button auth_modal__submit" type="submit">Weiter</button>
+                    <label v-if="loginPasswordVisible" class="corp_field auth_modal__field">
+                        <span class="sr-only">Passwort eingeben</span>
+                        <input class="corp_input" type="password" autocomplete="current-password" data-auth-login-password="" v-model="loginPassword" aria-label="Passwort eingeben" placeholder="Passwort eingeben">
+                        <span class="corp_field__label">Passwort eingeben</span>
+                    </label>
+                    <button class="button auth_modal__submit" :disabled="loginLookupPending" type="submit">Weiter</button>
                 </form>
             </article>
         </div>

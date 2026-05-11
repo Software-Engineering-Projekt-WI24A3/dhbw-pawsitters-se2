@@ -63,6 +63,10 @@
     "ariaLocale": "Selector de limbă",
     "ariaQuickMenu": "Meniu rapid",
     "openQuickMenu": "Deschide meniul rapid",
+    "ariaUserMenu": "Meniu utilizator",
+    "openUserMenu": "Deschide meniul utilizator",
+    "profile": "Vezi profilul",
+    "logout": "Deconectare",
     "login": "Autentificare",
     "menu": "Meniu",
     "close": "Închide meniul"
@@ -208,6 +212,12 @@
       "closeAria": "Închide fereastra de autentificare",
       "title": "Autentifică-te sau înregistrează-te",
       "identifier": "Număr de telefon sau adresă de e-mail",
+      "passwordPrompt": "Introdu parola",
+      "passwordRequired": "Te rugăm să introduci parola.",
+      "loginErrorTitle": "Autentificare eșuată",
+      "loginFailedMessage": "Autentificarea nu a putut fi finalizată.",
+      "loginSuccessTitle": "Autentificat",
+      "loginSuccessMessage": "Acum ești autentificat.",
       "continue": "Continuă"
     },
     "shared": {
@@ -244,6 +254,13 @@
       "emailPlaceholder": "name@example.com",
       "password": "Parolă",
       "passwordPlaceholder": "••••••••",
+      "validationNameRequired": "Te rugăm să introduci numele.",
+      "validationEmailRequired": "Te rugăm să introduci o adresă de e-mail validă.",
+      "validationPasswordRequired": "Te rugăm să introduci o parolă.",
+      "errorTitle": "Înregistrare eșuată",
+      "errorMessage": "Înregistrarea nu a putut fi finalizată.",
+      "successTitle": "Înregistrare reușită",
+      "successMessage": "Contul tău a fost creat.",
       "submit": "Înregistrare",
       "alt": {
         "eyebrow": "Deja înregistrat",

@@ -63,6 +63,10 @@
     "ariaLocale": "Sprachauswahl",
     "ariaQuickMenu": "Schnellmenü",
     "openQuickMenu": "Schnellmenü öffnen",
+    "ariaUserMenu": "Benutzermenü",
+    "openUserMenu": "Benutzermenü öffnen",
+    "profile": "Profil ansehen",
+    "logout": "Ausloggen",
     "login": "Einloggen",
     "menu": "Menü",
     "close": "Menü schließen"
@@ -208,6 +212,12 @@
       "closeAria": "Login-Fenster schließen",
       "title": "Einloggen oder registrieren",
       "identifier": "Telefonnummer oder E-Mail Adresse",
+      "passwordPrompt": "Passwort eingeben",
+      "passwordRequired": "Bitte ein Passwort eingeben.",
+      "loginErrorTitle": "Login fehlgeschlagen",
+      "loginFailedMessage": "Der Login konnte nicht abgeschlossen werden.",
+      "loginSuccessTitle": "Erfolgreich eingeloggt",
+      "loginSuccessMessage": "Du bist jetzt eingeloggt.",
       "continue": "Weiter"
     },
     "shared": {
@@ -244,6 +254,13 @@
       "emailPlaceholder": "name@example.com",
       "password": "Passwort",
       "passwordPlaceholder": "••••••••",
+      "validationNameRequired": "Bitte gib deinen Namen ein.",
+      "validationEmailRequired": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "validationPasswordRequired": "Bitte gib ein Passwort ein.",
+      "errorTitle": "Registrierung fehlgeschlagen",
+      "errorMessage": "Die Registrierung konnte nicht abgeschlossen werden.",
+      "successTitle": "Registrierung erfolgreich",
+      "successMessage": "Dein Konto wurde erstellt.",
       "submit": "Registrieren",
       "alt": {
         "eyebrow": "Bereits dabei",

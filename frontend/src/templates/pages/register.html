@@ -25,12 +25,23 @@
                     <p class="auth_card__text" th:text="#{auth.register.text}">auth.register.text</p>
                 </div>
 
-                <form class="auth_form" novalidate>
+                <form class="auth_form"
+                      novalidate
+                      @submit.prevent="handleRegisterSubmit"
+                      th:attr="data-auth-register-name-required=#{auth.register.validationNameRequired},
+                               data-auth-register-email-required=#{auth.register.validationEmailRequired},
+                               data-auth-register-password-required=#{auth.register.validationPasswordRequired},
+                               data-auth-register-error-title=#{auth.register.errorTitle},
+                               data-auth-register-failed-message=#{auth.register.errorMessage},
+                               data-auth-register-success-title=#{auth.register.successTitle},
+                               data-auth-register-success-message=#{auth.register.successMessage}">
                     <label class="auth_field corp_field">
                         <span class="sr-only" th:text="#{auth.register.name}">auth.register.name</span>
                         <input class="auth_input corp_input"
                                type="text"
                                autocomplete="name"
+                               data-auth-register-name
+                               v-model="registerFullName"
                                th:attr="aria-label=#{auth.register.name},placeholder=#{auth.register.namePlaceholder}">
                         <span class="auth_field__label corp_field__label"
                               th:text="#{auth.register.namePlaceholder}">auth.register.namePlaceholder</span>
@@ -40,6 +51,8 @@
                         <input class="auth_input corp_input"
                                type="email"
                                autocomplete="email"
+                               data-auth-register-email
+                               v-model="registerEmail"
                                th:attr="aria-label=#{auth.register.email},placeholder=#{auth.register.emailPlaceholder}">
                         <span class="auth_field__label corp_field__label"
                               th:text="#{auth.register.emailPlaceholder}">auth.register.emailPlaceholder</span>
@@ -49,11 +62,16 @@
                         <input class="auth_input corp_input"
                                type="password"
                                autocomplete="new-password"
+                               data-auth-register-password
+                               v-model="registerPassword"
                                th:attr="aria-label=#{auth.register.password},placeholder=#{auth.register.passwordPlaceholder}">
                         <span class="auth_field__label corp_field__label"
                               th:text="#{auth.register.passwordPlaceholder}">auth.register.passwordPlaceholder</span>
                     </label>
-                    <button class="button button--primary auth_submit" type="button" th:text="#{auth.register.submit}">auth.register.submit</button>
+                    <button class="button button--primary auth_submit"
+                            :disabled="registerSubmitPending"
+                            type="submit"
+                            th:text="#{auth.register.submit}">auth.register.submit</button>
                 </form>
 
                 <div class="auth_link_card">
