@@ -3,5 +3,14 @@
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: shell(#{meta.home.title}, #{meta.home.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-home', ~{::content})}">
 <th:block th:fragment="content">
+    <section class="home_stage home_stage--minimal">
+        <div class="home_minimal_shell">
+            <h1 class="home_wordmark" th:text="#{brand.name}">brand.name</h1>
+            <div class="home_minimal__actions">
+                <a class="button button--primary" th:href="${repositoryGitPath}" th:text="#{nav.repository}">nav.repository</a>
+                <button class="button button--secondary" type="button" @click="openLoginModal()" th:text="#{nav.login}">nav.login</button>
+            </div>
+        </div>
+    </section>
 </th:block>
 </html>

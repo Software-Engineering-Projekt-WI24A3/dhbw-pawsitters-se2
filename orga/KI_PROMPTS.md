@@ -10,5 +10,3 @@ Prompt 9, Claude Haiku 4.5: Woher entsteht dieser netty fehler, wieso closed die
 Prompt 10, GPT 5.3 Codex: Erstelle einen Service, der einen neuen User anlegt und ihn in der Datenbank speichert. Dieser Muss Restful sein und sollte alle Kriterien die durch die User.java gegeben sind abdecken.
 Prompt 11, Gemini 3.1: Erstelle eine Definition der Aktuellen API Requests im OpenAPI-Format. Beachte dass diese den Standards der OpenAPI-Spezifikation entsprechen.
 Prompt 12, Gemini 5.5 (Codex): Analysiere das Projekt. Erstelle ein Konzept für API Responses. Das Grundschema sollte über das Projekt einheitlich sein. Je nach dem können api responses andere anforderungen an die antwort haben, betrachte dies auch. es dürfen keine infos verloren gehen
-
-

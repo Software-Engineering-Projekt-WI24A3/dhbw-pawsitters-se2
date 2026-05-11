@@ -13,6 +13,16 @@
 
             <div class="header_center">
                 <div class="header_center__stack">
+                    <div class="hidden" aria-hidden="true">
+                        <a class="repo_menu__item"
+                           th:href="${repositoryPlaywrightPath}">nav.repositoryPlaywright</a>
+                        <a class="repo_menu__item"
+                           th:href="${repositoryApiPath}">nav.repositoryApi</a>
+                        <a class="repo_menu__item"
+                           th:href="${repositoryGitPath}">nav.repositoryGit</a>
+                        <a class="repo_menu__item"
+                           th:href="${repositoryBoardPath}">nav.repositoryBoard</a>
+                    </div>
                     <div class="header_search"
                          data-header-search
                          th:attr="data-destination-description=#{header.search.destination.description},
@@ -313,6 +323,11 @@
                                 th:text="#{nav.login}">nav.login</button>
                     </div>
                 </details>
+                <button v-if="!authSessionLoggedIn"
+                        class="button button--secondary"
+                        type="button"
+                        @click="openLoginModal()"
+                        th:text="#{nav.login}">nav.login</button>
                 <details v-if="authSessionLoggedIn"
                          class="repo_menu repo_menu--surface user_menu"
                          th:attr="aria-label=#{nav.ariaUserMenu}">

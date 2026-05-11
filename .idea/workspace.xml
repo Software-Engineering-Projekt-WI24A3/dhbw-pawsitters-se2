@@ -6,24 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orga/KI_PROMPTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/KI_PROMPTS.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,7 +144,7 @@
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__login-and-registration-implementation",
+    "git-widget-placeholder": "#89 on n__feature__login-and-registration-…ation",
     "javascript.preferred.runtime.type.id": "node",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -318,7 +303,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778230084248</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="implemented login and registration apis for the frontend">
+      <option name="closed" value="true" />
+      <created>1778493080478</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1778493080478</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -332,7 +325,8 @@
     <MESSAGE value="feat(api): standardize API response envelope&#10;&#10;Introduce a consistent ApiResponse envelope for JSON API responses, add public response DTOs, centralize error handling, and prevent passwordHash from being exposed in user responses.&#10;&#10;Also update Auth/User/Pet controller responses, security error handling, OpenAPI documentation, HTTP client token extraction, and integration tests for success and error flows." />
     <MESSAGE value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
     <MESSAGE value="post für den market" />
-    <option name="LAST_COMMIT_MESSAGE" value="post für den market" />
+    <MESSAGE value="implemented login and registration apis for the frontend" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented login and registration apis for the frontend" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
