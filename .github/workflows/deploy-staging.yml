@@ -126,7 +126,7 @@ jobs:
 
           sync_mysql_credentials() {
             local mysql_container current_root_password root_password_for_login
-            local app_user_b64 app_password_b64 database_b64 root_password_b64
+            local app_user_b64 app_password_b64 database_name root_password_b64
 
             mysql_container="$(docker compose -f docker-compose.yml ps -q mysql 2>/dev/null || true)"
             if [ -z "$mysql_container" ]; then
@@ -157,20 +157,22 @@ jobs:
             printf 'Reconciling existing MySQL credentials with current staging secrets.\n'
             app_user_b64="$(printf '%s' "${MYSQL_USER:-pawsitters}" | base64 | tr -d '\n')"
             app_password_b64="$(printf '%s' "$MYSQL_PASSWORD" | base64 | tr -d '\n')"
-            database_b64="$(printf '%s' "${MYSQL_DATABASE:-pawsitters}" | base64 | tr -d '\n')"
+            database_name="${MYSQL_DATABASE:-pawsitters}"
+            if [[ ! "$database_name" =~ ^[A-Za-z0-9_]+$ ]]; then
+              printf 'MYSQL_DATABASE contains unsupported characters for automatic staging credential recovery.\n' >&2
+              exit 1
+            fi
             root_password_b64="$(printf '%s' "$MYSQL_ROOT_PASSWORD" | base64 | tr -d '\n')"
 
             docker exec -e MYSQL_PWD="$root_password_for_login" -i "$mysql_container" mysql -uroot <<SQL
           SET @app_user = FROM_BASE64('${app_user_b64}');
           SET @app_password = FROM_BASE64('${app_password_b64}');
-          SET @database_name = FROM_BASE64('${database_b64}');
           SET @root_password = FROM_BASE64('${root_password_b64}');
           SET @quoted_app_user = QUOTE(@app_user);
           SET @quoted_app_password = QUOTE(@app_password);
-          SET @quoted_database_name = CONCAT('`', REPLACE(@database_name, '`', '``'), '`');
           SET @quoted_root_password = QUOTE(@root_password);
           SET @app_account = CONCAT(@quoted_app_user, "@'%'");
-          SET @sql = CONCAT('CREATE DATABASE IF NOT EXISTS ', @quoted_database_name);
+          SET @sql = 'CREATE DATABASE IF NOT EXISTS ${database_name}';
           PREPARE stmt FROM @sql;
           EXECUTE stmt;
           DEALLOCATE PREPARE stmt;
@@ -182,7 +184,7 @@ jobs:
           PREPARE stmt FROM @sql;
           EXECUTE stmt;
           DEALLOCATE PREPARE stmt;
-          SET @sql = CONCAT('GRANT ALL PRIVILEGES ON ', @quoted_database_name, '.* TO ', @app_account);
+          SET @sql = CONCAT('GRANT ALL PRIVILEGES ON ${database_name}.* TO ', @app_account);
           PREPARE stmt FROM @sql;
           EXECUTE stmt;
           DEALLOCATE PREPARE stmt;
