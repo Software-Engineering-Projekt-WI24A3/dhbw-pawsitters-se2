@@ -31,9 +31,14 @@ npm run build
 ### Backend
 
 ```bash
+docker compose up -d mysql
 cd backend
 mvn spring-boot:run
 ```
+
+Das Backend nutzt standardmaessig MySQL unter `localhost:3306` mit Datenbank/User/Passwort `pawsitters`.
+Die Daten liegen persistent im Docker-Volume `pawsitters_mysql_data`.
+Ueberschreiben geht per `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` und optional `JPA_DDL_AUTO`.
 
 <h2 align="center">Hinweise</h2>
 

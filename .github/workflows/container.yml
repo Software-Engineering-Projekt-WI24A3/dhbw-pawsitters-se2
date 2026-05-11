@@ -91,6 +91,8 @@ jobs:
         env:
           IMAGE_TAG: ${{ steps.image-tags.outputs.sha-tag }}
           JWT_SECRET: ci-only-pawsitters-jwt-secret-change-me-123456
+          MYSQL_PASSWORD: ci-pawsitters
+          MYSQL_ROOT_PASSWORD: ci-pawsitters-root
         shell: bash
         run: |
           docker compose -f docker-compose.staging.yml pull
@@ -113,4 +115,6 @@ jobs:
         env:
           IMAGE_TAG: ${{ steps.image-tags.outputs.sha-tag }}
           JWT_SECRET: ci-only-pawsitters-jwt-secret-change-me-123456
+          MYSQL_PASSWORD: ci-pawsitters
+          MYSQL_ROOT_PASSWORD: ci-pawsitters-root
         run: docker compose -f docker-compose.staging.yml down -v --remove-orphans
