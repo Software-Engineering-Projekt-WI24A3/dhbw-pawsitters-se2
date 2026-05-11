@@ -183,6 +183,13 @@ function resolveWorkspaceRoot(rootDir) {
     return parentRoot;
   }
 
+  if (
+    existsSync(path.join(parentRoot, 'README.md'))
+    && existsSync(path.join(parentRoot, OPENAPI_RELATIVE_PATH))
+  ) {
+    return parentRoot;
+  }
+
   if (existsSync(path.join(rootDir, '.git'))) {
     return rootDir;
   }
