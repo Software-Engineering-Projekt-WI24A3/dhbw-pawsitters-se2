@@ -62,10 +62,17 @@
                       novalidate
                       @submit.prevent="handleLoginModalSubmit"
                       th:attr="data-auth-password-required=#{auth.modal.passwordRequired},
+                               data-auth-identifier-required=#{auth.modal.identifierRequired},
                                data-auth-login-error-title=#{auth.modal.loginErrorTitle},
                                data-auth-login-failed-message=#{auth.modal.loginFailedMessage},
                                data-auth-login-success-title=#{auth.modal.loginSuccessTitle},
-                               data-auth-login-success-message=#{auth.modal.loginSuccessMessage}">
+                               data-auth-login-success-message=#{auth.modal.loginSuccessMessage},
+                               data-auth-email-found-title=#{auth.modal.emailFoundTitle},
+                               data-auth-email-found-message=#{auth.modal.emailFoundMessage},
+                               data-auth-email-not-found-title=#{auth.modal.emailNotFoundTitle},
+                               data-auth-email-not-found-message=#{auth.modal.emailNotFoundMessage},
+                               data-auth-email-check-failed-title=#{auth.modal.emailCheckFailedTitle},
+                               data-auth-email-check-failed-message=#{auth.modal.emailCheckFailedMessage}">
                     <label class="corp_field auth_modal__field">
                         <span class="sr-only" th:text="#{auth.modal.identifier}">auth.modal.identifier</span>
                         <input class="corp_input"
@@ -101,6 +108,27 @@
     <main id="main-content" class="main_container site_main">
         <th:block th:replace="${mainContent}"></th:block>
     </main>
+
+    <footer class="main_container site_footer">
+        <div class="site_footer__windows" aria-hidden="true">
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image"
+                     src="https://image.geo.de/30115200/t/56/v4/w1440/r0/-/meerschweinchen-als-haustier-c-4324176-jpg--64241-.jpg"
+                     alt="" aria-hidden="true">
+            </figure>
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image"
+                     src="https://www.naturavetal.de/media/cache/images/category_header/05-infoseiten/03-gesund-fuettern/gesunder-golden-retriever-junghund-im-wald-hf.jpg"
+                     alt="" aria-hidden="true">
+            </figure>
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image"
+                     src="https://media.4-paws.org/a/2/0/2/a20271f7527a90ae9ef69e5537e56178dd64d04d/595521809-huge-2001x2000-720x720.jpg"
+                     alt="" aria-hidden="true">
+            </figure>
+        </div>
+        <p class="site_footer__text" th:text="#{footer.text}">footer.text</p>
+    </footer>
 </div>
 <script type="module" th:src="@{/assets/js/site.js}"></script>
 </body>

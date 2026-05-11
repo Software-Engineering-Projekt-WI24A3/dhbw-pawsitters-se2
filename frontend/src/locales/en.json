@@ -80,6 +80,12 @@
     "about": {
       "welcome": "Welcome to Pawsitters. This project connects pet owners and hosts through a clear, modern interface for fast and trustworthy matching."
     },
+    "backend": {
+      "checking": "Checking backend connection",
+      "online": "Backend connected",
+      "offline": "Backend unreachable",
+      "retry": "Retry backend connection check"
+    },
     "search": {
       "destination": {
         "label": "Where",
@@ -214,10 +220,17 @@
       "identifier": "Phone number or email address",
       "passwordPrompt": "Enter password",
       "passwordRequired": "Please enter a password.",
+      "identifierRequired": "Please enter a valid email address.",
       "loginErrorTitle": "Sign in failed",
       "loginFailedMessage": "Sign in could not be completed.",
       "loginSuccessTitle": "Signed in",
       "loginSuccessMessage": "You are now signed in.",
+      "emailFoundTitle": "User found",
+      "emailFoundMessage": "Account found. Please enter your password.",
+      "emailNotFoundTitle": "No user found",
+      "emailNotFoundMessage": "No account was found for this email. You will be redirected to registration.",
+      "emailCheckFailedTitle": "Email check failed",
+      "emailCheckFailedMessage": "The email could not be checked. Please try again.",
       "continue": "Continue"
     },
     "shared": {
@@ -274,6 +287,6 @@
     "imageAlt": "404 illustration"
   },
   "footer": {
-    "text": "Pawsitters. Calm interface for modern pet care."
+    "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
   }
 }

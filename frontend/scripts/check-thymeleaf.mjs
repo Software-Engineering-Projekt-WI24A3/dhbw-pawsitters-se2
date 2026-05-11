@@ -22,10 +22,6 @@ async function main() {
 
   for (const entry of results) {
     assert.match(entry.html, /<main[^>]*class="main_container site_main"/);
-    if (entry.pageKey === 'notFound') {
-      assert.doesNotMatch(entry.html, /<footer[^>]*class="main_container site_footer"/);
-      continue;
-    }
     assert.match(entry.html, /<footer[^>]*class="main_container site_footer"/);
   }
 }

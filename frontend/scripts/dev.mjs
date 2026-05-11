@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { createReadStream, existsSync, statSync, watch } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import http from 'node:http';
+import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultLocale, loadLocalizedRepositorySnapshot, renderLocalizedPage, supportedLocales } from './lib/thymeleaf-preview.mjs';
@@ -12,7 +13,27 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const port = Number.parseInt(process.env.PORT ?? '4173', 10);
 const host = '127.0.0.1';
+const backendOrigin = new URL(process.env.BACKEND_ORIGIN ?? 'http://127.0.0.1:8080');
 const noWatch = process.env.NO_WATCH === '1';
+const BACKEND_PROXY_PATH_PREFIXES = ['/api/', '/actuator/'];
+const BACKEND_LOCAL_API_PATHS = new Set([
+  '/api/repository/live.json',
+  '/api/locations/countries.json',
+  '/api/pets/choices',
+  '/api/pets/choices.json',
+  '/api/tests/e2e/status.json',
+  '/api/tests/e2e/run'
+]);
+const HOP_BY_HOP_HEADERS = new Set([
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailers',
+  'transfer-encoding',
+  'upgrade'
+]);
 const watchTargets = [
   'src/templates',
   'src/locales',
@@ -176,6 +197,77 @@ function sendJson(response, statusCode, payload) {
     'Cache-Control': 'no-store'
   });
   response.end(`${JSON.stringify(payload)}\n`);
+}
+
+function shouldProxyToBackend(pathname) {
+  if (BACKEND_LOCAL_API_PATHS.has(pathname)) {
+    return false;
+  }
+
+  return BACKEND_PROXY_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function buildProxyRequestHeaders(requestHeaders = {}) {
+  const headers = {};
+
+  Object.entries(requestHeaders).forEach(([name, value]) => {
+    if (value === undefined || HOP_BY_HOP_HEADERS.has(name.toLowerCase())) {
+      return;
+    }
+
+    headers[name] = value;
+  });
+
+  headers.host = backendOrigin.host;
+  if (typeof requestHeaders.host === 'string' && requestHeaders.host.trim()) {
+    headers['x-forwarded-host'] = requestHeaders.host;
+  }
+  headers['x-forwarded-proto'] = 'http';
+
+  return headers;
+}
+
+function applyProxyResponseHeaders(response, upstreamHeaders = {}) {
+  Object.entries(upstreamHeaders).forEach(([name, value]) => {
+    if (value === undefined || HOP_BY_HOP_HEADERS.has(name.toLowerCase())) {
+      return;
+    }
+
+    response.setHeader(name, value);
+  });
+}
+
+async function proxyToBackend(request, response, requestUrl) {
+  const upstreamUrl = new URL(`${requestUrl.pathname}${requestUrl.search}`, backendOrigin);
+  const transport = upstreamUrl.protocol === 'https:' ? https : http;
+
+  await new Promise((resolve) => {
+    const upstreamRequest = transport.request(
+      upstreamUrl,
+      {
+        method: request.method ?? 'GET',
+        headers: buildProxyRequestHeaders(request.headers)
+      },
+      (upstreamResponse) => {
+        applyProxyResponseHeaders(response, upstreamResponse.headers);
+        response.writeHead(upstreamResponse.statusCode ?? 502);
+        upstreamResponse.pipe(response);
+        upstreamResponse.on('end', resolve);
+      }
+    );
+
+    upstreamRequest.on('error', (error) => {
+      if (!response.headersSent) {
+        sendJson(response, 502, {
+          error: 'backend_proxy_failed',
+          message: error.message
+        });
+      }
+      resolve();
+    });
+
+    request.pipe(upstreamRequest);
+  });
 }
 
 function parseDurationToMs(rawValue) {
@@ -795,6 +887,11 @@ async function main() {
           message: error.message
         });
       }
+      return;
+    }
+
+    if (shouldProxyToBackend(requestUrl.pathname)) {
+      await proxyToBackend(request, response, requestUrl);
       return;
     }
 

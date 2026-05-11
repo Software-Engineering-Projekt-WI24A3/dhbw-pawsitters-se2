@@ -80,6 +80,12 @@
     "about": {
       "welcome": "Willkommen bei Pawsitters. Dieses Projekt verbindet Tierhalter und Gastgeber in einer klaren, modernen Oberfläche für eine schnelle und vertrauensvolle Vermittlung."
     },
+    "backend": {
+      "checking": "Backend-Verbindung wird geprüft",
+      "online": "Backend verbunden",
+      "offline": "Backend nicht erreichbar",
+      "retry": "Backend-Verbindung erneut prüfen"
+    },
     "search": {
       "destination": {
         "label": "Wohin",
@@ -214,10 +220,17 @@
       "identifier": "Telefonnummer oder E-Mail Adresse",
       "passwordPrompt": "Passwort eingeben",
       "passwordRequired": "Bitte ein Passwort eingeben.",
+      "identifierRequired": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "loginErrorTitle": "Login fehlgeschlagen",
       "loginFailedMessage": "Der Login konnte nicht abgeschlossen werden.",
       "loginSuccessTitle": "Erfolgreich eingeloggt",
       "loginSuccessMessage": "Du bist jetzt eingeloggt.",
+      "emailFoundTitle": "Benutzer gefunden",
+      "emailFoundMessage": "Konto gefunden. Bitte gib jetzt dein Passwort ein.",
+      "emailNotFoundTitle": "Kein Benutzer gefunden",
+      "emailNotFoundMessage": "Für diese E-Mail wurde kein Konto gefunden. Du wirst zur Registrierung weitergeleitet.",
+      "emailCheckFailedTitle": "E-Mail-Prüfung fehlgeschlagen",
+      "emailCheckFailedMessage": "Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.",
       "continue": "Weiter"
     },
     "shared": {
@@ -247,7 +260,7 @@
     },
     "register": {
       "title": "Registrieren",
-      "text": "Lege deinen Zugang für die nächsten Frontend-Flows an.",
+      "text": "Lege deinen Zugang für das Pawsitters-Projekt an",
       "name": "Name",
       "namePlaceholder": "Pawsitters Nutzer",
       "email": "E-Mail",
@@ -274,6 +287,6 @@
     "imageAlt": "404 Illustration"
   },
   "footer": {
-    "text": "Pawsitters. Ruhiges Interface für moderne Haustierbetreuung."
+    "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
   }
 }

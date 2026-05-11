@@ -38,20 +38,6 @@
                         <a class="repository_switch__button"
                            th:href="${repositoryBoardPath}"
                            th:text="#{repository.board.label}">repository.board.label</a>
-                        <button class="repository_switch__refresh"
-                                type="button"
-                                @click="triggerRepositoryRefresh()"
-                                :disabled="repositoryRefreshing || repositoryLoading"
-                                :aria-busy="String(repositoryRefreshing || repositoryLoading)"
-                                :class="{ 'repository_switch__refresh--loading': repositoryRefreshing || repositoryLoading }"
-                                th:attr="aria-label=#{repository.refresh}">
-                            <span class="repository_switch__refresh-label"
-                                  th:text="#{repository.refresh}">repository.refresh</span>
-                            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                                <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
-                                <path d="M20 4v6h-6"></path>
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
