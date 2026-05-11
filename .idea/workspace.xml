@@ -6,18 +6,35 @@
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="Merge branch 'j_feature_marketpost' of https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2 into j_feature_marketpost&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/orga/TEST_DOCUMENTATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/TEST_DOCUMENTATION.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="08e10d16-bed2-41a0-93db-8ee33b60719a" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="08e10d16-bed2-41a0-93db-8ee33b60719a" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="gpt-5.2-codex" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_projekt" value="3COQ3RuIYOTnZTUnYwx58v8S0zU" />
       <entry key="_/Users/niklasulbrich/Desktop/dhbw_se-projekt" value="3COcM1TZA3XHi3Ot37fwiS8brOF" />
+      <entry key="_/Users/niklasulbrich/Desktop/pawsitters-se-projekt" value="3DZWlChk0Hs4SqxPjYNbgepLLxd" />
       <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2" value="3CRYvqaA54AvrSJdBhLrsxpuaRw" />
       <entry key="_C:/Users/krahl/IdeaProjects/dhbw-pawsitters-se2/backend" value="3DLjL6mu7J2NWFpGOQq4soiW8QX" />
     </persistenceIdMap>
@@ -54,12 +71,12 @@
     &quot;assignee&quot;: &quot;xJvstvs&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git&quot;,
-    &quot;accountId&quot;: &quot;74660bd1-6a97-45d8-be70-0e7c1701c587&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git",
+    "accountId": "eae49561-409a-46a4-b3c4-4b0065cb67a2"
   }
-}</component>
+}]]></component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
@@ -95,6 +112,10 @@
     <option name="delegateBuildToMaven" value="true" />
     <option name="jreName" value="openjdk-25" />
   </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -112,9 +133,15 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
-    "git-widget-placeholder": "j__passwordhashing",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "n__feature__login-and-registration-apis",
     "javascript.preferred.runtime.type.id": "node",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -150,14 +177,14 @@
     <recent_temporary>
       <list>
         <item itemvalue="Shell Script.Projektstart" />
+        <item itemvalue="Shell Script.Projektstart" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274" />
       </set>
     </attachedChunks>
   </component>
@@ -191,6 +218,7 @@
       <workItem from="1778230144850" duration="2649000" />
       <workItem from="1778334655193" duration="3501000" />
       <workItem from="1778427823789" duration="1423000" />
+      <workItem from="1778490221650" duration="368000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
@@ -299,7 +327,5 @@
     <promptFileLocations>
       <option value=".github/prompts" />
     </promptFileLocations>
-    <MESSAGE value="added the &quot;/repository/api&quot; underpage" />
-    <option name="LAST_COMMIT_MESSAGE" value="added the &quot;/repository/api&quot; underpage" />
   </component>
 </project>
