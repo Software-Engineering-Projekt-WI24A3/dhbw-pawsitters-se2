@@ -40,10 +40,7 @@ test.describe('Auth modal locale routing', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await expect(page.getByRole('heading', { name: token('ro', 'auth.register.title') })).toBeVisible();
     await expectNoLegacyLoginRouteLinks(page);
-    await openLoginModal(page, {
-      locale: 'ro',
-      trigger: page.getByRole('button', { name: token('ro', 'auth.register.alt.cta') })
-    });
+    await openLoginModal(page, { locale: 'ro' });
 
     const repositoryLinks = await readHeaderRepositoryMenuHrefs(page);
     expect(repositoryLinks).toEqual([
@@ -61,10 +58,7 @@ test.describe('Auth modal locale routing', () => {
 
     await expect(page).toHaveURL(/\/register\?locale=en$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await openLoginModal(page, {
-      locale: 'en',
-      trigger: page.getByRole('button', { name: token('en', 'auth.register.alt.cta') })
-    });
+    await openLoginModal(page, { locale: 'en' });
     await closeLoginModal(page);
   });
 

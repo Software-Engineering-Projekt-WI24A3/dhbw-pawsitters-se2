@@ -12,6 +12,48 @@ function headerLoginButton(page, locale = 'de') {
   });
 }
 
+async function resolveDefaultLoginTrigger(page, locale = 'de') {
+  const loginLabel = token(locale, 'nav.login');
+  const desktopHeaderLoginButton = page.locator('.header_actions').getByRole('button', {
+    name: loginLabel,
+    exact: true
+  });
+  if (await desktopHeaderLoginButton.isVisible().catch(() => false)) {
+    return desktopHeaderLoginButton.first();
+  }
+
+  const quickMenuSummary = page.locator('.header_actions details.header_quick_menu > summary');
+  if (await quickMenuSummary.isVisible().catch(() => false)) {
+    await quickMenuSummary.first().click();
+    const quickMenuLoginButton = page
+      .locator('.header_actions details.header_quick_menu .repo_menu__panel')
+      .getByRole('button', { name: loginLabel, exact: true });
+    await expect(quickMenuLoginButton).toBeVisible();
+    return quickMenuLoginButton.first();
+  }
+
+  const homeLoginButton = page.locator('.home_minimal__actions').getByRole('button', {
+    name: loginLabel,
+    exact: true
+  });
+  if (await homeLoginButton.isVisible().catch(() => false)) {
+    return homeLoginButton.first();
+  }
+
+  const mobileMenuButton = page.locator('.menu_button');
+  if (await mobileMenuButton.isVisible().catch(() => false)) {
+    await mobileMenuButton.click();
+    const mobileLoginButton = page.locator('.mobile_drawer').getByRole('button', {
+      name: loginLabel,
+      exact: true
+    });
+    await expect(mobileLoginButton).toBeVisible();
+    return mobileLoginButton.first();
+  }
+
+  throw new Error(`Could not resolve a visible login trigger for locale "${locale}".`);
+}
+
 async function expectNoLegacyLoginRouteLinks(page) {
   await expect(
     page.locator('a[href$="/login"], a[href*="/login?"], a[href*="/login#"]')
@@ -38,12 +80,13 @@ async function assertLoginModalContent(page, locale = 'de') {
 async function openLoginModal(page, options = {}) {
   const {
     locale = 'de',
-    trigger = headerLoginButton(page, locale),
+    trigger = null,
     keepUrl = true
   } = options;
   const currentUrl = page.url();
+  const loginTrigger = trigger || await resolveDefaultLoginTrigger(page, locale);
 
-  await trigger.click();
+  await loginTrigger.click();
   await assertLoginModalContent(page, locale);
   await expect(page.locator('body')).toHaveClass(/body--modal-open/);
 

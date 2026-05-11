@@ -4,36 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="fixed e2e tests 4.0">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updated login and registration flow!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/404/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/api-overview/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api-overview/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/css/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/assets/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/playwright/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/api/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/api/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/git/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/kanban/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/repository/playwright/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/serve.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/serve.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-api.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-api.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/shell-home.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/support/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/support/auth.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -336,7 +313,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778498841166</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="updated login and registration flow!">
+      <option name="closed" value="true" />
+      <created>1778505255975</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1778505255975</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -362,7 +347,8 @@
     <MESSAGE value="feat(backend): add marketplace host overview and filters&#10;&#10;- add marketplace endpoints for host listing, host search and dynamic filters&#10;- support filtering hosts by pet species and postal code&#10;- add host marketplace fields to users: postal code, city and accepted pet species&#10;- add marketplace response DTOs, service and repository queries&#10;- add HTTP request examples and OpenAPI documentation&#10;- add integration tests for host listing, search and filter options&#10;&#10;Tests:&#10;- mvn test" />
     <MESSAGE value="post für den market" />
     <MESSAGE value="fixed e2e tests 4.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed e2e tests 4.0" />
+    <MESSAGE value="updated login and registration flow!" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated login and registration flow!" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -13,14 +13,10 @@ test.describe('Shell home', () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
     await expect(page.locator('#site-shell-header')).toBeVisible();
-    await expect(page.getByRole('heading', { name: token('de', 'brand.name'), exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: token('de', 'nav.repository') })).toHaveAttribute('href', '/repository/git');
+    await expect(page.getByRole('link', { name: token('de', 'brand.name'), exact: true })).toBeVisible();
     await expect(page.locator('.git_graph')).toHaveCount(0);
     await expectNoLegacyLoginRouteLinks(page);
-    await openLoginModal(page, {
-      locale: 'de',
-      trigger: page.locator('.home_minimal__actions').getByRole('button', { name: token('de', 'nav.login'), exact: true })
-    });
+    await openLoginModal(page, { locale: 'de' });
     await closeLoginModal(page);
 
     const headerPosition = await page.locator('#site-shell-header').evaluate((element) => {
