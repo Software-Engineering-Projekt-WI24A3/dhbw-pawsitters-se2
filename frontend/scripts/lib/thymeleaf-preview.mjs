@@ -1102,7 +1102,9 @@ async function renderMarkup(rootDir, markup, templatePath, context, depth = 0) {
     : renderedMarkup;
 }
 
-function buildRedirectPage(targetPath, locale, pageTitle) {
+function buildRedirectPage(targetPath, locale, pageTitle, footerText = '') {
+  const safeFooterText = typeof footerText === 'string' ? footerText : '';
+
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
@@ -1112,7 +1114,11 @@ function buildRedirectPage(targetPath, locale, pageTitle) {
     <title>${pageTitle}</title>
     <script>window.location.replace(${JSON.stringify(targetPath)});</script>
 </head>
-<body></body>
+<body>
+    <footer>
+        <p>${safeFooterText}</p>
+    </footer>
+</body>
 </html>
 `;
 }
@@ -1280,24 +1286,25 @@ export async function buildPreview(rootDir) {
   const renderedPages = await renderAllPages(rootDir);
   await writeRenderedPages(rootDir, renderedPages);
   const defaultMessages = await loadMessages(rootDir, defaultLocale);
+  const defaultFooterText = getMessage(defaultMessages, 'footer.text');
   await fs.writeFile(
     path.join(rootDir, 'git', 'index.html'),
-    buildRedirectPage('/repository/git', defaultLocale, getMessage(defaultMessages, 'meta.repositoryGit.title')),
+    buildRedirectPage('/repository/git', defaultLocale, getMessage(defaultMessages, 'meta.repositoryGit.title'), defaultFooterText),
     'utf8'
   );
   await fs.writeFile(
     path.join(rootDir, 'kanban', 'index.html'),
-    buildRedirectPage('/repository/kanban', defaultLocale, getMessage(defaultMessages, 'meta.repositoryKanban.title')),
+    buildRedirectPage('/repository/kanban', defaultLocale, getMessage(defaultMessages, 'meta.repositoryKanban.title'), defaultFooterText),
     'utf8'
   );
   await fs.writeFile(
     path.join(rootDir, 'playwright', 'index.html'),
-    buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title')),
+    buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title'), defaultFooterText),
     'utf8'
   );
   await fs.writeFile(
     path.join(rootDir, 'api-overview', 'index.html'),
-    buildRedirectPage('/repository/api', defaultLocale, getMessage(defaultMessages, 'meta.repositoryApi.title')),
+    buildRedirectPage('/repository/api', defaultLocale, getMessage(defaultMessages, 'meta.repositoryApi.title'), defaultFooterText),
     'utf8'
   );
 }

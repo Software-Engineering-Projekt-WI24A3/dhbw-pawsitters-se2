@@ -4,22 +4,9 @@
       th:replace="~{layout :: shell(#{meta.register.title}, #{meta.register.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-auth', ~{::content})}">
 <th:block th:fragment="content">
     <section class="auth_layout">
-        <div class="auth_shell">
-            <section class="auth_intro">
-                <div>
-                    <p class="auth_intro__eyebrow" th:text="#{auth.shared.eyebrow}">auth.shared.eyebrow</p>
-                    <h2 class="auth_intro__title" th:text="#{auth.shared.title}">auth.shared.title</h2>
-                    <p class="auth_intro__text" th:text="#{auth.shared.text}">auth.shared.text</p>
-                </div>
-                <ul class="auth_intro__list">
-                    <li class="auth_intro__item" th:text="#{auth.shared.point.one}">auth.shared.point.one</li>
-                    <li class="auth_intro__item" th:text="#{auth.shared.point.two}">auth.shared.point.two</li>
-                    <li class="auth_intro__item" th:text="#{auth.shared.point.three}">auth.shared.point.three</li>
-                </ul>
-            </section>
-
+        <div class="auth_shell auth_shell--single">
             <section class="auth_card">
-                <div class="auth_card__header">
+                <div class="auth_card__header auth_card__header--center">
                     <p class="auth_card__eyebrow" th:text="#{brand.name}">brand.name</p>
                     <h1 class="auth_card__title" th:text="#{auth.register.title}">auth.register.title</h1>
                     <p class="auth_card__text" th:text="#{auth.register.text}">auth.register.text</p>
@@ -74,14 +61,6 @@
                             th:text="#{auth.register.submit}">auth.register.submit</button>
                 </form>
 
-                <div class="auth_link_card">
-                    <div>
-                        <p class="auth_link_card__eyebrow" th:text="#{auth.register.alt.eyebrow}">auth.register.alt.eyebrow</p>
-                        <h2 class="auth_link_card__title" th:text="#{auth.register.alt.title}">auth.register.alt.title</h2>
-                        <p class="auth_link_card__text" th:text="#{auth.register.alt.text}">auth.register.alt.text</p>
-                    </div>
-                    <button class="button button--secondary auth_link_card__action" type="button" @click="openLoginModal()" th:text="#{auth.register.alt.cta}">auth.register.alt.cta</button>
-                </div>
             </section>
         </div>
     </section>

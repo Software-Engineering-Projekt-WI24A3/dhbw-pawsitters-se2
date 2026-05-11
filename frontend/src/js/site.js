@@ -20,6 +20,9 @@ const NOTIFICATION_LIFETIME_MS = 7000;
 const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
 const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
 const HEADER_SEARCH_SESSION_STORAGE_KEY = 'pawsitters.header-search-state';
+const REDIRECT_NOTIFICATION_STORAGE_KEY = 'pawsitters.redirect-notification';
+const BACKEND_STATUS_ENDPOINT = '/api/auth/session';
+const BACKEND_STATUS_POLL_INTERVAL_MS = 30000;
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
     'PPL',
     'PPLA',
@@ -1690,11 +1693,18 @@ const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute(
 const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
 const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
 const localizedAuthModalStrings = {
+    identifierRequired: authModalFormRoot?.dataset.authIdentifierRequired || 'Bitte gib eine gültige E-Mail-Adresse ein.',
     passwordRequired: authModalFormRoot?.dataset.authPasswordRequired || 'Please enter a password.',
     loginErrorTitle: authModalFormRoot?.dataset.authLoginErrorTitle || 'Sign in failed',
     loginFailedMessage: authModalFormRoot?.dataset.authLoginFailedMessage || 'Sign in could not be completed.',
     loginSuccessTitle: authModalFormRoot?.dataset.authLoginSuccessTitle || 'Signed in',
-    loginSuccessMessage: authModalFormRoot?.dataset.authLoginSuccessMessage || 'You are now signed in.'
+    loginSuccessMessage: authModalFormRoot?.dataset.authLoginSuccessMessage || 'You are now signed in.',
+    emailFoundTitle: authModalFormRoot?.dataset.authEmailFoundTitle || 'Benutzer gefunden',
+    emailFoundMessage: authModalFormRoot?.dataset.authEmailFoundMessage || 'Konto gefunden. Bitte gib jetzt dein Passwort ein.',
+    emailNotFoundTitle: authModalFormRoot?.dataset.authEmailNotFoundTitle || 'Kein Benutzer gefunden',
+    emailNotFoundMessage: authModalFormRoot?.dataset.authEmailNotFoundMessage || 'Für diese E-Mail wurde kein Konto gefunden. Du wirst zur Registrierung weitergeleitet.',
+    emailCheckFailedTitle: authModalFormRoot?.dataset.authEmailCheckFailedTitle || 'E-Mail-Prüfung fehlgeschlagen',
+    emailCheckFailedMessage: authModalFormRoot?.dataset.authEmailCheckFailedMessage || 'Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.'
 };
 const localizedRegisterStrings = {
     nameRequired: registerFormRoot?.dataset.authRegisterNameRequired || 'Please enter your name.',
@@ -1715,7 +1725,11 @@ const localizedHeaderSearchStrings = {
     destinationNoResults: headerSearchRoot?.dataset.destinationNoResults || 'Keine Städte gefunden',
     destinationLoading: headerSearchRoot?.dataset.destinationLoading || 'Städte werden geladen',
     petLoading: headerSearchRoot?.dataset.petLoading || 'Haustiere werden geladen',
-    petEmpty: headerSearchRoot?.dataset.petEmpty || 'Keine Haustiere verfügbar'
+    petEmpty: headerSearchRoot?.dataset.petEmpty || 'Keine Haustiere verfügbar',
+    backendStatusChecking: headerSearchRoot?.dataset.backendStatusChecking || 'Backend-Verbindung wird geprüft',
+    backendStatusOnline: headerSearchRoot?.dataset.backendStatusOnline || 'Backend verbunden',
+    backendStatusOffline: headerSearchRoot?.dataset.backendStatusOffline || 'Backend nicht erreichbar',
+    backendStatusRetry: headerSearchRoot?.dataset.backendStatusRetry || 'Backend-Verbindung erneut prüfen'
 };
 const initialHeaderSearchState = readHeaderSearchSessionState();
 
@@ -1731,6 +1745,10 @@ createApp({
             authSessionLoggedIn: false,
             authSessionEmail: '',
             authSessionRequestId: 0,
+            backendStatusState: 'checking',
+            backendStatusChecking: false,
+            backendStatusRequestId: 0,
+            backendStatusPollingHandle: null,
             loginIdentifier: '',
             loginPassword: '',
             loginPasswordVisible: false,
@@ -2057,6 +2075,17 @@ createApp({
             const formatted = formatLocalDateTime(reference);
             return formatted || this.playwrightNeverLabel;
         },
+        backendStatusLabel() {
+            if (this.backendStatusState === 'online') {
+                return this.headerSearchStrings.backendStatusOnline;
+            }
+
+            if (this.backendStatusState === 'offline') {
+                return this.headerSearchStrings.backendStatusOffline;
+            }
+
+            return this.headerSearchStrings.backendStatusChecking;
+        },
         authSessionInitial() {
             const sourceEmail = typeof this.authSessionEmail === 'string' ? this.authSessionEmail.trim() : '';
             const localPart = sourceEmail.includes('@') ? sourceEmail.split('@')[0] : sourceEmail;
@@ -2088,6 +2117,11 @@ createApp({
                 this.persistHeaderSearchState();
             }
         },
+        scrolled(nextValue, previousValue) {
+            if (!nextValue && previousValue) {
+                this.refreshBackendStatus();
+            }
+        },
         headerCenterTab() {
             this.persistHeaderSearchState();
         }
@@ -2104,6 +2138,8 @@ createApp({
         this.animateVisibleMetricGroups({ fromZero: true });
         this.refreshRepositoryData();
         this.refreshAuthSession();
+        this.refreshBackendStatus({ showCheckingState: true });
+        this.startBackendStatusPolling();
         this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
@@ -2111,6 +2147,7 @@ createApp({
         document.addEventListener('click', this.handleDocumentClick);
         document.addEventListener('keydown', this.handleDocumentKeydown);
         this.patchLegacyLoginLinks();
+        this.consumeRedirectNotification();
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.syncScrollState);
@@ -2125,6 +2162,7 @@ createApp({
         this.clearDropdownQueue();
         this.closeAllDropdowns({ immediate: true });
         this.destroyThreadBackground();
+        this.stopBackendStatusPolling();
         this.stopPlaywrightPolling();
         this.stopAllMetricAnimations();
         this.clearNotificationTimers();
@@ -2196,6 +2234,71 @@ createApp({
             }
 
             headerSearchElement.style.setProperty('--header-search-tabs-bridge-width', `${width.toFixed(3)}px`);
+        },
+        startBackendStatusPolling() {
+            if (typeof this.backendStatusPollingHandle === 'number') {
+                return;
+            }
+
+            this.backendStatusPollingHandle = window.setInterval(() => {
+                this.refreshBackendStatus();
+            }, BACKEND_STATUS_POLL_INTERVAL_MS);
+        },
+        stopBackendStatusPolling() {
+            if (typeof this.backendStatusPollingHandle === 'number') {
+                window.clearInterval(this.backendStatusPollingHandle);
+            }
+
+            this.backendStatusPollingHandle = null;
+        },
+        async refreshBackendStatus(options = {}) {
+            const showCheckingState = options?.showCheckingState === true;
+            const requestId = this.backendStatusRequestId + 1;
+            this.backendStatusRequestId = requestId;
+            this.backendStatusChecking = true;
+
+            if (showCheckingState) {
+                this.backendStatusState = 'checking';
+            }
+
+            try {
+                const response = await fetch(BACKEND_STATUS_ENDPOINT, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+
+                if (requestId !== this.backendStatusRequestId) {
+                    return;
+                }
+
+                if (!response.ok) {
+                    this.backendStatusState = 'offline';
+                    return;
+                }
+
+                const payload = await response.json().catch(() => null);
+                const hasSessionShape = Boolean(payload)
+                    && typeof payload === 'object'
+                    && payload.success !== false
+                    && payload.data
+                    && typeof payload.data === 'object'
+                    && typeof payload.data.loggedIn === 'boolean';
+
+                this.backendStatusState = hasSessionShape ? 'online' : 'offline';
+            } catch {
+                if (requestId !== this.backendStatusRequestId) {
+                    return;
+                }
+
+                this.backendStatusState = 'offline';
+            } finally {
+                if (requestId === this.backendStatusRequestId) {
+                    this.backendStatusChecking = false;
+                }
+            }
         },
         clearLocationSearchRuntime() {
             if (typeof this.locationSearchDebounceHandle === 'number') {
@@ -2470,6 +2573,53 @@ createApp({
                     this.removeNotification(id);
                 }, lifetimeMs);
                 this.notificationTimers[id] = timerId;
+            }
+        },
+        rememberRedirectNotification(notification = {}) {
+            const title = typeof notification.title === 'string' ? notification.title.trim() : '';
+            const message = typeof notification.message === 'string' ? notification.message.trim() : '';
+            const tone = typeof notification.tone === 'string' ? notification.tone.trim() : 'info';
+            if (!title && !message) {
+                return;
+            }
+
+            try {
+                sessionStorage.setItem(REDIRECT_NOTIFICATION_STORAGE_KEY, JSON.stringify({
+                    title,
+                    message,
+                    tone
+                }));
+            } catch {
+                // Ignore storage errors.
+            }
+        },
+        consumeRedirectNotification() {
+            let rawPayload = '';
+            try {
+                rawPayload = sessionStorage.getItem(REDIRECT_NOTIFICATION_STORAGE_KEY) || '';
+            } catch {
+                rawPayload = '';
+            }
+
+            if (!rawPayload) {
+                return;
+            }
+
+            try {
+                sessionStorage.removeItem(REDIRECT_NOTIFICATION_STORAGE_KEY);
+            } catch {
+                // Ignore storage cleanup errors.
+            }
+
+            try {
+                const payload = JSON.parse(rawPayload);
+                this.pushNotification({
+                    title: payload?.title,
+                    message: payload?.message,
+                    tone: payload?.tone === 'warning' || payload?.tone === 'success' ? payload.tone : 'info'
+                });
+            } catch {
+                return;
             }
         },
         removeNotification(id) {
@@ -3186,6 +3336,12 @@ createApp({
             this.loginIdentifier = normalizedIdentifier;
 
             if (!this.isEmailIdentifier(normalizedIdentifier)) {
+                this.pushNotification({
+                    title: localizedAuthModalStrings.loginErrorTitle,
+                    message: localizedAuthModalStrings.identifierRequired,
+                    tone: 'warning'
+                });
+                this.focusLoginIdentifierField();
                 return;
             }
 
@@ -3279,20 +3435,44 @@ createApp({
                 }
 
                 if (!response.ok || payload?.success === false) {
+                    const backendMessage = typeof payload?.message === 'string'
+                        ? payload.message.trim()
+                        : '';
+                    this.pushNotification({
+                        title: localizedAuthModalStrings.emailCheckFailedTitle,
+                        message: backendMessage || localizedAuthModalStrings.emailCheckFailedMessage,
+                        tone: 'warning'
+                    });
                     return;
                 }
 
                 const emailExists = payload?.data?.exists === true;
                 if (!emailExists) {
+                    const redirectNotification = {
+                        title: localizedAuthModalStrings.emailNotFoundTitle,
+                        message: localizedAuthModalStrings.emailNotFoundMessage,
+                        tone: 'warning'
+                    };
+                    this.pushNotification(redirectNotification);
+                    this.rememberRedirectNotification(redirectNotification);
                     window.location.assign(this.buildRegisterRedirectPath());
                     return;
                 }
 
+                this.pushNotification({
+                    title: localizedAuthModalStrings.emailFoundTitle,
+                    message: localizedAuthModalStrings.emailFoundMessage,
+                    tone: 'success'
+                });
                 this.loginPasswordVisible = true;
                 this.loginMailCheckedFor = normalizedIdentifier.toLowerCase();
                 this.focusLoginPasswordField();
             } catch {
-                // Mail lookup errors are intentionally silent in the modal flow.
+                this.pushNotification({
+                    title: localizedAuthModalStrings.emailCheckFailedTitle,
+                    message: localizedAuthModalStrings.emailCheckFailedMessage,
+                    tone: 'warning'
+                });
             } finally {
                 if (requestId === this.loginLookupRequestId) {
                     this.loginLookupPending = false;

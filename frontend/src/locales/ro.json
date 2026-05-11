@@ -80,6 +80,12 @@
     "about": {
       "welcome": "Bine ai venit la Pawsitters. Acest proiect conectează proprietarii de animale cu gazdele printr-o interfață clară și modernă, pentru potriviri rapide și de încredere."
     },
+    "backend": {
+      "checking": "Se verifică conexiunea la backend",
+      "online": "Backend conectat",
+      "offline": "Backend indisponibil",
+      "retry": "Reîncearcă verificarea backend-ului"
+    },
     "search": {
       "destination": {
         "label": "Unde",
@@ -214,10 +220,17 @@
       "identifier": "Număr de telefon sau adresă de e-mail",
       "passwordPrompt": "Introdu parola",
       "passwordRequired": "Te rugăm să introduci parola.",
+      "identifierRequired": "Te rugăm să introduci o adresă de e-mail validă.",
       "loginErrorTitle": "Autentificare eșuată",
       "loginFailedMessage": "Autentificarea nu a putut fi finalizată.",
       "loginSuccessTitle": "Autentificat",
       "loginSuccessMessage": "Acum ești autentificat.",
+      "emailFoundTitle": "Utilizator găsit",
+      "emailFoundMessage": "Cont găsit. Te rugăm să introduci parola.",
+      "emailNotFoundTitle": "Nu a fost găsit niciun utilizator",
+      "emailNotFoundMessage": "Nu există niciun cont pentru această adresă de e-mail. Vei fi redirecționat către înregistrare.",
+      "emailCheckFailedTitle": "Verificarea e-mailului a eșuat",
+      "emailCheckFailedMessage": "Adresa de e-mail nu a putut fi verificată. Te rugăm să încerci din nou.",
       "continue": "Continuă"
     },
     "shared": {
@@ -274,6 +287,6 @@
     "imageAlt": "Ilustrație 404"
   },
   "footer": {
-    "text": "Pawsitters. Interfață calmă pentru îngrijirea modernă a animalelor de companie."
+    "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
   }
 }
