@@ -12,53 +12,313 @@
                     <p class="auth_card__text" th:text="#{auth.register.text}">auth.register.text</p>
                 </div>
 
-                <form class="auth_form"
+                <div class="repository_segmented register_steps"
+                     data-segmented="registerStep"
+                     data-active="account"
+                     role="tablist"
+                     th:attr="aria-label=#{auth.register.steps.aria}">
+                    <button class="repository_segmented__button register_steps__tab"
+                            type="button"
+                            tabindex="-1"
+                            data-segmented-value="account"
+                            disabled
+                            th:text="#{auth.register.steps.account}">auth.register.steps.account</button>
+                    <button class="repository_segmented__button register_steps__tab"
+                            type="button"
+                            tabindex="-1"
+                            data-segmented-value="profile"
+                            disabled
+                            th:text="#{auth.register.steps.profile}">auth.register.steps.profile</button>
+                    <button class="repository_segmented__button register_steps__tab"
+                            type="button"
+                            tabindex="-1"
+                            data-segmented-value="pets"
+                            disabled
+                            th:text="#{auth.register.steps.pets}">auth.register.steps.pets</button>
+                    <span class="repository_segmented__indicator" aria-hidden="true"></span>
+                </div>
+
+                <form class="auth_form auth_form--register"
                       novalidate
                       @submit.prevent="handleRegisterSubmit"
-                      th:attr="data-auth-register-name-required=#{auth.register.validationNameRequired},
-                               data-auth-register-email-required=#{auth.register.validationEmailRequired},
+                      th:attr="data-auth-register-email-required=#{auth.register.validationEmailRequired},
                                data-auth-register-password-required=#{auth.register.validationPasswordRequired},
+                               data-auth-register-password-confirmation-required=#{auth.register.validationPasswordConfirmationRequired},
+                               data-auth-register-passwords-mismatch=#{auth.register.validationPasswordsMismatch},
+                               data-auth-register-password-criteria-required=#{auth.register.validationPasswordCriteriaRequired},
                                data-auth-register-error-title=#{auth.register.errorTitle},
                                data-auth-register-failed-message=#{auth.register.errorMessage},
                                data-auth-register-success-title=#{auth.register.successTitle},
-                               data-auth-register-success-message=#{auth.register.successMessage}">
-                    <label class="auth_field corp_field">
-                        <span class="sr-only" th:text="#{auth.register.name}">auth.register.name</span>
-                        <input class="auth_input corp_input"
-                               type="text"
-                               autocomplete="name"
-                               data-auth-register-name
-                               v-model="registerFullName"
-                               th:attr="aria-label=#{auth.register.name},placeholder=#{auth.register.namePlaceholder}">
-                        <span class="auth_field__label corp_field__label"
-                              th:text="#{auth.register.namePlaceholder}">auth.register.namePlaceholder</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only" th:text="#{auth.register.email}">auth.register.email</span>
-                        <input class="auth_input corp_input"
-                               type="email"
-                               autocomplete="email"
-                               data-auth-register-email
-                               v-model="registerEmail"
-                               th:attr="aria-label=#{auth.register.email},placeholder=#{auth.register.emailPlaceholder}">
-                        <span class="auth_field__label corp_field__label"
-                              th:text="#{auth.register.emailPlaceholder}">auth.register.emailPlaceholder</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only" th:text="#{auth.register.password}">auth.register.password</span>
-                        <input class="auth_input corp_input"
-                               type="password"
-                               autocomplete="new-password"
-                               data-auth-register-password
-                               v-model="registerPassword"
-                               th:attr="aria-label=#{auth.register.password},placeholder=#{auth.register.passwordPlaceholder}">
-                        <span class="auth_field__label corp_field__label"
-                              th:text="#{auth.register.passwordPlaceholder}">auth.register.passwordPlaceholder</span>
-                    </label>
-                    <button class="button button--primary auth_submit"
-                            :disabled="registerSubmitPending"
-                            type="submit"
-                            th:text="#{auth.register.submit}">auth.register.submit</button>
+                               data-auth-register-success-message=#{auth.register.successMessage},
+                               data-auth-register-first-name-required=#{auth.register.validationFirstNameRequired},
+                               data-auth-register-last-name-required=#{auth.register.validationLastNameRequired},
+                               data-auth-register-phone-required=#{auth.register.validationPhoneRequired},
+                               data-auth-register-birth-date-required=#{auth.register.validationBirthDateRequired},
+                               data-auth-register-birth-date-past=#{auth.register.validationBirthDatePast},
+                               data-auth-register-emergency-contact-required=#{auth.register.validationEmergencyContactRequired},
+                               data-auth-register-profile-picture-required=#{auth.register.validationProfilePictureRequired},
+                               data-auth-register-bio-required=#{auth.register.validationBioRequired},
+                               data-auth-register-city-required=#{auth.register.validationCityRequired},
+                               data-auth-register-postal-code-invalid=#{auth.register.validationPostalCodeInvalid},
+                               data-auth-register-role-required=#{auth.register.validationRoleRequired},
+                               data-auth-register-pet-species-required=#{auth.register.validationPetSpeciesRequired},
+                               data-auth-register-password-min-length=#{auth.register.validationPasswordMinLength},
+                               data-auth-register-password-criteria-min-length=#{auth.register.passwordCriteria.minLength},
+                               data-auth-register-password-criteria-max-bytes=#{auth.register.passwordCriteria.maxBytes},
+                               data-auth-register-password-criteria-lowercase=#{auth.register.passwordCriteria.lowercase},
+                               data-auth-register-password-criteria-uppercase=#{auth.register.passwordCriteria.uppercase},
+                               data-auth-register-password-criteria-digit=#{auth.register.passwordCriteria.digit},
+                               data-auth-register-password-criteria-special=#{auth.register.passwordCriteria.special},
+                               data-auth-register-password-criteria-match=#{auth.register.passwordCriteria.match},
+                               data-auth-register-country-fallback=#{auth.register.countryFallback}">
+                    <section class="register_step_panel"
+                             v-show="registerStep === 'account'"
+                             data-segment-panel="registerStep"
+                             data-segment-value="account">
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.firstName}">auth.register.firstName</span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="given-name"
+                                   data-auth-register-first-name
+                                   v-model="registerFirstName"
+                                   th:attr="aria-label=#{auth.register.firstName},placeholder=#{auth.register.firstNamePlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.firstNamePlaceholder}">auth.register.firstNamePlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.lastName}">auth.register.lastName</span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="family-name"
+                                   data-auth-register-last-name
+                                   v-model="registerLastName"
+                                   th:attr="aria-label=#{auth.register.lastName},placeholder=#{auth.register.lastNamePlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.lastNamePlaceholder}">auth.register.lastNamePlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.email}">auth.register.email</span>
+                            <input class="auth_input corp_input"
+                                   type="email"
+                                   autocomplete="email"
+                                   data-auth-register-email
+                                   v-model="registerEmail"
+                                   th:attr="aria-label=#{auth.register.email},placeholder=#{auth.register.emailPlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.emailPlaceholder}">auth.register.emailPlaceholder</span>
+                        </label>
+
+                        <div class="register_step_separator" aria-hidden="true"></div>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.passwordEntry}">auth.register.passwordEntry</span>
+                            <input class="auth_input corp_input"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   data-auth-register-password
+                                   v-model="registerPassword"
+                                   th:attr="aria-label=#{auth.register.passwordEntry},placeholder=#{auth.register.passwordPlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.passwordPlaceholder}">auth.register.passwordPlaceholder</span>
+                        </label>
+
+                        <div class="register_password_criteria" role="status" aria-live="polite">
+                            <div class="register_password_criteria__item"
+                                 v-for="criterion in registerPasswordCriteria"
+                                 :key="criterion.id"
+                                 :class="{ 'register_password_criteria__item--met': criterion.met }">
+                                <span class="register_password_criteria__dot" aria-hidden="true"></span>
+                                <span class="register_password_criteria__text" v-text="criterion.label"></span>
+                            </div>
+                        </div>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.confirmPassword}">auth.register.confirmPassword</span>
+                            <input class="auth_input corp_input"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   data-auth-register-password-confirmation
+                                   v-model="registerPasswordConfirmation"
+                                   th:attr="aria-label=#{auth.register.confirmPassword},placeholder=#{auth.register.confirmPasswordPlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.confirmPasswordPlaceholder}">auth.register.confirmPasswordPlaceholder</span>
+                        </label>
+
+                        <p class="register_step_hint" th:text="#{auth.register.passwordHint}">auth.register.passwordHint</p>
+                    </section>
+
+                    <section class="register_step_panel"
+                             v-show="registerStep === 'profile'"
+                             data-segment-panel="registerStep"
+                             data-segment-value="profile">
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.phone}">auth.register.phone</span>
+                            <input class="auth_input corp_input"
+                                   type="tel"
+                                   autocomplete="tel"
+                                   data-auth-register-phone
+                                   v-model="registerPhone"
+                                   th:attr="aria-label=#{auth.register.phone},placeholder=#{auth.register.phonePlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.phonePlaceholder}">auth.register.phonePlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
+                            <input class="auth_input corp_input"
+                                   type="date"
+                                   autocomplete="bday"
+                                   data-auth-register-birth-date
+                                   v-model="registerBirthDate"
+                                   :max="registerBirthDateMax"
+                                   th:attr="aria-label=#{auth.register.birthDate},placeholder=#{auth.register.birthDatePlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.birthDatePlaceholder}">auth.register.birthDatePlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.emergencyContact}">auth.register.emergencyContact</span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   data-auth-register-emergency-contact
+                                   v-model="registerEmergencyContact"
+                                   th:attr="aria-label=#{auth.register.emergencyContact},placeholder=#{auth.register.emergencyContactPlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.emergencyContactPlaceholder}">auth.register.emergencyContactPlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.profilePicture}">auth.register.profilePicture</span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="url"
+                                   data-auth-register-profile-picture
+                                   v-model="registerProfilePicture"
+                                   th:attr="aria-label=#{auth.register.profilePicture},placeholder=#{auth.register.profilePicturePlaceholder}">
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.profilePicturePlaceholder}">auth.register.profilePicturePlaceholder</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.bio}">auth.register.bio</span>
+                            <textarea class="auth_input corp_input corp_input--textarea"
+                                      rows="3"
+                                      data-auth-register-bio
+                                      v-model="registerBio"
+                                      th:attr="aria-label=#{auth.register.bio},placeholder=#{auth.register.bioPlaceholder}"></textarea>
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.bioPlaceholder}">auth.register.bioPlaceholder</span>
+                        </label>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only" th:text="#{auth.register.role}">auth.register.role</span>
+                            <select class="auth_input corp_input corp_input--select"
+                                    data-auth-register-role
+                                    v-model="registerRole"
+                                    th:attr="aria-label=#{auth.register.role}">
+                                <option value="PET_OWNER" th:text="#{auth.register.rolePetOwner}">auth.register.rolePetOwner</option>
+                                <option value="HOST" th:text="#{auth.register.roleHost}">auth.register.roleHost</option>
+                            </select>
+                            <span class="auth_field__label corp_field__label"
+                                  th:text="#{auth.register.role}">auth.register.role</span>
+                        </label>
+
+                        <div class="register_city_picker">
+                            <label class="auth_field corp_field">
+                                <span class="sr-only" th:text="#{auth.register.city}">auth.register.city</span>
+                                <input class="auth_input corp_input"
+                                       type="text"
+                                       autocomplete="off"
+                                       data-auth-register-city
+                                       v-model="registerCityQuery"
+                                       @input="handleRegisterCityInput"
+                                       th:attr="aria-label=#{auth.register.city},placeholder=#{auth.register.cityPlaceholder}">
+                                <span class="auth_field__label corp_field__label"
+                                      th:text="#{auth.register.cityPlaceholder}">auth.register.cityPlaceholder</span>
+                            </label>
+                            <div v-if="registerCityOptionsLoading" class="register_city_picker__state" role="status" aria-live="polite"
+                                 th:text="#{auth.register.cityLoading}">auth.register.cityLoading</div>
+                            <div v-else-if="showRegisterCityNoResults" class="register_city_picker__state"
+                                 th:text="#{auth.register.cityNoResults}">auth.register.cityNoResults</div>
+                            <div v-else-if="filteredRegisterCityOptions.length" class="register_city_picker__list" role="listbox"
+                                 th:attr="aria-label=#{auth.register.cityResultsAria}">
+                                <button class="register_city_picker__option"
+                                        type="button"
+                                        v-for="option in filteredRegisterCityOptions"
+                                        :key="option.id"
+                                        @click="selectRegisterCityOption(option)">
+                                    <img v-if="option.flagPath"
+                                         class="register_city_picker__flag"
+                                         :src="option.flagPath"
+                                         :alt="option.countryName || option.countryCode || ''">
+                                    <span class="register_city_picker__label" v-text="option.label"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="register_location_meta">
+                            <div class="register_country_chip" :class="{ 'register_country_chip--empty': !registerCountryName }">
+                                <img v-if="registerCountryFlagPath"
+                                     class="register_country_chip__flag"
+                                     :src="registerCountryFlagPath"
+                                     :alt="registerCountryName || registerCountryCode || ''">
+                                <span class="register_country_chip__text"
+                                      v-text="registerCountryName || registerCountryCode || registerCountryFallbackLabel"></span>
+                            </div>
+                            <label class="auth_field corp_field register_postal_field">
+                                <span class="sr-only" th:text="#{auth.register.postalCode}">auth.register.postalCode</span>
+                                <input class="auth_input corp_input"
+                                       type="text"
+                                       inputmode="numeric"
+                                       pattern="[0-9]{5}"
+                                       maxlength="5"
+                                       data-auth-register-postal-code
+                                       v-model="registerPostalCode"
+                                       @input="sanitizeRegisterPostalCode"
+                                       th:attr="aria-label=#{auth.register.postalCode},placeholder=#{auth.register.postalCodePlaceholder}">
+                                <span class="auth_field__label corp_field__label"
+                                      th:text="#{auth.register.postalCodePlaceholder}">auth.register.postalCodePlaceholder</span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="register_step_panel"
+                             v-show="registerStep === 'pets'"
+                             data-segment-panel="registerStep"
+                             data-segment-value="pets">
+                        <p class="register_step_hint" th:text="#{auth.register.petSpeciesHint}">auth.register.petSpeciesHint</p>
+                        <div v-if="registerPetChoicesLoading" class="register_pet_grid__state" role="status" aria-live="polite"
+                             th:text="#{auth.register.petSpeciesLoading}">auth.register.petSpeciesLoading</div>
+                        <div v-else-if="!registerPetChoices.length" class="register_pet_grid__state"
+                             th:text="#{auth.register.petSpeciesEmpty}">auth.register.petSpeciesEmpty</div>
+                        <div v-else class="register_pet_grid">
+                            <button class="register_pet_chip"
+                                    type="button"
+                                    v-for="choice in registerPetChoices"
+                                    :key="choice.value"
+                                    :class="{ 'register_pet_chip--active': isRegisterPetSpeciesSelected(choice.value) }"
+                                    @click="toggleRegisterPetSpecies(choice.value)">
+                                <img class="register_pet_chip__icon" :src="choice.emojiPath" :alt="choice.label">
+                                <span class="register_pet_chip__label" v-text="choice.label"></span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <div class="register_step_actions">
+                        <button v-if="registerStep !== 'account'"
+                                class="button button--secondary"
+                                type="button"
+                                @click="goToPreviousRegisterStep()"
+                                th:text="#{auth.register.previous}">auth.register.previous</button>
+                        <button v-if="registerStep !== 'pets'"
+                                class="button button--primary"
+                                type="button"
+                                @click="goToNextRegisterStep()"
+                                th:text="#{auth.register.next}">auth.register.next</button>
+                        <button v-else
+                                class="button button--primary"
+                                :disabled="registerSubmitPending"
+                                type="submit"
+                                th:text="#{auth.register.submit}">auth.register.submit</button>
+                    </div>
                 </form>
 
             </section>

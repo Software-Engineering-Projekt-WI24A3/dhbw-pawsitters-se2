@@ -682,7 +682,43 @@ function contentType(filePath) {
   return map[extension] ?? 'application/octet-stream';
 }
 
-function resolveFilePath(urlPath) {
+function tryResolveFilePath(urlPath) {
+  const candidatePath = urlPath === '/'
+    ? path.join(rootDir, 'index.html')
+    : path.join(rootDir, urlPath.replace(/^\/+/, ''));
+
+  if (existsSync(candidatePath) && statSync(candidatePath).isFile()) {
+    return candidatePath;
+  }
+
+  const nestedIndexPath = path.join(candidatePath, 'index.html');
+  if (existsSync(nestedIndexPath) && statSync(nestedIndexPath).isFile()) {
+    return nestedIndexPath;
+  }
+
+  return null;
+}
+
+function isLocalePrefixedPath(urlPath = '') {
+  return /^\/(?:de|en|ro)(?:\/|$)/i.test(urlPath);
+}
+
+function resolveDynamicPageFallback(urlPath = '') {
+  const normalizedPath = String(urlPath || '').trim().replace(/\/+$/, '') || '/';
+  const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/[^/]+$/i);
+
+  if (localizedProfileMatch?.[1]) {
+    return `/${localizedProfileMatch[1].toLowerCase()}/profile`;
+  }
+
+  if (/^\/profile\/[^/]+$/i.test(normalizedPath)) {
+    return '/profile';
+  }
+
+  return '';
+}
+
+function resolveFilePath(urlPath, locale = defaultLocale) {
   if (urlPath === '/git' || urlPath === '/git/') {
     return { redirect: '/repository/git' };
   }
@@ -706,19 +742,28 @@ function resolveFilePath(urlPath) {
     return { redirect: `${subPath}?locale=${locale}` };
   }
 
-  if (urlPath === '/index.html') {
-    return { filePath: path.join(rootDir, 'index.html') };
+  const normalizedLocale = supportedLocales.includes(locale) ? locale : defaultLocale;
+  const dynamicFallbackPath = resolveDynamicPageFallback(urlPath);
+  const routeCandidates = [urlPath];
+
+  if (dynamicFallbackPath && !routeCandidates.includes(dynamicFallbackPath)) {
+    routeCandidates.push(dynamicFallbackPath);
   }
 
-  const sanitized = urlPath.replace(/^\/+/, '');
-  const directPath = path.join(rootDir, sanitized);
+  const candidates = [];
+  for (const routeCandidate of routeCandidates) {
+    if (!isLocalePrefixedPath(routeCandidate) && normalizedLocale !== defaultLocale) {
+      candidates.push(routeCandidate === '/' ? `/${normalizedLocale}` : `/${normalizedLocale}${routeCandidate}`);
+    }
 
-  if (existsSync(directPath) && statSync(directPath).isFile()) {
-    return { filePath: directPath };
+    candidates.push(routeCandidate);
   }
 
-  if (existsSync(path.join(directPath, 'index.html'))) {
-    return { filePath: path.join(directPath, 'index.html') };
+  for (const candidate of [...new Set(candidates)]) {
+    const filePath = tryResolveFilePath(candidate);
+    if (filePath) {
+      return { filePath };
+    }
   }
 
   return null;
@@ -906,7 +951,7 @@ async function main() {
       return;
     }
 
-    const resolved = resolveFilePath(requestUrl.pathname);
+    const resolved = resolveFilePath(requestUrl.pathname, locale);
 
     if (!resolved) {
       const notFoundPage = await renderLocalizedPage(rootDir, '/404', locale);

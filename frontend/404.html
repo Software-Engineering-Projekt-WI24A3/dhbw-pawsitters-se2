@@ -56,9 +56,10 @@
                                     <span class="header_search_field__value" v-text="locationDisplayValue"></span>
                                 </summary>
                                 <div class="header_search_field__panel header_search_field__panel--destination">
-                                    <label class="header_search_panel__search">
+                                    <label class="header_search_panel__search corp_field">
                                         <span class="sr-only">Vermietungsorte durchsuchen</span>
-                                        <input class="header_search_panel__search-input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Stadt weltweit suchen">
+                                        <input class="header_search_panel__search-input corp_input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Stadt weltweit suchen">
+                                        <span class="header_search_panel__search-label corp_field__label">Stadt weltweit suchen</span>
                                     </label>
                                     <p class="header_search_panel__hint">Suche Städte auf der ganzen Welt, in der du dein Haustier abgeben möchtest.</p>
                                     <div v-if="locationOptionsLoading" class="header_search_panel__loading" role="status" aria-live="polite">
@@ -241,9 +242,16 @@ mvn spring-boot:run</code></pre>
                         <span class="sr-only">Benutzermenü öffnen</span>
                     </summary>
                     <div class="repo_menu__panel user_menu__panel">
-                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">Profil ansehen</button>
+                        <p class="header_quick_menu__category user_menu__category" v-text="authSessionGreeting"></p>
+                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F9D1.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Profil ansehen</span>
+                        </button>
                         <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
-                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">Ausloggen</button>
+                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F512.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Ausloggen</span>
+                        </button>
                     </div>
                 </details>
                 <details class="repo_menu repo_menu--surface header_quick_menu" aria-label="Schnellmenü">
@@ -270,6 +278,7 @@ mvn spring-boot:run</code></pre>
                             <span class="repo_menu__item-label">Git</span>
                         </a>
                         <a class="repo_menu__item" href="/repository/kanban">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Kanban Board</span>
                         </a>
                         <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
@@ -304,6 +313,7 @@ mvn spring-boot:run</code></pre>
                             <span class="repo_menu__item-label">Git</span>
                         </a>
                         <a class="repo_menu__item" @click="closeMenu()" href="/repository/kanban">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Kanban Board</span>
                         </a>
                     </div>
@@ -351,9 +361,9 @@ mvn spring-boot:run</code></pre>
 
                 <form class="auth_modal__form" novalidate="" @submit.prevent="handleLoginModalSubmit" data-auth-password-required="Bitte ein Passwort eingeben." data-auth-identifier-required="Bitte gib eine gültige E-Mail-Adresse ein." data-auth-login-error-title="Login fehlgeschlagen" data-auth-login-failed-message="Der Login konnte nicht abgeschlossen werden." data-auth-login-success-title="Erfolgreich eingeloggt" data-auth-login-success-message="Du bist jetzt eingeloggt." data-auth-email-found-title="Benutzer gefunden" data-auth-email-found-message="Konto gefunden. Bitte gib jetzt dein Passwort ein." data-auth-email-not-found-title="Kein Benutzer gefunden" data-auth-email-not-found-message="Für diese E-Mail wurde kein Konto gefunden. Du wirst zur Registrierung weitergeleitet." data-auth-email-check-failed-title="E-Mail-Prüfung fehlgeschlagen" data-auth-email-check-failed-message="Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.">
                     <label class="corp_field auth_modal__field">
-                        <span class="sr-only">Telefonnummer oder E-Mail Adresse</span>
-                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
-                        <span class="corp_field__label">Telefonnummer oder E-Mail Adresse</span>
+                        <span class="sr-only">E-mail Adresse eingeben</span>
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="E-mail Adresse eingeben" placeholder="E-mail Adresse eingeben">
+                        <span class="corp_field__label">E-mail Adresse eingeben</span>
                     </label>
                     <label v-if="loginPasswordVisible" class="corp_field auth_modal__field">
                         <span class="sr-only">Passwort eingeben</span>

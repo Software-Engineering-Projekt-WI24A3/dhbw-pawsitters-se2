@@ -181,6 +181,262 @@
         }
     }
 
+    .profile_page {
+        @apply pb-6;
+    }
+
+    .page-profile .site_main {
+        @apply pt-0;
+    }
+
+    .profile_hero {
+        position: relative;
+        min-height: clamp(9rem, 26vw, 13.5rem);
+        overflow: visible;
+    }
+
+    .profile_hero__media {
+        position: absolute;
+        inset: 0;
+        border: 1px solid rgba(17, 17, 19, 0.08);
+        border-radius: clamp(1.3rem, 2.8vw, 1.9rem);
+        overflow: hidden;
+    }
+
+    .profile_hero__banner {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.05);
+        animation: profile-hero-banner-in 820ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        filter: saturate(1.04) contrast(1.03);
+    }
+
+    .profile_hero__scrim {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(13, 18, 12, 0.08) 0%, rgba(13, 18, 12, 0.22) 72%, rgba(13, 18, 12, 0.36) 100%),
+            radial-gradient(circle at 16% 20%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 40%);
+    }
+
+    .profile_hero__heading {
+        position: relative;
+        z-index: 2;
+        width: min(1240px, calc(100% - 2rem));
+        margin-inline: auto;
+        padding-top: clamp(1.2rem, 4vw, 2.2rem);
+        color: rgba(255, 255, 255, 0.94);
+        animation: profile-hero-heading-in 620ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+    }
+
+    .profile_hero__eyebrow {
+        @apply text-[0.66rem] font-semibold uppercase;
+        letter-spacing: 0.24em;
+        color: rgba(255, 255, 255, 0.68);
+    }
+
+    .profile_hero__title {
+        @apply mt-2 text-[clamp(1.4rem,3.6vw,2.65rem)] font-semibold tracking-[-0.03em];
+        max-width: 26ch;
+        line-height: 1.05;
+    }
+
+    .profile_hero__avatar_ring {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        z-index: 3;
+        width: clamp(6.6rem, 13vw, 8.5rem);
+        height: clamp(6.6rem, 13vw, 8.5rem);
+        padding: 0.38rem;
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(234, 241, 248, 0.96) 100%);
+        border: 1px solid rgba(17, 17, 19, 0.12);
+        box-shadow:
+            0 16px 34px rgba(16, 22, 16, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transform: translate(-50%, 52%);
+        animation: profile-avatar-in 620ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
+    }
+
+    .profile_hero__avatar {
+        @apply block w-full h-full rounded-full object-cover;
+    }
+
+    .profile_hero__avatar--fallback {
+        @apply inline-flex items-center justify-center text-[2.2rem] font-semibold uppercase;
+        color: rgba(17, 17, 19, 0.92);
+        background: linear-gradient(180deg, rgba(245, 248, 253, 1) 0%, rgba(232, 238, 246, 0.95) 100%);
+    }
+
+    .profile_panel {
+        width: min(52rem, calc(100% - 1.6rem));
+        margin: clamp(3.4rem, 6vw, 4.8rem) auto 0;
+        border-radius: clamp(1.4rem, 2.8vw, 2.1rem);
+        border: 1px solid rgba(17, 17, 19, 0.1);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(244, 248, 252, 0.93) 100%),
+            radial-gradient(circle at 14% 0%, rgba(190, 225, 255, 0.24) 0%, rgba(190, 225, 255, 0) 42%);
+        box-shadow:
+            0 18px 40px rgba(15, 22, 16, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.88);
+        overflow: hidden;
+    }
+
+    .profile_panel__content {
+        padding: clamp(1.5rem, 3.3vw, 2.4rem);
+        animation: profile-content-in 580ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+    }
+
+    .profile_state {
+        @apply m-0 text-center text-sm font-medium;
+        padding: clamp(1.4rem, 3vw, 2.2rem);
+    }
+
+    .profile_state--loading {
+        color: rgba(17, 17, 19, 0.66);
+    }
+
+    .profile_state--error {
+        color: rgba(153, 27, 27, 0.92);
+    }
+
+    .profile_panel__name {
+        @apply m-0 text-[clamp(1.3rem,3vw,2rem)] font-semibold tracking-[-0.03em];
+        color: rgba(17, 17, 19, 0.95);
+    }
+
+    .profile_panel__role {
+        @apply mt-2 text-sm font-semibold uppercase;
+        letter-spacing: 0.16em;
+        color: rgba(17, 17, 19, 0.56);
+    }
+
+    .profile_facts {
+        @apply mt-6 grid gap-3;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profile_facts__item {
+        @apply rounded-2xl p-4;
+        border: 1px solid rgba(17, 17, 19, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .profile_facts__item dt {
+        @apply text-[0.68rem] font-semibold uppercase;
+        letter-spacing: 0.14em;
+        color: rgba(17, 17, 19, 0.48);
+    }
+
+    .profile_facts__item dd {
+        @apply mt-2 text-sm font-semibold;
+        margin-inline-start: 0;
+        color: rgba(17, 17, 19, 0.84);
+        word-break: break-word;
+    }
+
+    .profile_bio {
+        @apply mt-6;
+    }
+
+    .profile_bio__title,
+    .profile_species__title {
+        @apply text-xs font-semibold uppercase;
+        letter-spacing: 0.16em;
+        color: rgba(17, 17, 19, 0.52);
+    }
+
+    .profile_bio__text {
+        @apply mt-3 text-[0.98rem];
+        color: rgba(17, 17, 19, 0.86);
+        line-height: 1.62;
+    }
+
+    .profile_species {
+        @apply mt-6;
+    }
+
+    .profile_species__list {
+        @apply mt-3 flex flex-wrap gap-2;
+    }
+
+    .profile_species__chip {
+        @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+        border: 1px solid rgba(17, 17, 19, 0.12);
+        color: rgba(17, 17, 19, 0.72);
+        background: rgba(255, 255, 255, 0.88);
+    }
+
+    @media (max-width: 768px) {
+        .profile_hero {
+            min-height: clamp(8.2rem, 42vw, 10.8rem);
+        }
+
+        .profile_hero__heading {
+            padding-top: 1rem;
+        }
+
+        .profile_facts {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .profile_panel {
+            width: min(92vw, 52rem);
+        }
+    }
+
+    @keyframes profile-hero-banner-in {
+        from {
+            opacity: 0.32;
+            transform: scale(1.11);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes profile-hero-heading-in {
+        from {
+            opacity: 0;
+            transform: translateY(1rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes profile-avatar-in {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 66%) scale(0.88);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, 52%) scale(1);
+        }
+    }
+
+    @keyframes profile-content-in {
+        from {
+            opacity: 0;
+            transform: translateY(0.9rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .site_notifications {
         @apply pointer-events-none fixed left-1/2 top-4 z-[90] grid w-[min(94vw,34rem)] -translate-x-1/2 gap-2;
     }
@@ -1113,22 +1369,7 @@
     }
 
     .header_search_panel__search-input {
-        @apply w-full rounded-[1.15rem] border border-black/10 bg-white px-3 py-2 text-sm font-medium text-black;
-        transition:
-            border-color 220ms ease,
-            box-shadow 220ms ease,
-            transform 220ms ease;
-    }
-
-    .header_search_panel__search-input::placeholder {
-        color: rgba(17, 17, 19, 0.44);
-    }
-
-    .header_search_panel__search-input:focus {
-        outline: none;
-        border-color: rgba(75, 126, 72, 0.38);
-        box-shadow: 0 0 0 3px rgba(75, 126, 72, 0.14);
-        transform: translateY(-1px);
+        @apply w-full;
     }
 
     .header_search_panel__hint {
@@ -3890,6 +4131,65 @@
         @apply mt-8 grid gap-4;
     }
 
+    .auth_form--register {
+        @apply mt-6 gap-5;
+    }
+
+    .register_steps {
+        @apply mt-8 mb-2;
+    }
+
+    .register_steps__tab:disabled {
+        cursor: default;
+        opacity: 1;
+    }
+
+    .register_step_panel {
+        @apply grid gap-4;
+    }
+
+    .register_step_hint {
+        @apply m-0 text-sm leading-6;
+        color: rgba(17, 17, 19, 0.62);
+    }
+
+    .register_step_separator {
+        height: 1px;
+        background: rgba(17, 17, 19, 0.14);
+        margin: 0.1rem 0 0.25rem;
+    }
+
+    .register_password_criteria {
+        @apply grid gap-2 rounded-[1rem] border border-black/10 px-3 py-3;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        background: rgba(250, 251, 252, 0.9);
+    }
+
+    .register_password_criteria__item {
+        @apply flex items-start gap-2 text-[0.78rem] leading-5;
+        color: rgba(17, 17, 19, 0.74);
+    }
+
+    .register_password_criteria__dot {
+        @apply mt-1 inline-block rounded-full;
+        width: 0.52rem;
+        height: 0.52rem;
+        background: #dc2626;
+        flex-shrink: 0;
+    }
+
+    .register_password_criteria__item--met {
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .register_password_criteria__item--met .register_password_criteria__dot {
+        background: #15803d;
+    }
+
+    .register_password_criteria__text {
+        @apply block;
+    }
+
     .corp_field,
     .auth_field {
         @apply relative block isolate;
@@ -3947,6 +4247,26 @@
         @apply text-transparent;
     }
 
+    .corp_input--textarea {
+        min-height: 7.2rem;
+        padding-top: 1.55rem;
+        padding-bottom: 0.9rem;
+        resize: vertical;
+    }
+
+    .corp_input--select {
+        appearance: none;
+        background-image:
+            linear-gradient(45deg, transparent 50%, rgba(17, 17, 19, 0.64) 50%),
+            linear-gradient(135deg, rgba(17, 17, 19, 0.64) 50%, transparent 50%);
+        background-position:
+            calc(100% - 1.18rem) calc(1.58rem + 2px),
+            calc(100% - 0.82rem) calc(1.58rem + 2px);
+        background-size: 0.4rem 0.4rem, 0.4rem 0.4rem;
+        background-repeat: no-repeat;
+        padding-right: 2.3rem;
+    }
+
     .corp_input:focus + .corp_field__label,
     .corp_input:not(:placeholder-shown) + .corp_field__label,
     .auth_input:focus + .auth_field__label,
@@ -3960,6 +4280,110 @@
 
     .auth_submit {
         @apply mt-2 w-full;
+    }
+
+    .register_step_actions {
+        @apply mt-2 flex flex-wrap gap-3;
+    }
+
+    .register_step_actions .button {
+        @apply flex-1;
+        min-width: 11rem;
+    }
+
+    .register_city_picker {
+        @apply relative grid gap-2;
+    }
+
+    .register_city_picker__state {
+        @apply rounded-[1rem] border border-black/10 px-3 py-2 text-sm;
+        color: rgba(17, 17, 19, 0.7);
+        background: rgba(250, 251, 252, 0.9);
+    }
+
+    .register_city_picker__list {
+        @apply grid max-h-52 gap-1 overflow-y-auto rounded-[1rem] border border-black/10 bg-white p-1;
+    }
+
+    .register_city_picker__option {
+        @apply flex w-full items-center gap-2 rounded-[0.8rem] border-0 bg-transparent px-3 py-2 text-left text-sm font-medium;
+        color: rgba(17, 17, 19, 0.82);
+        transition: background-color 220ms ease, color 220ms ease;
+    }
+
+    .register_city_picker__option:hover {
+        background: rgba(17, 17, 19, 0.06);
+        color: #111114;
+    }
+
+    .register_city_picker__flag {
+        @apply h-4 w-5 rounded-[0.22rem] object-cover;
+    }
+
+    .register_city_picker__label {
+        @apply block;
+    }
+
+    .register_location_meta {
+        @apply grid gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] sm:items-start;
+    }
+
+    .register_country_chip {
+        @apply inline-flex min-h-[3.86rem] items-center gap-2 rounded-[1.2rem] border px-4 py-3 text-sm font-semibold;
+        border-color: rgba(17, 17, 19, 0.14);
+        background: rgba(250, 251, 252, 0.92);
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .register_country_chip--empty {
+        color: rgba(17, 17, 19, 0.56);
+    }
+
+    .register_country_chip__flag {
+        @apply h-5 w-6 rounded-[0.24rem] object-cover;
+    }
+
+    .register_country_chip__text {
+        @apply leading-5;
+    }
+
+    .register_postal_field {
+        @apply mb-0;
+    }
+
+    .register_pet_grid__state {
+        @apply rounded-[1rem] border border-black/10 px-4 py-3 text-sm;
+        color: rgba(17, 17, 19, 0.7);
+        background: rgba(250, 251, 252, 0.9);
+    }
+
+    .register_pet_grid {
+        @apply grid gap-2;
+        grid-template-columns: repeat(auto-fit, minmax(9.6rem, 1fr));
+    }
+
+    .register_pet_chip {
+        @apply inline-flex items-center gap-2 rounded-[1rem] border border-black/10 bg-white px-3 py-2 text-left transition duration-300;
+        color: rgba(17, 17, 19, 0.82);
+    }
+
+    .register_pet_chip:hover {
+        transform: translateY(-1px);
+        border-color: rgba(17, 17, 19, 0.28);
+    }
+
+    .register_pet_chip--active {
+        border-color: rgba(17, 17, 19, 0.76);
+        background: rgba(17, 17, 19, 0.08);
+        color: #111114;
+    }
+
+    .register_pet_chip__icon {
+        @apply h-5 w-5 object-contain;
+    }
+
+    .register_pet_chip__label {
+        @apply text-sm font-semibold;
     }
 
     .auth_link_card {

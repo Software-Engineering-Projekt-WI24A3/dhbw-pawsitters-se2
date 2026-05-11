@@ -31,6 +31,10 @@
     "notFound": {
       "title": "Pawsitters | Pagina nu a fost găsită",
       "description": "Pagină 404 pentru rute necunoscute."
+    },
+    "profile": {
+      "title": "Pawsitters | Profil public",
+      "description": "Pagină publică de profil cu banner, avatar și date personale."
     }
   },
   "brand": {
@@ -261,19 +265,81 @@
     "register": {
       "title": "Creează cont",
       "text": "Pregătește-ți accesul pentru următoarele fluxuri frontend.",
-      "name": "Nume",
-      "namePlaceholder": "Utilizator Pawsitters",
+      "steps": {
+        "aria": "Pași înregistrare",
+        "account": "Cont",
+        "profile": "Profil",
+        "pets": "Animale"
+      },
+      "firstName": "Prenume",
+      "firstNamePlaceholder": "Prenume",
+      "lastName": "Nume",
+      "lastNamePlaceholder": "Nume",
       "email": "E-mail",
-      "emailPlaceholder": "name@example.com",
+      "emailPlaceholder": "E-mail",
       "password": "Parolă",
-      "passwordPlaceholder": "••••••••",
-      "validationNameRequired": "Te rugăm să introduci numele.",
+      "passwordEntry": "Introdu parola",
+      "passwordPlaceholder": "Introdu parola",
+      "confirmPassword": "Repetă parola",
+      "confirmPasswordPlaceholder": "Repetă parola",
+      "passwordHint": "Minimum 15 caractere, fără părți din e-mail sau nume.",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefon",
+      "birthDate": "Data nașterii",
+      "birthDatePlaceholder": "Data nașterii",
+      "emergencyContact": "Contact de urgență",
+      "emergencyContactPlaceholder": "Contact de urgență",
+      "profilePicture": "Poză de profil",
+      "profilePicturePlaceholder": "Poză de profil (link)",
+      "bio": "Scurtă descriere",
+      "bioPlaceholder": "Scurtă descriere",
+      "role": "Rol",
+      "rolePetOwner": "Proprietar de animale",
+      "roleHost": "Gazdă",
+      "city": "Oraș",
+      "cityPlaceholder": "Oraș",
+      "cityLoading": "Se încarcă orașele",
+      "cityNoResults": "Nu s-au găsit orașe",
+      "cityResultsAria": "Rezultate orașe",
+      "countryFallback": "Țara se completează după selectarea orașului",
+      "postalCode": "Cod poștal",
+      "postalCodePlaceholder": "Cod poștal",
+      "petSpeciesHint": "Ce specii de animale dorești să îngrijești?",
+      "petSpeciesLoading": "Se încarcă speciile",
+      "petSpeciesEmpty": "Nu există specii disponibile",
       "validationEmailRequired": "Te rugăm să introduci o adresă de e-mail validă.",
       "validationPasswordRequired": "Te rugăm să introduci o parolă.",
+      "validationPasswordConfirmationRequired": "Te rugăm să repeți parola.",
+      "validationPasswordsMismatch": "Ambele parole trebuie să fie identice.",
+      "validationPasswordCriteriaRequired": "Te rugăm să îndeplinești toate criteriile parolei.",
+      "validationPasswordMinLength": "Parola trebuie să aibă cel puțin 15 caractere.",
+      "validationFirstNameRequired": "Te rugăm să introduci prenumele.",
+      "validationLastNameRequired": "Te rugăm să introduci numele.",
+      "validationPhoneRequired": "Te rugăm să introduci un număr de telefon.",
+      "validationBirthDateRequired": "Te rugăm să introduci data nașterii.",
+      "validationBirthDatePast": "Data nașterii trebuie să fie în trecut.",
+      "validationEmergencyContactRequired": "Te rugăm să introduci un contact de urgență.",
+      "validationProfilePictureRequired": "Te rugăm să introduci un link pentru poza de profil.",
+      "validationBioRequired": "Te rugăm să introduci o scurtă descriere.",
+      "validationCityRequired": "Te rugăm să selectezi un oraș din rezultate.",
+      "validationPostalCodeInvalid": "Codul poștal trebuie să conțină exact 5 cifre.",
+      "validationRoleRequired": "Te rugăm să selectezi un rol.",
+      "validationPetSpeciesRequired": "Te rugăm să selectezi cel puțin o specie.",
+      "passwordCriteria": {
+        "minLength": "Cel puțin 15 caractere",
+        "maxBytes": "Maximum 72 de bytes",
+        "lowercase": "Cel puțin o literă mică",
+        "uppercase": "Cel puțin o literă mare",
+        "digit": "Cel puțin o cifră",
+        "special": "Cel puțin un caracter special",
+        "match": "Ambele parole sunt identice"
+      },
       "errorTitle": "Înregistrare eșuată",
       "errorMessage": "Înregistrarea nu a putut fi finalizată.",
       "successTitle": "Înregistrare reușită",
       "successMessage": "Contul tău a fost creat.",
+      "previous": "Înapoi",
+      "next": "Pasul următor",
       "submit": "Înregistrare",
       "alt": {
         "eyebrow": "Deja înregistrat",
@@ -288,5 +354,27 @@
   },
   "footer": {
     "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
+  },
+  "profile": {
+    "page": {
+      "bannerAlt": "Banner de mulțumire pentru adăpostul de animale",
+      "eyebrow": "Profil public",
+      "title": "Vizualizare profil personal",
+      "loading": "Se încarcă profilul.",
+      "authRequired": "Te rugăm să te autentifici pentru a vedea acest profil.",
+      "notFound": "Acest profil nu a fost găsit.",
+      "loadFailed": "Profilul nu a putut fi încărcat.",
+      "routeMissing": "Te rugăm să deschizi un URL de profil cu un ID de utilizator.",
+      "ownProfileButton": "Profilul meu public",
+      "labels": {
+        "email": "E-mail",
+        "phone": "Telefon",
+        "birthDate": "Data nașterii",
+        "location": "Locație",
+        "rating": "Evaluare",
+        "bio": "Despre mine",
+        "acceptedPets": "Specii de animale acceptate"
+      }
+    }
   }
 }

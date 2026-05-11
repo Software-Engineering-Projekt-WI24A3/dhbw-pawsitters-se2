@@ -36,8 +36,14 @@
                             <span th:text="#{repository.git.label}">repository.git.label</span>
                         </a>
                         <a class="repository_switch__button"
-                           th:href="${repositoryBoardPath}"
-                           th:text="#{repository.board.label}">repository.board.label</a>
+                           th:href="${repositoryBoardPath}">
+                            <img class="repository_switch__icon"
+                                 th:src="@{/assets/media/1F4CB.svg}"
+                                 src="/assets/media/1F4CB.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{repository.board.label}">repository.board.label</span>
+                        </a>
                     </div>
                 </div>
 
