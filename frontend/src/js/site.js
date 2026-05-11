@@ -1837,6 +1837,9 @@ createApp({
             profileViewRequestedUserId: null,
             profileViewUser: null,
             profileStrings: localizedProfileStrings,
+            profileViewBaseDocumentTitle: typeof document !== 'undefined'
+                ? String(document.title || '').trim()
+                : 'Pawsitters',
             backendStatusState: 'checking',
             backendStatusChecking: false,
             backendStatusRequestId: 0,
@@ -3729,6 +3732,7 @@ createApp({
                 return;
             }
 
+            this.applyProfileDocumentTitle();
             const requestedUserId = this.extractProfileRouteUserId(window.location.pathname);
             this.profileViewRequestedUserId = requestedUserId;
 
@@ -3740,6 +3744,35 @@ createApp({
             }
 
             await this.loadProfileById(requestedUserId);
+        },
+        buildProfileDocumentTitle(user = null) {
+            const sourceTitle = typeof this.profileViewBaseDocumentTitle === 'string'
+                ? this.profileViewBaseDocumentTitle.trim()
+                : '';
+            const baseTitle = sourceTitle || (typeof document !== 'undefined'
+                ? String(document.title || '').trim()
+                : '');
+            const brandLabel = (baseTitle.split('|')[0] || '').trim() || 'Pawsitters';
+            const firstName = typeof user?.firstName === 'string' ? user.firstName.trim() : '';
+            const lastName = typeof user?.lastName === 'string' ? user.lastName.trim() : '';
+            const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+            if (fullName) {
+                return `${brandLabel} | ${fullName}`;
+            }
+
+            return sourceTitle || `${brandLabel} | Profil`;
+        },
+        applyProfileDocumentTitle(user = null) {
+            if (!profilePageRoot || typeof document === 'undefined') {
+                return;
+            }
+
+            const nextTitle = this.buildProfileDocumentTitle(user);
+            if (!nextTitle) {
+                return;
+            }
+
+            document.title = nextTitle;
         },
         normalizeProfileUserId(value) {
             const numericValue = Number(value);
@@ -3822,6 +3855,7 @@ createApp({
             this.profileViewLoading = true;
             this.profileViewError = '';
             this.profileViewUser = null;
+            this.applyProfileDocumentTitle();
 
             try {
                 const response = await fetch(`/api/users/${normalizedUserId}`, {
@@ -3845,6 +3879,7 @@ createApp({
                 }
 
                 this.profileViewUser = this.normalizeProfileUser(payload?.data || {});
+                this.applyProfileDocumentTitle(this.profileViewUser);
             } catch {
                 this.profileViewError = this.profileStrings.loadFailed;
             } finally {

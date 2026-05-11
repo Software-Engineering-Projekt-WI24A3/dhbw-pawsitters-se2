@@ -34,6 +34,36 @@ test.describe('Authentication flows', () => {
       });
     });
 
+    await page.route('**/api/pets/choices*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify({
+          choices: ['DOG']
+        })
+      });
+    });
+
+    await page.route('**/v1/search*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify({
+          results: [
+            {
+              name: 'Berlin',
+              country: 'Germany',
+              country_code: 'DE',
+              admin1: 'Berlin',
+              latitude: 52.52,
+              longitude: 13.405,
+              feature_code: 'PPLC'
+            }
+          ]
+        })
+      });
+    });
+
     await page.route('**/api/auth/register', async (route) => {
       registerPayload = JSON.parse(route.request().postData() || '{}');
       sessionState.loggedIn = true;
@@ -62,9 +92,25 @@ test.describe('Authentication flows', () => {
 
     await page.goto('/register?locale=de');
 
-    await page.getByRole('textbox', { name: token('de', 'auth.register.name'), exact: true }).fill('Anna Musterfrau');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.firstName'), exact: true }).fill('Anna');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.lastName'), exact: true }).fill('Musterfrau');
     await page.getByRole('textbox', { name: token('de', 'auth.register.email'), exact: true }).fill('anna.musterfrau@example.com');
-    await page.locator('input[type="password"][autocomplete="new-password"]').fill('SicheresKonto987654!');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.passwordEntry'), exact: true }).fill('SicheresKonto987654!');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.confirmPassword'), exact: true }).fill('SicheresKonto987654!');
+    await page.getByRole('button', { name: token('de', 'auth.register.next'), exact: true }).click();
+
+    await page.getByRole('textbox', { name: token('de', 'auth.register.phone'), exact: true }).fill('+4915112345678');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.birthDate'), exact: true }).fill('1990-01-01');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.emergencyContact'), exact: true }).fill('Notfallkontakt');
+    await page.getByRole('textbox', { name: token('de', 'auth.register.bio'), exact: true }).fill('Pawsitters account');
+    const cityInput = page.getByRole('textbox', { name: token('de', 'auth.register.city'), exact: true });
+    await cityInput.fill('Ber');
+    await expect(page.locator('.register_city_picker__option').first()).toBeVisible();
+    await page.locator('.register_city_picker__option').first().click();
+    await page.getByRole('button', { name: token('de', 'auth.register.next'), exact: true }).click();
+
+    await expect(page.locator('.register_pet_chip').first()).toBeVisible();
+    await page.locator('.register_pet_chip').first().click();
     await page.getByRole('button', { name: token('de', 'auth.register.submit'), exact: true }).click();
 
     await expect.poll(() => registerPayload, { timeout: 10000 }).not.toBeNull();
@@ -73,14 +119,14 @@ test.describe('Authentication flows', () => {
       password: 'SicheresKonto987654!',
       firstName: 'Anna',
       lastName: 'Musterfrau',
-      phone: '+490000000000',
+      phone: '+4915112345678',
       birthDate: '1990-01-01',
-      emergencyContact: 'Emergency contact',
+      emergencyContact: 'Notfallkontakt',
       profilePicture: '/assets/media/favicon.png',
       bio: 'Pawsitters account',
       role: 'PET_OWNER',
       postalCode: null,
-      city: null,
+      city: 'Berlin',
       acceptedPetSpecies: ['DOG']
     });
 
