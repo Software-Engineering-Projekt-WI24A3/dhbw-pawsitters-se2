@@ -107,8 +107,24 @@ jobs:
             sleep 2
           done
 
-          test "$healthy" = "1"
-          curl -fsS http://127.0.0.1:8081/ > /dev/null
+          if [ "$healthy" != "1" ]; then
+            docker compose -f docker-compose.staging.yml logs --tail=100
+            exit 1
+          fi
+
+          frontend_ready=0
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8081/ > /dev/null; then
+              frontend_ready=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$frontend_ready" != "1" ]; then
+            docker compose -f docker-compose.staging.yml logs --tail=100
+            exit 1
+          fi
 
       - name: Stop smoke-test stack
         if: always()
