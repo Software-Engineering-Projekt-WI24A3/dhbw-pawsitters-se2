@@ -192,13 +192,25 @@ function resolveWorkspaceRoot(rootDir) {
 
 function parseRemote(remoteUrl = '') {
   const match = remoteUrl.match(/github\.com[:/](.+?)\/(.+?)(?:\.git)?$/i);
-  if (!match) {
-    throw new Error('Could not determine GitHub repository from git remote.');
+  if (match) {
+    return {
+      owner: match[1],
+      repo: match[2]
+    };
+  }
+
+  const repository = normalizeWhitespace(process.env.GITHUB_REPOSITORY ?? '');
+  const repositoryMatch = repository.match(/^([^/\s]+)\/([^/\s]+)$/);
+  if (repositoryMatch) {
+    return {
+      owner: repositoryMatch[1],
+      repo: repositoryMatch[2]
+    };
   }
 
   return {
-    owner: match[1],
-    repo: match[2]
+    owner: 'Software-Engineering-Projekt-WI24A3',
+    repo: 'dhbw-pawsitters-se2'
   };
 }
 
@@ -683,6 +695,29 @@ async function runJsonRequired(command, args, cwd, contextLabel) {
   }
 }
 
+async function runJsonOptional(command, args, cwd, contextLabel) {
+  try {
+    return await runJsonRequired(command, args, cwd, contextLabel);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchOpenIssues(owner, repo, workspaceRoot) {
+  const issues = await runJsonOptional(
+    'gh',
+    ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
+    workspaceRoot,
+    'GitHub issues API'
+  );
+
+  if (!Array.isArray(issues)) {
+    return [];
+  }
+
+  return issues.filter((issue) => !issue.pull_request);
+}
+
 async function fetchGithubUserSafe(login, workspaceRoot) {
   try {
     return await runJsonRequired('gh', ['api', `users/${login}`], workspaceRoot, `GitHub user API (${login})`);
@@ -1079,12 +1114,12 @@ function indexIdentity(index, identity) {
 }
 
 async function fetchGithubUsers(owner, repo, issues, workspaceRoot) {
-  const contributors = await runJsonRequired(
+  const contributors = await runJsonOptional(
     'gh',
     ['api', `repos/${owner}/${repo}/contributors?per_page=100`],
     workspaceRoot,
     'GitHub contributors API'
-  );
+  ) ?? [];
 
   const logins = new Set([
     ...contributors.map((user) => user.login),
@@ -1292,43 +1327,12 @@ async function buildGitSnapshot(workspaceRoot) {
     runOptional('git', ['for-each-ref', '--format=%(refname:short)\t%(objectname)', 'refs/tags'], workspaceRoot)
   ]);
 
-  let owner = '';
-  let repo = '';
-
-  try {
-    ({ owner, repo } = parseRemote(remoteUrl));
-  } catch (error) {
-    return buildGitSnapshotFallback({
-      remoteUrl,
-      currentBranch,
-      totalCommitsRaw,
-      mergeCommitsRaw,
-      lastCommitDate,
-      reason: error?.message || 'git remote metadata is unavailable'
-    });
-  }
-
-  let rawIssues = [];
-  try {
-    const issues = await runJsonRequired(
-      'gh',
-      ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
-      workspaceRoot,
-      'GitHub issues API'
-    );
-    rawIssues = issues.filter((issue) => !issue.pull_request);
-  } catch {
-    rawIssues = [];
-  }
-
-  let githubUsers = [];
-  try {
-    githubUsers = await fetchGithubUsers(owner, repo, rawIssues, workspaceRoot);
-  } catch {
-    githubUsers = [];
-  }
-
+  const { owner, repo } = parseRemote(remoteUrl);
+  const rawIssues = await fetchOpenIssues(owner, repo, workspaceRoot);
+  const githubUsers = await fetchGithubUsers(owner, repo, rawIssues, workspaceRoot);
   const identityIndex = new Map();
+  const currentBranchName = currentBranch || process.env.GITHUB_REF_NAME || '';
+  const currentHeadHash = headHash || process.env.GITHUB_SHA || '';
 
   githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
 
@@ -1386,7 +1390,7 @@ async function buildGitSnapshot(workspaceRoot) {
     }, new Map());
 
   const branchList = [...branches.values()];
-  const defaultBranch = pickDefaultBranch(branchList, currentBranch);
+  const defaultBranch = pickDefaultBranch(branchList, currentBranchName);
   branchList.sort((left, right) => {
     if (left.name === defaultBranch) {
       return -1;
@@ -1402,8 +1406,8 @@ async function buildGitSnapshot(workspaceRoot) {
   const remoteHeadRefs = parseNamedRefs(remoteHeadsOutput, (name) => normalizeBranchRefName(name));
   const tagRefs = parseNamedRefs(tagRefsOutput, (name) => `tag: ${name}`);
   const headRefs = new Map();
-  addRef(headRefs, headHash, 'HEAD');
-  addRef(headRefs, headHash, currentBranch || defaultBranch || 'HEAD');
+  addRef(headRefs, currentHeadHash, 'HEAD');
+  addRef(headRefs, currentHeadHash, currentBranchName || defaultBranch || 'HEAD');
   const refsMap = mergeRefMaps(localHeadRefs, remoteHeadRefs, tagRefs, headRefs);
 
   const branchGraphs = Object.fromEntries(await Promise.all(branchList.map(async (branch) => ([
@@ -1424,7 +1428,7 @@ async function buildGitSnapshot(workspaceRoot) {
     )
   ]);
   const projectGraph = {
-    branch: currentBranch || defaultBranch,
+    branch: currentBranchName || defaultBranch,
     graphImport: parseCommitImport(projectGraphImportLog, refsMap, identityIndex),
     recentCommits: parseBranchCommits(projectRecentCommitLog, identityIndex),
     lastCommitDate,
@@ -1471,7 +1475,7 @@ async function buildGitSnapshot(workspaceRoot) {
       name: repo,
       label: `${owner}/${repo}`
     },
-    branch: currentBranch || defaultBranch,
+    branch: currentBranchName || defaultBranch,
     defaultBranch,
     totalCommits: Number.parseInt(totalCommitsRaw || '0', 10),
     mergeCommits: Number.parseInt(mergeCommitsRaw || '0', 10),

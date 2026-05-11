@@ -1,0 +1,9 @@
+.git
+.idea/
+**/node_modules/
+**/target/
+frontend/playwright-report/
+frontend/test-results/
+frontend/.cache/
+*.log
+npm-debug.log*
