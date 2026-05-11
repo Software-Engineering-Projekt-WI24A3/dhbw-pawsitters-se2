@@ -58,18 +58,39 @@
                 </div>
                 <h2 class="auth_modal__title" th:text="#{auth.modal.title}">auth.modal.title</h2>
 
-                <form class="auth_modal__form" novalidate @submit.prevent>
+                <form class="auth_modal__form"
+                      novalidate
+                      @submit.prevent="handleLoginModalSubmit"
+                      th:attr="data-auth-password-required=#{auth.modal.passwordRequired},
+                               data-auth-login-error-title=#{auth.modal.loginErrorTitle},
+                               data-auth-login-failed-message=#{auth.modal.loginFailedMessage},
+                               data-auth-login-success-title=#{auth.modal.loginSuccessTitle},
+                               data-auth-login-success-message=#{auth.modal.loginSuccessMessage}">
                     <label class="corp_field auth_modal__field">
                         <span class="sr-only" th:text="#{auth.modal.identifier}">auth.modal.identifier</span>
                         <input class="corp_input"
                                type="text"
                                autocomplete="username"
                                data-auth-login-identifier
+                               v-model="loginIdentifier"
+                               @input="handleLoginIdentifierInput"
                                th:attr="aria-label=#{auth.modal.identifier},placeholder=#{auth.modal.identifier}">
                         <span class="corp_field__label"
                               th:text="#{auth.modal.identifier}">auth.modal.identifier</span>
                     </label>
+                    <label v-if="loginPasswordVisible" class="corp_field auth_modal__field">
+                        <span class="sr-only" th:text="#{auth.modal.passwordPrompt}">auth.modal.passwordPrompt</span>
+                        <input class="corp_input"
+                               type="password"
+                               autocomplete="current-password"
+                               data-auth-login-password
+                               v-model="loginPassword"
+                               th:attr="aria-label=#{auth.modal.passwordPrompt},placeholder=#{auth.modal.passwordPrompt}">
+                        <span class="corp_field__label"
+                              th:text="#{auth.modal.passwordPrompt}">auth.modal.passwordPrompt</span>
+                    </label>
                     <button class="button auth_modal__submit"
+                            :disabled="loginLookupPending"
                             type="submit"
                             th:text="#{auth.modal.continue}">auth.modal.continue</button>
                 </form>

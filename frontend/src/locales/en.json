@@ -63,6 +63,10 @@
     "ariaLocale": "Locale switcher",
     "ariaQuickMenu": "Quick menu",
     "openQuickMenu": "Open quick menu",
+    "ariaUserMenu": "User menu",
+    "openUserMenu": "Open user menu",
+    "profile": "View profile",
+    "logout": "Sign out",
     "login": "Sign in",
     "menu": "Menu",
     "close": "Close menu"
@@ -208,6 +212,12 @@
       "closeAria": "Close login modal",
       "title": "Sign in or register",
       "identifier": "Phone number or email address",
+      "passwordPrompt": "Enter password",
+      "passwordRequired": "Please enter a password.",
+      "loginErrorTitle": "Sign in failed",
+      "loginFailedMessage": "Sign in could not be completed.",
+      "loginSuccessTitle": "Signed in",
+      "loginSuccessMessage": "You are now signed in.",
       "continue": "Continue"
     },
     "shared": {
@@ -244,6 +254,13 @@
       "emailPlaceholder": "name@example.com",
       "password": "Password",
       "passwordPlaceholder": "••••••••",
+      "validationNameRequired": "Please enter your name.",
+      "validationEmailRequired": "Please enter a valid email address.",
+      "validationPasswordRequired": "Please enter a password.",
+      "errorTitle": "Registration failed",
+      "errorMessage": "Registration could not be completed.",
+      "successTitle": "Registration successful",
+      "successMessage": "Your account has been created.",
       "submit": "Register",
       "alt": {
         "eyebrow": "Already registered",

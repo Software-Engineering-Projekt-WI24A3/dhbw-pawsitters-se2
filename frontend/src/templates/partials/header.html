@@ -260,22 +260,6 @@
             </div>
 
             <div class="header_actions hidden lg:flex">
-                <details class="locale_menu" th:attr="aria-label=#{nav.ariaLocale}">
-                    <summary class="locale_menu__summary">
-                        <img class="locale_menu__flag locale_menu__flag--summary" th:src="${currentLocaleFlagPath}" alt="">
-                        <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
-                    </summary>
-                    <div class="locale_menu__panel">
-                        <a th:each="localeOption : ${localeLinks}"
-                           class="locale_menu__item"
-                           th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
-                           th:href="${localeOption.path}"
-                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
-                            <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
-                            <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
-                        </a>
-                    </div>
-                </details>
                 <details class="repo_menu repo_menu--surface header_quick_menu"
                          th:unless="${currentPageKey == 'home'}"
                          th:attr="aria-label=#{nav.ariaQuickMenu}">
@@ -321,11 +305,47 @@
                            th:href="${repositoryBoardPath}">
                             <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
                         </a>
-                        <span class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
+                        <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
                         <button class="repo_menu__item repo_menu__item--button"
+                                v-if="!authSessionLoggedIn"
                                 type="button"
                                 @click="openLoginModal()"
                                 th:text="#{nav.login}">nav.login</button>
+                    </div>
+                </details>
+                <details v-if="authSessionLoggedIn"
+                         class="repo_menu repo_menu--surface user_menu"
+                         th:attr="aria-label=#{nav.ariaUserMenu}">
+                    <summary class="repo_menu__summary user_menu__summary">
+                        <span class="user_menu__initial" v-text="authSessionInitial"></span>
+                        <span class="sr-only" th:text="#{nav.openUserMenu}">nav.openUserMenu</span>
+                    </summary>
+                    <div class="repo_menu__panel user_menu__panel">
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openCurrentUserProfile()"
+                                th:text="#{nav.profile}">nav.profile</button>
+                        <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button user_menu__logout"
+                                type="button"
+                                @click="logoutCurrentUser()"
+                                th:text="#{nav.logout}">nav.logout</button>
+                    </div>
+                </details>
+                <details class="locale_menu" th:attr="aria-label=#{nav.ariaLocale}">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" th:src="${currentLocaleFlagPath}" alt="">
+                        <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a th:each="localeOption : ${localeLinks}"
+                           class="locale_menu__item"
+                           th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
+                           th:href="${localeOption.path}"
+                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
+                            <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
+                            <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
+                        </a>
                     </div>
                 </details>
             </div>
@@ -401,7 +421,7 @@
                         </a>
                     </div>
                 </details>
-                <button class="button button--secondary w-full" th:unless="${currentPageKey == 'home'}" type="button" @click="openLoginModalFromMenu()" th:text="#{nav.login}">nav.login</button>
+                <button v-if="!authSessionLoggedIn" class="button button--secondary w-full" th:unless="${currentPageKey == 'home'}" type="button" @click="openLoginModalFromMenu()" th:text="#{nav.login}">nav.login</button>
             </div>
         </div>
     </div>
