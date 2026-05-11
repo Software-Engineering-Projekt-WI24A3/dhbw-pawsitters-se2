@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 const PET_CHOICE_ENUM_PATTERN = /public\s+enum\s+PetChoice\s*\{([\s\S]*?)\}/m;
+const PET_CHOICES_FALLBACK_RELATIVE_PATH = path.join('assets', 'data', 'pet-choices.json');
 const REGIONAL_INDICATOR_A = 0x1F1E6;
 const REGIONAL_INDICATOR_Z = 0x1F1FF;
 
@@ -204,21 +205,32 @@ export async function loadCountryFlagEntries(frontendRootDir) {
   return Array.from(countriesByCode.values()).sort((left, right) => left.code.localeCompare(right.code));
 }
 
-export async function loadPetChoices(frontendRootDir) {
-  const petChoiceFilePath = path.resolve(
-    frontendRootDir,
-    '..',
-    'backend',
-    'src',
-    'main',
-    'java',
-    'com',
-    'pawsitters',
-    'model',
-    'PetChoice.java'
-  );
+function normalizePetChoices(rawValues, sourceDescription) {
+  if (!Array.isArray(rawValues)) {
+    throw new Error(`Pet choices from ${sourceDescription} are invalid: expected an array.`);
+  }
 
-  const source = await fs.readFile(petChoiceFilePath, 'utf8');
+  const choices = [];
+  const seen = new Set();
+
+  for (const value of rawValues) {
+    const normalized = typeof value === 'string' ? value.trim().toUpperCase() : '';
+    if (!/^[A-Z][A-Z0-9_]*$/.test(normalized) || seen.has(normalized)) {
+      continue;
+    }
+
+    seen.add(normalized);
+    choices.push(normalized);
+  }
+
+  if (!choices.length) {
+    throw new Error(`Pet choices from ${sourceDescription} are empty or malformed.`);
+  }
+
+  return choices;
+}
+
+function parsePetChoicesFromBackendSource(source) {
   const match = source.match(PET_CHOICE_ENUM_PATTERN);
   if (!match) {
     throw new Error('Unable to parse PetChoice enum from backend source file.');
@@ -233,22 +245,65 @@ export async function loadPetChoices(frontendRootDir) {
     .map((value) => extractJavaEnumConstantName(value))
     .filter(Boolean);
 
-  const choices = [];
-  const seen = new Set();
+  return normalizePetChoices(rawConstants, 'backend PetChoice enum');
+}
 
-  for (const value of rawConstants) {
-    const normalized = value.toUpperCase();
-    if (!/^[A-Z][A-Z0-9_]*$/.test(normalized) || seen.has(normalized)) {
-      continue;
+function parsePetChoicesFallback(source, fallbackFilePath) {
+  let payload;
+  try {
+    payload = JSON.parse(source);
+  } catch (error) {
+    throw new Error(
+      `Cannot parse fallback pet choices JSON at ${fallbackFilePath}: ${error.message}`,
+      { cause: error }
+    );
+  }
+
+  return normalizePetChoices(payload?.choices, `fallback file ${fallbackFilePath}`);
+}
+
+function resolveBackendPetChoicePath(frontendRootDir) {
+  const petChoiceFilePath = path.resolve(
+    frontendRootDir,
+    '..',
+    'backend',
+    'src',
+    'main',
+    'java',
+    'com',
+    'pawsitters',
+    'model',
+    'PetChoice.java'
+  );
+
+  return petChoiceFilePath;
+}
+
+async function loadPetChoicesFromBackend(frontendRootDir) {
+  const petChoiceFilePath = resolveBackendPetChoicePath(frontendRootDir);
+  const source = await fs.readFile(petChoiceFilePath, 'utf8');
+  return parsePetChoicesFromBackendSource(source);
+}
+
+async function loadPetChoicesFromFallback(frontendRootDir) {
+  const fallbackFilePath = path.join(frontendRootDir, PET_CHOICES_FALLBACK_RELATIVE_PATH);
+  const source = await fs.readFile(fallbackFilePath, 'utf8');
+  return parsePetChoicesFallback(source, fallbackFilePath);
+}
+
+export async function loadPetChoices(frontendRootDir) {
+  try {
+    return await loadPetChoicesFromBackend(frontendRootDir);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw error;
     }
 
-    seen.add(normalized);
-    choices.push(normalized);
+    const backendPath = resolveBackendPetChoicePath(frontendRootDir);
+    const fallbackChoices = await loadPetChoicesFromFallback(frontendRootDir);
+    console.warn(
+      `[search-data] Backend source missing (${backendPath}); using fallback ${PET_CHOICES_FALLBACK_RELATIVE_PATH}.`
+    );
+    return fallbackChoices;
   }
-
-  if (!choices.length) {
-    throw new Error('PetChoice enum parsing returned no values.');
-  }
-
-  return choices;
 }

@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { promises as fs } from 'node:fs';
+import { existsSync, promises as fs } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -177,6 +177,19 @@ function toDateKey(value) {
   return `${year}-${month}-${day}`;
 }
 
+function resolveWorkspaceRoot(rootDir) {
+  const parentRoot = path.resolve(rootDir, '..');
+  if (existsSync(path.join(parentRoot, '.git'))) {
+    return parentRoot;
+  }
+
+  if (existsSync(path.join(rootDir, '.git'))) {
+    return rootDir;
+  }
+
+  return rootDir;
+}
+
 function parseRemote(remoteUrl = '') {
   const match = remoteUrl.match(/github\.com[:/](.+?)\/(.+?)(?:\.git)?$/i);
   if (match) {
@@ -198,6 +211,61 @@ function parseRemote(remoteUrl = '') {
   return {
     owner: 'Software-Engineering-Projekt-WI24A3',
     repo: 'dhbw-pawsitters-se2'
+  };
+}
+
+function buildGitSnapshotFallback({
+  remoteUrl = '',
+  owner = '',
+  repo = '',
+  currentBranch = '',
+  totalCommitsRaw = '0',
+  mergeCommitsRaw = '0',
+  lastCommitDate = '',
+  reason = ''
+} = {}) {
+  const activityCounts = new Map();
+  const repositoryOwner = normalizeWhitespace(owner);
+  const repositoryName = normalizeWhitespace(repo);
+  const repositoryLabel = repositoryOwner && repositoryName
+    ? `${repositoryOwner}/${repositoryName}`
+    : '';
+  const parsedTotalCommits = Number.parseInt(totalCommitsRaw || '0', 10);
+  const parsedMergeCommits = Number.parseInt(mergeCommitsRaw || '0', 10);
+
+  return {
+    remoteUrl,
+    repository: {
+      owner: repositoryOwner,
+      name: repositoryName,
+      label: repositoryLabel
+    },
+    branch: currentBranch,
+    defaultBranch: currentBranch,
+    totalCommits: Number.isFinite(parsedTotalCommits) ? parsedTotalCommits : 0,
+    mergeCommits: Number.isFinite(parsedMergeCommits) ? parsedMergeCommits : 0,
+    branchCount: 0,
+    contributorCount: 0,
+    authors: [],
+    activity: {
+      week: createActivitySeries(activityCounts, 'week'),
+      month: createActivitySeries(activityCounts, 'month'),
+      year: createActivitySeries(activityCounts, 'year')
+    },
+    branches: [],
+    branchGraphs: {},
+    projectGraph: {
+      branch: currentBranch,
+      graphImport: [],
+      recentCommits: [],
+      lastCommitDate,
+      lastCommitLabel: displayDate(lastCommitDate)
+    },
+    lastCommitDate,
+    lastCommitLabel: displayDate(lastCommitDate),
+    buildWarning: reason,
+    __rawIssues: [],
+    __githubUsers: []
   };
 }
 
@@ -1564,7 +1632,7 @@ function mapIssues(rawIssues, identityIndex) {
 }
 
 async function buildRepositorySnapshot(rootDir) {
-  const workspaceRoot = path.resolve(rootDir, '..');
+  const workspaceRoot = resolveWorkspaceRoot(rootDir);
   const [gitSnapshot, apiSnapshot] = await Promise.all([
     buildGitSnapshot(workspaceRoot),
     buildOpenApiSnapshot(workspaceRoot)

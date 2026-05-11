@@ -13,7 +13,7 @@
     "thymeleaf:build": "node ./scripts/build-site.mjs",
     "thymeleaf:check": "node ./scripts/check-thymeleaf.mjs",
     "test": "npm run thymeleaf:check && npm run test:data && npm run test:e2e",
-    "test:data": "node --test ./tests/repository-live.test.mjs ./tests/repository-graph-data.test.mjs",
+    "test:data": "node --test ./tests/repository-live.test.mjs ./tests/repository-graph-data.test.mjs ./tests/search-data.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
