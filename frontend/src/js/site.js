@@ -21,8 +21,12 @@ const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/sea
 const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
 const HEADER_SEARCH_SESSION_STORAGE_KEY = 'pawsitters.header-search-state';
 const REDIRECT_NOTIFICATION_STORAGE_KEY = 'pawsitters.redirect-notification';
+const REDIRECT_REGISTER_EMAIL_STORAGE_KEY = 'pawsitters.redirect-register-email';
 const BACKEND_STATUS_ENDPOINT = '/api/auth/session';
 const BACKEND_STATUS_POLL_INTERVAL_MS = 30000;
+const REGISTER_STEPS = ['account', 'profile', 'pets'];
+const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
+const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
     'PPL',
     'PPLA',
@@ -1277,6 +1281,37 @@ function isCityFeatureCode(featureCode) {
     return normalized.startsWith('PPL') || HEADER_SEARCH_CITY_FEATURE_CODES.has(normalized);
 }
 
+function normalizePostalCode(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+        return '';
+    }
+
+    const digitsOnly = String(value).replace(/\D/g, '');
+    if (!digitsOnly) {
+        return '';
+    }
+
+    return digitsOnly.slice(0, 5);
+}
+
+function resolveCityPostalCodeFromSource(source) {
+    const fromArray = Array.isArray(source?.postcodes)
+        ? source.postcodes
+            .map((postcode) => normalizePostalCode(postcode))
+            .find((postcode) => /^\d{5}$/.test(postcode))
+        : '';
+    if (fromArray) {
+        return fromArray;
+    }
+
+    const directPostalCode = normalizePostalCode(source?.postal_code ?? source?.postcode ?? '');
+    if (/^\d{5}$/.test(directPostalCode)) {
+        return directPostalCode;
+    }
+
+    return '';
+}
+
 function normalizeCitySearchResults(payload = {}, locale = document.documentElement.lang || 'de') {
     const sourceResults = Array.isArray(payload?.results) ? payload.results : [];
     if (!sourceResults.length) {
@@ -1293,11 +1328,16 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             return;
         }
 
+        const latitude = Number(source.latitude);
+        const longitude = Number(source.longitude);
+        const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+
         const countryCode = normalizeCountryCode(source.country_code);
         const countryName = typeof source.country === 'string' && source.country.trim()
             ? source.country.trim()
             : resolveCountryName(countryCode, locale);
         const regionName = typeof source.admin1 === 'string' ? source.admin1.trim() : '';
+        const postalCode = resolveCityPostalCodeFromSource(source);
         const fallbackFlagPath = countryCode
             ? `/assets/media/country-flag/${countryCodeToFlagFileName(countryCode)}`
             : '';
@@ -1305,8 +1345,8 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             cityName,
             regionName,
             countryCode,
-            Number.isFinite(Number(source.latitude)) ? Number(source.latitude).toFixed(3) : '',
-            Number.isFinite(Number(source.longitude)) ? Number(source.longitude).toFixed(3) : ''
+            hasCoordinates ? latitude.toFixed(3) : '',
+            hasCoordinates ? longitude.toFixed(3) : ''
         ].join('|');
 
         if (!locationId || seen.has(locationId)) {
@@ -1332,9 +1372,12 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             countryName: countryName || countryCode,
             regionName,
             countryCode,
+            postalCode,
             flagPath: fallbackFlagPath,
             label,
-            searchName
+            searchName,
+            latitude: hasCoordinates ? latitude : null,
+            longitude: hasCoordinates ? longitude : null
         });
         seen.add(locationId);
     });
@@ -1376,9 +1419,13 @@ function normalizeHeaderSearchSelectedLocation(value) {
     const regionName = typeof value.regionName === 'string' ? value.regionName.trim() : '';
     const countryCode = normalizeCountryCode(value.countryCode);
     const countryName = typeof value.countryName === 'string' ? value.countryName.trim() : '';
+    const postalCode = normalizePostalCode(value.postalCode);
     const label = typeof value.label === 'string' ? value.label.trim() : '';
     const searchName = typeof value.searchName === 'string' ? value.searchName.trim().toLowerCase() : '';
     const flagPath = typeof value.flagPath === 'string' ? value.flagPath.trim() : '';
+    const latitude = Number(value.latitude);
+    const longitude = Number(value.longitude);
+    const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
     const fallbackLabel = [cityName, countryName || countryCode].filter(Boolean).join(', ');
     const nextLabel = label || fallbackLabel;
     const nextId = typeof value.id === 'string' && value.id.trim()
@@ -1399,9 +1446,12 @@ function normalizeHeaderSearchSelectedLocation(value) {
         countryName: countryName || countryCode,
         regionName,
         countryCode,
+        postalCode,
         flagPath,
         label: nextLabel,
-        searchName: nextSearchName
+        searchName: nextSearchName,
+        latitude: hasCoordinates ? latitude : null,
+        longitude: hasCoordinates ? longitude : null
     };
 }
 
@@ -1669,6 +1719,7 @@ const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
 const headerSearchRoot = document.querySelector('[data-header-search]');
 const authModalFormRoot = document.querySelector('.auth_modal__form');
 const registerFormRoot = document.querySelector('.auth_form');
+const profilePageRoot = document.querySelector('[data-profile-view]');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
     pending: 'Pending',
@@ -1707,13 +1758,36 @@ const localizedAuthModalStrings = {
     emailCheckFailedMessage: authModalFormRoot?.dataset.authEmailCheckFailedMessage || 'Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.'
 };
 const localizedRegisterStrings = {
-    nameRequired: registerFormRoot?.dataset.authRegisterNameRequired || 'Please enter your name.',
-    emailRequired: registerFormRoot?.dataset.authRegisterEmailRequired || 'Please enter an email address.',
+    firstNameRequired: registerFormRoot?.dataset.authRegisterFirstNameRequired || 'Please enter your first name.',
+    lastNameRequired: registerFormRoot?.dataset.authRegisterLastNameRequired || 'Please enter your last name.',
+    emailRequired: registerFormRoot?.dataset.authRegisterEmailRequired || 'Please enter a valid email address.',
     passwordRequired: registerFormRoot?.dataset.authRegisterPasswordRequired || 'Please enter a password.',
+    passwordConfirmationRequired: registerFormRoot?.dataset.authRegisterPasswordConfirmationRequired || 'Please repeat your password.',
+    passwordsMismatch: registerFormRoot?.dataset.authRegisterPasswordsMismatch || 'Both passwords must match.',
+    passwordCriteriaRequired: registerFormRoot?.dataset.authRegisterPasswordCriteriaRequired || 'Please meet all password criteria.',
+    passwordMinLength: registerFormRoot?.dataset.authRegisterPasswordMinLength || 'Password must be at least 15 characters long.',
+    passwordCriteriaMinLength: registerFormRoot?.dataset.authRegisterPasswordCriteriaMinLength || 'At least 15 characters',
+    passwordCriteriaMaxBytes: registerFormRoot?.dataset.authRegisterPasswordCriteriaMaxBytes || 'At most 72 bytes',
+    passwordCriteriaLowercase: registerFormRoot?.dataset.authRegisterPasswordCriteriaLowercase || 'At least one lowercase letter',
+    passwordCriteriaUppercase: registerFormRoot?.dataset.authRegisterPasswordCriteriaUppercase || 'At least one uppercase letter',
+    passwordCriteriaDigit: registerFormRoot?.dataset.authRegisterPasswordCriteriaDigit || 'At least one number',
+    passwordCriteriaSpecial: registerFormRoot?.dataset.authRegisterPasswordCriteriaSpecial || 'At least one special character',
+    passwordCriteriaMatch: registerFormRoot?.dataset.authRegisterPasswordCriteriaMatch || 'Both passwords are identical',
+    phoneRequired: registerFormRoot?.dataset.authRegisterPhoneRequired || 'Please enter a phone number.',
+    birthDateRequired: registerFormRoot?.dataset.authRegisterBirthDateRequired || 'Please enter your birth date.',
+    birthDatePast: registerFormRoot?.dataset.authRegisterBirthDatePast || 'Birth date must be in the past.',
+    emergencyContactRequired: registerFormRoot?.dataset.authRegisterEmergencyContactRequired || 'Please enter an emergency contact.',
+    profilePictureRequired: registerFormRoot?.dataset.authRegisterProfilePictureRequired || 'Please enter a profile picture URL.',
+    bioRequired: registerFormRoot?.dataset.authRegisterBioRequired || 'Please enter a short bio.',
+    cityRequired: registerFormRoot?.dataset.authRegisterCityRequired || 'Please choose a city from the search.',
+    postalCodeInvalid: registerFormRoot?.dataset.authRegisterPostalCodeInvalid || 'Postal code must contain 5 digits.',
+    roleRequired: registerFormRoot?.dataset.authRegisterRoleRequired || 'Please choose a role.',
+    petSpeciesRequired: registerFormRoot?.dataset.authRegisterPetSpeciesRequired || 'Please choose at least one pet species.',
     registerErrorTitle: registerFormRoot?.dataset.authRegisterErrorTitle || 'Registration failed',
     registerFailedMessage: registerFormRoot?.dataset.authRegisterFailedMessage || 'Registration could not be completed.',
     registerSuccessTitle: registerFormRoot?.dataset.authRegisterSuccessTitle || 'Registration successful',
-    registerSuccessMessage: registerFormRoot?.dataset.authRegisterSuccessMessage || 'Your account has been created.'
+    registerSuccessMessage: registerFormRoot?.dataset.authRegisterSuccessMessage || 'Your account has been created.',
+    countryFallback: registerFormRoot?.dataset.authRegisterCountryFallback || 'Country is filled automatically after selecting a city.'
 };
 const localizedHeaderSearchStrings = {
     destinationDescription: headerSearchRoot?.dataset.destinationDescription || 'Vermietungsorte suchen',
@@ -1731,6 +1805,15 @@ const localizedHeaderSearchStrings = {
     backendStatusOffline: headerSearchRoot?.dataset.backendStatusOffline || 'Backend nicht erreichbar',
     backendStatusRetry: headerSearchRoot?.dataset.backendStatusRetry || 'Backend-Verbindung erneut prüfen'
 };
+const localizedProfileStrings = {
+    loading: profilePageRoot?.dataset.profileLoadingLabel || 'Profil wird geladen.',
+    authRequired: profilePageRoot?.dataset.profileAuthRequired || 'Bitte logge dich ein, um dieses Profil anzusehen.',
+    notFound: profilePageRoot?.dataset.profileNotFound || 'Dieses Profil wurde nicht gefunden.',
+    loadFailed: profilePageRoot?.dataset.profileLoadFailed || 'Profil konnte nicht geladen werden.',
+    routeMissing: profilePageRoot?.dataset.profileRouteMissing || 'Bitte öffne eine Profil-URL mit Benutzer-ID.',
+    rolePetOwner: profilePageRoot?.dataset.profileRolePetOwner || 'Pet owner',
+    roleHost: profilePageRoot?.dataset.profileRoleHost || 'Host'
+};
 const initialHeaderSearchState = readHeaderSearchSessionState();
 
 createApp({
@@ -1744,7 +1827,16 @@ createApp({
             loginModalOpen: false,
             authSessionLoggedIn: false,
             authSessionEmail: '',
+            authSessionUserId: null,
+            authSessionFirstName: '',
+            authSessionLastName: '',
             authSessionRequestId: 0,
+            authSessionProfileRequestId: 0,
+            profileViewLoading: false,
+            profileViewError: '',
+            profileViewRequestedUserId: null,
+            profileViewUser: null,
+            profileStrings: localizedProfileStrings,
             backendStatusState: 'checking',
             backendStatusChecking: false,
             backendStatusRequestId: 0,
@@ -1755,9 +1847,33 @@ createApp({
             loginLookupPending: false,
             loginLookupRequestId: 0,
             loginMailCheckedFor: '',
-            registerFullName: '',
+            registerStep: REGISTER_STEPS[0],
+            registerFirstName: '',
+            registerLastName: '',
             registerEmail: '',
             registerPassword: '',
+            registerPasswordConfirmation: '',
+            registerPhone: '',
+            registerBirthDate: '',
+            registerEmergencyContact: '',
+            registerProfilePicture: '/assets/media/favicon.png',
+            registerBio: '',
+            registerRole: 'PET_OWNER',
+            registerCity: '',
+            registerCityQuery: '',
+            registerCountryName: '',
+            registerCountryCode: '',
+            registerCountryFlagPath: '',
+            registerPostalCode: '',
+            registerCitySelectionKey: '',
+            registerCityOptions: [],
+            registerCityOptionsLoading: false,
+            registerCitySearchDebounceHandle: null,
+            registerCitySearchAbortController: null,
+            registerCitySearchRequestId: 0,
+            registerPetChoices: [],
+            registerPetChoicesLoading: false,
+            registerAcceptedPetSpecies: [],
             registerSubmitPending: false,
             scrolled: false,
             headerScrollSyncFrame: 0,
@@ -1864,6 +1980,83 @@ createApp({
         };
     },
     computed: {
+        registerBirthDateMax() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            return toDateInputValue(yesterday);
+        },
+        registerPasswordCriteria() {
+            const password = typeof this.registerPassword === 'string' ? this.registerPassword : '';
+            const passwordConfirmation = typeof this.registerPasswordConfirmation === 'string'
+                ? this.registerPasswordConfirmation
+                : '';
+            const passwordBytes = new TextEncoder().encode(password).length;
+            const hasLowercase = /\p{Ll}/u.test(password);
+            const hasUppercase = /\p{Lu}/u.test(password);
+            const hasDigit = /\d/u.test(password);
+            const hasSpecial = /[^\p{L}\p{N}\s]/u.test(password);
+            const passwordsMatch = Boolean(passwordConfirmation) && password === passwordConfirmation;
+
+            return [
+                {
+                    id: 'min-length',
+                    label: localizedRegisterStrings.passwordCriteriaMinLength,
+                    met: Array.from(password).length >= 15
+                },
+                {
+                    id: 'max-bytes',
+                    label: localizedRegisterStrings.passwordCriteriaMaxBytes,
+                    met: passwordBytes <= 72
+                },
+                {
+                    id: 'lowercase',
+                    label: localizedRegisterStrings.passwordCriteriaLowercase,
+                    met: hasLowercase
+                },
+                {
+                    id: 'uppercase',
+                    label: localizedRegisterStrings.passwordCriteriaUppercase,
+                    met: hasUppercase
+                },
+                {
+                    id: 'digit',
+                    label: localizedRegisterStrings.passwordCriteriaDigit,
+                    met: hasDigit
+                },
+                {
+                    id: 'special',
+                    label: localizedRegisterStrings.passwordCriteriaSpecial,
+                    met: hasSpecial
+                },
+                {
+                    id: 'match',
+                    label: localizedRegisterStrings.passwordCriteriaMatch,
+                    met: passwordsMatch
+                }
+            ];
+        },
+        allRegisterPasswordCriteriaMet() {
+            return this.registerPasswordCriteria.every((criterion) => criterion.met);
+        },
+        filteredRegisterCityOptions() {
+            const query = typeof this.registerCityQuery === 'string' ? this.registerCityQuery.trim().toLowerCase() : '';
+            const options = Array.isArray(this.registerCityOptions) ? this.registerCityOptions : [];
+
+            if (!query) {
+                return options.slice(0, 12);
+            }
+
+            return options
+                .filter((option) => option.searchName.includes(query) || option.countryCode.toLowerCase().includes(query))
+                .slice(0, 12);
+        },
+        showRegisterCityNoResults() {
+            const query = typeof this.registerCityQuery === 'string' ? this.registerCityQuery.trim() : '';
+            return !this.registerCityOptionsLoading && query.length >= 2 && this.filteredRegisterCityOptions.length === 0;
+        },
+        registerCountryFallbackLabel() {
+            return localizedRegisterStrings.countryFallback;
+        },
         filteredLocationOptions() {
             const query = typeof this.locationQuery === 'string' ? this.locationQuery.trim().toLowerCase() : '';
             const options = Array.isArray(this.locationOptions) ? this.locationOptions : [];
@@ -2086,6 +2279,90 @@ createApp({
 
             return this.headerSearchStrings.backendStatusChecking;
         },
+        profileOwnPagePath() {
+            return this.buildProfilePath(this.authSessionUserId);
+        },
+        profileViewDisplayName() {
+            if (!this.profileViewUser) {
+                return '';
+            }
+
+            const firstName = typeof this.profileViewUser.firstName === 'string'
+                ? this.profileViewUser.firstName.trim()
+                : '';
+            const lastName = typeof this.profileViewUser.lastName === 'string'
+                ? this.profileViewUser.lastName.trim()
+                : '';
+            const fullName = [firstName, lastName].filter(Boolean).join(' ');
+            return fullName || this.profileViewUser.email || '';
+        },
+        profileViewInitial() {
+            const sourceText = this.profileViewDisplayName || String(this.profileViewRequestedUserId || '') || 'P';
+            const firstCharacter = sourceText.trim().charAt(0) || 'P';
+            return firstCharacter.toUpperCase();
+        },
+        profileViewRoleLabel() {
+            const role = typeof this.profileViewUser?.role === 'string'
+                ? this.profileViewUser.role.trim().toUpperCase()
+                : '';
+
+            if (role === 'HOST') {
+                return this.profileStrings.roleHost;
+            }
+
+            if (role === 'PET_OWNER') {
+                return this.profileStrings.rolePetOwner;
+            }
+
+            return role || '';
+        },
+        profileViewBirthDateLabel() {
+            return this.formatProfileDate(this.profileViewUser?.birthDate);
+        },
+        profileViewPhoneLabel() {
+            const phone = typeof this.profileViewUser?.phone === 'string'
+                ? this.profileViewUser.phone.trim()
+                : '';
+            return phone || '—';
+        },
+        profileViewLocationLabel() {
+            const city = typeof this.profileViewUser?.city === 'string'
+                ? this.profileViewUser.city.trim()
+                : '';
+            const postalCode = typeof this.profileViewUser?.postalCode === 'string'
+                ? this.profileViewUser.postalCode.trim()
+                : '';
+            const parts = [postalCode, city].filter(Boolean);
+            return parts.length ? parts.join(' ') : '—';
+        },
+        profileViewRatingLabel() {
+            const rating = Number(this.profileViewUser?.rating);
+            const ratingsCount = Number(this.profileViewUser?.numberOfRatings);
+            const safeRatingsCount = Number.isFinite(ratingsCount) ? Math.max(0, Math.round(ratingsCount)) : 0;
+
+            if (!Number.isFinite(rating) || rating <= 0 || safeRatingsCount <= 0) {
+                return '—';
+            }
+
+            return `${rating.toFixed(1)} (${safeRatingsCount})`;
+        },
+        profileViewAcceptedPetSpeciesLabels() {
+            const acceptedPetSpecies = Array.isArray(this.profileViewUser?.acceptedPetSpecies)
+                ? this.profileViewUser.acceptedPetSpecies
+                : [];
+            const locale = document.documentElement.lang || 'de';
+
+            return acceptedPetSpecies
+                .map((species) => formatPetChoiceLabel(species, locale))
+                .filter(Boolean);
+        },
+        authSessionGreeting() {
+            const sourceFirstName = this.normalizeAuthSessionFirstName(this.authSessionFirstName)
+                || this.deriveFirstNameFromEmail(this.authSessionEmail)
+                || 'User';
+            const truncatedFirstName = this.truncateAuthSessionName(sourceFirstName, 8);
+            return `Hallo, ${truncatedFirstName || 'User'}`;
+        },
         authSessionInitial() {
             const sourceEmail = typeof this.authSessionEmail === 'string' ? this.authSessionEmail.trim() : '';
             const localPart = sourceEmail.includes('@') ? sourceEmail.split('@')[0] : sourceEmail;
@@ -2095,6 +2372,15 @@ createApp({
         }
     },
     watch: {
+        authSessionLoggedIn(nextValue, previousValue) {
+            if (nextValue === previousValue) {
+                return;
+            }
+
+            nextTick(() => {
+                this.initializeDropdowns();
+            });
+        },
         locationQuery(nextValue) {
             this.scheduleLocationSearch(nextValue);
             this.persistHeaderSearchState();
@@ -2144,15 +2430,19 @@ createApp({
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.addEventListener('toggle', this.handleDocumentDropdownToggle, true);
         document.addEventListener('click', this.handleDocumentClick);
         document.addEventListener('keydown', this.handleDocumentKeydown);
         this.patchLegacyLoginLinks();
         this.consumeRedirectNotification();
+        this.initializeRegisterFlow();
+        this.initializeProfileView();
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.syncScrollState);
         window.removeEventListener('resize', this.handleResize);
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
+        document.removeEventListener('toggle', this.handleDocumentDropdownToggle, true);
         document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleDocumentKeydown);
         if (this.headerSearchTabsResizeObserver) {
@@ -2167,6 +2457,7 @@ createApp({
         this.stopAllMetricAnimations();
         this.clearNotificationTimers();
         this.clearLocationSearchRuntime();
+        this.clearRegisterCitySearchRuntime();
         if (this.headerScrollSyncFrame > 0) {
             window.cancelAnimationFrame(this.headerScrollSyncFrame);
             this.headerScrollSyncFrame = 0;
@@ -3044,7 +3335,241 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns();
         },
-        async refreshAuthSession() {
+        normalizeAuthSessionFirstName(value) {
+            if (typeof value !== 'string') {
+                return '';
+            }
+
+            return value.trim();
+        },
+        normalizeAuthSessionLastName(value) {
+            if (typeof value !== 'string') {
+                return '';
+            }
+
+            return value.trim();
+        },
+        normalizePotentiallyEncodedEmail(value) {
+            const normalizedValue = this.normalizeLoginIdentifier(value);
+            if (!normalizedValue) {
+                return '';
+            }
+
+            try {
+                return decodeURIComponent(normalizedValue).trim();
+            } catch {
+                return normalizedValue;
+            }
+        },
+        deriveFirstNameFromEmail(email = '') {
+            const sourceEmail = this.normalizePotentiallyEncodedEmail(email);
+            if (!sourceEmail) {
+                return '';
+            }
+
+            const localPart = sourceEmail.includes('@') ? sourceEmail.split('@')[0] : sourceEmail;
+            const normalizedLocalPart = localPart
+                .replace(/[._-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            if (!normalizedLocalPart) {
+                return '';
+            }
+
+            return normalizedLocalPart.split(' ')[0] || '';
+        },
+        truncateAuthSessionName(value, maxCharacters = 8) {
+            const sourceValue = typeof value === 'string' ? value.trim() : '';
+            if (!sourceValue) {
+                return '';
+            }
+
+            const safeMax = Number.isInteger(maxCharacters) && maxCharacters > 0 ? maxCharacters : 8;
+            const symbols = Array.from(sourceValue);
+            if (symbols.length <= safeMax) {
+                return sourceValue;
+            }
+
+            return `${symbols.slice(0, safeMax).join('')}...`;
+        },
+        buildAuthIdentity({ firstName = '', lastName = '', email = '' } = {}) {
+            const normalizedFirstName = this.normalizeAuthSessionFirstName(firstName)
+                || this.deriveFirstNameFromEmail(email);
+            const normalizedLastName = this.normalizeAuthSessionLastName(lastName);
+            const fullName = [normalizedFirstName, normalizedLastName]
+                .filter(Boolean)
+                .join(' ')
+                .trim();
+
+            return {
+                firstName: normalizedFirstName,
+                lastName: normalizedLastName,
+                fullName
+            };
+        },
+        buildAuthSuccessNotification(kind, identity = {}) {
+            const locale = (document.documentElement.lang || 'de').toLowerCase();
+            const normalizedIdentity = this.buildAuthIdentity(identity);
+            const displayFullName = normalizedIdentity.fullName || normalizedIdentity.firstName || 'User';
+            const displayFirstName = normalizedIdentity.firstName || 'User';
+
+            if (kind === 'login') {
+                if (locale === 'en') {
+                    return {
+                        title: localizedAuthModalStrings.loginSuccessTitle,
+                        message: `Hello, ${displayFullName}! You are now signed in.`,
+                        tone: 'success'
+                    };
+                }
+
+                if (locale === 'ro') {
+                    return {
+                        title: localizedAuthModalStrings.loginSuccessTitle,
+                        message: `Salut, ${displayFullName}! Te-ai autentificat cu succes.`,
+                        tone: 'success'
+                    };
+                }
+
+                return {
+                    title: localizedAuthModalStrings.loginSuccessTitle,
+                    message: `Hallo, ${displayFullName}! Du bist erfolgreich eingeloggt.`,
+                    tone: 'success'
+                };
+            }
+
+            if (kind === 'register') {
+                if (locale === 'en') {
+                    return {
+                        title: localizedRegisterStrings.registerSuccessTitle,
+                        message: `Welcome, ${displayFullName}! Your account is ready.`,
+                        tone: 'success'
+                    };
+                }
+
+                if (locale === 'ro') {
+                    return {
+                        title: localizedRegisterStrings.registerSuccessTitle,
+                        message: `Bine ai venit, ${displayFullName}! Contul tău este gata.`,
+                        tone: 'success'
+                    };
+                }
+
+                return {
+                    title: localizedRegisterStrings.registerSuccessTitle,
+                    message: `Hallo, ${displayFullName}! Willkommen bei Pawsitters.`,
+                    tone: 'success'
+                };
+            }
+
+            if (kind === 'logout') {
+                if (locale === 'en') {
+                    return {
+                        title: 'Logged out',
+                        message: `You have been logged out successfully, ${displayFirstName}.`,
+                        tone: 'success'
+                    };
+                }
+
+                if (locale === 'ro') {
+                    return {
+                        title: 'Deconectare reușită',
+                        message: `Te-ai deconectat cu succes, ${displayFirstName}.`,
+                        tone: 'success'
+                    };
+                }
+
+                return {
+                    title: 'Logout erfolgreich',
+                    message: `Du bist erfolgreich ausgelogged, ${displayFirstName}.`,
+                    tone: 'success'
+                };
+            }
+
+            return null;
+        },
+        dispatchAuthSuccessNotification(kind, identity = {}, options = {}) {
+            const { persistOnRedirect = false } = options;
+            const notification = this.buildAuthSuccessNotification(kind, identity);
+            if (!notification) {
+                return;
+            }
+
+            if (persistOnRedirect) {
+                this.rememberRedirectNotification(notification);
+                return;
+            }
+
+            this.pushNotification(notification);
+        },
+        clearAuthSessionProfileData() {
+            this.authSessionProfileRequestId += 1;
+            this.authSessionUserId = null;
+            this.authSessionFirstName = '';
+            this.authSessionLastName = '';
+        },
+        clearAuthSessionIdentity() {
+            this.authSessionLoggedIn = false;
+            this.authSessionEmail = '';
+            this.clearAuthSessionProfileData();
+        },
+        async refreshAuthSessionProfile(email, sessionRequestId = this.authSessionRequestId) {
+            const normalizedEmail = this.normalizePotentiallyEncodedEmail(email);
+            if (!this.isEmailIdentifier(normalizedEmail)) {
+                this.clearAuthSessionProfileData();
+                return;
+            }
+
+            const profileRequestId = this.authSessionProfileRequestId + 1;
+            this.authSessionProfileRequestId = profileRequestId;
+            const fallbackFirstName = this.deriveFirstNameFromEmail(normalizedEmail);
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (
+                    sessionRequestId !== this.authSessionRequestId
+                    || profileRequestId !== this.authSessionProfileRequestId
+                ) {
+                    return;
+                }
+
+                if (!response.ok || payload?.success === false) {
+                    this.authSessionUserId = null;
+                    this.authSessionFirstName = fallbackFirstName;
+                    this.authSessionLastName = '';
+                    return;
+                }
+
+                const profileUserId = this.normalizeProfileUserId(payload?.data?.id);
+                const profileFirstName = this.normalizeAuthSessionFirstName(payload?.data?.firstName);
+                const profileLastName = this.normalizeAuthSessionLastName(payload?.data?.lastName);
+                this.authSessionUserId = profileUserId;
+                this.authSessionFirstName = profileFirstName || fallbackFirstName;
+                this.authSessionLastName = profileLastName;
+            } catch {
+                if (
+                    sessionRequestId !== this.authSessionRequestId
+                    || profileRequestId !== this.authSessionProfileRequestId
+                ) {
+                    return;
+                }
+
+                this.authSessionUserId = null;
+                this.authSessionFirstName = fallbackFirstName;
+                this.authSessionLastName = '';
+            }
+        },
+        async refreshAuthSession(options = {}) {
+            const {
+                successNotificationKind = '',
+                successNotificationIdentity = null
+            } = options;
             const requestId = this.authSessionRequestId + 1;
             this.authSessionRequestId = requestId;
 
@@ -3062,37 +3587,77 @@ createApp({
                 }
 
                 if (!response.ok || payload?.success === false) {
-                    this.authSessionLoggedIn = false;
-                    this.authSessionEmail = '';
+                    this.clearAuthSessionIdentity();
+                    this.applyRouteAccessRules({
+                        loggedIn: false,
+                        email: ''
+                    });
                     return;
                 }
 
                 const sessionLoggedIn = payload?.data?.loggedIn === true;
-                const sessionEmail = typeof payload?.data?.email === 'string'
-                    ? payload.data.email.trim()
-                    : '';
-                this.authSessionLoggedIn = sessionLoggedIn;
-                this.authSessionEmail = sessionLoggedIn ? sessionEmail : '';
+                const sessionEmail = this.normalizePotentiallyEncodedEmail(payload?.data?.email);
+                const hasValidSessionEmail = sessionLoggedIn && this.isEmailIdentifier(sessionEmail);
 
-                if (sessionLoggedIn && this.isRegisterPath(window.location.pathname)) {
-                    window.location.assign(this.buildHomeRedirectPath());
+                if (!hasValidSessionEmail) {
+                    this.clearAuthSessionIdentity();
+                    this.applyRouteAccessRules({
+                        loggedIn: false,
+                        email: ''
+                    });
+                    return;
+                }
+
+                this.authSessionLoggedIn = true;
+                this.authSessionEmail = sessionEmail;
+                await this.refreshAuthSessionProfile(sessionEmail, requestId);
+                const redirected = this.applyRouteAccessRules({
+                    loggedIn: true,
+                    email: sessionEmail,
+                    userId: this.authSessionUserId
+                });
+                if (successNotificationKind) {
+                    const mergedIdentity = {
+                        firstName: this.authSessionFirstName,
+                        lastName: this.authSessionLastName,
+                        email: sessionEmail,
+                        ...(successNotificationIdentity && typeof successNotificationIdentity === 'object'
+                            ? successNotificationIdentity
+                            : {})
+                    };
+                    this.dispatchAuthSuccessNotification(
+                        successNotificationKind,
+                        mergedIdentity,
+                        { persistOnRedirect: redirected }
+                    );
+                }
+                if (redirected) {
+                    return;
                 }
             } catch {
                 if (requestId !== this.authSessionRequestId) {
                     return;
                 }
-                this.authSessionLoggedIn = false;
-                this.authSessionEmail = '';
+                this.clearAuthSessionIdentity();
             }
         },
-        openCurrentUserProfile() {
+        async openCurrentUserProfile() {
             if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            if (!Number.isInteger(this.authSessionUserId) && this.authSessionEmail) {
+                await this.refreshAuthSessionProfile(this.authSessionEmail, this.authSessionRequestId);
+            }
+
+            const profilePath = this.buildProfilePath(this.authSessionUserId);
+            if (!profilePath) {
                 return;
             }
 
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
-            window.location.assign('/api/users/me');
+            window.location.assign(profilePath);
         },
         async logoutCurrentUser() {
             if (!this.authSessionLoggedIn) {
@@ -3113,10 +3678,15 @@ createApp({
                     return;
                 }
 
-                this.authSessionLoggedIn = false;
-                this.authSessionEmail = '';
+                const logoutNotificationIdentity = {
+                    firstName: this.authSessionFirstName,
+                    lastName: this.authSessionLastName,
+                    email: this.authSessionEmail
+                };
+                this.clearAuthSessionIdentity();
                 this.menuOpen = false;
                 this.closeAllDropdowns({ immediate: true });
+                this.dispatchAuthSuccessNotification('logout', logoutNotificationIdentity);
                 this.refreshAuthSession();
             } catch {
                 return;
@@ -3143,48 +3713,623 @@ createApp({
         normalizeLoginIdentifier(value) {
             return typeof value === 'string' ? value.trim() : '';
         },
-        splitRegisterName(fullName) {
-            const normalizedName = typeof fullName === 'string' ? fullName.trim() : '';
-            if (!normalizedName) {
-                return {
-                    firstName: '',
-                    lastName: ''
-                };
+        initializeRegisterFlow() {
+            if (!this.isRegisterPath(window.location.pathname)) {
+                return;
             }
 
-            const parts = normalizedName.split(/\s+/).filter(Boolean);
-            if (parts.length === 1) {
-                return {
-                    firstName: parts[0],
-                    lastName: parts[0]
-                };
+            this.consumeRegisterPrefillEmail();
+            this.loadRegisterPetChoices();
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
+        },
+        async initializeProfileView() {
+            if (!profilePageRoot) {
+                return;
             }
+
+            const requestedUserId = this.extractProfileRouteUserId(window.location.pathname);
+            this.profileViewRequestedUserId = requestedUserId;
+
+            if (!Number.isInteger(requestedUserId) || requestedUserId <= 0) {
+                this.profileViewError = this.profileStrings.routeMissing;
+                this.profileViewUser = null;
+                this.profileViewLoading = false;
+                return;
+            }
+
+            await this.loadProfileById(requestedUserId);
+        },
+        normalizeProfileUserId(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue)) {
+                return null;
+            }
+
+            const normalizedId = Math.trunc(numericValue);
+            if (normalizedId <= 0 || String(normalizedId) !== String(value).trim()) {
+                return null;
+            }
+
+            return normalizedId;
+        },
+        extractProfileRouteUserId(pathname) {
+            if (typeof pathname !== 'string') {
+                return null;
+            }
+
+            const normalizedPath = pathname.trim().replace(/\/+$/, '') || '/';
+            const profileMatch = normalizedPath.match(/^\/profile\/([^/]+)$/i)
+                || normalizedPath.match(/^\/(?:de|en|ro)\/profile\/([^/]+)$/i);
+            const rawUserId = profileMatch?.[1] || '';
+
+            try {
+                return this.normalizeProfileUserId(decodeURIComponent(rawUserId).trim());
+            } catch {
+                return this.normalizeProfileUserId(rawUserId.trim());
+            }
+        },
+        normalizeProfileUser(value = {}) {
+            const acceptedPetSpeciesRaw = value?.acceptedPetSpecies;
+            const acceptedPetSpeciesArray = Array.isArray(acceptedPetSpeciesRaw)
+                ? acceptedPetSpeciesRaw
+                : (acceptedPetSpeciesRaw && typeof acceptedPetSpeciesRaw === 'object'
+                    ? Object.values(acceptedPetSpeciesRaw)
+                    : []);
+            const acceptedPetSpecies = acceptedPetSpeciesArray
+                .map((species) => typeof species === 'string' ? species.trim().toUpperCase() : '')
+                .filter(Boolean);
 
             return {
-                firstName: parts.slice(0, -1).join(' '),
-                lastName: parts.at(-1)
+                email: typeof value?.email === 'string' ? value.email.trim().toLowerCase() : '',
+                firstName: typeof value?.firstName === 'string' ? value.firstName.trim() : '',
+                lastName: typeof value?.lastName === 'string' ? value.lastName.trim() : '',
+                phone: typeof value?.phone === 'string' ? value.phone.trim() : '',
+                birthDate: normalizeDateInputValue(value?.birthDate),
+                profilePicture: typeof value?.profilePicture === 'string' ? value.profilePicture.trim() : '',
+                bio: typeof value?.bio === 'string' ? value.bio.trim() : '',
+                role: typeof value?.role === 'string' ? value.role.trim().toUpperCase() : '',
+                postalCode: typeof value?.postalCode === 'string' ? value.postalCode.trim() : '',
+                city: typeof value?.city === 'string' ? value.city.trim() : '',
+                rating: Number(value?.rating),
+                numberOfRatings: Number(value?.numberOfRatings),
+                acceptedPetSpecies
             };
         },
+        formatProfileDate(value) {
+            const normalizedDate = normalizeDateInputValue(value);
+            const date = parseDateInputValue(normalizedDate);
+            if (!date) {
+                return '—';
+            }
+
+            return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }).format(date);
+        },
+        async loadProfileById(userId) {
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                this.profileViewError = this.profileStrings.routeMissing;
+                this.profileViewLoading = false;
+                this.profileViewUser = null;
+                return;
+            }
+
+            this.profileViewLoading = true;
+            this.profileViewError = '';
+            this.profileViewUser = null;
+
+            try {
+                const response = await fetch(`/api/users/${normalizedUserId}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    if (response.status === 401 || response.status === 403) {
+                        this.profileViewError = this.profileStrings.authRequired;
+                    } else if (response.status === 404) {
+                        this.profileViewError = this.profileStrings.notFound;
+                    } else {
+                        this.profileViewError = this.profileStrings.loadFailed;
+                    }
+                    return;
+                }
+
+                this.profileViewUser = this.normalizeProfileUser(payload?.data || {});
+            } catch {
+                this.profileViewError = this.profileStrings.loadFailed;
+            } finally {
+                this.profileViewLoading = false;
+            }
+        },
+        rememberRegisterEmail(email) {
+            const normalizedEmail = this.normalizeLoginIdentifier(email).toLowerCase();
+            if (!this.isEmailIdentifier(normalizedEmail)) {
+                return;
+            }
+
+            try {
+                sessionStorage.setItem(REDIRECT_REGISTER_EMAIL_STORAGE_KEY, normalizedEmail);
+            } catch {
+                // Ignore storage errors.
+            }
+        },
+        consumeRegisterPrefillEmail() {
+            let prefillEmail = '';
+            const currentUrl = new URL(window.location.href);
+            const emailFromQuery = this.normalizeLoginIdentifier(currentUrl.searchParams.get('email') || '').toLowerCase();
+
+            if (this.isEmailIdentifier(emailFromQuery)) {
+                prefillEmail = emailFromQuery;
+                currentUrl.searchParams.delete('email');
+                const nextPath = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+                window.history.replaceState({}, '', nextPath);
+            }
+
+            if (!prefillEmail) {
+                try {
+                    const fromStorage = this.normalizeLoginIdentifier(
+                        sessionStorage.getItem(REDIRECT_REGISTER_EMAIL_STORAGE_KEY) || ''
+                    ).toLowerCase();
+                    if (this.isEmailIdentifier(fromStorage)) {
+                        prefillEmail = fromStorage;
+                    }
+                    sessionStorage.removeItem(REDIRECT_REGISTER_EMAIL_STORAGE_KEY);
+                } catch {
+                    // Ignore storage errors.
+                }
+            }
+
+            if (prefillEmail && !this.registerEmail) {
+                this.registerEmail = prefillEmail;
+            }
+        },
+        getRegisterStepIndex(step = this.registerStep) {
+            const index = REGISTER_STEPS.indexOf(step);
+            return index >= 0 ? index : 0;
+        },
+        setRegisterStep(step) {
+            if (!REGISTER_STEPS.includes(step) || this.registerStep === step) {
+                return;
+            }
+
+            this.registerStep = step;
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
+        },
+        goToNextRegisterStep() {
+            const currentStep = this.registerStep;
+            const currentIndex = this.getRegisterStepIndex(currentStep);
+            if (!this.validateRegisterStep(currentStep)) {
+                return;
+            }
+
+            const nextStep = REGISTER_STEPS[currentIndex + 1];
+            if (!nextStep) {
+                return;
+            }
+
+            this.setRegisterStep(nextStep);
+        },
+        goToPreviousRegisterStep() {
+            const previousStep = REGISTER_STEPS[this.getRegisterStepIndex() - 1];
+            if (!previousStep) {
+                return;
+            }
+
+            this.setRegisterStep(previousStep);
+        },
+        validateRegisterStep(step) {
+            if (step === 'profile') {
+                return this.validateRegisterProfileStep();
+            }
+
+            if (step === 'pets') {
+                return this.validateRegisterPetsStep();
+            }
+
+            return this.validateRegisterAccountStep();
+        },
+        validateRegisterAccountStep() {
+            const firstName = typeof this.registerFirstName === 'string' ? this.registerFirstName.trim() : '';
+            const lastName = typeof this.registerLastName === 'string' ? this.registerLastName.trim() : '';
+            const email = this.normalizeLoginIdentifier(this.registerEmail).toLowerCase();
+            const password = typeof this.registerPassword === 'string' ? this.registerPassword : '';
+            const passwordConfirmation = typeof this.registerPasswordConfirmation === 'string'
+                ? this.registerPasswordConfirmation
+                : '';
+
+            this.registerFirstName = firstName;
+            this.registerLastName = lastName;
+            this.registerEmail = email;
+            this.registerPasswordConfirmation = passwordConfirmation;
+
+            if (!firstName) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.firstNameRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!lastName) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.lastNameRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!this.isEmailIdentifier(email)) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.emailRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!password.trim()) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.passwordRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!passwordConfirmation.trim()) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.passwordConfirmationRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (password !== passwordConfirmation) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.passwordsMismatch,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!this.allRegisterPasswordCriteriaMet) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.passwordCriteriaRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            return true;
+        },
+        validateRegisterProfileStep() {
+            const phone = typeof this.registerPhone === 'string' ? this.registerPhone.trim() : '';
+            const birthDate = normalizeDateInputValue(this.registerBirthDate);
+            const emergencyContact = typeof this.registerEmergencyContact === 'string'
+                ? this.registerEmergencyContact.trim()
+                : '';
+            const profilePicture = typeof this.registerProfilePicture === 'string'
+                ? this.registerProfilePicture.trim()
+                : '';
+            const bio = typeof this.registerBio === 'string' ? this.registerBio.trim() : '';
+            const role = typeof this.registerRole === 'string' ? this.registerRole.trim().toUpperCase() : '';
+            const city = typeof this.registerCity === 'string' ? this.registerCity.trim() : '';
+            const postalCode = normalizePostalCode(this.registerPostalCode);
+            const birthDateObject = parseDateInputValue(birthDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            this.registerPhone = phone;
+            this.registerBirthDate = birthDate;
+            this.registerEmergencyContact = emergencyContact;
+            this.registerProfilePicture = profilePicture;
+            this.registerBio = bio;
+            this.registerRole = role || 'PET_OWNER';
+            this.registerCity = city;
+            this.registerPostalCode = postalCode;
+
+            if (!phone) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.phoneRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!birthDate) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.birthDateRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!birthDateObject || birthDateObject >= today) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.birthDatePast,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!emergencyContact) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.emergencyContactRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!profilePicture) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.profilePictureRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!bio) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.bioRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!['PET_OWNER', 'HOST'].includes(this.registerRole)) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.roleRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (!city || !this.registerCitySelectionKey) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.cityRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            if (postalCode && !/^\d{5}$/.test(postalCode)) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.postalCodeInvalid,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            return true;
+        },
+        validateRegisterPetsStep() {
+            if (this.registerAcceptedPetSpecies.length > 0) {
+                return true;
+            }
+
+            this.pushNotification({
+                title: localizedRegisterStrings.registerErrorTitle,
+                message: localizedRegisterStrings.petSpeciesRequired,
+                tone: 'warning'
+            });
+            return false;
+        },
+        sanitizeRegisterPostalCode() {
+            this.registerPostalCode = normalizePostalCode(this.registerPostalCode);
+        },
+        clearRegisterCitySelection({ clearQuery = false } = {}) {
+            this.registerCity = '';
+            this.registerCitySelectionKey = '';
+            this.registerCountryName = '';
+            this.registerCountryCode = '';
+            this.registerCountryFlagPath = '';
+            this.registerPostalCode = '';
+
+            if (clearQuery) {
+                this.registerCityQuery = '';
+            }
+        },
+        handleRegisterCityInput() {
+            const query = typeof this.registerCityQuery === 'string' ? this.registerCityQuery.trim() : '';
+            if (!query) {
+                this.clearRegisterCitySelection({ clearQuery: true });
+                this.registerCityOptions = [];
+                this.registerCityOptionsLoading = false;
+                this.clearRegisterCitySearchRuntime();
+                return;
+            }
+
+            if (!this.registerCitySelectionKey || query !== this.registerCity) {
+                this.clearRegisterCitySelection();
+            }
+
+            this.scheduleRegisterCitySearch(query);
+        },
+        clearRegisterCitySearchRuntime() {
+            if (typeof this.registerCitySearchDebounceHandle === 'number') {
+                window.clearTimeout(this.registerCitySearchDebounceHandle);
+            }
+            this.registerCitySearchDebounceHandle = null;
+
+            if (this.registerCitySearchAbortController) {
+                this.registerCitySearchAbortController.abort();
+                this.registerCitySearchAbortController = null;
+            }
+        },
+        scheduleRegisterCitySearch(query) {
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (typeof this.registerCitySearchDebounceHandle === 'number') {
+                window.clearTimeout(this.registerCitySearchDebounceHandle);
+                this.registerCitySearchDebounceHandle = null;
+            }
+
+            if (trimmedQuery.length < 2) {
+                if (this.registerCitySearchAbortController) {
+                    this.registerCitySearchAbortController.abort();
+                    this.registerCitySearchAbortController = null;
+                }
+                this.registerCityOptions = [];
+                this.registerCityOptionsLoading = false;
+                return;
+            }
+
+            this.registerCitySearchDebounceHandle = window.setTimeout(() => {
+                this.fetchRegisterCityOptions(trimmedQuery);
+            }, 240);
+        },
+        async fetchRegisterCityOptions(query) {
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (trimmedQuery.length < 2) {
+                this.registerCityOptions = [];
+                this.registerCityOptionsLoading = false;
+                return;
+            }
+
+            const requestId = this.registerCitySearchRequestId + 1;
+            this.registerCitySearchRequestId = requestId;
+            if (this.registerCitySearchAbortController) {
+                this.registerCitySearchAbortController.abort();
+            }
+
+            const abortController = new AbortController();
+            this.registerCitySearchAbortController = abortController;
+            this.registerCityOptionsLoading = true;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchCitySearchResults(trimmedQuery, locale, abortController.signal);
+                if (requestId !== this.registerCitySearchRequestId) {
+                    return;
+                }
+
+                this.registerCityOptions = normalizeCitySearchResults(payload, locale);
+            } catch (error) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+
+                if (requestId !== this.registerCitySearchRequestId) {
+                    return;
+                }
+
+                this.registerCityOptions = [];
+            } finally {
+                if (requestId === this.registerCitySearchRequestId) {
+                    this.registerCityOptionsLoading = false;
+                }
+
+                if (this.registerCitySearchAbortController === abortController) {
+                    this.registerCitySearchAbortController = null;
+                }
+            }
+        },
+        selectRegisterCityOption(option) {
+            if (!option || typeof option !== 'object') {
+                return;
+            }
+
+            const city = typeof option.cityName === 'string' ? option.cityName.trim() : '';
+            this.registerCity = city;
+            this.registerCityQuery = city;
+            this.registerCitySelectionKey = option.id || city;
+            this.registerCountryName = option.countryName || '';
+            this.registerCountryCode = option.countryCode || '';
+            this.registerCountryFlagPath = option.flagPath || '';
+            this.registerPostalCode = normalizePostalCode(option.postalCode);
+            this.registerCityOptions = [];
+            this.registerCityOptionsLoading = false;
+            this.clearRegisterCitySearchRuntime();
+        },
+        async loadRegisterPetChoices() {
+            this.registerPetChoicesLoading = true;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchFirstJsonPayload(HEADER_SEARCH_PET_ENDPOINTS);
+                const rawChoices = Array.isArray(payload)
+                    ? payload
+                    : (Array.isArray(payload?.choices) ? payload.choices : []);
+                const normalizedValues = normalizePetChoices(rawChoices);
+                const effectiveValues = normalizedValues.length ? normalizedValues : [...DEFAULT_PET_CHOICES];
+                this.registerPetChoices = effectiveValues.map((value) => ({
+                    value,
+                    label: formatPetChoiceLabel(value, locale),
+                    emojiPath: resolvePetChoiceEmojiPath(value)
+                }));
+                const availableChoices = new Set(this.registerPetChoices.map((choice) => choice.value));
+                this.registerAcceptedPetSpecies = this.registerAcceptedPetSpecies
+                    .filter((value) => availableChoices.has(value));
+            } finally {
+                this.registerPetChoicesLoading = false;
+            }
+        },
+        isRegisterPetSpeciesSelected(value) {
+            return this.registerAcceptedPetSpecies.includes(value);
+        },
+        toggleRegisterPetSpecies(value) {
+            if (!value) {
+                return;
+            }
+
+            if (this.isRegisterPetSpeciesSelected(value)) {
+                this.registerAcceptedPetSpecies = this.registerAcceptedPetSpecies
+                    .filter((selectedValue) => selectedValue !== value);
+                return;
+            }
+
+            this.registerAcceptedPetSpecies = [...this.registerAcceptedPetSpecies, value];
+        },
         buildRegisterPayload() {
-            const normalizedName = typeof this.registerFullName === 'string' ? this.registerFullName.trim() : '';
             const normalizedEmail = this.normalizeLoginIdentifier(this.registerEmail).toLowerCase();
-            const normalizedPassword = typeof this.registerPassword === 'string' ? this.registerPassword : '';
-            const { firstName, lastName } = this.splitRegisterName(normalizedName);
+            const normalizedPostalCode = normalizePostalCode(this.registerPostalCode);
+            const selectedSpecies = this.registerAcceptedPetSpecies.filter((value) => typeof value === 'string');
 
             return {
                 email: normalizedEmail,
-                password: normalizedPassword,
-                firstName,
-                lastName,
-                phone: '+490000000000',
-                birthDate: '1990-01-01',
-                emergencyContact: 'Emergency contact',
-                profilePicture: '/assets/media/favicon.png',
-                bio: 'Pawsitters account',
-                role: 'PET_OWNER',
-                postalCode: null,
-                city: null,
-                acceptedPetSpecies: ['DOG']
+                password: typeof this.registerPassword === 'string' ? this.registerPassword : '',
+                firstName: typeof this.registerFirstName === 'string' ? this.registerFirstName.trim() : '',
+                lastName: typeof this.registerLastName === 'string' ? this.registerLastName.trim() : '',
+                phone: typeof this.registerPhone === 'string' ? this.registerPhone.trim() : '',
+                birthDate: normalizeDateInputValue(this.registerBirthDate),
+                emergencyContact: typeof this.registerEmergencyContact === 'string'
+                    ? this.registerEmergencyContact.trim()
+                    : '',
+                profilePicture: typeof this.registerProfilePicture === 'string'
+                    ? this.registerProfilePicture.trim()
+                    : '',
+                bio: typeof this.registerBio === 'string' ? this.registerBio.trim() : '',
+                role: this.registerRole === 'HOST' ? 'HOST' : 'PET_OWNER',
+                postalCode: /^\d{5}$/.test(normalizedPostalCode) ? normalizedPostalCode : null,
+                city: typeof this.registerCity === 'string' && this.registerCity.trim()
+                    ? this.registerCity.trim()
+                    : null,
+                acceptedPetSpecies: selectedSpecies
             };
         },
         async handleRegisterSubmit() {
@@ -3192,37 +4337,12 @@ createApp({
                 return;
             }
 
-            const normalizedName = typeof this.registerFullName === 'string' ? this.registerFullName.trim() : '';
-            const normalizedEmail = this.normalizeLoginIdentifier(this.registerEmail).toLowerCase();
-            const normalizedPassword = typeof this.registerPassword === 'string' ? this.registerPassword.trim() : '';
+            for (const step of REGISTER_STEPS) {
+                if (this.validateRegisterStep(step)) {
+                    continue;
+                }
 
-            this.registerFullName = normalizedName;
-            this.registerEmail = normalizedEmail;
-
-            if (!normalizedName) {
-                this.pushNotification({
-                    title: localizedRegisterStrings.registerErrorTitle,
-                    message: localizedRegisterStrings.nameRequired,
-                    tone: 'warning'
-                });
-                return;
-            }
-
-            if (!this.isEmailIdentifier(normalizedEmail)) {
-                this.pushNotification({
-                    title: localizedRegisterStrings.registerErrorTitle,
-                    message: localizedRegisterStrings.emailRequired,
-                    tone: 'warning'
-                });
-                return;
-            }
-
-            if (!normalizedPassword) {
-                this.pushNotification({
-                    title: localizedRegisterStrings.registerErrorTitle,
-                    message: localizedRegisterStrings.passwordRequired,
-                    tone: 'warning'
-                });
+                this.setRegisterStep(step);
                 return;
             }
 
@@ -3244,21 +4364,29 @@ createApp({
                     const backendMessage = typeof payload?.message === 'string'
                         ? payload.message.trim()
                         : '';
+                    const detailMessage = Array.isArray(payload?.error?.details)
+                        ? payload.error.details
+                            .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                            .find(Boolean)
+                        : '';
                     this.pushNotification({
                         title: localizedRegisterStrings.registerErrorTitle,
-                        message: backendMessage || localizedRegisterStrings.registerFailedMessage,
+                        message: detailMessage || backendMessage || localizedRegisterStrings.registerFailedMessage,
                         tone: 'warning'
                     });
                     return;
                 }
 
-                this.pushNotification({
-                    title: localizedRegisterStrings.registerSuccessTitle,
-                    message: localizedRegisterStrings.registerSuccessMessage,
-                    tone: 'success'
-                });
                 this.registerPassword = '';
-                await this.refreshAuthSession();
+                this.registerPasswordConfirmation = '';
+                await this.refreshAuthSession({
+                    successNotificationKind: 'register',
+                    successNotificationIdentity: {
+                        firstName: this.registerFirstName,
+                        lastName: this.registerLastName,
+                        email: this.registerEmail
+                    }
+                });
             } catch {
                 this.pushNotification({
                     title: localizedRegisterStrings.registerErrorTitle,
@@ -3275,19 +4403,117 @@ createApp({
             }
 
             const trimmedValue = value.trim();
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue);
-        },
-        isRegisterPath(pathname) {
-            if (typeof pathname !== 'string') {
+            if (!trimmedValue || trimmedValue.length > 254) {
                 return false;
             }
 
-            const normalizedPath = pathname.trim().replace(/\/+$/, '') || '/';
-            return normalizedPath === '/register' || /^\/(?:de|en|ro)\/register$/i.test(normalizedPath);
+            return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(trimmedValue);
+        },
+        normalizeRoutePath(pathname) {
+            const normalizedPath = typeof pathname === 'string'
+                ? pathname.trim().replace(/\/+$/, '')
+                : '';
+            return normalizedPath || '/';
+        },
+        isRegisterPath(pathname) {
+            return ROUTE_GUARD_REGISTER_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
+        isProfileBasePath(pathname) {
+            return ROUTE_GUARD_PROFILE_BASE_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
+        getRouteAccessRules() {
+            return [
+                {
+                    id: 'register-guest-only',
+                    pathPattern: ROUTE_GUARD_REGISTER_PATTERN,
+                    redirectWhen: 'authenticated',
+                    target: 'home'
+                },
+                {
+                    id: 'profile-base-own-profile',
+                    pathPattern: ROUTE_GUARD_PROFILE_BASE_PATTERN,
+                    redirectWhen: 'authenticated',
+                    target: 'ownProfile'
+                }
+            ];
+        },
+        shouldApplyRouteAccessRule(rule = {}, session = {}) {
+            const isLoggedIn = session?.loggedIn === true;
+            if (rule.redirectWhen === 'authenticated') {
+                return isLoggedIn;
+            }
+
+            if (rule.redirectWhen === 'unauthenticated') {
+                return !isLoggedIn;
+            }
+
+            if (rule.redirectWhen === 'always') {
+                return true;
+            }
+
+            return false;
+        },
+        resolveRouteAccessTarget(rule = {}, session = {}) {
+            if (rule.target === 'home') {
+                return this.buildHomeRedirectPath();
+            }
+
+            if (rule.target === 'ownProfile') {
+                return this.buildProfilePath(session?.userId ?? this.authSessionUserId);
+            }
+
+            if (typeof rule.target === 'string' && rule.target.trim()) {
+                return rule.target.trim();
+            }
+
+            return '';
+        },
+        buildComparableNavigationTarget(pathValue = '') {
+            const target = typeof pathValue === 'string' ? pathValue.trim() : '';
+            if (!target) {
+                return '';
+            }
+
+            try {
+                const parsedUrl = new URL(target, window.location.origin);
+                const normalizedPath = this.normalizeRoutePath(parsedUrl.pathname);
+                return `${normalizedPath}${parsedUrl.search}`;
+            } catch {
+                return '';
+            }
+        },
+        applyRouteAccessRules(session = {}) {
+            const normalizedPath = this.normalizeRoutePath(window.location.pathname);
+            const routeRules = this.getRouteAccessRules();
+            const currentTarget = this.buildComparableNavigationTarget(window.location.href);
+
+            for (const rule of routeRules) {
+                if (!rule?.pathPattern?.test(normalizedPath)) {
+                    continue;
+                }
+
+                if (!this.shouldApplyRouteAccessRule(rule, session)) {
+                    continue;
+                }
+
+                const redirectTarget = this.resolveRouteAccessTarget(rule, session);
+                const comparableRedirectTarget = this.buildComparableNavigationTarget(redirectTarget);
+                if (!comparableRedirectTarget || comparableRedirectTarget === currentTarget) {
+                    continue;
+                }
+
+                window.location.assign(redirectTarget);
+                return true;
+            }
+
+            return false;
+        },
+        extractLocalePrefix(pathname = window.location.pathname) {
+            const localePrefixMatch = String(pathname || '').match(/^\/(de|en|ro)(?:\/|$)/i);
+            return localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
         },
         buildHomeRedirectPath() {
-            const localePrefixMatch = window.location.pathname.match(/^\/(de|en|ro)(?:\/|$)/i);
-            const localePrefix = localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
             const homePath = localePrefix || '/';
             const currentUrl = new URL(window.location.href);
             const homeUrl = new URL(homePath, window.location.origin);
@@ -3299,19 +4525,33 @@ createApp({
 
             return `${homeUrl.pathname}${homeUrl.search}`;
         },
-        buildRegisterRedirectPath() {
-            const localePrefixMatch = window.location.pathname.match(/^\/(de|en|ro)(?:\/|$)/i);
-            const localePrefix = localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
+        buildRegisterRedirectPath(prefillEmail = '') {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
             const registerPath = localePrefix ? `${localePrefix}/register` : '/register';
             const currentUrl = new URL(window.location.href);
             const registerUrl = new URL(registerPath, window.location.origin);
             const localeParam = currentUrl.searchParams.get('locale');
+            const normalizedPrefillEmail = this.normalizeLoginIdentifier(prefillEmail).toLowerCase();
 
             if (localeParam) {
                 registerUrl.searchParams.set('locale', localeParam);
             }
 
+            if (this.isEmailIdentifier(normalizedPrefillEmail)) {
+                registerUrl.searchParams.set('email', normalizedPrefillEmail);
+            }
+
             return `${registerUrl.pathname}${registerUrl.search}`;
+        },
+        buildProfilePath(userId = null) {
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return '';
+            }
+
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            const profileBasePath = localePrefix ? `${localePrefix}/profile` : '/profile';
+            return `${profileBasePath}/${normalizedUserId}`;
         },
         handleLoginIdentifierInput() {
             if (!this.loginPasswordVisible) {
@@ -3394,13 +4634,10 @@ createApp({
                         return;
                     }
 
-                    this.pushNotification({
-                        title: localizedAuthModalStrings.loginSuccessTitle,
-                        message: localizedAuthModalStrings.loginSuccessMessage,
-                        tone: 'success'
-                    });
                     this.closeLoginModal();
-                    this.refreshAuthSession();
+                    await this.refreshAuthSession({
+                        successNotificationKind: 'login'
+                    });
                 } catch {
                     this.pushNotification({
                         title: localizedAuthModalStrings.loginErrorTitle,
@@ -3455,7 +4692,8 @@ createApp({
                     };
                     this.pushNotification(redirectNotification);
                     this.rememberRedirectNotification(redirectNotification);
-                    window.location.assign(this.buildRegisterRedirectPath());
+                    this.rememberRegisterEmail(normalizedIdentifier);
+                    window.location.assign(this.buildRegisterRedirectPath(normalizedIdentifier));
                     return;
                 }
 
@@ -3628,6 +4866,7 @@ createApp({
             }
 
             this.clearDropdownAnimation(details);
+            this.enforceSingleOpenDropdown(details, { immediate: true });
             details.open = true;
             this.setDropdownExpanded(details, true);
             if (this.isHeaderSearchDropdown(details)) {
@@ -3681,6 +4920,17 @@ createApp({
                         immediateSwitch: isDateDropdown
                     });
                 });
+
+                details.addEventListener('toggle', () => {
+                    if (details.open) {
+                        this.enforceSingleOpenDropdown(details, { immediate: true });
+                        this.setDropdownExpanded(details, true);
+                    } else {
+                        this.setDropdownExpanded(details, false);
+                    }
+
+                    this.syncHeaderSearchInteractionState();
+                });
             });
         },
         setDropdownExpanded(details, expanded) {
@@ -3689,6 +4939,17 @@ createApp({
             if (summary) {
                 summary.setAttribute('aria-expanded', String(expanded));
             }
+        },
+        enforceSingleOpenDropdown(activeDetails, options = {}) {
+            const { immediate = true } = options;
+            const openDropdowns = this.getOpenDropdowns({ exclude: activeDetails });
+            if (!openDropdowns.length) {
+                return;
+            }
+
+            openDropdowns.forEach((details) => {
+                this.closeDropdown(details, { immediate });
+            });
         },
         clearDropdownAnimation(details) {
             const timeoutId = dropdownTimers.get(details);
@@ -3720,20 +4981,17 @@ createApp({
             }
 
             const { immediateSwitch = false } = options;
-            if (this.getOpenDropdowns({ exclude: details }).length) {
-                if (immediateSwitch) {
-                    this.closeAllDropdowns({ exclude: details, immediate: true });
-                    this.clearDropdownQueue();
-                    this.performDropdownOpen(details);
-                    return;
-                }
-
-                this.closeAllDropdowns({ exclude: details, preserveQueue: true });
-                this.scheduleDropdownOpen(details);
-                return;
+            const hasOtherOpenDropdowns = this.getOpenDropdowns({ exclude: details }).length > 0;
+            if (hasOtherOpenDropdowns) {
+                this.closeAllDropdowns({ exclude: details, immediate: true });
             }
 
             this.clearDropdownQueue();
+            if (immediateSwitch || hasOtherOpenDropdowns) {
+                this.performDropdownOpen(details);
+                return;
+            }
+
             this.performDropdownOpen(details);
         },
         closeDropdown(details, options = {}) {
@@ -3794,6 +5052,21 @@ createApp({
             }
 
             this.closeAllDropdowns();
+        },
+        handleDocumentDropdownToggle(event) {
+            const details = event?.target;
+            if (!(details instanceof Element) || details.tagName !== 'DETAILS' || !details.matches(DROPDOWN_SELECTOR)) {
+                return;
+            }
+
+            this.setDropdownExpanded(details, details.open);
+
+            if (details.open) {
+                this.clearDropdownQueue();
+                this.enforceSingleOpenDropdown(details, { immediate: true });
+            }
+
+            this.syncHeaderSearchInteractionState();
         },
         isLegacyLoginPath(pathname) {
             if (typeof pathname !== 'string') {

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f5f7">
+    <meta name="description" content="Public profile page with hero banner, avatar, and personal details.">
+    <title>Pawsitters | Public Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="icon" type="image/png" href="/assets/media/favicon.png"></head>
+<body class="page_surface page-profile">
+<div id="app-shell" class="site_frame" v-cloak="">
+    <transition-group name="site_notification_stack" tag="div" class="site_notifications" aria-live="polite" aria-atomic="false">
+        <article v-for="notification in notifications" :key="notification.id" class="site_notification" :class="'site_notification--' + notification.tone" :role="notification.tone === 'warning' ? 'alert' : 'status'">
+            <p class="site_notification__title" v-text="notification.title"></p>
+            <p v-if="notification.message" class="site_notification__message" v-text="notification.message"></p>
+        </article>
+    </transition-group>
+    <div class="site_background" aria-hidden="true">
+        <svg class="site_background__threads" data-thread-background="" viewBox="0 0 1600 2400" preserveAspectRatio="none">
+            <g class="site_background__glow"></g>
+            <g class="site_background__lines"></g>
+            <g class="site_background__nodes"></g>
+        </svg>
+    </div>
+    <header id="site-shell-header" class="header_shell">
+    <div class="main_container">
+        <div :class="scrolled ? 'header_surface header_surface--scrolled' : 'header_surface'">
+            <a class="brand_mark" href="/?locale=en" @click="closeMenu()" aria-label="Pawsitters">
+                <span class="brand_mark__tile" aria-hidden="true">
+                    <img class="brand_mark__icon" src="/assets/media/favicon.png" alt="">
+                </span>
+                <span class="brand_mark__wordmark">Pawsitters</span>
+            </a>
+
+            <div class="header_center">
+                <div class="header_center__stack">
+                    <div class="hidden" aria-hidden="true">
+                        <a class="repo_menu__item" href="/repository/playwright?locale=en">nav.repositoryPlaywright</a>
+                        <a class="repo_menu__item" href="/repository/api?locale=en">nav.repositoryApi</a>
+                        <a class="repo_menu__item" href="/repository/git?locale=en">nav.repositoryGit</a>
+                        <a class="repo_menu__item" href="/repository/kanban?locale=en">nav.repositoryBoard</a>
+                    </div>
+                    <div class="header_search" data-header-search="" data-destination-description="Search rental locations" data-destination-compact-empty="Anywhere" data-date-description="Add date" data-date-compact-empty="Anytime" data-pet-description="Pets" data-pet-compact-empty="Add guests" data-destination-no-results="No cities found" data-destination-loading="Loading cities" data-pet-loading="Loading pets" data-pet-empty="No pets available" data-backend-status-checking="Checking backend connection" data-backend-status-online="Backend connected" data-backend-status-offline="Backend unreachable" data-backend-status-retry="Retry backend connection check">
+                        <div class="header_search_tabs" :class="{ 'header_search_tabs--hidden': scrolled }" role="tablist" aria-label="Header views">
+                            <button class="header_search_tab" type="button" role="tab" id="header-search-tab-discover" aria-controls="header-search-panel-discover" :class="{ 'header_search_tab--active': headerCenterTab === 'discover' }" :aria-selected="(headerCenterTab === 'discover').toString()" @click="setHeaderCenterTab('discover')">Discover offers</button>
+                            <button class="header_search_tab" type="button" role="tab" id="header-search-tab-about" aria-controls="header-search-panel-about" :class="{ 'header_search_tab--active': headerCenterTab === 'about' }" :aria-selected="(headerCenterTab === 'about').toString()" @click="setHeaderCenterTab('about')">About this project</button>
+                        </div>
+
+                        <div class="header_search_shell" :class="{ 'header_search_shell--tabs-hidden': scrolled }">
+                            <div class="header_search_mode header_search_mode--discover" id="header-search-panel-discover" role="tabpanel" aria-labelledby="header-search-tab-discover" v-show="headerCenterTab === 'discover'">
+                            <details class="header_search_field header_search_field--destination" aria-label="Where">
+                                <summary class="header_search_field__summary">
+                                    <span class="header_search_field__eyebrow">Where</span>
+                                    <span class="header_search_field__value" v-text="locationDisplayValue"></span>
+                                </summary>
+                                <div class="header_search_field__panel header_search_field__panel--destination">
+                                    <label class="header_search_panel__search corp_field">
+                                        <span class="sr-only">Search rental locations</span>
+                                        <input class="header_search_panel__search-input corp_input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Search cities worldwide">
+                                        <span class="header_search_panel__search-label corp_field__label">Search cities worldwide</span>
+                                    </label>
+                                    <p class="header_search_panel__hint">Search cities worldwide where you would like to leave your pet.</p>
+                                    <div v-if="locationOptionsLoading" class="header_search_panel__loading" role="status" aria-live="polite">
+                                        <span class="header_search_panel__loading-dots" aria-hidden="true">
+                                            <span class="header_search_panel__loading-dot"></span>
+                                            <span class="header_search_panel__loading-dot"></span>
+                                            <span class="header_search_panel__loading-dot"></span>
+                                        </span>
+                                        <span class="header_search_panel__loading-text" v-text="headerSearchStrings.destinationLoading"></span>
+                                    </div>
+                                    <div v-else="" class="header_search_panel__list" role="listbox">
+                                        <button class="header_search_location__item" type="button" v-for="option in filteredLocationOptions" :key="'destination-' + option.id" :class="{ 'header_search_location__item--active': selectedLocation &amp;&amp; selectedLocation.id === option.id }" @click="selectLocation(option, $event)">
+                                            <img v-if="option.flagPath" class="header_search_location__flag" :src="option.flagPath" :alt="option.countryName">
+                                            <span v-else="" class="header_search_location__flag header_search_location__flag--placeholder" aria-hidden="true"></span>
+                                            <span class="header_search_location__copy">
+                                                <span class="header_search_location__name" v-text="option.cityName"></span>
+                                                <span class="header_search_location__meta" v-text="option.countryName"></span>
+                                            </span>
+                                            <span v-if="option.countryCode" class="header_search_location__code" v-text="option.countryCode"></span>
+                                        </button>
+                                        <p v-if="locationQuery.trim().length >= 2 &amp;&amp; !filteredLocationOptions.length" class="header_search_panel__empty" v-text="headerSearchStrings.destinationNoResults"></p>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <details class="header_search_field header_search_field--date" aria-label="When">
+                                <summary class="header_search_field__summary">
+                                    <span class="header_search_field__eyebrow">When</span>
+                                    <span class="header_search_field__value" v-text="dateDisplayValue"></span>
+                                </summary>
+                                <div class="header_search_field__panel header_search_field__panel--date">
+                                    <div class="header_search_date" @click.stop="">
+                                        <div class="header_search_date__toolbar">
+                                            <button class="header_search_date__nav" type="button" @click="moveDateCalendar(-1)" aria-label="Previous month">
+                                                <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                    <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                                </svg>
+                                            </button>
+                                            <p class="header_search_date__month" v-text="dateCalendarMonthLabel"></p>
+                                            <button class="header_search_date__nav" type="button" @click="moveDateCalendar(1)" aria-label="Next month">
+                                                <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                    <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="header_search_date__weekdays" aria-hidden="true">
+                                            <span class="header_search_date__weekday" v-for="weekday in dateCalendarWeekdayLabels" :key="'weekday-' + weekday" v-text="weekday"></span>
+                                        </div>
+                                        <div class="header_search_date__days" role="grid">
+                                            <button class="header_search_date__day" type="button" v-for="day in dateCalendarDays" :key="'day-' + day.iso" :class="{
+                                                        'header_search_date__day--outside': !day.isCurrentMonth,
+                                                        'header_search_date__day--today': day.isToday,
+                                                        'header_search_date__day--range': day.isInRange,
+                                                        'header_search_date__day--start': day.isSelectedStart,
+                                                        'header_search_date__day--end': day.isSelectedEnd,
+                                                        'header_search_date__day--single': day.isSingleDaySelection
+                                                    }" :aria-label="day.ariaLabel" :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'" @click="selectDateCalendarDay(day)">
+                                                <span v-text="day.dayNumber"></span>
+                                            </button>
+                                        </div>
+                                        <div class="header_search_date__selection">
+                                            <span class="header_search_date__selection-item">
+                                                <span class="header_search_date__selection-label">From</span>
+                                                <span class="header_search_date__selection-value" v-text="dateSelectionStartLabel"></span>
+                                            </span>
+                                            <span class="header_search_date__selection-item">
+                                                <span class="header_search_date__selection-label">To</span>
+                                                <span class="header_search_date__selection-value" v-text="dateSelectionEndLabel"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <details class="header_search_field header_search_field--pet" aria-label="Who">
+                                <summary class="header_search_field__summary">
+                                    <span class="header_search_field__eyebrow">Who</span>
+                                    <span class="header_search_field__value" v-text="petDisplayValue"></span>
+                                </summary>
+                                <div class="header_search_field__panel header_search_field__panel--pet">
+                                    <p v-if="petChoicesLoading" class="header_search_panel__empty" v-text="headerSearchStrings.petLoading"></p>
+                                    <p v-else-if="!petChoices.length" class="header_search_panel__empty" v-text="headerSearchStrings.petEmpty"></p>
+                                    <ul v-else="" class="header_search_pet__list">
+                                        <li class="header_search_pet__item" v-for="choice in petChoices" :key="'pet-' + choice.value">
+                                            <span class="header_search_pet__name">
+                                                <img class="header_search_pet__emoji" :src="choice.emojiPath" alt="" aria-hidden="true">
+                                                <span class="header_search_pet__name-text" v-text="choice.label"></span>
+                                            </span>
+                                            <div class="header_search_pet__controls">
+                                                <button class="header_search_pet__stepper" type="button" @click="decrementPetCount(choice.value)" :disabled="getPetCount(choice.value) === 0" aria-label="Decrease amount">
+                                                    <span aria-hidden="true">-</span>
+                                                </button>
+                                                <span class="header_search_pet__count" v-text="getPetCount(choice.value)"></span>
+                                                <button class="header_search_pet__stepper" type="button" @click="incrementPetCount(choice.value)" aria-label="Increase amount">
+                                                    <span aria-hidden="true">+</span>
+                                                </button>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </details>
+
+                            <button class="header_search_submit" type="button" @click="triggerHeaderSearch()" aria-label="Start search">
+                                <img class="header_search_submit__icon" src="/assets/media/search-lense.svg" alt="" aria-hidden="true">
+                            </button>
+                            </div>
+
+                            <section class="header_search_mode header_search_mode--about" id="header-search-panel-about" role="tabpanel" aria-labelledby="header-search-tab-about" v-show="headerCenterTab === 'about'">
+                                <div class="header_search_about">
+                                    <article class="header_search_about__content"><h1 align="center">Pawsitters</h1>
+<p>Herzlich willkommen bei dem Software-Engineering Projekt von Justus Krahl, Raphael Buller &amp; Niklas Ulbrich für die Vorlesung "Software Engineering" im Kurs WI24A3 bei Dr. Ana-Maria Nicolaescu</p>
+<p align="center">
+  <img src="https://freesvg.org/img/Tiere-lineart.png" alt="Japan">
+</p>
+<h2 align="center">Projektstruktur</h2>
+<ul>
+<li><code>frontend/</code> enthält das komplette Frontend mit HTML, CSS, JavaScript, Vue, Tailwind und Playwright-E2E-Tests.</li>
+<li><code>backend/</code> enthält das Backend mit Spring Boot und den API-/Server-Komponenten.</li>
+</ul>
+<h2 align="center">Entwicklung</h2>
+<h3>Frontend</h3>
+<pre><code class="language-bash">cd frontend
+npm i
+npm run dev</code></pre>
+<p>Produktionsbuild:</p>
+<pre><code class="language-bash">cd frontend
+npm run build</code></pre>
+<h3>Backend</h3>
+<pre><code class="language-bash">cd backend
+mvn spring-boot:run</code></pre>
+<h2 align="center">Hinweise</h2>
+<ul>
+<li>Die zentrale <code>.gitignore</code> liegt im Projekt-Root und gilt gemeinsam für Frontend und Backend.</li>
+<li>Frontend und Backend bleiben technisch getrennt, werden aber gemeinsam in diesem Repository verwaltet.</li>
+</ul></article>
+                                </div>
+                            </section>
+                        </div>
+                        <div v-if="!scrolled" class="header_backend_status" :class="{
+                                 'header_backend_status--online': backendStatusState === 'online',
+                                 'header_backend_status--offline': backendStatusState === 'offline',
+                                 'header_backend_status--checking': backendStatusState === 'checking'
+                             }" role="status" aria-live="polite">
+                            <span class="header_backend_status__dot" aria-hidden="true"></span>
+                            <span class="header_backend_status__label" v-text="backendStatusLabel"></span>
+                            <button v-if="backendStatusState === 'offline'" class="header_backend_status__retry" :class="{ 'header_backend_status__retry--loading': backendStatusChecking }" type="button" :disabled="backendStatusChecking" :aria-busy="String(backendStatusChecking)" @click="refreshBackendStatus()" aria-label="Retry backend connection check">
+                                <span class="sr-only" v-text="headerSearchStrings.backendStatusRetry"></span>
+                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                    <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
+                                    <path d="M20 4v6h-6"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header_actions hidden lg:flex">
+                <details class="locale_menu" aria-label="Locale switcher">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                        <span class="locale_menu__summary-code">EN</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a class="locale_menu__item" href="/profile">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                            <span class="locale_menu__item-label">Deutsch</span>
+                        </a><a class="locale_menu__item locale_menu__item--active" href="/profile?locale=en" aria-current="true">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                            <span class="locale_menu__item-label">English</span>
+                        </a><a class="locale_menu__item" href="/profile?locale=ro">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
+                            <span class="locale_menu__item-label">Română</span>
+                        </a>
+                    </div>
+                </details>
+                <details v-if="authSessionLoggedIn" class="repo_menu repo_menu--surface user_menu" aria-label="User menu">
+                    <summary class="repo_menu__summary user_menu__summary">
+                        <span class="user_menu__initial" v-text="authSessionInitial"></span>
+                        <span class="sr-only">Open user menu</span>
+                    </summary>
+                    <div class="repo_menu__panel user_menu__panel">
+                        <p class="header_quick_menu__category user_menu__category" v-text="authSessionGreeting"></p>
+                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F9D1.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">View profile</span>
+                        </button>
+                        <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F512.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Sign out</span>
+                        </button>
+                    </div>
+                </details>
+                <details class="repo_menu repo_menu--surface header_quick_menu" aria-label="Quick menu">
+                    <summary class="repo_menu__summary header_quick_menu__summary">
+                        <span class="header_quick_menu__bars" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                        <span class="sr-only">Open quick menu</span>
+                    </summary>
+                    <div class="repo_menu__panel header_quick_menu__panel">
+                        <p class="header_quick_menu__category">Repository</p>
+                        <a class="repo_menu__item" href="/repository/playwright?locale=en">
+                            <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Playwright</span>
+                        </a>
+                        <a class="repo_menu__item" href="/repository/api?locale=en">
+                            <img class="repo_menu__item-icon" src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">API Overview</span>
+                        </a>
+                        <a class="repo_menu__item" href="/repository/git?locale=en">
+                            <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Git</span>
+                        </a>
+                        <a class="repo_menu__item" href="/repository/kanban?locale=en">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Kanban Board</span>
+                        </a>
+                        <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button" v-if="!authSessionLoggedIn" type="button" @click="openLoginModal()">Sign in</button>
+                    </div>
+                </details>
+            </div>
+
+            <button class="menu_button lg:hidden" type="button" :aria-expanded="menuOpen.toString()" @click="toggleMenu()">
+                <span v-if="!menuOpen">Menu</span>
+                <span v-else="">Close menu</span>
+            </button>
+        </div>
+
+        <div v-show="menuOpen" class="mobile_drawer lg:hidden" @click.self="closeMenu()">
+            <div class="mobile_drawer__surface">
+                <details class="repo_menu repo_menu--mobile" aria-label="Repository navigation">
+                    <summary class="repo_menu__summary">
+                        <span class="repo_menu__label">Repository</span>
+                    </summary>
+                    <div class="repo_menu__panel">
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/playwright?locale=en">
+                            <img class="repo_menu__item-icon" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Playwright</span>
+                        </a>
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/api?locale=en">
+                            <img class="repo_menu__item-icon" src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">API Overview</span>
+                        </a>
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/git?locale=en">
+                            <img class="repo_menu__item-icon" src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Git</span>
+                        </a>
+                        <a class="repo_menu__item" @click="closeMenu()" href="/repository/kanban?locale=en">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Kanban Board</span>
+                        </a>
+                    </div>
+                </details>
+                <details class="locale_menu locale_menu--mobile" aria-label="Locale switcher">
+                    <summary class="locale_menu__summary">
+                        <img class="locale_menu__flag locale_menu__flag--summary" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                        <span class="locale_menu__summary-code">EN</span>
+                    </summary>
+                    <div class="locale_menu__panel">
+                        <a class="locale_menu__item" @click="closeMenu()" href="/profile">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1E9-1F1EA.svg">
+                            <span class="locale_menu__item-label">Deutsch</span>
+                        </a><a class="locale_menu__item locale_menu__item--active" @click="closeMenu()" href="/profile?locale=en" aria-current="true">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1EC-1F1E7.svg">
+                            <span class="locale_menu__item-label">English</span>
+                        </a><a class="locale_menu__item" @click="closeMenu()" href="/profile?locale=ro">
+                            <img class="locale_menu__flag locale_menu__flag--item" alt="" src="/assets/media/country-flag/1F1F7-1F1F4.svg">
+                            <span class="locale_menu__item-label">Română</span>
+                        </a>
+                    </div>
+                </details>
+                <button v-if="!authSessionLoggedIn" class="button button--secondary w-full" type="button" @click="openLoginModalFromMenu()">Sign in</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <transition name="auth_modal_presence">
+        <div v-if="loginModalOpen" class="auth_modal" role="dialog" aria-modal="true" @click.self="closeLoginModal()">
+            <article class="auth_modal__surface">
+                <button class="auth_modal__close" type="button" @click="closeLoginModal()" aria-label="Close login modal">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only">Close</span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon" src="/assets/media/favicon.png" alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title">Sign in or register</h2>
+
+                <form class="auth_modal__form" novalidate="" @submit.prevent="handleLoginModalSubmit" data-auth-password-required="Please enter a password." data-auth-identifier-required="Please enter a valid email address." data-auth-login-error-title="Sign in failed" data-auth-login-failed-message="Sign in could not be completed." data-auth-login-success-title="Signed in" data-auth-login-success-message="You are now signed in." data-auth-email-found-title="User found" data-auth-email-found-message="Account found. Please enter your password." data-auth-email-not-found-title="No user found" data-auth-email-not-found-message="No account was found for this email. You will be redirected to registration." data-auth-email-check-failed-title="Email check failed" data-auth-email-check-failed-message="The email could not be checked. Please try again.">
+                    <label class="corp_field auth_modal__field">
+                        <span class="sr-only">Phone number or email address</span>
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="Phone number or email address" placeholder="Phone number or email address">
+                        <span class="corp_field__label">Phone number or email address</span>
+                    </label>
+                    <label v-if="loginPasswordVisible" class="corp_field auth_modal__field">
+                        <span class="sr-only">Enter password</span>
+                        <input class="corp_input" type="password" autocomplete="current-password" data-auth-login-password="" v-model="loginPassword" aria-label="Enter password" placeholder="Enter password">
+                        <span class="corp_field__label">Enter password</span>
+                    </label>
+                    <button class="button auth_modal__submit" :disabled="loginLookupPending" type="submit">Continue</button>
+                </form>
+            </article>
+        </div>
+    </transition>
+
+    <main id="main-content" class="main_container site_main">
+        <section class="profile_page" data-profile-view="" data-profile-loading-label="Loading profile." data-profile-auth-required="Please sign in to view this profile." data-profile-not-found="This profile could not be found." data-profile-load-failed="Profile could not be loaded." data-profile-route-missing="Please open a profile URL with a user ID." data-profile-role-pet-owner="Pet owner" data-profile-role-host="Host">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner" src="https://www.tierheime-helfen.de/fileadmin/user_upload/Dank.jpg" alt="Animal shelter thank-you banner">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__avatar_ring">
+                <img v-if="profileViewUser &amp;&amp; profileViewUser.profilePicture" class="profile_hero__avatar" :src="profileViewUser.profilePicture" :alt="profileViewDisplayName">
+                <span v-else="" class="profile_hero__avatar profile_hero__avatar--fallback" v-text="profileViewInitial"></span>
+            </div>
+        </header>
+
+        <article class="profile_panel">
+            <p v-if="profileViewLoading" class="profile_state profile_state--loading" role="status" aria-live="polite" v-text="profileStrings.loading"></p>
+
+            <p v-else-if="profileViewError" class="profile_state profile_state--error" role="alert" v-text="profileViewError"></p>
+
+            <div v-else-if="profileViewUser" class="profile_panel__content">
+                <h2 class="profile_panel__name" v-text="profileViewDisplayName"></h2>
+                <p class="profile_panel__role" v-text="profileViewRoleLabel"></p>
+
+                <dl class="profile_facts">
+                    <div class="profile_facts__item">
+                        <dt>Email</dt>
+                        <dd v-text="profileViewUser.email"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt>Phone</dt>
+                        <dd v-text="profileViewPhoneLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt>Birth date</dt>
+                        <dd v-text="profileViewBirthDateLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt>Location</dt>
+                        <dd v-text="profileViewLocationLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt>Rating</dt>
+                        <dd v-text="profileViewRatingLabel"></dd>
+                    </div>
+                </dl>
+
+                <section class="profile_bio" v-if="profileViewUser.bio">
+                    <h3 class="profile_bio__title">About me</h3>
+                    <p class="profile_bio__text" v-text="profileViewUser.bio"></p>
+                </section>
+
+                <section class="profile_species" v-if="profileViewAcceptedPetSpeciesLabels.length">
+                    <h3 class="profile_species__title">Accepted pet species</h3>
+                    <ul class="profile_species__list">
+                        <li v-for="speciesLabel in profileViewAcceptedPetSpeciesLabels" :key="speciesLabel" class="profile_species__chip" v-text="speciesLabel"></li>
+                    </ul>
+                </section>
+            </div>
+        </article>
+    </section>
+    </main>
+
+    <footer class="main_container site_footer">
+        <div class="site_footer__windows" aria-hidden="true">
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image" src="https://image.geo.de/30115200/t/56/v4/w1440/r0/-/meerschweinchen-als-haustier-c-4324176-jpg--64241-.jpg" alt="" aria-hidden="true">
+            </figure>
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image" src="https://www.naturavetal.de/media/cache/images/category_header/05-infoseiten/03-gesund-fuettern/gesunder-golden-retriever-junghund-im-wald-hf.jpg" alt="" aria-hidden="true">
+            </figure>
+            <figure class="site_footer__window">
+                <img class="site_footer__window-image" src="https://media.4-paws.org/a/2/0/2/a20271f7527a90ae9ef69e5537e56178dd64d04d/595521809-huge-2001x2000-720x720.jpg" alt="" aria-hidden="true">
+            </figure>
+        </div>
+        <p class="site_footer__text">PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG.</p>
+    </footer>
+</div>
+<script type="module" src="/assets/js/site.js"></script>
+
+
+</body></html>

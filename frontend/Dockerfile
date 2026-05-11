@@ -20,7 +20,7 @@ COPY README.md ../README.md
 
 RUN npm run build \
     && mkdir -p /static \
-    && cp -r index.html 404.html assets register repository git kanban playwright api-overview 404 /static/
+    && cp -r index.html 404.html assets register repository git kanban playwright api-overview 404 en ro /static/
 
 FROM nginx:1.27-alpine
 

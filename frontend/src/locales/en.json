@@ -31,6 +31,10 @@
     "notFound": {
       "title": "Pawsitters | Page not found",
       "description": "404 page for unknown routes."
+    },
+    "profile": {
+      "title": "Pawsitters | Public Profile",
+      "description": "Public profile page with hero banner, avatar, and personal details."
     }
   },
   "brand": {
@@ -261,19 +265,81 @@
     "register": {
       "title": "Create account",
       "text": "Prepare your access for the next frontend flows.",
-      "name": "Name",
-      "namePlaceholder": "Pawsitters User",
+      "steps": {
+        "aria": "Registration steps",
+        "account": "Account",
+        "profile": "Profile",
+        "pets": "Pets"
+      },
+      "firstName": "First name",
+      "firstNamePlaceholder": "First name",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Last name",
       "email": "Email",
-      "emailPlaceholder": "name@example.com",
+      "emailPlaceholder": "Email",
       "password": "Password",
-      "passwordPlaceholder": "••••••••",
-      "validationNameRequired": "Please enter your name.",
+      "passwordEntry": "Enter password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPassword": "Repeat password",
+      "confirmPasswordPlaceholder": "Repeat password",
+      "passwordHint": "Minimum 15 characters, without parts of your email or name.",
+      "phone": "Phone",
+      "phonePlaceholder": "Phone",
+      "birthDate": "Birth date",
+      "birthDatePlaceholder": "Birth date",
+      "emergencyContact": "Emergency contact",
+      "emergencyContactPlaceholder": "Emergency contact",
+      "profilePicture": "Profile picture",
+      "profilePicturePlaceholder": "Profile picture (link)",
+      "bio": "Short bio",
+      "bioPlaceholder": "Short bio",
+      "role": "Role",
+      "rolePetOwner": "Pet owner",
+      "roleHost": "Host",
+      "city": "City",
+      "cityPlaceholder": "City",
+      "cityLoading": "Loading cities",
+      "cityNoResults": "No cities found",
+      "cityResultsAria": "City results",
+      "countryFallback": "Country is filled after city selection",
+      "postalCode": "Postal code",
+      "postalCodePlaceholder": "Postal code",
+      "petSpeciesHint": "Which pet species would you like to care for?",
+      "petSpeciesLoading": "Loading pet species",
+      "petSpeciesEmpty": "No pet species available",
       "validationEmailRequired": "Please enter a valid email address.",
       "validationPasswordRequired": "Please enter a password.",
+      "validationPasswordConfirmationRequired": "Please repeat your password.",
+      "validationPasswordsMismatch": "Both passwords must match.",
+      "validationPasswordCriteriaRequired": "Please meet all password criteria.",
+      "validationPasswordMinLength": "Password must be at least 15 characters long.",
+      "validationFirstNameRequired": "Please enter your first name.",
+      "validationLastNameRequired": "Please enter your last name.",
+      "validationPhoneRequired": "Please enter a phone number.",
+      "validationBirthDateRequired": "Please enter your birth date.",
+      "validationBirthDatePast": "Birth date must be in the past.",
+      "validationEmergencyContactRequired": "Please enter an emergency contact.",
+      "validationProfilePictureRequired": "Please enter a profile picture URL.",
+      "validationBioRequired": "Please enter a short bio.",
+      "validationCityRequired": "Please choose a city from the search results.",
+      "validationPostalCodeInvalid": "Postal code must contain exactly 5 digits.",
+      "validationRoleRequired": "Please choose a role.",
+      "validationPetSpeciesRequired": "Please choose at least one pet species.",
+      "passwordCriteria": {
+        "minLength": "At least 15 characters",
+        "maxBytes": "At most 72 bytes",
+        "lowercase": "At least one lowercase letter",
+        "uppercase": "At least one uppercase letter",
+        "digit": "At least one number",
+        "special": "At least one special character",
+        "match": "Both passwords are identical"
+      },
       "errorTitle": "Registration failed",
       "errorMessage": "Registration could not be completed.",
       "successTitle": "Registration successful",
       "successMessage": "Your account has been created.",
+      "previous": "Back",
+      "next": "Next step",
       "submit": "Register",
       "alt": {
         "eyebrow": "Already registered",
@@ -288,5 +354,27 @@
   },
   "footer": {
     "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
+  },
+  "profile": {
+    "page": {
+      "bannerAlt": "Animal shelter thank-you banner",
+      "eyebrow": "Public profile",
+      "title": "Personal profile view",
+      "loading": "Loading profile.",
+      "authRequired": "Please sign in to view this profile.",
+      "notFound": "This profile could not be found.",
+      "loadFailed": "Profile could not be loaded.",
+      "routeMissing": "Please open a profile URL with a user ID.",
+      "ownProfileButton": "My public profile",
+      "labels": {
+        "email": "Email",
+        "phone": "Phone",
+        "birthDate": "Birth date",
+        "location": "Location",
+        "rating": "Rating",
+        "bio": "About me",
+        "acceptedPets": "Accepted pet species"
+      }
+    }
   }
 }

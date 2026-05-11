@@ -12,6 +12,8 @@ const port = Number.parseInt(process.env.PORT ?? '4173', 10);
 const host = process.env.HOST ?? '127.0.0.1';
 const backendOrigin = new URL(process.env.BACKEND_ORIGIN ?? 'http://127.0.0.1:8080');
 const BACKEND_PROXY_PATH_PREFIXES = ['/api/', '/actuator/'];
+const DEFAULT_LOCALE = 'de';
+const SUPPORTED_LOCALES = new Set(['de', 'en', 'ro']);
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'keep-alive',
@@ -41,7 +43,16 @@ function contentType(filePath) {
   return map[extension] ?? 'application/octet-stream';
 }
 
-function resolveFilePath(urlPath) {
+function resolveLocale(localeValue = '') {
+  const normalized = String(localeValue || '').trim().toLowerCase();
+  if (SUPPORTED_LOCALES.has(normalized)) {
+    return normalized;
+  }
+
+  return DEFAULT_LOCALE;
+}
+
+function tryResolveFilePath(urlPath) {
   const candidatePath = urlPath === '/'
     ? path.join(rootDir, 'index.html')
     : path.join(rootDir, urlPath.replace(/^\/+/, ''));
@@ -53,6 +64,53 @@ function resolveFilePath(urlPath) {
   const nestedIndexPath = path.join(candidatePath, 'index.html');
   if (existsSync(nestedIndexPath) && statSync(nestedIndexPath).isFile()) {
     return nestedIndexPath;
+  }
+
+  return null;
+}
+
+function isLocalePrefixedPath(urlPath = '') {
+  return /^\/(?:de|en|ro)(?:\/|$)/i.test(urlPath);
+}
+
+function resolveDynamicPageFallback(urlPath = '') {
+  const normalizedPath = String(urlPath || '').trim().replace(/\/+$/, '') || '/';
+  const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/[^/]+$/i);
+
+  if (localizedProfileMatch?.[1]) {
+    return `/${localizedProfileMatch[1].toLowerCase()}/profile`;
+  }
+
+  if (/^\/profile\/[^/]+$/i.test(normalizedPath)) {
+    return '/profile';
+  }
+
+  return '';
+}
+
+function resolveFilePath(urlPath, locale = DEFAULT_LOCALE) {
+  const normalizedLocale = resolveLocale(locale);
+  const dynamicFallbackPath = resolveDynamicPageFallback(urlPath);
+  const routeCandidates = [urlPath];
+
+  if (dynamicFallbackPath && !routeCandidates.includes(dynamicFallbackPath)) {
+    routeCandidates.push(dynamicFallbackPath);
+  }
+
+  const candidates = [];
+
+  for (const routeCandidate of routeCandidates) {
+    if (!isLocalePrefixedPath(routeCandidate) && normalizedLocale !== DEFAULT_LOCALE) {
+      candidates.push(routeCandidate === '/' ? `/${normalizedLocale}` : `/${normalizedLocale}${routeCandidate}`);
+    }
+    candidates.push(routeCandidate);
+  }
+
+  for (const candidate of [...new Set(candidates)]) {
+    const resolved = tryResolveFilePath(candidate);
+    if (resolved) {
+      return resolved;
+    }
   }
 
   return null;
@@ -143,20 +201,55 @@ function main() {
   const server = http.createServer(async (request, response) => {
     try {
       const requestUrl = new URL(request.url ?? '/', `http://${host}:${port}`);
+      const locale = resolveLocale(requestUrl.searchParams.get('locale'));
+
+      if (requestUrl.pathname === '/api/repository/live.json') {
+        const localizedSnapshotPath = path.join(rootDir, 'assets', 'data', `repository-live.${locale}.json`);
+        const fallbackSnapshotPath = path.join(rootDir, 'assets', 'data', `repository-live.${DEFAULT_LOCALE}.json`);
+        const snapshotPath = existsSync(localizedSnapshotPath) ? localizedSnapshotPath : fallbackSnapshotPath;
+
+        if (existsSync(snapshotPath) && statSync(snapshotPath).isFile()) {
+          await serveFile(response, snapshotPath);
+          return;
+        }
+
+        response.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+        response.end(`${JSON.stringify({
+          error: 'repository_snapshot_missing',
+          message: 'Missing repository snapshot file'
+        })}\n`);
+        return;
+      }
+
+      if (requestUrl.pathname === '/api/pets/choices' || requestUrl.pathname === '/api/pets/choices.json') {
+        const petChoicesPath = path.join(rootDir, 'assets', 'data', 'pet-choices.json');
+        if (existsSync(petChoicesPath) && statSync(petChoicesPath).isFile()) {
+          await serveFile(response, petChoicesPath);
+          return;
+        }
+      }
+
+      if (requestUrl.pathname === '/api/locations/countries.json') {
+        const countryFlagsPath = path.join(rootDir, 'assets', 'data', 'country-flags.json');
+        if (existsSync(countryFlagsPath) && statSync(countryFlagsPath).isFile()) {
+          await serveFile(response, countryFlagsPath);
+          return;
+        }
+      }
 
       if (shouldProxyToBackend(requestUrl.pathname)) {
         await proxyToBackend(request, response, requestUrl);
         return;
       }
 
-      const resolvedPath = resolveFilePath(requestUrl.pathname);
+      const resolvedPath = resolveFilePath(requestUrl.pathname, locale);
 
       if (resolvedPath) {
         await serveFile(response, resolvedPath);
         return;
       }
 
-      const notFoundPath = path.join(rootDir, '404.html');
+      const notFoundPath = resolveFilePath('/404', locale) || path.join(rootDir, '404.html');
       if (existsSync(notFoundPath) && statSync(notFoundPath).isFile()) {
         await serveFile(response, notFoundPath, 404);
         return;
