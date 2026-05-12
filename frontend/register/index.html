@@ -56,9 +56,10 @@
                                     <span class="header_search_field__value" v-text="locationDisplayValue"></span>
                                 </summary>
                                 <div class="header_search_field__panel header_search_field__panel--destination">
-                                    <label class="header_search_panel__search">
+                                    <label class="header_search_panel__search corp_field">
                                         <span class="sr-only">Vermietungsorte durchsuchen</span>
-                                        <input class="header_search_panel__search-input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Stadt weltweit suchen">
+                                        <input class="header_search_panel__search-input corp_input" type="search" v-model="locationQuery" autocomplete="off" spellcheck="false" placeholder="Stadt weltweit suchen">
+                                        <span class="header_search_panel__search-label corp_field__label">Stadt weltweit suchen</span>
                                     </label>
                                     <p class="header_search_panel__hint">Suche Städte auf der ganzen Welt, in der du dein Haustier abgeben möchtest.</p>
                                     <div v-if="locationOptionsLoading" class="header_search_panel__loading" role="status" aria-live="polite">
@@ -241,9 +242,16 @@ mvn spring-boot:run</code></pre>
                         <span class="sr-only">Benutzermenü öffnen</span>
                     </summary>
                     <div class="repo_menu__panel user_menu__panel">
-                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">Profil ansehen</button>
+                        <p class="header_quick_menu__category user_menu__category" v-text="authSessionGreeting"></p>
+                        <button class="repo_menu__item repo_menu__item--button" type="button" @click="openCurrentUserProfile()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F9D1.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Profil ansehen</span>
+                        </button>
                         <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
-                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">Ausloggen</button>
+                        <button class="repo_menu__item repo_menu__item--button user_menu__logout" type="button" @click="logoutCurrentUser()">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F512.svg" alt="" aria-hidden="true">
+                            <span class="repo_menu__item-label">Ausloggen</span>
+                        </button>
                     </div>
                 </details>
                 <details class="repo_menu repo_menu--surface header_quick_menu" aria-label="Schnellmenü">
@@ -270,6 +278,7 @@ mvn spring-boot:run</code></pre>
                             <span class="repo_menu__item-label">Git</span>
                         </a>
                         <a class="repo_menu__item" href="/repository/kanban">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Kanban Board</span>
                         </a>
                         <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
@@ -304,6 +313,7 @@ mvn spring-boot:run</code></pre>
                             <span class="repo_menu__item-label">Git</span>
                         </a>
                         <a class="repo_menu__item" @click="closeMenu()" href="/repository/kanban">
+                            <img class="repo_menu__item-icon" src="/assets/media/1F4CB.svg" alt="" aria-hidden="true">
                             <span class="repo_menu__item-label">Kanban Board</span>
                         </a>
                     </div>
@@ -351,9 +361,9 @@ mvn spring-boot:run</code></pre>
 
                 <form class="auth_modal__form" novalidate="" @submit.prevent="handleLoginModalSubmit" data-auth-password-required="Bitte ein Passwort eingeben." data-auth-identifier-required="Bitte gib eine gültige E-Mail-Adresse ein." data-auth-login-error-title="Login fehlgeschlagen" data-auth-login-failed-message="Der Login konnte nicht abgeschlossen werden." data-auth-login-success-title="Erfolgreich eingeloggt" data-auth-login-success-message="Du bist jetzt eingeloggt." data-auth-email-found-title="Benutzer gefunden" data-auth-email-found-message="Konto gefunden. Bitte gib jetzt dein Passwort ein." data-auth-email-not-found-title="Kein Benutzer gefunden" data-auth-email-not-found-message="Für diese E-Mail wurde kein Konto gefunden. Du wirst zur Registrierung weitergeleitet." data-auth-email-check-failed-title="E-Mail-Prüfung fehlgeschlagen" data-auth-email-check-failed-message="Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.">
                     <label class="corp_field auth_modal__field">
-                        <span class="sr-only">Telefonnummer oder E-Mail Adresse</span>
-                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="Telefonnummer oder E-Mail Adresse" placeholder="Telefonnummer oder E-Mail Adresse">
-                        <span class="corp_field__label">Telefonnummer oder E-Mail Adresse</span>
+                        <span class="sr-only">E-mail Adresse eingeben</span>
+                        <input class="corp_input" type="text" autocomplete="username" data-auth-login-identifier="" v-model="loginIdentifier" @input="handleLoginIdentifierInput" aria-label="E-mail Adresse eingeben" placeholder="E-mail Adresse eingeben">
+                        <span class="corp_field__label">E-mail Adresse eingeben</span>
                     </label>
                     <label v-if="loginPasswordVisible" class="corp_field auth_modal__field">
                         <span class="sr-only">Passwort eingeben</span>
@@ -376,23 +386,137 @@ mvn spring-boot:run</code></pre>
                     <p class="auth_card__text">Lege deinen Zugang für das Pawsitters-Projekt an</p>
                 </div>
 
-                <form class="auth_form" novalidate="" @submit.prevent="handleRegisterSubmit" data-auth-register-name-required="Bitte gib deinen Namen ein." data-auth-register-email-required="Bitte gib eine gültige E-Mail-Adresse ein." data-auth-register-password-required="Bitte gib ein Passwort ein." data-auth-register-error-title="Registrierung fehlgeschlagen" data-auth-register-failed-message="Die Registrierung konnte nicht abgeschlossen werden." data-auth-register-success-title="Registrierung erfolgreich" data-auth-register-success-message="Dein Konto wurde erstellt.">
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Name</span>
-                        <input class="auth_input corp_input" type="text" autocomplete="name" data-auth-register-name="" v-model="registerFullName" aria-label="Name" placeholder="Pawsitters Nutzer">
-                        <span class="auth_field__label corp_field__label">Pawsitters Nutzer</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">E-Mail</span>
-                        <input class="auth_input corp_input" type="email" autocomplete="email" data-auth-register-email="" v-model="registerEmail" aria-label="E-Mail" placeholder="name@example.com">
-                        <span class="auth_field__label corp_field__label">name@example.com</span>
-                    </label>
-                    <label class="auth_field corp_field">
-                        <span class="sr-only">Passwort</span>
-                        <input class="auth_input corp_input" type="password" autocomplete="new-password" data-auth-register-password="" v-model="registerPassword" aria-label="Passwort" placeholder="••••••••">
-                        <span class="auth_field__label corp_field__label">••••••••</span>
-                    </label>
-                    <button class="button button--primary auth_submit" :disabled="registerSubmitPending" type="submit">Registrieren</button>
+                <div class="repository_segmented register_steps" data-segmented="registerStep" data-active="account" role="tablist" aria-label="Registrierungsschritte">
+                    <button class="repository_segmented__button register_steps__tab" type="button" tabindex="-1" data-segmented-value="account" disabled="">Konto</button>
+                    <button class="repository_segmented__button register_steps__tab" type="button" tabindex="-1" data-segmented-value="profile" disabled="">Profil</button>
+                    <button class="repository_segmented__button register_steps__tab" type="button" tabindex="-1" data-segmented-value="pets" disabled="">Tiere</button>
+                    <span class="repository_segmented__indicator" aria-hidden="true"></span>
+                </div>
+
+                <form class="auth_form auth_form--register" novalidate="" @submit.prevent="handleRegisterSubmit" data-auth-register-email-required="Bitte gib eine gültige E-Mail-Adresse ein." data-auth-register-password-required="Bitte gib ein Passwort ein." data-auth-register-password-confirmation-required="Bitte wiederhole dein Passwort." data-auth-register-passwords-mismatch="Die beiden Passwörter sind nicht identisch." data-auth-register-password-criteria-required="Bitte erfülle alle Passwortkriterien." data-auth-register-error-title="Registrierung fehlgeschlagen" data-auth-register-failed-message="Die Registrierung konnte nicht abgeschlossen werden." data-auth-register-success-title="Registrierung erfolgreich" data-auth-register-success-message="Dein Konto wurde erstellt." data-auth-register-first-name-required="Bitte gib deinen Vornamen ein." data-auth-register-last-name-required="Bitte gib deinen Nachnamen ein." data-auth-register-phone-required="Bitte gib eine Telefonnummer ein." data-auth-register-birth-date-required="Bitte gib dein Geburtsdatum ein." data-auth-register-birth-date-past="Das Geburtsdatum muss in der Vergangenheit liegen." data-auth-register-emergency-contact-required="Bitte gib einen Notfallkontakt ein." data-auth-register-profile-picture-required="Bitte gib einen Profilbild-Link ein." data-auth-register-bio-required="Bitte gib eine Kurzbiografie ein." data-auth-register-city-required="Bitte wähle eine Stadt aus der Suche." data-auth-register-postal-code-invalid="Die Postleitzahl muss aus 5 Ziffern bestehen." data-auth-register-role-required="Bitte wähle eine Rolle aus." data-auth-register-pet-species-required="Bitte wähle mindestens eine Tierart aus." data-auth-register-password-min-length="Das Passwort muss mindestens 15 Zeichen haben." data-auth-register-password-criteria-min-length="Mindestens 15 Zeichen" data-auth-register-password-criteria-max-bytes="Maximal 72 Byte" data-auth-register-password-criteria-lowercase="Mindestens ein Kleinbuchstabe" data-auth-register-password-criteria-uppercase="Mindestens ein Großbuchstabe" data-auth-register-password-criteria-digit="Mindestens eine Zahl" data-auth-register-password-criteria-special="Mindestens ein Sonderzeichen" data-auth-register-password-criteria-match="Beide Passwörter sind identisch" data-auth-register-country-fallback="Land wird nach Stadtauswahl gesetzt">
+                    <section class="register_step_panel" v-show="registerStep === 'account'" data-segment-panel="registerStep" data-segment-value="account">
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Vorname</span>
+                            <input class="auth_input corp_input" type="text" autocomplete="given-name" data-auth-register-first-name="" v-model="registerFirstName" aria-label="Vorname" placeholder="Vorname">
+                            <span class="auth_field__label corp_field__label">Vorname</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Nachname</span>
+                            <input class="auth_input corp_input" type="text" autocomplete="family-name" data-auth-register-last-name="" v-model="registerLastName" aria-label="Nachname" placeholder="Nachname">
+                            <span class="auth_field__label corp_field__label">Nachname</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">E-Mail</span>
+                            <input class="auth_input corp_input" type="email" autocomplete="email" data-auth-register-email="" v-model="registerEmail" aria-label="E-Mail" placeholder="E-Mail">
+                            <span class="auth_field__label corp_field__label">E-Mail</span>
+                        </label>
+
+                        <div class="register_step_separator" aria-hidden="true"></div>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Passwort eingeben</span>
+                            <input class="auth_input corp_input" type="password" autocomplete="new-password" data-auth-register-password="" v-model="registerPassword" aria-label="Passwort eingeben" placeholder="Passwort eingeben">
+                            <span class="auth_field__label corp_field__label">Passwort eingeben</span>
+                        </label>
+
+                        <div class="register_password_criteria" role="status" aria-live="polite">
+                            <div class="register_password_criteria__item" v-for="criterion in registerPasswordCriteria" :key="criterion.id" :class="{ 'register_password_criteria__item--met': criterion.met }">
+                                <span class="register_password_criteria__dot" aria-hidden="true"></span>
+                                <span class="register_password_criteria__text" v-text="criterion.label"></span>
+                            </div>
+                        </div>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Passwort wiederholen</span>
+                            <input class="auth_input corp_input" type="password" autocomplete="new-password" data-auth-register-password-confirmation="" v-model="registerPasswordConfirmation" aria-label="Passwort wiederholen" placeholder="Passwort wiederholen">
+                            <span class="auth_field__label corp_field__label">Passwort wiederholen</span>
+                        </label>
+
+                        <p class="register_step_hint">Mindestens 15 Zeichen, ohne Bestandteile von E-Mail oder Namen.</p>
+                    </section>
+
+                    <section class="register_step_panel" v-show="registerStep === 'profile'" data-segment-panel="registerStep" data-segment-value="profile">
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Telefonnummer</span>
+                            <input class="auth_input corp_input" type="tel" autocomplete="tel" data-auth-register-phone="" v-model="registerPhone" aria-label="Telefonnummer" placeholder="Telefonnummer">
+                            <span class="auth_field__label corp_field__label">Telefonnummer</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Geburtsdatum</span>
+                            <input class="auth_input corp_input" type="date" autocomplete="bday" data-auth-register-birth-date="" v-model="registerBirthDate" :max="registerBirthDateMax" aria-label="Geburtsdatum" placeholder="Geburtsdatum">
+                            <span class="auth_field__label corp_field__label">Geburtsdatum</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Notfallkontakt</span>
+                            <input class="auth_input corp_input" type="text" autocomplete="off" data-auth-register-emergency-contact="" v-model="registerEmergencyContact" aria-label="Notfallkontakt" placeholder="Notfallkontakt">
+                            <span class="auth_field__label corp_field__label">Notfallkontakt</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Profilbild</span>
+                            <input class="auth_input corp_input" type="text" autocomplete="url" data-auth-register-profile-picture="" v-model="registerProfilePicture" aria-label="Profilbild" placeholder="Profilbild (Link)">
+                            <span class="auth_field__label corp_field__label">Profilbild (Link)</span>
+                        </label>
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Kurzbiografie</span>
+                            <textarea class="auth_input corp_input corp_input--textarea" rows="3" data-auth-register-bio="" v-model="registerBio" aria-label="Kurzbiografie" placeholder="Kurzbiografie"></textarea>
+                            <span class="auth_field__label corp_field__label">Kurzbiografie</span>
+                        </label>
+
+                        <label class="auth_field corp_field">
+                            <span class="sr-only">Rolle</span>
+                            <select class="auth_input corp_input corp_input--select" data-auth-register-role="" v-model="registerRole" aria-label="Rolle">
+                                <option value="PET_OWNER">Tierhalter</option>
+                                <option value="HOST">Gastgeber</option>
+                            </select>
+                            <span class="auth_field__label corp_field__label">Rolle</span>
+                        </label>
+
+                        <div class="register_city_picker">
+                            <label class="auth_field corp_field">
+                                <span class="sr-only">Stadt</span>
+                                <input class="auth_input corp_input" type="text" autocomplete="off" data-auth-register-city="" v-model="registerCityQuery" @input="handleRegisterCityInput" aria-label="Stadt" placeholder="Stadt">
+                                <span class="auth_field__label corp_field__label">Stadt</span>
+                            </label>
+                            <div v-if="registerCityOptionsLoading" class="register_city_picker__state" role="status" aria-live="polite">Städte werden geladen</div>
+                            <div v-else-if="showRegisterCityNoResults" class="register_city_picker__state">Keine Städte gefunden</div>
+                            <div v-else-if="filteredRegisterCityOptions.length" class="register_city_picker__list" role="listbox" aria-label="Städte-Ergebnisse">
+                                <button class="register_city_picker__option" type="button" v-for="option in filteredRegisterCityOptions" :key="option.id" @click="selectRegisterCityOption(option)">
+                                    <img v-if="option.flagPath" class="register_city_picker__flag" :src="option.flagPath" :alt="option.countryName || option.countryCode || ''">
+                                    <span class="register_city_picker__label" v-text="option.label"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="register_location_meta">
+                            <div class="register_country_chip" :class="{ 'register_country_chip--empty': !registerCountryName }">
+                                <img v-if="registerCountryFlagPath" class="register_country_chip__flag" :src="registerCountryFlagPath" :alt="registerCountryName || registerCountryCode || ''">
+                                <span class="register_country_chip__text" v-text="registerCountryName || registerCountryCode || registerCountryFallbackLabel"></span>
+                            </div>
+                            <label class="auth_field corp_field register_postal_field">
+                                <span class="sr-only">Postleitzahl</span>
+                                <input class="auth_input corp_input" type="text" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" data-auth-register-postal-code="" v-model="registerPostalCode" @input="sanitizeRegisterPostalCode" aria-label="Postleitzahl" placeholder="Postleitzahl">
+                                <span class="auth_field__label corp_field__label">Postleitzahl</span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="register_step_panel" v-show="registerStep === 'pets'" data-segment-panel="registerStep" data-segment-value="pets">
+                        <p class="register_step_hint">Welche Tierarten möchtest du betreuen?</p>
+                        <div v-if="registerPetChoicesLoading" class="register_pet_grid__state" role="status" aria-live="polite">Tierarten werden geladen</div>
+                        <div v-else-if="!registerPetChoices.length" class="register_pet_grid__state">Keine Tierarten verfügbar</div>
+                        <div v-else="" class="register_pet_grid">
+                            <button class="register_pet_chip" type="button" v-for="choice in registerPetChoices" :key="choice.value" :class="{ 'register_pet_chip--active': isRegisterPetSpeciesSelected(choice.value) }" @click="toggleRegisterPetSpecies(choice.value)">
+                                <img class="register_pet_chip__icon" :src="choice.emojiPath" :alt="choice.label">
+                                <span class="register_pet_chip__label" v-text="choice.label"></span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <div class="register_step_actions">
+                        <button v-if="registerStep !== 'account'" class="button button--secondary" type="button" @click="goToPreviousRegisterStep()">Zurück</button>
+                        <button v-if="registerStep !== 'pets'" class="button button--primary" type="button" @click="goToNextRegisterStep()">Nächster Schritt</button>
+                        <button v-else="" class="button button--primary" :disabled="registerSubmitPending" type="submit">Registrieren</button>
+                    </div>
                 </form>
 
             </section>

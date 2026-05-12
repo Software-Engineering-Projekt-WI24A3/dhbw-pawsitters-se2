@@ -16,6 +16,7 @@ const localizedAttributeNames = new Set(['aria-label', 'placeholder', 'title', '
 const pageDefinitions = [
   { key: 'home', templatePath: 'pages/home.html' },
   { key: 'register', templatePath: 'pages/register.html' },
+  { key: 'profile', templatePath: 'pages/profile.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
   { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
   { key: 'repositoryApi', templatePath: 'pages/repository-api.html' },
@@ -25,6 +26,7 @@ const pageDefinitions = [
 const routeToPageKey = new Map([
   ['/', 'home'],
   ['/register', 'register'],
+  ['/profile', 'profile'],
   ['/repository/git', 'repositoryGit'],
   ['/repository/playwright', 'repositoryPlaywright'],
   ['/repository/api', 'repositoryApi'],
@@ -504,8 +506,13 @@ export async function validateSourceTemplates(rootDir) {
       for (const attributeName of localizedAttributeNames) {
         const attributeValue = $element.attr(attributeName);
         const normalizedValue = normalizeTextContent(attributeValue ?? '');
+        const isStructuralOptionValue = (
+          attributeName === 'value'
+          && element.tagName === 'option'
+          && /^[A-Z0-9_:-]+$/.test(normalizedValue)
+        );
 
-        if (!normalizedValue || !/\p{L}/u.test(normalizedValue) || isTokenPlaceholder(normalizedValue)) {
+        if (!normalizedValue || !/\p{L}/u.test(normalizedValue) || isTokenPlaceholder(normalizedValue) || isStructuralOptionValue) {
           continue;
         }
 
@@ -528,67 +535,86 @@ function normalizeTemplatePath(templateReference) {
   return cleaned.endsWith('.html') ? cleaned : `${cleaned}.html`;
 }
 
-function resolveLocalizedPath(locale, pageKey) {
-  const query = locale === defaultLocale ? '' : `?locale=${locale}`;
-
+function resolveRoutePath(pageKey) {
   switch (pageKey) {
     case 'home':
-      return `/${query}`;
+      return '/';
     case 'register':
-      return `/register${query}`;
+      return '/register';
+    case 'profile':
+      return '/profile';
     case 'repositoryGit':
-      return `/repository/git${query}`;
+      return '/repository/git';
     case 'repositoryPlaywright':
-      return `/repository/playwright${query}`;
+      return '/repository/playwright';
     case 'repositoryApi':
-      return `/repository/api${query}`;
+      return '/repository/api';
     case 'repositoryKanban':
-      return `/repository/kanban${query}`;
+      return '/repository/kanban';
     case 'notFound':
-      return `/404${query}`;
+      return '/404';
     default:
-      return `/${pageKey}${query}`;
+      return `/${pageKey}`;
   }
 }
 
+function resolveLocalizedPath(locale, pageKey) {
+  const routePath = resolveRoutePath(pageKey);
+  const query = locale === defaultLocale ? '' : `?locale=${locale}`;
+  return `${routePath}${query}`;
+}
+
+function resolveLocalePrefixedPath(locale, pageKey) {
+  const routePath = resolveRoutePath(pageKey);
+  if (locale === defaultLocale) {
+    return routePath;
+  }
+
+  return routePath === '/'
+    ? `/${locale}`
+    : `/${locale}${routePath}`;
+}
+
+function toOutputIndexPath(routePath) {
+  if (routePath === '/') {
+    return 'index.html';
+  }
+
+  return path.join(routePath.replace(/^\/+/, ''), 'index.html');
+}
+
 function resolveOutputPaths(locale, pageKey) {
+  const outputPaths = [toOutputIndexPath(resolveLocalePrefixedPath(locale, pageKey))];
+
   if (locale !== defaultLocale) {
-    return [];
+    return outputPaths;
   }
 
   switch (pageKey) {
     case 'home':
-      return ['index.html'];
+      break;
     case 'register':
-      return [path.join('register', 'index.html')];
+      break;
     case 'repositoryGit':
-      return [
-        path.join('repository', 'git', 'index.html'),
-        path.join('git', 'index.html')
-      ];
+      outputPaths.push(path.join('git', 'index.html'));
+      break;
     case 'repositoryPlaywright':
-      return [
-        path.join('repository', 'playwright', 'index.html'),
-        path.join('playwright', 'index.html')
-      ];
+      outputPaths.push(path.join('playwright', 'index.html'));
+      break;
     case 'repositoryApi':
-      return [
-        path.join('repository', 'api', 'index.html'),
-        path.join('api-overview', 'index.html')
-      ];
+      outputPaths.push(path.join('api-overview', 'index.html'));
+      break;
     case 'repositoryKanban':
-      return [
-        path.join('repository', 'kanban', 'index.html'),
-        path.join('kanban', 'index.html')
-      ];
+      outputPaths.push(path.join('kanban', 'index.html'));
+      break;
     case 'notFound':
-      return [
-        '404.html',
-        path.join('404', 'index.html')
-      ];
+      outputPaths.push('404.html');
+      break;
     default:
-      return [path.join(pageKey, 'index.html')];
+      break;
   }
+
+  return [...new Set(outputPaths)];
 }
 
 function parseFragmentDefinition(definition) {
@@ -1192,6 +1218,22 @@ async function writeSearchDataAssets(rootDir) {
   );
 }
 
+async function writeRepositorySnapshotAssets(rootDir) {
+  const dataDirectory = path.join(rootDir, 'assets', 'data');
+  await fs.mkdir(dataDirectory, { recursive: true });
+
+  const baseSnapshot = await loadRepositorySnapshot(rootDir);
+  await Promise.all(supportedLocales.map(async (locale) => {
+    const messages = await loadMessages(rootDir, locale);
+    const localizedSnapshot = localizeRepositorySnapshot(baseSnapshot, locale, messages);
+    await fs.writeFile(
+      path.join(dataDirectory, `repository-live.${locale}.json`),
+      `${JSON.stringify(localizedSnapshot, null, 2)}\n`,
+      'utf8'
+    );
+  }));
+}
+
 async function buildPageContext(rootDir, locale, pageKey) {
   const messages = await loadMessages(rootDir, locale);
   const repositorySnapshot = localizeRepositorySnapshot(await loadRepositorySnapshot(rootDir), locale, messages);
@@ -1233,13 +1275,15 @@ async function renderPage(rootDir, locale, pageDefinition) {
 async function renderAllPages(rootDir) {
   const renderedPages = [];
 
-  for (const pageDefinition of pageDefinitions) {
-    renderedPages.push({
-      locale: defaultLocale,
-      pageKey: pageDefinition.key,
-      outputPaths: resolveOutputPaths(defaultLocale, pageDefinition.key),
-      html: await renderPage(rootDir, defaultLocale, pageDefinition)
-    });
+  for (const locale of supportedLocales) {
+    for (const pageDefinition of pageDefinitions) {
+      renderedPages.push({
+        locale,
+        pageKey: pageDefinition.key,
+        outputPaths: resolveOutputPaths(locale, pageDefinition.key),
+        html: await renderPage(rootDir, locale, pageDefinition)
+      });
+    }
   }
 
   return renderedPages;
@@ -1274,7 +1318,11 @@ export async function buildPreview(rootDir) {
     copyAssetIfExists(rootDir, 'src/media/pawsitters-scene.svg', 'assets/media/pawsitters-scene.svg'),
     copyAssetIfExists(rootDir, 'src/media/404.svg', 'assets/media/404.svg'),
     copyAssetIfExists(rootDir, 'src/media/search-lense.svg', 'assets/media/search-lense.svg'),
+    copyAssetIfExists(rootDir, 'src/media/1F4CB.svg', 'assets/media/1F4CB.svg'),
+    copyAssetIfExists(rootDir, 'src/media/1F9D1.svg', 'assets/media/1F9D1.svg'),
+    copyAssetIfExists(rootDir, 'src/media/1F512.svg', 'assets/media/1F512.svg'),
     writeSearchDataAssets(rootDir),
+    writeRepositorySnapshotAssets(rootDir),
     copyDirectory(rootDir, 'src/media/country-flag', 'assets/media/country-flag'),
     ...animalMediaDirectories.map((directoryName) => copyDirectoryIfExists(
       rootDir,

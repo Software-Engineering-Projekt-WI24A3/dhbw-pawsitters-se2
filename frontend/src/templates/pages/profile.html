@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.profile.title}, #{meta.profile.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-profile', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="profile_page"
+             data-profile-view
+             th:attr="data-profile-loading-label=#{profile.page.loading},
+                      data-profile-auth-required=#{profile.page.authRequired},
+                      data-profile-not-found=#{profile.page.notFound},
+                      data-profile-load-failed=#{profile.page.loadFailed},
+                      data-profile-route-missing=#{profile.page.routeMissing},
+                      data-profile-role-pet-owner=#{auth.register.rolePetOwner},
+                      data-profile-role-host=#{auth.register.roleHost}">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner"
+                     src="https://www.tierheime-helfen.de/fileadmin/user_upload/Dank.jpg"
+                     th:attr="alt=#{profile.page.bannerAlt}"
+                     alt="profile.page.bannerAlt">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__avatar_ring">
+                <img v-if="profileViewUser && profileViewUser.profilePicture"
+                     class="profile_hero__avatar"
+                     :src="profileViewUser.profilePicture"
+                     :alt="profileViewDisplayName">
+                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="profileViewInitial"></span>
+            </div>
+        </header>
+
+        <article class="profile_panel">
+            <p v-if="profileViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="profileStrings.loading"></p>
+
+            <p v-else-if="profileViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="profileViewError"></p>
+
+            <div v-else-if="profileViewUser" class="profile_panel__content">
+                <h2 class="profile_panel__name" v-text="profileViewDisplayName"></h2>
+                <p class="profile_panel__role" v-text="profileViewRoleLabel"></p>
+
+                <dl class="profile_facts">
+                    <div class="profile_facts__item">
+                        <dt th:text="#{profile.page.labels.email}">profile.page.labels.email</dt>
+                        <dd v-text="profileViewUser.email"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt th:text="#{profile.page.labels.phone}">profile.page.labels.phone</dt>
+                        <dd v-text="profileViewPhoneLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt th:text="#{profile.page.labels.birthDate}">profile.page.labels.birthDate</dt>
+                        <dd v-text="profileViewBirthDateLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt th:text="#{profile.page.labels.location}">profile.page.labels.location</dt>
+                        <dd v-text="profileViewLocationLabel"></dd>
+                    </div>
+                    <div class="profile_facts__item">
+                        <dt th:text="#{profile.page.labels.rating}">profile.page.labels.rating</dt>
+                        <dd v-text="profileViewRatingLabel"></dd>
+                    </div>
+                </dl>
+
+                <section class="profile_bio" v-if="profileViewUser.bio">
+                    <h3 class="profile_bio__title" th:text="#{profile.page.labels.bio}">profile.page.labels.bio</h3>
+                    <p class="profile_bio__text" v-text="profileViewUser.bio"></p>
+                </section>
+
+                <section class="profile_species" v-if="profileViewAcceptedPetSpeciesLabels.length">
+                    <h3 class="profile_species__title" th:text="#{profile.page.labels.acceptedPets}">profile.page.labels.acceptedPets</h3>
+                    <ul class="profile_species__list">
+                        <li v-for="speciesLabel in profileViewAcceptedPetSpeciesLabels"
+                            :key="speciesLabel"
+                            class="profile_species__chip"
+                            v-text="speciesLabel"></li>
+                    </ul>
+                </section>
+            </div>
+        </article>
+    </section>
+</th:block>
+</html>

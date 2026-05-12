@@ -79,14 +79,16 @@
                                           v-text="locationDisplayValue"></span>
                                 </summary>
                                 <div class="header_search_field__panel header_search_field__panel--destination">
-                                    <label class="header_search_panel__search">
+                                    <label class="header_search_panel__search corp_field">
                                         <span class="sr-only" th:text="#{header.search.destination.searchAria}">header.search.destination.searchAria</span>
-                                        <input class="header_search_panel__search-input"
+                                        <input class="header_search_panel__search-input corp_input"
                                                type="search"
                                                v-model="locationQuery"
                                                autocomplete="off"
                                                spellcheck="false"
                                                th:attr="placeholder=#{header.search.destination.searchPlaceholder}">
+                                        <span class="header_search_panel__search-label corp_field__label"
+                                              th:text="#{header.search.destination.searchPlaceholder}">header.search.destination.searchPlaceholder</span>
                                     </label>
                                     <p class="header_search_panel__hint"
                                        th:text="#{header.search.destination.searchHint}">
@@ -324,15 +326,28 @@
                         <span class="sr-only" th:text="#{nav.openUserMenu}">nav.openUserMenu</span>
                     </summary>
                     <div class="repo_menu__panel user_menu__panel">
+                        <p class="header_quick_menu__category user_menu__category" v-text="authSessionGreeting"></p>
                         <button class="repo_menu__item repo_menu__item--button"
                                 type="button"
-                                @click="openCurrentUserProfile()"
-                                th:text="#{nav.profile}">nav.profile</button>
+                                @click="openCurrentUserProfile()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/1F9D1.svg}"
+                                 src="/assets/media/1F9D1.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.profile}">nav.profile</span>
+                        </button>
                         <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
                         <button class="repo_menu__item repo_menu__item--button user_menu__logout"
                                 type="button"
-                                @click="logoutCurrentUser()"
-                                th:text="#{nav.logout}">nav.logout</button>
+                                @click="logoutCurrentUser()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/1F512.svg}"
+                                 src="/assets/media/1F512.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.logout}">nav.logout</span>
+                        </button>
                     </div>
                 </details>
                 <details class="repo_menu repo_menu--surface header_quick_menu"
@@ -378,6 +393,11 @@
                         <a class="repo_menu__item"
                            th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
                            th:href="${repositoryBoardPath}">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/1F4CB.svg}"
+                                 src="/assets/media/1F4CB.svg"
+                                 alt=""
+                                 aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
                         </a>
                         <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
@@ -440,6 +460,11 @@
                            th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
                            th:href="${repositoryBoardPath}"
                            @click="closeMenu()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/1F4CB.svg}"
+                                 src="/assets/media/1F4CB.svg"
+                                 alt=""
+                                 aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
                         </a>
                     </div>
