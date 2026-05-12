@@ -93,25 +93,13 @@ jobs:
           : "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the staging environment}"
           : "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the staging environment}"
 
-          write_env_var() {
-            local name="$1"
-            local value="$2"
-
-            if [[ "$value" == *"'"* ]]; then
-              printf 'Secret %s contains a single quote, which is not supported by the staging env writer.\n' "$name" >&2
-              exit 1
-            fi
-
-            printf "%s='%s'\n" "$name" "$value"
-          }
-
           {
-            write_env_var IMAGE_TAG "$IMAGE_TAG"
-            write_env_var JWT_SECRET "$JWT_SECRET"
-            write_env_var MYSQL_PASSWORD "$MYSQL_PASSWORD"
-            write_env_var MYSQL_ROOT_PASSWORD "$MYSQL_ROOT_PASSWORD"
-            write_env_var GHCR_USERNAME "$GHCR_USERNAME"
-            write_env_var GHCR_TOKEN "$GHCR_TOKEN"
+            printf 'IMAGE_TAG=%q\n' "$IMAGE_TAG"
+            printf 'JWT_SECRET=%q\n' "$JWT_SECRET"
+            printf 'MYSQL_PASSWORD=%q\n' "$MYSQL_PASSWORD"
+            printf 'MYSQL_ROOT_PASSWORD=%q\n' "$MYSQL_ROOT_PASSWORD"
+            printf 'GHCR_USERNAME=%q\n' "$GHCR_USERNAME"
+            printf 'GHCR_TOKEN=%q\n' "$GHCR_TOKEN"
           } > staging.env
 
           scp -i ~/.ssh/staging_key staging.env "$STAGING_USER@$STAGING_HOST:~/pawsitters/.env"

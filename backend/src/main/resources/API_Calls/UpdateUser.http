@@ -9,7 +9,7 @@ Content-Type: application/json
   "phone": "+49 123 456789",
   "birthDate": "1990-05-15",
   "emergencyContact": "+49 987 654321",
-  "profilePicture": "https://example.com/profile.jpg",
+  "profilePicture": "/assets/media/pawsitters-scene.svg",
   "bio": "Aktualisierte Bio",
   "address": "Musterstrasse 1, 12345 Musterstadt"
 }

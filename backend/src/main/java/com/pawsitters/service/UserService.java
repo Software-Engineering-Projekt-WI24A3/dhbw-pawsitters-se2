@@ -7,21 +7,47 @@ import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
 import com.pawsitters.repository.UserRepository;
 import com.pawsitters.validation.PasswordNormalizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserService {
 
+    public static final String DEFAULT_PROFILE_PICTURE = "/assets/media/pawsitters-scene.svg";
+
+    private static final String LEGACY_FAVICON_PROFILE_PICTURE = "/assets/media/favicon.png";
+    private static final String PROFILE_UPLOAD_DIRECTORY = "profiles";
+    private static final String PROFILE_UPLOAD_PUBLIC_PREFIX = "/uploads/profiles/";
+    private static final Set<String> ALLOWED_PROFILE_IMAGE_EXTENSIONS =
+            Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp");
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Path uploadRoot;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       @Value("${app.upload.dir:uploads}") String uploadDir) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.uploadRoot = Paths.get(uploadDir == null || uploadDir.isBlank() ? "uploads" : uploadDir)
+                .toAbsolutePath()
+                .normalize();
     }
 
     public User createUser(
@@ -80,7 +106,7 @@ public class UserService {
         user.setPhone(phone);
         user.setBirthDate(birthDate);
         user.setEmergencyContact(emergencyContact);
-        user.setProfilePicture(profilePicture);
+        user.setProfilePicture(profilePictureOrDefault(profilePicture));
         user.setBio(bio);
         user.setRating(0f);
         user.setNumberOfRatings(0);
@@ -118,7 +144,7 @@ public class UserService {
         user.setPhone(phone);
         user.setBirthDate(birthDate);
         user.setEmergencyContact(emergencyContact);
-        user.setProfilePicture(profilePicture);
+        user.setProfilePicture(profilePictureOrDefault(profilePicture));
         user.setBio(bio);
         
         return userRepository.save(user);
@@ -136,7 +162,7 @@ public class UserService {
         if (phone != null) user.setPhone(phone);
         if (birthDate != null) user.setBirthDate(birthDate);
         if (emergencyContact != null) user.setEmergencyContact(emergencyContact);
-        if (profilePicture != null) user.setProfilePicture(profilePicture);
+        if (profilePicture != null) user.setProfilePicture(profilePictureOrDefault(profilePicture));
         if (bio != null) user.setBio(bio);
         
         return userRepository.save(user);
@@ -158,14 +184,151 @@ public class UserService {
 
     public User updateProfileImage(Long id, String email, String profilePicture) {
         User user = getUserById(id);
-        if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new ForbiddenException("User kann nur sein eigenes Profilbild bearbeiten.");
-        }
-        user.setProfilePicture(profilePicture);
+        assertOwnProfileImage(user, email);
+        user.setProfilePicture(profilePictureOrDefault(profilePicture));
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public User uploadProfileImage(Long id, String email, MultipartFile image) {
+        User user = getUserById(id);
+        assertOwnProfileImage(user, email);
+
+        byte[] imageBytes = validateAndReadProfileImage(image);
+        String extension = extractExtension(image.getOriginalFilename());
+        if (!ALLOWED_PROFILE_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Nur JPEG, PNG, GIF, WebP und BMP Dateien sind erlaubt.");
+        }
+
+        Path uploadDirectory = profileUploadDirectory();
+        String filename = "user-" + user.getId() + "-" + UUID.randomUUID() + extension;
+        Path target = uploadDirectory.resolve(filename).normalize();
+        if (!target.startsWith(uploadDirectory)) {
+            throw new IllegalArgumentException("Ungueltiger Dateiname.");
+        }
+
+        try {
+            Files.createDirectories(uploadDirectory);
+            Files.write(target, imageBytes);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Bild konnte nicht gespeichert werden.");
+        }
+
+        String oldProfilePicture = user.getProfilePicture();
+        user.setProfilePicture(PROFILE_UPLOAD_PUBLIC_PREFIX + filename);
+
+        try {
+            User saved = userRepository.save(user);
+            deleteUploadedProfileImageIfPresent(oldProfilePicture);
+            return saved;
+        } catch (RuntimeException e) {
+            deleteFileBestEffort(target);
+            throw e;
+        }
+    }
+
+    @Transactional
+    public User deleteProfileImage(Long id, String email) {
+        User user = getUserById(id);
+        assertOwnProfileImage(user, email);
+
+        String oldProfilePicture = user.getProfilePicture();
+        user.setProfilePicture(DEFAULT_PROFILE_PICTURE);
+        User saved = userRepository.save(user);
+        deleteUploadedProfileImageIfPresent(oldProfilePicture);
+        return saved;
     }
 
     private String normalizeBlank(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private void assertOwnProfileImage(User user, String email) {
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new ForbiddenException("User kann nur sein eigenes Profilbild bearbeiten.");
+        }
+    }
+
+    private String profilePictureOrDefault(String profilePicture) {
+        if (profilePicture == null || profilePicture.isBlank()) {
+            return DEFAULT_PROFILE_PICTURE;
+        }
+
+        String trimmed = profilePicture.trim();
+        return LEGACY_FAVICON_PROFILE_PICTURE.equals(trimmed) ? DEFAULT_PROFILE_PICTURE : trimmed;
+    }
+
+    private byte[] validateAndReadProfileImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("Bitte ein Bild hochladen.");
+        }
+        String contentType = image.getContentType();
+        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            throw new IllegalArgumentException("Nur Bilddateien sind erlaubt.");
+        }
+
+        byte[] imageBytes;
+        try {
+            imageBytes = image.getBytes();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Bild konnte nicht gelesen werden.");
+        }
+
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage bufferedImage = ImageIO.read(inputStream);
+            if (bufferedImage == null) {
+                throw new IllegalArgumentException("Die Datei ist kein gueltiges Bild.");
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Die Datei ist kein gueltiges Bild.");
+        }
+
+        return imageBytes;
+    }
+
+    private String extractExtension(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return ".bin";
+        }
+        int index = originalFilename.lastIndexOf('.');
+        if (index < 0 || index == originalFilename.length() - 1) {
+            return ".bin";
+        }
+        String raw = originalFilename.substring(index).toLowerCase();
+        if (raw.length() > 10 || !raw.matches("\\.[a-z0-9]+")) {
+            return ".bin";
+        }
+        return raw;
+    }
+
+    private Path profileUploadDirectory() {
+        return uploadRoot.resolve(PROFILE_UPLOAD_DIRECTORY).normalize();
+    }
+
+    private void deleteUploadedProfileImageIfPresent(String profilePicture) {
+        if (profilePicture == null || !profilePicture.startsWith(PROFILE_UPLOAD_PUBLIC_PREFIX)) {
+            return;
+        }
+
+        String filename = profilePicture.substring(PROFILE_UPLOAD_PUBLIC_PREFIX.length());
+        if (filename.isBlank()) {
+            return;
+        }
+
+        Path uploadDirectory = profileUploadDirectory();
+        Path target = uploadDirectory.resolve(filename).normalize();
+        if (!target.startsWith(uploadDirectory)) {
+            return;
+        }
+
+        deleteFileBestEffort(target);
+    }
+
+    private void deleteFileBestEffort(Path target) {
+        try {
+            Files.deleteIfExists(target);
+        } catch (IOException ignored) {
+            // Alte Upload-Dateien sind optionales Cleanup und sollen den API-Flow nicht blockieren.
+        }
     }
 }

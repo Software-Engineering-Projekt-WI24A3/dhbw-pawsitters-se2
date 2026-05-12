@@ -246,7 +246,7 @@ paths:
       operationId: uploadUserProfileImage
       tags: [Users]
       summary: Profilbild hochladen
-      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`.
+      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`. Erlaubt sind gueltige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien.
       parameters:
         - $ref: "#/components/parameters/IdPath"
       requestBody:
@@ -271,6 +271,24 @@ paths:
                 $ref: "#/components/schemas/UserApiResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteUserProfileImage
+      tags: [Users]
+      summary: Eigenes Profilbild loeschen
+      description: Entfernt ein eigenes Upload-Bild best-effort und setzt `profilePicture` auf das feste Pawsitters-Placeholder-Bild zurueck.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Profilbild geloescht bzw. auf Placeholder zurueckgesetzt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApiResponse"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -728,7 +746,7 @@ components:
           format: password
     RegisterRequest:
       type: object
-      required: [email, password, firstName, lastName, phone, birthDate, emergencyContact, profilePicture, bio, role]
+      required: [email, password, firstName, lastName, phone, birthDate, emergencyContact, bio, role]
       properties:
         email:
           type: string
@@ -752,6 +770,7 @@ components:
           type: string
         profilePicture:
           type: string
+          description: Optional. Wenn leer oder nicht gesetzt, nutzt das Backend das feste Pawsitters-Placeholder-Bild.
         bio:
           type: string
         role:
@@ -1089,7 +1108,7 @@ components:
           phone: "+49 123 456789"
           birthDate: "1990-05-15"
           emergencyContact: "+49 987 654321"
-          profilePicture: max.png
+          profilePicture: /uploads/profiles/user-1-3f7a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c.png
           bio: Ich liebe Haustiere.
           rating: 0.0
           numberOfRatings: 0

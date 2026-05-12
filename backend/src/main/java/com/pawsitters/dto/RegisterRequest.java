@@ -21,7 +21,7 @@ public record RegisterRequest(
         @NotBlank String phone,
         @NotNull @Past LocalDate birthDate,
         @NotBlank String emergencyContact,
-        @NotBlank String profilePicture,
+        String profilePicture,
         @NotBlank String bio,
         @NotNull UserRole role,
         @Pattern(regexp = "\\d{5}", message = "postalCode muss aus 5 Ziffern bestehen") String postalCode,
