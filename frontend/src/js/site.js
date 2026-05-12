@@ -1458,6 +1458,79 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
     return normalized.slice(0, 60);
 }
 
+function normalizeCitySearchOption(value, locale = document.documentElement.lang || 'de') {
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    const source = value;
+    const cityName = typeof source.cityName === 'string'
+        ? source.cityName.trim()
+        : (typeof source.name === 'string' ? source.name.trim() : '');
+    if (!cityName) {
+        return null;
+    }
+
+    const regionName = typeof source.regionName === 'string'
+        ? source.regionName.trim()
+        : (typeof source.admin1 === 'string' ? source.admin1.trim() : '');
+    const countryCode = normalizeCountryCode(source.countryCode ?? source.country_code);
+    const sourceCountryName = typeof source.countryName === 'string'
+        ? source.countryName.trim()
+        : (typeof source.country === 'string' ? source.country.trim() : '');
+    const countryName = sourceCountryName || resolveCountryName(countryCode, locale);
+    const postalCode = normalizePostalCode(source.postalCode ?? source.postcode ?? source.postal_code ?? '');
+    const latitude = Number(source.latitude);
+    const longitude = Number(source.longitude);
+    const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+
+    const providedFlagPath = typeof source.flagPath === 'string' ? source.flagPath.trim() : '';
+    const fallbackFlagPath = countryCode
+        ? `/assets/media/country-flag/${countryCodeToFlagFileName(countryCode)}`
+        : '';
+    const flagPath = providedFlagPath || fallbackFlagPath;
+
+    const fallbackLabel = [cityName, countryName || countryCode].filter(Boolean).join(', ');
+    const label = typeof source.label === 'string' && source.label.trim()
+        ? source.label.trim()
+        : fallbackLabel;
+    if (!label) {
+        return null;
+    }
+
+    const searchName = typeof source.searchName === 'string' && source.searchName.trim()
+        ? source.searchName.trim().toLowerCase()
+        : [cityName, regionName, countryName, countryCode].filter(Boolean).join(' ').toLowerCase();
+
+    const fallbackId = [
+        cityName,
+        regionName,
+        countryCode,
+        hasCoordinates ? latitude.toFixed(3) : '',
+        hasCoordinates ? longitude.toFixed(3) : ''
+    ].join('|');
+    const id = typeof source.id === 'string' && source.id.trim()
+        ? source.id.trim()
+        : fallbackId;
+    if (!id) {
+        return null;
+    }
+
+    return {
+        id,
+        cityName,
+        countryName: countryName || countryCode,
+        regionName,
+        countryCode,
+        postalCode,
+        flagPath,
+        label,
+        searchName,
+        latitude: hasCoordinates ? latitude : null,
+        longitude: hasCoordinates ? longitude : null
+    };
+}
+
 function normalizePetChoices(rawValues = []) {
     if (!Array.isArray(rawValues)) {
         return [];

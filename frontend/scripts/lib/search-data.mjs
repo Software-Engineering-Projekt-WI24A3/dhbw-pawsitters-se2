@@ -5,6 +5,11 @@ const PET_CHOICE_ENUM_PATTERN = /public\s+enum\s+PetChoice\s*\{([\s\S]*?)\}/m;
 const PET_CHOICES_FALLBACK_RELATIVE_PATH = path.join('assets', 'data', 'pet-choices.json');
 const REGIONAL_INDICATOR_A = 0x1F1E6;
 const REGIONAL_INDICATOR_Z = 0x1F1FF;
+const PHONE_COUNTRY_PREFIX_ENTRIES = [
+  { code: 'DE', dialCode: '49', name: 'Deutschland' },
+  { code: 'US', dialCode: '1', name: 'United States' },
+  { code: 'RO', dialCode: '40', name: 'Romania' }
+];
 
 function removeJavaComments(value) {
   if (typeof value !== 'string') {
@@ -306,4 +311,23 @@ export async function loadPetChoices(frontendRootDir) {
     );
     return fallbackChoices;
   }
+}
+
+export async function loadPhoneCountryPrefixEntries(frontendRootDir) {
+  const availableFlags = await loadCountryFlagEntries(frontendRootDir);
+  const flagPathByCountryCode = new Map(
+    availableFlags.map((country) => [country.code, country.flagPath])
+  );
+
+  return PHONE_COUNTRY_PREFIX_ENTRIES.map((entry) => {
+    const normalizedCode = toUpperAlphaCountryCode(entry.code);
+    const fallbackFlagPath = `/assets/media/country-flag/${countryCodeToFlagFileName(normalizedCode)}`;
+
+    return {
+      code: normalizedCode,
+      dialCode: String(entry.dialCode).trim(),
+      name: String(entry.name || '').trim(),
+      flagPath: flagPathByCountryCode.get(normalizedCode) || fallbackFlagPath
+    };
+  }).filter((entry) => entry.code && entry.dialCode);
 }
