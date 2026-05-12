@@ -265,6 +265,9 @@ class UserIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.profilePicture", startsWith("/uploads/profiles/")));
+    }
+
+    @Test
     void registrationWithoutProfilePictureUsesDefaultPlaceholder() throws Exception {
         String email = "user.placeholder." + UUID.randomUUID() + "@test.de";
         Map<String, Object> payload = buildRegisterPayload(email, "StrongPhrase123!");

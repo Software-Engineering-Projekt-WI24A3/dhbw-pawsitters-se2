@@ -5951,7 +5951,10 @@ createApp({
         },
         validateRegisterProfileStep() {
             let phoneCountryCode = normalizeCountryCode(this.registerPhoneCountryCode);
-            const phone = normalizePhoneNumberDigits(this.registerPhone);
+            const rawPhoneInput = typeof this.registerPhone === 'string'
+                ? this.registerPhone.trim()
+                : '';
+            let phone = normalizePhoneNumberDigits(rawPhoneInput);
             const birthDate = normalizeDateInputValue(this.registerBirthDate);
             const emergencyContact = typeof this.registerEmergencyContact === 'string'
                 ? this.registerEmergencyContact.trim()
@@ -5966,6 +5969,14 @@ createApp({
             const birthDateObject = parseDateInputValue(birthDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+
+            if (rawPhoneInput.startsWith('+') || rawPhoneInput.startsWith('00')) {
+                const parsedPhone = this.parsePhoneWithCountryCode(rawPhoneInput);
+                if (parsedPhone && this.findPhoneCountryOptionByCode(parsedPhone.countryCode)) {
+                    phoneCountryCode = parsedPhone.countryCode;
+                    phone = normalizePhoneNumberDigits(parsedPhone.localNumber);
+                }
+            }
 
             if (!this.findPhoneCountryOptionByCode(phoneCountryCode)) {
                 phoneCountryCode = this.getPreferredPhoneCountryCode();

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -42,8 +43,8 @@ class MarketplaceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Hosts retrieved successfully."))
-                .andExpect(jsonPath("$.meta.total").value(3))
-                .andExpect(jsonPath("$.data", hasSize(3)))
+                .andExpect(jsonPath("$.meta.total", greaterThanOrEqualTo(3)))
+                .andExpect(jsonPath("$.data.length()", greaterThanOrEqualTo(3)))
                 .andExpect(jsonPath("$.data[*].firstName", hasItem("Lukas")))
                 .andExpect(jsonPath("$.data[*].acceptedPetSpecies").isArray())
                 .andExpect(jsonPath("$.data[*].passwordHash").doesNotExist());

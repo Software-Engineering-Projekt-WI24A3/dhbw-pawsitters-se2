@@ -110,7 +110,7 @@ public class UserService {
         String normalizedLastName = normalizeRequiredText("Nachname", lastName);
         String normalizedPhone = normalizeRequiredText("Telefonnummer", phone);
         String normalizedEmergencyContact = normalizeRequiredText("Notfallkontakt", emergencyContact);
-        String normalizedProfilePicture = normalizeRequiredText("Profilbild", profilePicture);
+        String normalizedProfilePicture = profilePictureOrDefault(profilePicture);
         String normalizedBio = normalizeRequiredText("Biografie", bio);
         String encodedPassword = encodeValidatedPassword(
                 rawPassword,
@@ -129,9 +129,6 @@ public class UserService {
         user.setEmergencyContact(normalizedEmergencyContact);
         user.setProfilePicture(normalizedProfilePicture);
         user.setBio(normalizedBio);
-        user.setEmergencyContact(emergencyContact);
-        user.setProfilePicture(profilePictureOrDefault(profilePicture));
-        user.setBio(bio);
         user.setRating(0f);
         user.setNumberOfRatings(0);
         user.setRole(role);
@@ -213,16 +210,12 @@ public class UserService {
         user.setPhone(normalizedPhone);
         user.setBirthDate(birthDate);
         user.setEmergencyContact(normalizedEmergencyContact);
-        user.setProfilePicture(normalizedProfilePicture);
+        user.setProfilePicture(profilePictureOrDefault(normalizedProfilePicture));
         user.setBio(normalizedBio);
         user.setRole(resolvedRole);
         user.setPostalCode(normalizeBlank(postalCode));
         user.setCity(normalizeBlank(city));
         user.setAcceptedPetSpecies(acceptedPetSpecies);
-
-        user.setEmergencyContact(emergencyContact);
-        user.setProfilePicture(profilePictureOrDefault(profilePicture));
-        user.setBio(bio);
         
         return userRepository.save(user);
     }
@@ -271,16 +264,12 @@ public class UserService {
         if (phone != null) user.setPhone(normalizeRequiredText("Telefonnummer", phone));
         if (birthDate != null) user.setBirthDate(birthDate);
         if (emergencyContact != null) user.setEmergencyContact(normalizeRequiredText("Notfallkontakt", emergencyContact));
-        if (profilePicture != null) user.setProfilePicture(normalizeRequiredText("Profilbild", profilePicture));
+        if (profilePicture != null) user.setProfilePicture(profilePictureOrDefault(normalizeRequiredText("Profilbild", profilePicture)));
         if (bio != null) user.setBio(normalizeRequiredText("Biografie", bio));
         if (role != null) user.setRole(resolveSelfManagedRole(user, role));
         if (postalCode != null) user.setPostalCode(normalizeBlank(postalCode));
         if (city != null) user.setCity(normalizeBlank(city));
         if (acceptedPetSpecies != null) user.setAcceptedPetSpecies(acceptedPetSpecies);
-
-        if (emergencyContact != null) user.setEmergencyContact(emergencyContact);
-        if (profilePicture != null) user.setProfilePicture(profilePictureOrDefault(profilePicture));
-        if (bio != null) user.setBio(bio);
         
         return userRepository.save(user);
     }
@@ -389,6 +378,8 @@ public class UserService {
             throw new ForbiddenException("Die Rolle ADMIN kann nur über den Admin-Endpunkt gesetzt werden.");
         }
         return requestedRole;
+    }
+
     private void assertOwnProfileImage(User user, String email) {
         if (!user.getEmail().equalsIgnoreCase(email)) {
             throw new ForbiddenException("User kann nur sein eigenes Profilbild bearbeiten.");
