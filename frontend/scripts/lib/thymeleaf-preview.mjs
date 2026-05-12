@@ -2,7 +2,7 @@ import { load } from 'cheerio';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { loadRepositorySnapshot, localizeRepositorySnapshot } from './repository-snapshot.mjs';
-import { loadCountryFlagEntries, loadPetChoices } from './search-data.mjs';
+import { loadCountryFlagEntries, loadPetChoices, loadPhoneCountryPrefixEntries } from './search-data.mjs';
 
 export const supportedLocales = ['de', 'en', 'ro'];
 export const defaultLocale = 'de';
@@ -1136,9 +1136,10 @@ async function copyDirectoryIfExists(rootDir, fromRelativePath, toRelativePath) 
 }
 
 async function writeSearchDataAssets(rootDir) {
-  const [countries, petChoices] = await Promise.all([
+  const [countries, petChoices, phoneCountryPrefixes] = await Promise.all([
     loadCountryFlagEntries(rootDir),
-    loadPetChoices(rootDir)
+    loadPetChoices(rootDir),
+    loadPhoneCountryPrefixEntries(rootDir)
   ]);
   const dataDirectory = resolveBuildOutputPath(rootDir, path.join('assets', 'data'));
 
@@ -1151,6 +1152,11 @@ async function writeSearchDataAssets(rootDir) {
   await fs.writeFile(
     path.join(dataDirectory, 'pet-choices.json'),
     `${JSON.stringify({ choices: petChoices }, null, 2)}\n`,
+    'utf8'
+  );
+  await fs.writeFile(
+    path.join(dataDirectory, 'country-phone-prefixes.json'),
+    `${JSON.stringify({ countries: phoneCountryPrefixes }, null, 2)}\n`,
     'utf8'
   );
 }
