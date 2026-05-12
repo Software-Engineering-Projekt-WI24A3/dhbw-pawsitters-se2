@@ -119,7 +119,7 @@ test.describe('Authentication flows', () => {
       password: 'SicheresKonto987654!',
       firstName: 'Anna',
       lastName: 'Musterfrau',
-      phone: '+4915112345678',
+      phone: '+49 15112345678',
       birthDate: '1990-01-01',
       emergencyContact: 'Notfallkontakt',
       profilePicture: '/assets/media/favicon.png',

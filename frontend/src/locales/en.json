@@ -12,10 +12,6 @@
       "title": "Pawsitters | Repository | Playwright Tests",
       "description": "Playwright control room with browser-triggered runs, live logs, and per-test status."
     },
-    "repositoryApi": {
-      "title": "Pawsitters | Repository | API Overview",
-      "description": "Dynamic API overview from the OpenAPI file with endpoints, methods, and response codes."
-    },
     "repositoryKanban": {
       "title": "Pawsitters | Repository | Kanban",
       "description": "Reduced kanban page with color-coded owners and issue details."
@@ -35,6 +31,10 @@
     "profile": {
       "title": "Pawsitters | Public Profile",
       "description": "Public profile page with hero banner, avatar, and personal details."
+    },
+    "settings": {
+      "title": "Pawsitters | Settings",
+      "description": "Protected settings area for editing your profile information."
     }
   },
   "brand": {
@@ -60,20 +60,26 @@
   "nav": {
     "ariaRepository": "Repository navigation",
     "repository": "Repository",
+    "pawsitters": "PAWSITTERS",
     "repositoryGit": "Git",
     "repositoryPlaywright": "Playwright",
-    "repositoryApi": "API Overview",
     "repositoryBoard": "Kanban Board",
+    "userSearch": "Find users",
     "ariaLocale": "Locale switcher",
+    "localeSelection": "Language Selection",
     "ariaQuickMenu": "Quick menu",
     "openQuickMenu": "Open quick menu",
     "ariaUserMenu": "User menu",
     "openUserMenu": "Open user menu",
     "profile": "View profile",
+    "settings": "Settings",
     "logout": "Sign out",
     "login": "Sign in",
     "menu": "Menu",
     "close": "Close menu"
+  },
+  "notifications": {
+    "dismissAria": "Dismiss notification"
   },
   "header": {
     "tabs": {
@@ -140,23 +146,6 @@
         "year": "This year"
       },
       "recent": "Latest commits"
-    },
-    "api": {
-      "label": "API Overview",
-      "source": "Source",
-      "parameters": "Parameters",
-      "responses": "Status",
-      "requestBody": "Request Body",
-      "empty": "No endpoints found.",
-      "noSummary": "No summary available.",
-      "tagFallback": "General",
-      "parseError": "OpenAPI file could not be parsed",
-      "metrics": {
-        "operations": "Endpoints",
-        "paths": "Paths",
-        "methods": "Methods",
-        "tags": "Tags"
-      }
     },
     "board": {
       "label": "Kanban Board",
@@ -229,6 +218,7 @@
       "loginFailedMessage": "Sign in could not be completed.",
       "loginSuccessTitle": "Signed in",
       "loginSuccessMessage": "You are now signed in.",
+      "loginSuccessMessageTemplate": "Hello, {fullName}! You are now signed in.",
       "emailFoundTitle": "User found",
       "emailFoundMessage": "Account found. Please enter your password.",
       "emailNotFoundTitle": "No user found",
@@ -241,6 +231,10 @@
       "eyebrow": "New appearance",
       "title": "Calm access to the most important flows.",
       "text": "The interface relies on clear typography, soft grayscale and direct orientation instead of heavy effects and blue surfaces.",
+      "genericUser": "User",
+      "greetingTemplate": "Hello, {firstName}",
+      "logoutSuccessTitle": "Logged out",
+      "logoutSuccessMessageTemplate": "You have been logged out successfully, {firstName}.",
       "point": {
         "one": "Clear readability in every section",
         "two": "Focused inputs without visual distraction",
@@ -283,6 +277,9 @@
       "confirmPassword": "Repeat password",
       "confirmPasswordPlaceholder": "Repeat password",
       "passwordHint": "Minimum 15 characters, without parts of your email or name.",
+      "phoneCountry": "Country code",
+      "phoneCountryPlaceholder": "Country and code",
+      "phoneCountryLoading": "Loading country codes",
       "phone": "Phone",
       "phonePlaceholder": "Phone",
       "birthDate": "Birth date",
@@ -315,6 +312,7 @@
       "validationPasswordMinLength": "Password must be at least 15 characters long.",
       "validationFirstNameRequired": "Please enter your first name.",
       "validationLastNameRequired": "Please enter your last name.",
+      "validationPhoneCountryRequired": "Please choose a country code.",
       "validationPhoneRequired": "Please enter a phone number.",
       "validationBirthDateRequired": "Please enter your birth date.",
       "validationBirthDatePast": "Birth date must be in the past.",
@@ -338,6 +336,7 @@
       "errorMessage": "Registration could not be completed.",
       "successTitle": "Registration successful",
       "successMessage": "Your account has been created.",
+      "successWelcomeTemplate": "Welcome, {fullName}! Your account is ready.",
       "previous": "Back",
       "next": "Next step",
       "submit": "Register",
@@ -349,17 +348,50 @@
       }
     }
   },
+  "userSearch": {
+    "modal": {
+      "close": "Close",
+      "closeAria": "Close user search",
+      "title": "Find users",
+      "inputLabel": "User ID or search term",
+      "inputPlaceholder": "ID, name, email, or city",
+      "submit": "Search",
+      "loading": "Loading users...",
+      "empty": "Enter a user ID or a search term.",
+      "invalidQuery": "Please enter a positive user ID or a search term.",
+      "notFound": "No user found for this ID.",
+      "noMatches": "No matching users found.",
+      "loadFailed": "Users could not be loaded.",
+      "errorTitle": "User search failed"
+    }
+  },
   "notFound": {
     "imageAlt": "404 illustration"
   },
   "footer": {
-    "text": "PAWSITTERS. SOFTWARE-ENGINEERING PROJEKT FÜR HAUSTIERBETREUUNGS-VERMITTLUNG."
+    "text": "",
+    "authors": {
+      "title": "Authors",
+      "niklas3852": "niklas3852",
+      "xJvstvs": "xJvstvs",
+      "Raqhael": "Raqhael"
+    },
+    "usefulLinks": {
+      "title": "Useful Links",
+      "playwright": "Playwright",
+      "git": "Git",
+      "kanbanBoard": "Kanban Board"
+    },
+    "information": {
+      "title": "Information"
+    }
   },
   "profile": {
     "page": {
       "bannerAlt": "Animal shelter thank-you banner",
       "eyebrow": "Public profile",
       "title": "Personal profile view",
+      "documentTitleTemplate": "{brand} | Profile",
       "loading": "Loading profile.",
       "authRequired": "Please sign in to view this profile.",
       "notFound": "This profile could not be found.",
@@ -374,6 +406,59 @@
         "rating": "Rating",
         "bio": "About me",
         "acceptedPets": "Accepted pet species"
+      },
+      "rating": {
+        "headingTemplate": "Reviews for {firstName} ({count})",
+        "ariaTemplate": "{rating} out of 5 stars from {count} ratings",
+        "firstNameFallback": "this profile"
+      }
+    }
+  },
+  "settings": {
+    "page": {
+      "bannerAlt": "Mountain landscape banner for settings",
+      "eyebrow": "Account settings",
+      "title": "Manage your profile",
+      "subtitle": "Edit your registration details field by field.",
+      "loading": "Loading settings.",
+      "authRequired": "Please sign in to open settings.",
+      "loadFailed": "Settings could not be loaded.",
+      "emptyValue": "—",
+      "editTitleTemplate": "Edit {field}",
+      "editAriaTemplate": "Edit {field}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "closeAria": "Close edit dialog",
+      "saveSuccessTitle": "Changes saved",
+      "saveSuccessTemplate": "{field} was updated successfully.",
+      "saveErrorTitle": "Save failed",
+      "saveErrorMessage": "Your changes could not be saved.",
+      "emailChangedTitle": "Email updated",
+      "emailChangedMessage": "Please sign in again with your new email address.",
+      "passwordChangedTitle": "Password updated",
+      "passwordChangedMessage": "Please sign in again with your new password.",
+      "passwordMasked": "************",
+      "passwordCurrentPlaceholder": "Current password",
+      "passwordNewPlaceholder": "New password",
+      "passwordConfirmPlaceholder": "Repeat new password",
+      "petHint": "Choose the pet species you want to care for.",
+      "imageUploadLabel": "Upload profile picture (optional)",
+      "imageUploadHint": "If you pick a file, it will be uploaded directly.",
+      "imageSelectedTemplate": "Selected: {name}",
+      "validation": {
+        "required": "Please fill out this field.",
+        "email": "Please enter a valid email address.",
+        "emailExists": "This email address is already in use.",
+        "birthDate": "Please enter a valid birth date in the past.",
+        "postalCode": "Postal code must contain exactly 5 digits.",
+        "phoneCountry": "Please choose a country code.",
+        "currentPasswordRequired": "Please enter your current password.",
+        "currentPasswordInvalid": "Your current password is incorrect.",
+        "newPasswordRequired": "Please enter a new password.",
+        "passwordConfirmationRequired": "Please repeat your new password.",
+        "passwordsMismatch": "Both new passwords must match.",
+        "passwordCriteriaRequired": "Please meet all password criteria.",
+        "species": "Please select at least one pet species."
       }
     }
   }

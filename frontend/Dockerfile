@@ -18,13 +18,18 @@ COPY backend/src/main/java/com/pawsitters/model/PetChoice.java ../backend/src/ma
 COPY backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml ../backend/src/main/resources/API_Calls/
 COPY README.md ../README.md
 
-RUN npm run build \
-    && mkdir -p /static \
-    && cp -r index.html 404.html assets register repository git kanban playwright api-overview 404 en ro /static/
+RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM node:22-bookworm-slim
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /static/ /usr/share/nginx/html/
+WORKDIR /app/frontend
+
+ENV PORT=80
+ENV HOST=0.0.0.0
+ENV BACKEND_ORIGIN=http://backend:8080
+
+COPY --from=build /workspace/frontend /app/frontend
 
 EXPOSE 80
+
+CMD ["node", "./scripts/serve.mjs"]

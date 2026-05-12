@@ -5,7 +5,17 @@
       th:lang="${currentLocale}">
 <head th:replace="~{fragments/head :: siteHead(${pageTitle}, ${pageDescription})}"></head>
 <body class="page_surface" th:classappend="${pageClass}">
-<div id="app-shell" class="site_frame" v-cloak>
+<div id="app-shell"
+     class="site_frame"
+     v-cloak
+     th:attr="data-auth-generic-user=#{auth.shared.genericUser},
+              data-auth-session-greeting-template=#{auth.shared.greetingTemplate},
+              data-auth-login-success-template=#{auth.modal.loginSuccessMessageTemplate},
+              data-auth-register-success-template=#{auth.register.successWelcomeTemplate},
+              data-auth-logout-success-title=#{auth.shared.logoutSuccessTitle},
+              data-auth-logout-success-template=#{auth.shared.logoutSuccessMessageTemplate},
+              data-profile-document-title-template=#{profile.page.documentTitleTemplate},
+              data-notification-dismiss-aria=#{notifications.dismissAria}">
     <transition-group name="site_notification_stack"
                       tag="div"
                       class="site_notifications"
@@ -15,7 +25,15 @@
                  :key="notification.id"
                  class="site_notification"
                  :class="'site_notification--' + notification.tone"
-                 :role="notification.tone === 'warning' ? 'alert' : 'status'">
+                 :role="notification.tone === 'error' ? 'alert' : 'status'">
+            <button type="button"
+                    class="site_notification__dismiss"
+                    :aria-label="notificationDismissAria"
+                    @click="removeNotification(notification.id)">
+                <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                    <path d="M5 5 15 15M15 5 5 15"></path>
+                </svg>
+            </button>
             <p class="site_notification__title" v-text="notification.title"></p>
             <p v-if="notification.message"
                class="site_notification__message"
@@ -105,29 +123,491 @@
         </div>
     </transition>
 
+    <transition name="auth_modal_presence">
+        <div v-if="userSearchModalOpen"
+             class="auth_modal user_search_modal"
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeUserSearchModal()">
+            <article class="auth_modal__surface user_search_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        @click="closeUserSearchModal()"
+                        th:attr="aria-label=#{userSearch.modal.closeAria}">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" th:text="#{userSearch.modal.close}">userSearch.modal.close</span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/1F50D.svg}"
+                             src="/assets/media/1F50D.svg"
+                             alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title user_search_modal__title" th:text="#{userSearch.modal.title}">userSearch.modal.title</h2>
+
+                <form class="user_search_modal__form"
+                      novalidate
+                      @submit.prevent="handleUserSearchSubmit"
+                      th:attr="data-user-search-invalid-query=#{userSearch.modal.invalidQuery},
+                               data-user-search-load-failed=#{userSearch.modal.loadFailed},
+                               data-user-search-not-found=#{userSearch.modal.notFound},
+                               data-user-search-no-matches=#{userSearch.modal.noMatches},
+                               data-user-search-loading=#{userSearch.modal.loading},
+                               data-user-search-empty=#{userSearch.modal.empty},
+                               data-user-search-error-title=#{userSearch.modal.errorTitle}">
+                    <label class="corp_field user_search_modal__field">
+                        <span class="sr-only" th:text="#{userSearch.modal.inputLabel}">userSearch.modal.inputLabel</span>
+                        <input class="corp_input"
+                               type="search"
+                               autocomplete="off"
+                               data-user-search-input
+                               v-model="userSearchQuery"
+                               th:attr="aria-label=#{userSearch.modal.inputLabel},placeholder=#{userSearch.modal.inputPlaceholder}">
+                        <span class="corp_field__label"
+                              th:text="#{userSearch.modal.inputPlaceholder}">userSearch.modal.inputPlaceholder</span>
+                    </label>
+                    <button class="button auth_modal__submit"
+                            :disabled="userSearchLoading"
+                            type="submit"
+                            th:text="#{userSearch.modal.submit}">userSearch.modal.submit</button>
+                </form>
+
+                <div v-if="userSearchLoading && showUserSearchLoadingDots"
+                     class="user_search_modal__loading"
+                     role="status"
+                     aria-live="polite">
+                    <span class="repository_live_loading__dots" aria-hidden="true">
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                    </span>
+                    <p class="repository_live_loading__text" v-text="userSearchStatusMessage"></p>
+                </div>
+                <p v-else-if="userSearchLoading"
+                   class="user_search_modal__status"
+                   v-text="userSearchStatusMessage"></p>
+
+                <p v-if="!userSearchLoading && userSearchStatusMessage"
+                   class="user_search_modal__status"
+                   :class="{ 'user_search_modal__status--error': userSearchStatusTone === 'error' }"
+                   v-text="userSearchStatusMessage"></p>
+
+                <ul v-if="userSearchResults.length" class="user_search_modal__results">
+                    <li v-for="user in userSearchResults" :key="'search-user-' + user.id">
+                        <a class="user_search_modal__result"
+                           :href="buildProfilePath(user.id)"
+                           @click="closeUserSearchModal()">
+                            <span class="user_search_modal__avatar" aria-hidden="true">
+                                <img v-if="user.profilePicture"
+                                     class="user_search_modal__avatar-image"
+                                     :src="user.profilePicture"
+                                     alt=""
+                                     loading="lazy"
+                                     decoding="async"
+                                     @error="handleUserSearchAvatarError(user)">
+                                <span v-else v-text="user.initial"></span>
+                            </span>
+                            <span class="user_search_modal__copy">
+                                <span class="user_search_modal__name" v-text="user.displayName"></span>
+                                <span class="user_search_modal__meta" v-text="user.email"></span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </article>
+        </div>
+    </transition>
+
+    <transition name="auth_modal_presence">
+        <div v-if="settingsEditModalOpen"
+             class="auth_modal settings_edit_modal"
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeSettingsEditModal()">
+            <article class="auth_modal__surface settings_edit_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        @click="closeSettingsEditModal()"
+                        :aria-label="settingsStrings.closeAria">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" v-text="settingsStrings.closeAria"></span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/2699.svg}"
+                             src="/assets/media/2699.svg"
+                             alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title settings_edit_modal__title" v-text="settingsEditModalTitle"></h2>
+
+                <form class="auth_modal__form settings_edit_modal__form"
+                      novalidate
+                      @submit.prevent="submitSettingsEditForm">
+                    <label v-if="settingsEditField !== 'acceptedPetSpecies' && settingsEditField !== 'role' && settingsEditField !== 'password' && settingsEditField !== 'birthDate' && settingsEditField !== 'phone' && settingsEditField !== 'city'"
+                           class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="settingsEditModalTitle"></span>
+                        <input class="auth_input corp_input"
+                               data-settings-edit-input
+                               :type="settingsEditInputType"
+                               autocomplete="off"
+                               v-model="settingsEditValue"
+                               :aria-label="settingsEditModalTitle"
+                               :placeholder="settingsEditPlaceholder">
+                        <span class="auth_field__label corp_field__label" v-text="settingsEditPlaceholder"></span>
+                    </label>
+
+                    <div v-if="settingsEditField === 'phone'" class="phone_compound settings_edit_modal__phone">
+                        <label class="auth_field corp_field settings_edit_modal__field phone_compound__country">
+                            <span class="sr-only" v-text="settingsStrings.labels.phoneCountry"></span>
+                            <details class="phone_country_menu"
+                                     :data-dropdown-disabled="phoneCountryOptionsLoading ? 'true' : 'false'">
+                                <summary class="auth_input corp_input corp_input--select phone_country_menu__summary"
+                                         role="button"
+                                         :aria-label="settingsStrings.labels.phoneCountry">
+                                    <img v-if="settingsPhoneCountryOption && settingsPhoneCountryOption.flagPath"
+                                         class="phone_country_menu__flag"
+                                         :src="settingsPhoneCountryOption.flagPath"
+                                         :alt="settingsPhoneCountryOption.displayName">
+                                    <span v-else class="phone_country_menu__flag phone_country_menu__flag--placeholder" aria-hidden="true"></span>
+                                    <span class="phone_country_menu__dial"
+                                          v-text="settingsPhoneCountryOption && settingsPhoneCountryOption.dialCode ? settingsPhoneCountryOption.dialCode : ''"></span>
+                                </summary>
+                                <div class="phone_country_menu__panel"
+                                     role="listbox"
+                                     :aria-label="settingsStrings.labels.phoneCountry">
+                                    <button v-for="option in phoneCountryOptions"
+                                            :key="'settings-phone-country-' + option.code"
+                                            type="button"
+                                            class="phone_country_menu__option"
+                                            role="option"
+                                            :aria-selected="option.code === settingsPhoneCountryCode"
+                                            :class="{ 'phone_country_menu__option--active': option.code === settingsPhoneCountryCode }"
+                                            @click.prevent="selectPhoneCountryCode('settings', option.code, $event)">
+                                        <img v-if="option.flagPath"
+                                             class="phone_country_menu__flag"
+                                             :src="option.flagPath"
+                                             :alt="option.displayName">
+                                        <span v-else class="phone_country_menu__flag phone_country_menu__flag--placeholder" aria-hidden="true"></span>
+                                        <span class="phone_country_menu__option-dial" v-text="option.dialCode"></span>
+                                        <span class="phone_country_menu__option-name" v-text="option.displayName"></span>
+                                    </button>
+                                </div>
+                            </details>
+                            <span class="auth_field__label corp_field__label" v-text="settingsStrings.placeholders.phoneCountry"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field phone_compound__number">
+                            <span class="sr-only" v-text="settingsEditModalTitle"></span>
+                            <input class="auth_input corp_input"
+                                   data-settings-edit-input
+                                   data-settings-edit-phone-number
+                                   type="tel"
+                                   autocomplete="tel-local"
+                                   v-model="settingsEditValue"
+                                   :aria-label="settingsEditModalTitle"
+                                   :placeholder="settingsEditPlaceholder">
+                            <span class="auth_field__label corp_field__label" v-text="settingsEditPlaceholder"></span>
+                        </label>
+                    </div>
+
+                    <div v-if="settingsEditField === 'city'" class="register_city_picker settings_edit_modal__city">
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="settingsStrings.labels.city"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   data-settings-edit-city-input
+                                   v-model="settingsCityQuery"
+                                   @input="handleSettingsCityInput"
+                                   :aria-label="settingsStrings.labels.city"
+                                   :placeholder="settingsStrings.placeholders.city">
+                            <span class="auth_field__label corp_field__label" v-text="settingsStrings.placeholders.city"></span>
+                        </label>
+                        <div v-if="settingsCityOptionsLoading && showSettingsCityOptionsLoadingDots"
+                             class="register_city_picker__state register_state_loading"
+                             role="status"
+                             aria-live="polite">
+                            <span class="repository_live_loading__dots" aria-hidden="true">
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                            </span>
+                            <span class="repository_live_loading__text" v-text="settingsStrings.cityLoading"></span>
+                        </div>
+                        <div v-else-if="settingsCityOptionsLoading"
+                             class="register_city_picker__state"
+                             role="status"
+                             aria-live="polite"
+                             v-text="settingsStrings.cityLoading"></div>
+                        <div v-else-if="showSettingsCityNoResults"
+                             class="register_city_picker__state"
+                             v-text="settingsStrings.cityNoResults"></div>
+                        <div v-else-if="filteredSettingsCityOptions.length"
+                             class="register_city_picker__list"
+                             role="listbox"
+                             :aria-label="settingsStrings.cityResultsAria">
+                            <button class="register_city_picker__option"
+                                    type="button"
+                                    v-for="option in filteredSettingsCityOptions"
+                                    :key="'settings-city-option-' + option.id"
+                                    @click="selectSettingsCityOption(option)">
+                                <img v-if="option.flagPath"
+                                     class="register_city_picker__flag"
+                                     :src="option.flagPath"
+                                     :alt="option.countryName || option.countryCode || ''">
+                                <span class="register_city_picker__label" v-text="option.label"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label v-if="settingsEditField === 'role'"
+                           class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="settingsEditModalTitle"></span>
+                        <select class="auth_input corp_input corp_input--select"
+                                data-settings-edit-input
+                                v-model="settingsEditValue"
+                                :aria-label="settingsEditModalTitle">
+                            <option value="PET_OWNER" v-text="settingsStrings.rolePetOwner"></option>
+                            <option value="HOST" v-text="settingsStrings.roleHost"></option>
+                        </select>
+                        <span class="auth_field__label corp_field__label" v-text="settingsStrings.labels.role"></span>
+                    </label>
+
+                    <div v-if="settingsEditField === 'birthDate'" class="settings_edit_modal__date">
+                        <div class="header_search_date">
+                            <div class="header_search_date__toolbar">
+                                <button class="header_search_date__nav"
+                                        type="button"
+                                        @click="moveSettingsBirthDateCalendar(-1)"
+                                        th:attr="aria-label=#{header.search.date.previousMonth}">
+                                    <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                    </svg>
+                                </button>
+                                <p class="header_search_date__month" v-text="settingsBirthDateCalendarMonthLabel"></p>
+                                <button class="header_search_date__nav"
+                                        type="button"
+                                        @click="moveSettingsBirthDateCalendar(1)"
+                                        th:attr="aria-label=#{header.search.date.nextMonth}">
+                                    <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="header_search_date__weekdays" aria-hidden="true">
+                                <span class="header_search_date__weekday"
+                                      v-for="weekday in settingsBirthDateCalendarWeekdayLabels"
+                                      :key="'settings-weekday-' + weekday"
+                                      v-text="weekday"></span>
+                            </div>
+                            <div class="header_search_date__days" role="grid">
+                                <button class="header_search_date__day"
+                                        type="button"
+                                        v-for="day in settingsBirthDateCalendarDays"
+                                        :key="'settings-day-' + day.iso"
+                                        :class="{
+                                            'header_search_date__day--outside': !day.isCurrentMonth,
+                                            'header_search_date__day--today': day.isToday,
+                                            'header_search_date__day--range': day.isInRange,
+                                            'header_search_date__day--start': day.isSelectedStart,
+                                            'header_search_date__day--end': day.isSelectedEnd,
+                                            'header_search_date__day--single': day.isSingleDaySelection
+                                        }"
+                                        :aria-label="day.ariaLabel"
+                                        :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'"
+                                        @click="selectSettingsBirthDateCalendarDay(day)">
+                                    <span v-text="day.dayNumber"></span>
+                                </button>
+                            </div>
+                            <div class="header_search_date__selection">
+                                <span class="header_search_date__selection-item">
+                                    <span class="header_search_date__selection-label" v-text="settingsStrings.labels.birthDate"></span>
+                                    <span class="header_search_date__selection-value" v-text="settingsBirthDateSelectionLabel"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="settingsEditField === 'password'" class="settings_edit_modal__password">
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="settingsStrings.placeholders.currentPassword"></span>
+                            <input class="auth_input corp_input"
+                                   data-settings-edit-input
+                                   type="password"
+                                   autocomplete="current-password"
+                                   v-model="settingsEditCurrentPassword"
+                                   :aria-label="settingsStrings.placeholders.currentPassword"
+                                   :placeholder="settingsStrings.placeholders.currentPassword">
+                            <span class="auth_field__label corp_field__label" v-text="settingsStrings.placeholders.currentPassword"></span>
+                        </label>
+
+                        <div class="register_step_separator settings_edit_modal__separator" aria-hidden="true"></div>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="settingsStrings.placeholders.newPassword"></span>
+                            <input class="auth_input corp_input"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   v-model="settingsEditNewPassword"
+                                   :aria-label="settingsStrings.placeholders.newPassword"
+                                   :placeholder="settingsStrings.placeholders.newPassword">
+                            <span class="auth_field__label corp_field__label" v-text="settingsStrings.placeholders.newPassword"></span>
+                        </label>
+
+                        <div class="register_password_criteria" role="status" aria-live="polite">
+                            <div class="register_password_criteria__item"
+                                 v-for="criterion in settingsPasswordCriteria"
+                                 :key="'settings-password-criterion-' + criterion.id"
+                                 :class="{ 'register_password_criteria__item--met': criterion.met }">
+                                <span class="register_password_criteria__dot" aria-hidden="true"></span>
+                                <span class="register_password_criteria__text" v-text="criterion.label"></span>
+                            </div>
+                        </div>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="settingsStrings.placeholders.confirmPassword"></span>
+                            <input class="auth_input corp_input"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   v-model="settingsEditPasswordConfirmation"
+                                   :aria-label="settingsStrings.placeholders.confirmPassword"
+                                   :placeholder="settingsStrings.placeholders.confirmPassword">
+                            <span class="auth_field__label corp_field__label" v-text="settingsStrings.placeholders.confirmPassword"></span>
+                        </label>
+                    </div>
+
+                    <div v-if="settingsEditField === 'acceptedPetSpecies'" class="settings_edit_modal__species">
+                        <p class="settings_edit_modal__species-hint" v-text="settingsStrings.petHint"></p>
+                        <div class="register_pet_grid settings_edit_modal__species-grid">
+                            <button class="register_pet_chip"
+                                    type="button"
+                                    v-for="choice in settingsPetChoiceOptions"
+                                    :key="'settings-species-' + choice.value"
+                                    :class="{ 'register_pet_chip--active': isSettingsEditSpeciesSelected(choice.value) }"
+                                    @click="toggleSettingsEditSpecies(choice.value)">
+                                <img class="register_pet_chip__icon" :src="choice.emojiPath" :alt="choice.label">
+                                <span class="register_pet_chip__label" v-text="choice.label"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="settingsEditField === 'profilePicture'" class="settings_edit_modal__upload">
+                        <label class="settings_edit_modal__upload-label" v-text="settingsStrings.imageUploadLabel"></label>
+                        <input class="settings_edit_modal__upload-input"
+                               type="file"
+                               accept="image/*"
+                               @change="handleSettingsProfileImageSelection">
+                        <p class="settings_edit_modal__upload-hint" v-text="settingsProfileImageSelectionLabel"></p>
+                    </div>
+
+                    <div class="settings_edit_modal__actions">
+                        <button class="button auth_modal__submit settings_edit_modal__save"
+                                :disabled="settingsEditSaving"
+                                type="submit"
+                                v-text="settingsStrings.modalSave"></button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </transition>
+
     <main id="main-content" class="main_container site_main">
         <th:block th:replace="${mainContent}"></th:block>
     </main>
 
     <footer class="main_container site_footer">
-        <div class="site_footer__windows" aria-hidden="true">
-            <figure class="site_footer__window">
-                <img class="site_footer__window-image"
-                     src="https://image.geo.de/30115200/t/56/v4/w1440/r0/-/meerschweinchen-als-haustier-c-4324176-jpg--64241-.jpg"
-                     alt="" aria-hidden="true">
-            </figure>
-            <figure class="site_footer__window">
-                <img class="site_footer__window-image"
-                     src="https://www.naturavetal.de/media/cache/images/category_header/05-infoseiten/03-gesund-fuettern/gesunder-golden-retriever-junghund-im-wald-hf.jpg"
-                     alt="" aria-hidden="true">
-            </figure>
-            <figure class="site_footer__window">
-                <img class="site_footer__window-image"
-                     src="https://media.4-paws.org/a/2/0/2/a20271f7527a90ae9ef69e5537e56178dd64d04d/595521809-huge-2001x2000-720x720.jpg"
-                     alt="" aria-hidden="true">
-            </figure>
+        <div class="site_footer__content">
+            <section class="site_footer__column" aria-labelledby="footer-authors-heading">
+                <h2 id="footer-authors-heading" class="site_footer__heading" th:text="#{footer.authors.title}">footer.authors.title</h2>
+                <ul class="site_footer__links">
+                    <li>
+                        <a class="site_footer__link"
+                           href="https://github.com/niklas3852"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img class="site_footer__link-icon"
+                                 src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/github-copilot-icon.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.authors.niklas3852}">footer.authors.niklas3852</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site_footer__link"
+                           href="https://github.com/xJvstvs"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img class="site_footer__link-icon"
+                                 src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/github-copilot-icon.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.authors.xJvstvs}">footer.authors.xJvstvs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site_footer__link"
+                           href="https://github.com/Raqhael"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img class="site_footer__link-icon"
+                                 src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/github-copilot-icon.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.authors.Raqhael}">footer.authors.Raqhael</span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="site_footer__column" aria-labelledby="footer-links-heading">
+                <h2 id="footer-links-heading" class="site_footer__heading" th:text="#{footer.usefulLinks.title}">footer.usefulLinks.title</h2>
+                <ul class="site_footer__links">
+                    <li>
+                        <a class="site_footer__link" th:href="${repositoryPlaywrightPath}" href="/repository/playwright">
+                            <img class="site_footer__link-icon"
+                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.usefulLinks.playwright}">footer.usefulLinks.playwright</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site_footer__link" th:href="${repositoryGitPath}" href="/repository/git">
+                            <img class="site_footer__link-icon"
+                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.usefulLinks.git}">footer.usefulLinks.git</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site_footer__link" th:href="${repositoryBoardPath}" href="/repository/kanban">
+                            <img class="site_footer__link-icon"
+                                 th:src="@{/assets/media/1F4CB.svg}"
+                                 src="/assets/media/1F4CB.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span th:text="#{footer.usefulLinks.kanbanBoard}">footer.usefulLinks.kanbanBoard</span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="site_footer__column" aria-labelledby="footer-info-heading">
+                <h2 id="footer-info-heading" class="site_footer__heading" th:text="#{footer.information.title}">footer.information.title</h2>
+                <ul class="site_footer__links"></ul>
+            </section>
         </div>
-        <p class="site_footer__text" th:text="#{footer.text}">footer.text</p>
     </footer>
 </div>
 <script type="module" th:src="@{/assets/js/site.js}"></script>

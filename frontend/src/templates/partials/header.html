@@ -17,8 +17,6 @@
                         <a class="repo_menu__item"
                            th:href="${repositoryPlaywrightPath}">nav.repositoryPlaywright</a>
                         <a class="repo_menu__item"
-                           th:href="${repositoryApiPath}">nav.repositoryApi</a>
-                        <a class="repo_menu__item"
                            th:href="${repositoryGitPath}">nav.repositoryGit</a>
                         <a class="repo_menu__item"
                            th:href="${repositoryBoardPath}">nav.repositoryBoard</a>
@@ -94,7 +92,7 @@
                                        th:text="#{header.search.destination.searchHint}">
                                         header.search.destination.searchHint
                                     </p>
-                                    <div v-if="locationOptionsLoading"
+                                    <div v-if="locationOptionsLoading && showLocationOptionsLoadingDots"
                                          class="header_search_panel__loading"
                                          role="status"
                                          aria-live="polite">
@@ -105,6 +103,9 @@
                                         </span>
                                         <span class="header_search_panel__loading-text" v-text="headerSearchStrings.destinationLoading"></span>
                                     </div>
+                                    <p v-else-if="locationOptionsLoading"
+                                       class="header_search_panel__empty"
+                                       v-text="headerSearchStrings.destinationLoading"></p>
                                     <div v-else class="header_search_panel__list" role="listbox">
                                         <button class="header_search_location__item"
                                                 type="button"
@@ -211,7 +212,18 @@
                                           v-text="petDisplayValue"></span>
                                 </summary>
                                 <div class="header_search_field__panel header_search_field__panel--pet">
-                                    <p v-if="petChoicesLoading" class="header_search_panel__empty" v-text="headerSearchStrings.petLoading"></p>
+                                    <div v-if="petChoicesLoading && showPetChoicesLoadingDots"
+                                         class="header_search_panel__loading"
+                                         role="status"
+                                         aria-live="polite">
+                                        <span class="header_search_panel__loading-dots" aria-hidden="true">
+                                            <span class="header_search_panel__loading-dot"></span>
+                                            <span class="header_search_panel__loading-dot"></span>
+                                            <span class="header_search_panel__loading-dot"></span>
+                                        </span>
+                                        <span class="header_search_panel__loading-text" v-text="headerSearchStrings.petLoading"></span>
+                                    </div>
+                                    <p v-else-if="petChoicesLoading" class="header_search_panel__empty" v-text="headerSearchStrings.petLoading"></p>
                                     <p v-else-if="!petChoices.length" class="header_search_panel__empty" v-text="headerSearchStrings.petEmpty"></p>
                                     <ul v-else class="header_search_pet__list">
                                         <li class="header_search_pet__item"
@@ -265,8 +277,8 @@
                                      v-show="headerCenterTab === 'about'">
                                 <div class="header_search_about">
                                     <article class="header_search_about__content"
-                                             th:utext="${aboutProjectHtml}">
-                                        about.project.html
+                                             th:text="#{header.about.welcome}">
+                                        header.about.welcome
                                     </article>
                                 </div>
                             </section>
@@ -308,11 +320,12 @@
                         <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
                     </summary>
                     <div class="locale_menu__panel">
+                        <p class="header_quick_menu__category" th:text="#{nav.localeSelection}">nav.localeSelection</p>
                         <a th:each="localeOption : ${localeLinks}"
                            class="locale_menu__item"
                            th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
                            th:href="${localeOption.path}"
-                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
+                           th:attr="aria-current=${localeOption.active} ? 'true' : null,data-locale-code=${localeOption.code}">
                             <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
                             <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
                         </a>
@@ -336,6 +349,16 @@
                                  alt=""
                                  aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.profile}">nav.profile</span>
+                        </button>
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openCurrentUserSettings()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/2699.svg}"
+                                 src="/assets/media/2699.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.settings}">nav.settings</span>
                         </button>
                         <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
                         <button class="repo_menu__item repo_menu__item--button user_menu__logout"
@@ -362,44 +385,17 @@
                         <span class="sr-only" th:text="#{nav.openQuickMenu}">nav.openQuickMenu</span>
                     </summary>
                     <div class="repo_menu__panel header_quick_menu__panel">
-                        <p class="header_quick_menu__category" th:text="#{nav.repository}">nav.repository</p>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryPlaywrightPath}">
+                        <p class="header_quick_menu__category" th:text="#{nav.pawsitters}">nav.pawsitters</p>
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openUserSearchModal()">
                             <img class="repo_menu__item-icon"
-                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 th:src="@{/assets/media/1F50D.svg}"
+                                 src="/assets/media/1F50D.svg"
                                  alt=""
                                  aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryApi'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryApiPath}">
-                            <img class="repo_menu__item-icon"
-                                 src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryApi}">nav.repositoryApi</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryGitPath}">
-                            <img class="repo_menu__item-icon"
-                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryBoardPath}">
-                            <img class="repo_menu__item-icon"
-                                 th:src="@{/assets/media/1F4CB.svg}"
-                                 src="/assets/media/1F4CB.svg"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
-                        </a>
+                            <span class="repo_menu__item-label" th:text="#{nav.userSearch}">nav.userSearch</span>
+                        </button>
                         <span v-if="!authSessionLoggedIn" class="header_quick_menu__divider" role="separator" aria-hidden="true"></span>
                         <button class="repo_menu__item repo_menu__item--button"
                                 v-if="!authSessionLoggedIn"
@@ -423,50 +419,19 @@
             <div class="mobile_drawer__surface">
                 <details class="repo_menu repo_menu--mobile" th:unless="${currentPageKey == 'home'}" th:attr="aria-label=#{nav.ariaRepository}">
                     <summary class="repo_menu__summary">
-                        <span class="repo_menu__label" th:text="#{nav.repository}">nav.repository</span>
+                        <span class="repo_menu__label" th:text="#{nav.pawsitters}">nav.pawsitters</span>
                     </summary>
                     <div class="repo_menu__panel">
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryPlaywright'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryPlaywrightPath}"
-                           @click="closeMenu()">
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openUserSearchModalFromMenu()">
                             <img class="repo_menu__item-icon"
-                                 src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/2/playwright-y50bnthygb3rvsppvkm9e.png/playwright-q55xzpenhgjsodksybst.png?_a=DATAiZAAZAA0"
+                                 th:src="@{/assets/media/1F50D.svg}"
+                                 src="/assets/media/1F50D.svg"
                                  alt=""
                                  aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryPlaywright}">nav.repositoryPlaywright</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryApi'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryApiPath}"
-                           @click="closeMenu()">
-                            <img class="repo_menu__item-icon"
-                                 src="https://cdn-icons-png.flaticon.com/512/10169/10169724.png"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryApi}">nav.repositoryApi</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryGit'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryGitPath}"
-                           @click="closeMenu()">
-                            <img class="repo_menu__item-icon"
-                                 src="https://www.linux-magazin.de/wp-content/uploads/2026/02/Git-Icon-1788C.png"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryGit}">nav.repositoryGit</span>
-                        </a>
-                        <a class="repo_menu__item"
-                           th:classappend="${currentPageKey == 'repositoryKanban'} ? ' repo_menu__item--active' : ''"
-                           th:href="${repositoryBoardPath}"
-                           @click="closeMenu()">
-                            <img class="repo_menu__item-icon"
-                                 th:src="@{/assets/media/1F4CB.svg}"
-                                 src="/assets/media/1F4CB.svg"
-                                 alt=""
-                                 aria-hidden="true">
-                            <span class="repo_menu__item-label" th:text="#{nav.repositoryBoard}">nav.repositoryBoard</span>
-                        </a>
+                            <span class="repo_menu__item-label" th:text="#{nav.userSearch}">nav.userSearch</span>
+                        </button>
                     </div>
                 </details>
                 <details class="locale_menu locale_menu--mobile" th:attr="aria-label=#{nav.ariaLocale}">
@@ -475,12 +440,13 @@
                         <span class="locale_menu__summary-code" th:text="${currentLocaleCode}">locale.current.code</span>
                     </summary>
                     <div class="locale_menu__panel">
+                        <p class="header_quick_menu__category" th:text="#{nav.localeSelection}">nav.localeSelection</p>
                         <a th:each="localeOption : ${localeLinks}"
                            class="locale_menu__item"
                            th:classappend="${localeOption.active} ? ' locale_menu__item--active' : ''"
                            th:href="${localeOption.path}"
                            @click="closeMenu()"
-                           th:attr="aria-current=${localeOption.active} ? 'true' : null">
+                           th:attr="aria-current=${localeOption.active} ? 'true' : null,data-locale-code=${localeOption.code}">
                             <img class="locale_menu__flag locale_menu__flag--item" th:src="${localeOption.flagPath}" alt="">
                             <span class="locale_menu__item-label" th:text="${localeOption.label}">locale.option.label</span>
                         </a>

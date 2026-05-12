@@ -11,7 +11,10 @@
                       data-profile-load-failed=#{profile.page.loadFailed},
                       data-profile-route-missing=#{profile.page.routeMissing},
                       data-profile-role-pet-owner=#{auth.register.rolePetOwner},
-                      data-profile-role-host=#{auth.register.roleHost}">
+                      data-profile-role-host=#{auth.register.roleHost},
+                      data-profile-rating-heading-template=#{profile.page.rating.headingTemplate},
+                      data-profile-rating-aria-template=#{profile.page.rating.ariaTemplate},
+                      data-profile-rating-first-name-fallback=#{profile.page.rating.firstNameFallback}">
         <header class="profile_hero">
             <div class="profile_hero__media">
                 <img class="profile_hero__banner"
@@ -24,13 +27,26 @@
                 <img v-if="profileViewUser && profileViewUser.profilePicture"
                      class="profile_hero__avatar"
                      :src="profileViewUser.profilePicture"
-                     :alt="profileViewDisplayName">
+                     :alt="profileViewDisplayName"
+                     @error="handleProfileAvatarError">
                 <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="profileViewInitial"></span>
             </div>
         </header>
 
         <article class="profile_panel">
-            <p v-if="profileViewLoading"
+            <div v-if="profileViewLoading && showProfileViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="profileStrings.loading"></span>
+            </div>
+
+            <p v-else-if="profileViewLoading"
                class="profile_state profile_state--loading"
                role="status"
                aria-live="polite"
@@ -62,10 +78,6 @@
                         <dt th:text="#{profile.page.labels.location}">profile.page.labels.location</dt>
                         <dd v-text="profileViewLocationLabel"></dd>
                     </div>
-                    <div class="profile_facts__item">
-                        <dt th:text="#{profile.page.labels.rating}">profile.page.labels.rating</dt>
-                        <dd v-text="profileViewRatingLabel"></dd>
-                    </div>
                 </dl>
 
                 <section class="profile_bio" v-if="profileViewUser.bio">
@@ -73,14 +85,40 @@
                     <p class="profile_bio__text" v-text="profileViewUser.bio"></p>
                 </section>
 
-                <section class="profile_species" v-if="profileViewAcceptedPetSpeciesLabels.length">
+                <section class="profile_species" v-if="profileViewAcceptedPetSpecies.length">
                     <h3 class="profile_species__title" th:text="#{profile.page.labels.acceptedPets}">profile.page.labels.acceptedPets</h3>
                     <ul class="profile_species__list">
-                        <li v-for="speciesLabel in profileViewAcceptedPetSpeciesLabels"
-                            :key="speciesLabel"
-                            class="profile_species__chip"
-                            v-text="speciesLabel"></li>
+                        <li v-for="species in profileViewAcceptedPetSpecies"
+                            :key="species.value"
+                            class="profile_species__chip">
+                            <img class="profile_species__icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                            <span class="profile_species__label" v-text="species.label"></span>
+                        </li>
                     </ul>
+                </section>
+
+                <section class="profile_rating">
+                    <h3 class="profile_rating__title" v-text="profileViewRatingHeading"></h3>
+                    <div class="profile_rating__stars"
+                         role="img"
+                         :aria-label="profileViewRatingAriaLabel">
+                        <span v-for="(fill, index) in profileViewRatingStarFills"
+                              :key="'profile-rating-star-' + index"
+                              class="profile_rating__star"
+                              :style="{ '--profile-star-fill': (fill + '%') }"
+                              aria-hidden="true">
+                            <span class="profile_rating__star-layer profile_rating__star-layer--base">
+                                <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
+                                    <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                                </svg>
+                            </span>
+                            <span class="profile_rating__star-layer profile_rating__star-layer--fill">
+                                <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
+                                    <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                                </svg>
+                            </span>
+                        </span>
+                    </div>
                 </section>
             </div>
         </article>

@@ -1,0 +1,76 @@
+@tailwind base;
+
+@property --header-scroll-progress {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+}
+
+@layer base {
+    :root {
+        color-scheme: light;
+        --surface-base: #ffffff;
+        --surface-panel: rgba(255, 255, 255, 0.76);
+        --surface-panel-strong: rgba(255, 255, 255, 0.92);
+        --line-soft: rgba(17, 17, 19, 0.08);
+        --line-strong: rgba(17, 17, 19, 0.14);
+        --text-primary: #111114;
+        --text-secondary: rgba(17, 17, 19, 0.68);
+        --text-tertiary: rgba(17, 17, 19, 0.46);
+        --brand-corporate-green: #4b7e48;
+        --thread-line-strong: rgba(118, 189, 255, 0.24);
+        --thread-line-soft: rgba(158, 210, 255, 0.12);
+        --thread-node: rgba(130, 196, 255, 0.18);
+        --dropdown-enter-duration: 320ms;
+        --dropdown-enter-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        --dropdown-exit-duration: 90ms;
+        --dropdown-exit-ease: cubic-bezier(0.4, 0, 1, 1);
+        --dropdown-duration: 240ms;
+        --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+        --corp-modal-overlay: rgba(10, 15, 24, 0.48);
+        --corp-modal-overlay-highlight: rgba(130, 186, 255, 0.2);
+        --corp-modal-backdrop-blur: 9px;
+        --corp-modal-motion-duration: 460ms;
+        --corp-modal-motion-duration-out: 300ms;
+        --corp-modal-motion-ease: cubic-bezier(0.2, 0.9, 0.24, 1);
+        --corp-modal-motion-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+        --corp-input-motion-duration: 320ms;
+        --corp-input-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html {
+        @apply scroll-smooth;
+        scrollbar-gutter: stable;
+    }
+
+    body {
+        @apply min-h-screen bg-white font-sans text-zinc-950 antialiased;
+        background: #ffffff;
+        overflow-y: scroll;
+    }
+
+    body.body--modal-open {
+        overflow: hidden;
+    }
+
+    img {
+        @apply block max-w-full;
+    }
+
+    summary {
+        list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+
+    a {
+        color: inherit;
+    }
+
+    ::selection {
+        background: rgba(17, 17, 19, 0.14);
+        color: #111114;
+    }
+}

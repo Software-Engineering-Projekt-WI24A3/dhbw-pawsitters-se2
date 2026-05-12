@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.settings.title}, #{meta.settings.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-profile page-settings', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="profile_page settings_page"
+             data-settings-view
+             th:attr="data-settings-loading-label=#{settings.page.loading},
+                      data-settings-auth-required=#{settings.page.authRequired},
+                      data-settings-load-failed=#{settings.page.loadFailed},
+                      data-settings-empty-value=#{settings.page.emptyValue},
+                      data-settings-edit-title-template=#{settings.page.editTitleTemplate},
+                      data-settings-edit-aria-template=#{settings.page.editAriaTemplate},
+                      data-settings-modal-save=#{settings.page.save},
+                      data-settings-modal-close-aria=#{settings.page.closeAria},
+                      data-settings-save-success-title=#{settings.page.saveSuccessTitle},
+                      data-settings-save-success-template=#{settings.page.saveSuccessTemplate},
+                      data-settings-save-error-title=#{settings.page.saveErrorTitle},
+                      data-settings-save-error-message=#{settings.page.saveErrorMessage},
+                      data-settings-email-changed-title=#{settings.page.emailChangedTitle},
+                      data-settings-email-changed-message=#{settings.page.emailChangedMessage},
+                      data-settings-password-changed-title=#{settings.page.passwordChangedTitle},
+                      data-settings-password-changed-message=#{settings.page.passwordChangedMessage},
+                      data-settings-password-masked=#{settings.page.passwordMasked},
+                      data-settings-validation-required=#{settings.page.validation.required},
+                      data-settings-validation-email=#{settings.page.validation.email},
+                      data-settings-validation-email-exists=#{settings.page.validation.emailExists},
+                      data-settings-validation-birth-date=#{settings.page.validation.birthDate},
+                      data-settings-validation-postal-code=#{settings.page.validation.postalCode},
+                      data-settings-validation-city=#{auth.register.validationCityRequired},
+                      data-settings-validation-phone-country=#{settings.page.validation.phoneCountry},
+                      data-settings-validation-current-password-required=#{settings.page.validation.currentPasswordRequired},
+                      data-settings-validation-current-password-invalid=#{settings.page.validation.currentPasswordInvalid},
+                      data-settings-validation-new-password-required=#{settings.page.validation.newPasswordRequired},
+                      data-settings-validation-password-confirmation-required=#{settings.page.validation.passwordConfirmationRequired},
+                      data-settings-validation-passwords-mismatch=#{settings.page.validation.passwordsMismatch},
+                      data-settings-validation-password-criteria-required=#{settings.page.validation.passwordCriteriaRequired},
+                      data-settings-password-criteria-min-length=#{auth.register.passwordCriteria.minLength},
+                      data-settings-password-criteria-max-bytes=#{auth.register.passwordCriteria.maxBytes},
+                      data-settings-password-criteria-lowercase=#{auth.register.passwordCriteria.lowercase},
+                      data-settings-password-criteria-uppercase=#{auth.register.passwordCriteria.uppercase},
+                      data-settings-password-criteria-digit=#{auth.register.passwordCriteria.digit},
+                      data-settings-password-criteria-special=#{auth.register.passwordCriteria.special},
+                      data-settings-password-criteria-match=#{auth.register.passwordCriteria.match},
+                      data-settings-validation-species=#{settings.page.validation.species},
+                      data-settings-pet-hint=#{settings.page.petHint},
+                      data-settings-image-upload-label=#{settings.page.imageUploadLabel},
+                      data-settings-image-upload-hint=#{settings.page.imageUploadHint},
+                      data-settings-image-selected-template=#{settings.page.imageSelectedTemplate},
+                      data-settings-city-loading=#{auth.register.cityLoading},
+                      data-settings-city-no-results=#{auth.register.cityNoResults},
+                      data-settings-city-results-aria=#{auth.register.cityResultsAria},
+                      data-settings-label-first-name=#{auth.register.firstName},
+                      data-settings-label-last-name=#{auth.register.lastName},
+                      data-settings-label-email=#{auth.register.email},
+                      data-settings-label-password=#{auth.register.password},
+                      data-settings-label-phone=#{auth.register.phone},
+                      data-settings-label-birth-date=#{auth.register.birthDate},
+                      data-settings-label-emergency-contact=#{auth.register.emergencyContact},
+                      data-settings-label-profile-picture=#{auth.register.profilePicture},
+                      data-settings-label-bio=#{auth.register.bio},
+                      data-settings-label-role=#{auth.register.role},
+                      data-settings-label-phone-country=#{auth.register.phoneCountry},
+                      data-settings-label-city=#{auth.register.city},
+                      data-settings-label-postal-code=#{auth.register.postalCode},
+                      data-settings-label-accepted-pets=#{profile.page.labels.acceptedPets},
+                      data-settings-placeholder-first-name=#{auth.register.firstNamePlaceholder},
+                      data-settings-placeholder-last-name=#{auth.register.lastNamePlaceholder},
+                      data-settings-placeholder-email=#{auth.register.emailPlaceholder},
+                      data-settings-placeholder-password=#{auth.register.passwordPlaceholder},
+                      data-settings-placeholder-current-password=#{settings.page.passwordCurrentPlaceholder},
+                      data-settings-placeholder-new-password=#{settings.page.passwordNewPlaceholder},
+                      data-settings-placeholder-confirm-password=#{settings.page.passwordConfirmPlaceholder},
+                      data-settings-placeholder-phone-country=#{auth.register.phoneCountryPlaceholder},
+                      data-settings-placeholder-phone=#{auth.register.phonePlaceholder},
+                      data-settings-placeholder-birth-date=#{auth.register.birthDatePlaceholder},
+                      data-settings-placeholder-emergency-contact=#{auth.register.emergencyContactPlaceholder},
+                      data-settings-placeholder-profile-picture=#{auth.register.profilePicturePlaceholder},
+                      data-settings-placeholder-bio=#{auth.register.bioPlaceholder},
+                      data-settings-placeholder-city=#{auth.register.cityPlaceholder},
+                      data-settings-placeholder-postal-code=#{auth.register.postalCodePlaceholder},
+                      data-settings-role-pet-owner=#{auth.register.rolePetOwner},
+                      data-settings-role-host=#{auth.register.roleHost}">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner"
+                     src="https://images.photowall.com/products/52903/reflection-of-amsterdam.jpg?h=699&q=85"
+                     th:attr="alt=#{settings.page.bannerAlt}"
+                     alt="settings.page.bannerAlt">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__heading">
+                <p class="profile_hero__eyebrow" th:text="#{settings.page.eyebrow}">settings.page.eyebrow</p>
+                <h1 class="profile_hero__title" th:text="#{settings.page.title}">settings.page.title</h1>
+            </div>
+            <div class="profile_hero__avatar_ring settings_profile_avatar">
+                <div class="settings_profile_avatar__media">
+                    <img v-if="settingsViewUser && settingsViewUser.profilePicture"
+                         class="profile_hero__avatar"
+                         :src="settingsViewUser.profilePicture"
+                         :alt="settingsViewDisplayName">
+                    <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="settingsViewInitial"></span>
+                    <button class="settings_profile_avatar__edit"
+                            type="button"
+                            @click="openSettingsEditModal('profilePicture')"
+                            :aria-label="formatSettingsEditButtonAriaLabel(settingsStrings.labels.profilePicture)">
+                        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                            <path d="M3 17.75V21h3.25L18.4 8.85l-3.25-3.25L3 17.75z"></path>
+                            <path d="M14.75 6.65 18 9.9"></path>
+                        </svg>
+                        <span class="sr-only" v-text="formatSettingsEditButtonAriaLabel(settingsStrings.labels.profilePicture)"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <article class="profile_panel settings_panel">
+            <div v-if="settingsViewLoading && showSettingsViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="settingsStrings.loading"></span>
+            </div>
+
+            <p v-else-if="settingsViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="settingsStrings.loading"></p>
+
+            <p v-else-if="settingsViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="settingsViewError"></p>
+
+            <div v-else-if="settingsViewUser" class="profile_panel__content settings_panel__content">
+                <h2 class="profile_panel__name" v-text="settingsViewDisplayName"></h2>
+                <p class="profile_panel__role" v-text="settingsViewRoleLabel"></p>
+
+                <dl class="settings_facts">
+                    <div v-for="fact in settingsFactCards"
+                         :key="'settings-fact-' + fact.key"
+                         class="settings_fact"
+                         :class="{ 'settings_fact--wide': fact.wide }">
+                        <dt class="settings_fact__head">
+                            <span class="settings_fact__label" v-text="fact.label"></span>
+                            <button class="settings_fact__edit"
+                                    type="button"
+                                    @click="openSettingsEditModal(fact.key)"
+                                    :aria-label="formatSettingsEditButtonAriaLabel(fact.label)">
+                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                    <path d="M3 17.75V21h3.25L18.4 8.85l-3.25-3.25L3 17.75z"></path>
+                                    <path d="M14.75 6.65 18 9.9"></path>
+                                </svg>
+                                <span class="sr-only" v-text="formatSettingsEditButtonAriaLabel(fact.label)"></span>
+                            </button>
+                        </dt>
+                        <dd class="settings_fact__value" :class="{ 'settings_fact__value--chips': fact.key === 'acceptedPetSpecies' }">
+                            <template v-if="fact.key === 'acceptedPetSpecies' && settingsViewAcceptedPetSpecies.length">
+                                <span v-for="species in settingsViewAcceptedPetSpecies"
+                                      :key="'settings-view-species-' + species.value"
+                                      class="profile_species__chip settings_fact__chip">
+                                    <img class="profile_species__icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                    <span class="profile_species__label" v-text="species.label"></span>
+                                </span>
+                            </template>
+                            <span v-else-if="fact.key === 'phone' && fact.phoneFlagPath" class="settings_phone_value">
+                                <img class="settings_phone_value__flag"
+                                     :src="fact.phoneFlagPath"
+                                     :alt="fact.phoneCountryName || ''">
+                                <span class="settings_phone_value__number" v-text="fact.displayValue"></span>
+                            </span>
+                            <span v-else-if="fact.key === 'city' && fact.cityFlagPath" class="settings_city_value">
+                                <img class="settings_city_value__flag"
+                                     :src="fact.cityFlagPath"
+                                     :alt="fact.cityCountryName || ''">
+                                <span class="settings_city_value__name" v-text="fact.displayValue"></span>
+                            </span>
+                            <span v-else v-text="fact.displayValue"></span>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </article>
+
+    </section>
+</th:block>
+</html>

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -113,13 +114,19 @@ public class UserController {
         User user = userService.updateUser(
                 id,
                 authentication.getName(),
+                request.email(),
+                request.password(),
                 request.firstName(),
                 request.lastName(),
                 request.phone(),
                 request.birthDate(),
                 request.emergencyContact(),
                 request.profilePicture(),
-                request.bio()
+                request.bio(),
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
         );
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
@@ -137,13 +144,19 @@ public class UserController {
         User user = userService.patchUser(
                 id,
                 authentication.getName(),
+                request.email(),
+                request.password(),
                 request.firstName(),
                 request.lastName(),
                 request.phone(),
                 request.birthDate(),
                 request.emergencyContact(),
                 request.profilePicture(),
-                request.bio()
+                request.bio(),
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
         );
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
@@ -209,5 +222,42 @@ public class UserController {
                 UserResponse.from(user),
                 servletRequest.getRequestURI()
         ));
+    }
+
+    private String sanitizeUploadFilename(String rawFilename) {
+        String original = StringUtils.hasText(rawFilename) ? rawFilename.trim() : "profile-image";
+        String normalizedSeparators = original.replace('\\', '/');
+        int lastSlash = normalizedSeparators.lastIndexOf('/');
+        String safe = lastSlash >= 0 ? normalizedSeparators.substring(lastSlash + 1) : normalizedSeparators;
+        return safe.isBlank() ? "profile-image" : safe;
+    }
+
+    private String resolveImageExtension(String contentType, String safeFilename) {
+        String lowerFilename = safeFilename.toLowerCase();
+        if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+            return ".jpg";
+        }
+        if (lowerFilename.endsWith(".png")) {
+            return ".png";
+        }
+        if (lowerFilename.endsWith(".gif")) {
+            return ".gif";
+        }
+        if (lowerFilename.endsWith(".webp")) {
+            return ".webp";
+        }
+        if (lowerFilename.endsWith(".bmp")) {
+            return ".bmp";
+        }
+
+        String normalizedContentType = contentType == null ? "" : contentType.trim().toLowerCase();
+        return switch (normalizedContentType) {
+            case "image/jpeg", "image/jpg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/gif" -> ".gif";
+            case "image/webp" -> ".webp";
+            case "image/bmp" -> ".bmp";
+            default -> throw new IllegalArgumentException("Nur JPEG, PNG, GIF, WebP und BMP Dateien sind erlaubt.");
+        };
     }
 }

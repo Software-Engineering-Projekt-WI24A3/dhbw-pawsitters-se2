@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +45,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = userService.createUser(
-                "max@test.de", "passwort123", "Max", "Muster",
+                "max@test.de", "VeryStrongPass!123", "Max", "Muster",
                 "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
                 "bild.jpg", "Ich bin Max", UserRole.PET_OWNER
         );
@@ -62,7 +63,7 @@ class UserServiceTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 userService.createUser(
-                        "exists@test.de", "passwort123", "Max", "Muster",
+                        "exists@test.de", "VeryStrongPass!123", "Max", "Muster",
                         "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
                         "bild.jpg", "Bio", UserRole.PET_OWNER
                 )
@@ -75,21 +76,21 @@ class UserServiceTest {
     void whenLoginEmailHasDifferentCase_thenFindByEmailStillReturnsUser() {
         User existingUser = new User();
         existingUser.setEmail("max@test.de");
-        when(userRepository.findByEmailIgnoreCase("MAX@TEST.DE")).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByEmailIgnoreCase("max@test.de")).thenReturn(Optional.of(existingUser));
 
         User result = userService.findByEmail("MAX@TEST.DE");
 
         assertEquals("max@test.de", result.getEmail());
-        verify(userRepository).findByEmailIgnoreCase("MAX@TEST.DE");
+        verify(userRepository).findByEmailIgnoreCase("max@test.de");
     }
 
     @Test
     void whenDuplicateEmailWithDifferentCase_thenCreateUserThrowsException() {
-        when(userRepository.existsByEmailIgnoreCase("MAX@TEST.DE")).thenReturn(true);
+        when(userRepository.existsByEmailIgnoreCase("max@test.de")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () ->
                 userService.createUser(
-                        "MAX@TEST.DE", "passwort123", "Max", "Muster",
+                        "MAX@TEST.DE", "VeryStrongPass!123", "Max", "Muster",
                         "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
                         "bild.jpg", "Bio", UserRole.PET_OWNER
                 )
@@ -141,12 +142,15 @@ class UserServiceTest {
     void whenOwnerUpdatesUser_thenUserIsSaved() {
         User user = buildUser(1L, "owner@test.de");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(any())).thenReturn("hashedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = userService.updateUser(
-                1L, "owner@test.de",
+                1L, "owner@test.de", "owner@test.de",
+                "VeryStrongPass!123",
                 "NewFirst", "NewLast", "0123", LocalDate.of(1990, 1, 1),
-                "Emergency", "pic.jpg", "Bio text"
+                "Emergency", "pic.jpg", "Bio text",
+                UserRole.HOST, "12345", "Berlin", Set.of()
         );
 
         assertEquals("NewFirst", result.getFirstName());
@@ -161,8 +165,10 @@ class UserServiceTest {
 
         assertThrows(ForbiddenException.class, () ->
                 userService.updateUser(
-                        1L, "attacker@test.de",
-                        "X", "X", "0", LocalDate.of(1990, 1, 1), "E", "p.jpg", "B"
+                        1L, "attacker@test.de", "owner@test.de",
+                        "VeryStrongPass!123",
+                        "X", "X", "0", LocalDate.of(1990, 1, 1), "E", "p.jpg", "B",
+                        UserRole.PET_OWNER, null, null, null
                 )
         );
         verify(userRepository, never()).save(any());
@@ -180,7 +186,8 @@ class UserServiceTest {
 
         User result = userService.patchUser(
                 1L, "owner@test.de",
-                null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null,
+                null, null, null, null
         );
 
         assertEquals("Original", result.getFirstName());
@@ -196,7 +203,8 @@ class UserServiceTest {
 
         User result = userService.patchUser(
                 1L, "owner@test.de",
-                "Updated", null, null, null, null, null, null
+                null, null, "Updated", null, null, null, null, null, null,
+                null, null, null, null
         );
 
         assertEquals("Updated", result.getFirstName());
@@ -210,9 +218,57 @@ class UserServiceTest {
         assertThrows(ForbiddenException.class, () ->
                 userService.patchUser(
                         1L, "attacker@test.de",
-                        "X", null, null, null, null, null, null
+                        null, null, "X", null, null, null, null, null, null,
+                        null, null, null, null
                 )
         );
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void whenOwnerPatchesPassword_thenPasswordHashIsUpdated() {
+        User user = buildUser(1L, "owner@test.de");
+        user.setPasswordHash("old-hash");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(any())).thenReturn("new-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        User result = userService.patchUser(
+                1L, "owner@test.de",
+                null, "NewSecurePass!456", null, null, null, null, null, null, null,
+                null, null, null, null
+        );
+
+        assertEquals("new-hash", result.getPasswordHash());
+        verify(passwordEncoder).encode(any());
+    }
+
+    @Test
+    void whenNonAdminPatchesRoleToAdmin_thenThrowsForbidden() {
+        User user = buildUser(1L, "owner@test.de");
+        user.setRole(UserRole.PET_OWNER);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(ForbiddenException.class, () ->
+                userService.patchUser(
+                        1L, "owner@test.de",
+                        null, null, null, null, null, null, null, null, null,
+                        UserRole.ADMIN, null, null, null
+                )
+        );
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void whenRegisteringWithAdminRole_thenThrowException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.createUser(
+                        "admin-attempt@test.de", "VeryStrongPass!123", "Max", "Muster",
+                        "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
+                        "bild.jpg", "Bio", UserRole.ADMIN
+                )
+        );
+
         verify(userRepository, never()).save(any());
     }
 

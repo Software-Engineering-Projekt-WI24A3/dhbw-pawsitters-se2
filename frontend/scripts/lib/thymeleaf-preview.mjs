@@ -6,20 +6,20 @@ import { loadCountryFlagEntries, loadPetChoices } from './search-data.mjs';
 
 export const supportedLocales = ['de', 'en', 'ro'];
 export const defaultLocale = 'de';
+export const buildOutputDirectoryName = 'dist';
 
 const templateCache = new Map();
 const fragmentCache = new Map();
 const messageCache = new Map();
-const aboutProjectHtmlCache = new Map();
 const localeTokenPattern = /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$/;
 const localizedAttributeNames = new Set(['aria-label', 'placeholder', 'title', 'alt', 'value']);
 const pageDefinitions = [
   { key: 'home', templatePath: 'pages/home.html' },
   { key: 'register', templatePath: 'pages/register.html' },
   { key: 'profile', templatePath: 'pages/profile.html' },
+  { key: 'settings', templatePath: 'pages/settings.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
   { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
-  { key: 'repositoryApi', templatePath: 'pages/repository-api.html' },
   { key: 'repositoryKanban', templatePath: 'pages/repository-kanban.html' },
   { key: 'notFound', templatePath: 'pages/not-found.html' }
 ];
@@ -27,9 +27,9 @@ const routeToPageKey = new Map([
   ['/', 'home'],
   ['/register', 'register'],
   ['/profile', 'profile'],
+  ['/settings', 'settings'],
   ['/repository/git', 'repositoryGit'],
   ['/repository/playwright', 'repositoryPlaywright'],
-  ['/repository/api', 'repositoryApi'],
   ['/repository/kanban', 'repositoryKanban'],
   ['/404', 'notFound'],
   ['/404.html', 'notFound']
@@ -313,51 +313,12 @@ function renderMarkdownToHtml(markdown) {
   return output.join('\n');
 }
 
-async function resolveAboutReadmePath(rootDir) {
-  const candidatePaths = [
-    path.resolve(rootDir, '..', 'README.md'),
-    path.resolve(rootDir, '..', 'readme.md'),
-    path.join(rootDir, 'README.md'),
-    path.join(rootDir, 'readme.md')
-  ];
-
-  for (const candidatePath of candidatePaths) {
-    try {
-      const stats = await fs.stat(candidatePath);
-      if (stats.isFile()) {
-        return candidatePath;
-      }
-    } catch {
-      continue;
-    }
-  }
-
-  throw new Error(`Could not find project README.md. Checked: ${candidatePaths.join(', ')}`);
-}
-
-async function loadAboutProjectHtml(rootDir) {
-  const readmePath = await resolveAboutReadmePath(rootDir);
-  const readmeStats = await fs.stat(readmePath);
-  const cacheKey = `${rootDir}::${readmePath}`;
-  const cached = aboutProjectHtmlCache.get(cacheKey);
-
-  if (cached && cached.mtimeMs === readmeStats.mtimeMs) {
-    return cached.html;
-  }
-
-  const markdown = await fs.readFile(readmePath, 'utf8');
-  const html = renderMarkdownToHtml(markdown);
-  aboutProjectHtmlCache.set(cacheKey, {
-    mtimeMs: readmeStats.mtimeMs,
-    html
-  });
-
-  return html;
-}
-
 function resolveLocaleAssetCandidates(rootDir, assetPath) {
   const sanitizedAssetPath = assetPath.replace(/^\/+/, '');
-  const candidates = [path.join(rootDir, sanitizedAssetPath)];
+  const candidates = [
+    path.join(rootDir, buildOutputDirectoryName, sanitizedAssetPath),
+    path.join(rootDir, sanitizedAssetPath)
+  ];
 
   if (sanitizedAssetPath.startsWith('assets/media/country-flag/')) {
     candidates.push(
@@ -543,12 +504,12 @@ function resolveRoutePath(pageKey) {
       return '/register';
     case 'profile':
       return '/profile';
+    case 'settings':
+      return '/settings';
     case 'repositoryGit':
       return '/repository/git';
     case 'repositoryPlaywright':
       return '/repository/playwright';
-    case 'repositoryApi':
-      return '/repository/api';
     case 'repositoryKanban':
       return '/repository/kanban';
     case 'notFound':
@@ -564,17 +525,6 @@ function resolveLocalizedPath(locale, pageKey) {
   return `${routePath}${query}`;
 }
 
-function resolveLocalePrefixedPath(locale, pageKey) {
-  const routePath = resolveRoutePath(pageKey);
-  if (locale === defaultLocale) {
-    return routePath;
-  }
-
-  return routePath === '/'
-    ? `/${locale}`
-    : `/${locale}${routePath}`;
-}
-
 function toOutputIndexPath(routePath) {
   if (routePath === '/') {
     return 'index.html';
@@ -583,26 +533,19 @@ function toOutputIndexPath(routePath) {
   return path.join(routePath.replace(/^\/+/, ''), 'index.html');
 }
 
-function resolveOutputPaths(locale, pageKey) {
-  const outputPaths = [toOutputIndexPath(resolveLocalePrefixedPath(locale, pageKey))];
+function resolveBuildOutputPath(rootDir, relativeOutputPath) {
+  return path.join(rootDir, buildOutputDirectoryName, relativeOutputPath);
+}
 
-  if (locale !== defaultLocale) {
-    return outputPaths;
-  }
+function resolveOutputPaths(pageKey) {
+  const outputPaths = [toOutputIndexPath(resolveRoutePath(pageKey))];
 
   switch (pageKey) {
-    case 'home':
-      break;
-    case 'register':
-      break;
     case 'repositoryGit':
       outputPaths.push(path.join('git', 'index.html'));
       break;
     case 'repositoryPlaywright':
       outputPaths.push(path.join('playwright', 'index.html'));
-      break;
-    case 'repositoryApi':
-      outputPaths.push(path.join('api-overview', 'index.html'));
       break;
     case 'repositoryKanban':
       outputPaths.push(path.join('kanban', 'index.html'));
@@ -1128,9 +1071,7 @@ async function renderMarkup(rootDir, markup, templatePath, context, depth = 0) {
     : renderedMarkup;
 }
 
-function buildRedirectPage(targetPath, locale, pageTitle, footerText = '') {
-  const safeFooterText = typeof footerText === 'string' ? footerText : '';
-
+function buildRedirectPage(targetPath, locale, pageTitle) {
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
@@ -1140,11 +1081,7 @@ function buildRedirectPage(targetPath, locale, pageTitle, footerText = '') {
     <title>${pageTitle}</title>
     <script>window.location.replace(${JSON.stringify(targetPath)});</script>
 </head>
-<body>
-    <footer>
-        <p>${safeFooterText}</p>
-    </footer>
-</body>
+<body></body>
 </html>
 `;
 }
@@ -1203,7 +1140,7 @@ async function writeSearchDataAssets(rootDir) {
     loadCountryFlagEntries(rootDir),
     loadPetChoices(rootDir)
   ]);
-  const dataDirectory = path.join(rootDir, 'assets', 'data');
+  const dataDirectory = resolveBuildOutputPath(rootDir, path.join('assets', 'data'));
 
   await fs.mkdir(dataDirectory, { recursive: true });
   await fs.writeFile(
@@ -1219,7 +1156,7 @@ async function writeSearchDataAssets(rootDir) {
 }
 
 async function writeRepositorySnapshotAssets(rootDir) {
-  const dataDirectory = path.join(rootDir, 'assets', 'data');
+  const dataDirectory = resolveBuildOutputPath(rootDir, path.join('assets', 'data'));
   await fs.mkdir(dataDirectory, { recursive: true });
 
   const baseSnapshot = await loadRepositorySnapshot(rootDir);
@@ -1236,8 +1173,6 @@ async function writeRepositorySnapshotAssets(rootDir) {
 
 async function buildPageContext(rootDir, locale, pageKey) {
   const messages = await loadMessages(rootDir, locale);
-  const repositorySnapshot = localizeRepositorySnapshot(await loadRepositorySnapshot(rootDir), locale, messages);
-  const aboutProjectHtml = await loadAboutProjectHtml(rootDir);
 
   return {
     currentLocale: locale,
@@ -1257,10 +1192,8 @@ async function buildPageContext(rootDir, locale, pageKey) {
     registerPath: resolveLocalizedPath(locale, 'register'),
     repositoryGitPath: resolveLocalizedPath(locale, 'repositoryGit'),
     repositoryPlaywrightPath: resolveLocalizedPath(locale, 'repositoryPlaywright'),
-    repositoryApiPath: resolveLocalizedPath(locale, 'repositoryApi'),
     repositoryBoardPath: resolveLocalizedPath(locale, 'repositoryKanban'),
-    aboutProjectHtml,
-    repositorySnapshot,
+    repositorySnapshot: {},
     __messages: messages
   };
 }
@@ -1275,15 +1208,13 @@ async function renderPage(rootDir, locale, pageDefinition) {
 async function renderAllPages(rootDir) {
   const renderedPages = [];
 
-  for (const locale of supportedLocales) {
-    for (const pageDefinition of pageDefinitions) {
-      renderedPages.push({
-        locale,
-        pageKey: pageDefinition.key,
-        outputPaths: resolveOutputPaths(locale, pageDefinition.key),
-        html: await renderPage(rootDir, locale, pageDefinition)
-      });
-    }
+  for (const pageDefinition of pageDefinitions) {
+    renderedPages.push({
+      locale: defaultLocale,
+      pageKey: pageDefinition.key,
+      outputPaths: resolveOutputPaths(pageDefinition.key),
+      html: await renderPage(rootDir, defaultLocale, pageDefinition)
+    });
   }
 
   return renderedPages;
@@ -1292,16 +1223,68 @@ async function renderAllPages(rootDir) {
 async function writeRenderedPages(rootDir, renderedPages) {
   for (const renderedPage of renderedPages) {
     for (const outputPathValue of renderedPage.outputPaths) {
-      const outputPath = path.join(rootDir, outputPathValue);
+      const outputPath = resolveBuildOutputPath(rootDir, outputPathValue);
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
       await fs.writeFile(outputPath, renderedPage.html, 'utf8');
     }
   }
 }
 
+async function cleanupLegacyRootOutputs(rootDir) {
+  const legacyOutputPaths = [
+    'assets',
+    '404',
+    'register',
+    'profile',
+    'settings',
+    'repository',
+    'git',
+    'kanban',
+    'playwright',
+    'en',
+    'ro',
+    'index.html',
+    '404.html',
+    'index.en.html',
+    'index.ro.html',
+    '404.en.html',
+    '404.ro.html'
+  ];
+
+  await Promise.all(legacyOutputPaths.map((relativePath) => fs.rm(
+    path.join(rootDir, relativePath),
+    { recursive: true, force: true }
+  )));
+}
+
+async function cleanupBuildOutput(rootDir) {
+  const outputDirectory = resolveBuildOutputPath(rootDir, '');
+  await fs.mkdir(outputDirectory, { recursive: true });
+
+  const outputEntries = await fs.readdir(outputDirectory, { withFileTypes: true });
+  for (const entry of outputEntries) {
+    const entryPath = path.join(outputDirectory, entry.name);
+
+    if (entry.name === 'assets' && entry.isDirectory()) {
+      const assetEntries = await fs.readdir(entryPath, { withFileTypes: true });
+      for (const assetEntry of assetEntries) {
+        if (assetEntry.name === 'css') {
+          continue;
+        }
+
+        await fs.rm(path.join(entryPath, assetEntry.name), { recursive: true, force: true });
+      }
+      continue;
+    }
+
+    await fs.rm(entryPath, { recursive: true, force: true });
+  }
+}
+
 export async function buildPreview(rootDir) {
   await validateLocaleResources(rootDir);
   await validateSourceTemplates(rootDir);
+  await cleanupBuildOutput(rootDir);
   const animalMediaDirectories = [
     'animal-amphibian',
     'animal-bird',
@@ -1312,49 +1295,69 @@ export async function buildPreview(rootDir) {
   ];
 
   await Promise.all([
-    copyAsset(rootDir, 'src/js/site.js', 'assets/js/site.js'),
-    copyAsset(rootDir, 'node_modules/@gitgraph/js/lib/gitgraph.umd.min.js', 'assets/vendor/gitgraph.umd.min.js'),
-    copyAsset(rootDir, 'node_modules/vue/dist/vue.esm-browser.prod.js', 'assets/vendor/vue.esm-browser.prod.js'),
-    copyAssetIfExists(rootDir, 'src/media/pawsitters-scene.svg', 'assets/media/pawsitters-scene.svg'),
-    copyAssetIfExists(rootDir, 'src/media/404.svg', 'assets/media/404.svg'),
-    copyAssetIfExists(rootDir, 'src/media/search-lense.svg', 'assets/media/search-lense.svg'),
-    copyAssetIfExists(rootDir, 'src/media/1F4CB.svg', 'assets/media/1F4CB.svg'),
-    copyAssetIfExists(rootDir, 'src/media/1F9D1.svg', 'assets/media/1F9D1.svg'),
-    copyAssetIfExists(rootDir, 'src/media/1F512.svg', 'assets/media/1F512.svg'),
+    copyAsset(rootDir, 'src/js/site.js', path.join(buildOutputDirectoryName, 'assets', 'js', 'site.js')),
+    copyAsset(
+      rootDir,
+      'node_modules/@gitgraph/js/lib/gitgraph.umd.min.js',
+      path.join(buildOutputDirectoryName, 'assets', 'vendor', 'gitgraph.umd.min.js')
+    ),
+    copyAsset(
+      rootDir,
+      'node_modules/vue/dist/vue.esm-browser.prod.js',
+      path.join(buildOutputDirectoryName, 'assets', 'vendor', 'vue.esm-browser.prod.js')
+    ),
+    copyAssetIfExists(rootDir, 'src/media/pawsitters-scene.svg', path.join(buildOutputDirectoryName, 'assets', 'media', 'pawsitters-scene.svg')),
+    copyAssetIfExists(rootDir, 'src/media/404.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '404.svg')),
+    copyAssetIfExists(rootDir, 'src/media/search-lense.svg', path.join(buildOutputDirectoryName, 'assets', 'media', 'search-lense.svg')),
+    copyAssetIfExists(rootDir, 'src/media/1F50D.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F50D.svg')),
+    copyAssetIfExists(rootDir, 'src/media/1F4CB.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F4CB.svg')),
+    copyAssetIfExists(rootDir, 'src/media/1F9D1.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F9D1.svg')),
+    copyAssetIfExists(rootDir, 'src/media/1F512.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F512.svg')),
+    copyAssetIfExists(rootDir, 'src/media/2699.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '2699.svg')),
+    copyAssetIfExists(rootDir, 'src/media/favicon.png', path.join(buildOutputDirectoryName, 'assets', 'media', 'favicon.png')),
     writeSearchDataAssets(rootDir),
     writeRepositorySnapshotAssets(rootDir),
-    copyDirectory(rootDir, 'src/media/country-flag', 'assets/media/country-flag'),
+    copyDirectory(
+      rootDir,
+      'src/media/country-flag',
+      path.join(buildOutputDirectoryName, 'assets', 'media', 'country-flag')
+    ),
     ...animalMediaDirectories.map((directoryName) => copyDirectoryIfExists(
       rootDir,
       `src/media/${directoryName}`,
-      `assets/media/${directoryName}`
+      path.join(buildOutputDirectoryName, 'assets', 'media', directoryName)
     ))
   ]);
 
   const renderedPages = await renderAllPages(rootDir);
   await writeRenderedPages(rootDir, renderedPages);
+
   const defaultMessages = await loadMessages(rootDir, defaultLocale);
-  const defaultFooterText = getMessage(defaultMessages, 'footer.text');
+  const gitAliasPath = resolveBuildOutputPath(rootDir, path.join('git', 'index.html'));
+  const kanbanAliasPath = resolveBuildOutputPath(rootDir, path.join('kanban', 'index.html'));
+  const playwrightAliasPath = resolveBuildOutputPath(rootDir, path.join('playwright', 'index.html'));
+
+  await fs.mkdir(path.dirname(gitAliasPath), { recursive: true });
+  await fs.mkdir(path.dirname(kanbanAliasPath), { recursive: true });
+  await fs.mkdir(path.dirname(playwrightAliasPath), { recursive: true });
+
   await fs.writeFile(
-    path.join(rootDir, 'git', 'index.html'),
-    buildRedirectPage('/repository/git', defaultLocale, getMessage(defaultMessages, 'meta.repositoryGit.title'), defaultFooterText),
+    gitAliasPath,
+    buildRedirectPage('/repository/git', defaultLocale, getMessage(defaultMessages, 'meta.repositoryGit.title')),
     'utf8'
   );
   await fs.writeFile(
-    path.join(rootDir, 'kanban', 'index.html'),
-    buildRedirectPage('/repository/kanban', defaultLocale, getMessage(defaultMessages, 'meta.repositoryKanban.title'), defaultFooterText),
+    kanbanAliasPath,
+    buildRedirectPage('/repository/kanban', defaultLocale, getMessage(defaultMessages, 'meta.repositoryKanban.title')),
     'utf8'
   );
   await fs.writeFile(
-    path.join(rootDir, 'playwright', 'index.html'),
-    buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title'), defaultFooterText),
+    playwrightAliasPath,
+    buildRedirectPage('/repository/playwright', defaultLocale, getMessage(defaultMessages, 'meta.repositoryPlaywright.title')),
     'utf8'
   );
-  await fs.writeFile(
-    path.join(rootDir, 'api-overview', 'index.html'),
-    buildRedirectPage('/repository/api', defaultLocale, getMessage(defaultMessages, 'meta.repositoryApi.title'), defaultFooterText),
-    'utf8'
-  );
+
+  await cleanupLegacyRootOutputs(rootDir);
 }
 
 export async function loadLocalizedRepositorySnapshot(rootDir, locale, options = {}) {

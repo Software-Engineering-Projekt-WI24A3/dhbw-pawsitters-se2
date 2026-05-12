@@ -52,6 +52,10 @@
                                data-auth-register-success-message=#{auth.register.successMessage},
                                data-auth-register-first-name-required=#{auth.register.validationFirstNameRequired},
                                data-auth-register-last-name-required=#{auth.register.validationLastNameRequired},
+                               data-auth-register-phone-country-label=#{auth.register.phoneCountry},
+                               data-auth-register-phone-country-placeholder=#{auth.register.phoneCountryPlaceholder},
+                               data-auth-register-phone-country-required=#{auth.register.validationPhoneCountryRequired},
+                               data-auth-register-phone-country-loading=#{auth.register.phoneCountryLoading},
                                data-auth-register-phone-required=#{auth.register.validationPhoneRequired},
                                data-auth-register-birth-date-required=#{auth.register.validationBirthDateRequired},
                                data-auth-register-birth-date-past=#{auth.register.validationBirthDatePast},
@@ -152,17 +156,71 @@
                              v-show="registerStep === 'profile'"
                              data-segment-panel="registerStep"
                              data-segment-value="profile">
-                        <label class="auth_field corp_field">
-                            <span class="sr-only" th:text="#{auth.register.phone}">auth.register.phone</span>
-                            <input class="auth_input corp_input"
-                                   type="tel"
-                                   autocomplete="tel"
-                                   data-auth-register-phone
-                                   v-model="registerPhone"
-                                   th:attr="aria-label=#{auth.register.phone},placeholder=#{auth.register.phonePlaceholder}">
-                            <span class="auth_field__label corp_field__label"
-                                  th:text="#{auth.register.phonePlaceholder}">auth.register.phonePlaceholder</span>
-                        </label>
+                        <div class="phone_compound register_phone_compound">
+                            <label class="auth_field corp_field phone_compound__country">
+                                <span class="sr-only" th:text="#{auth.register.phoneCountry}">auth.register.phoneCountry</span>
+                                <details class="phone_country_menu"
+                                         data-auth-register-phone-country
+                                         :data-dropdown-disabled="phoneCountryOptionsLoading ? 'true' : 'false'">
+                                    <summary class="auth_input corp_input corp_input--select phone_country_menu__summary"
+                                             role="button"
+                                             th:attr="aria-label=#{auth.register.phoneCountry}">
+                                        <img v-if="registerPhoneCountryOption && registerPhoneCountryOption.flagPath"
+                                             class="phone_country_menu__flag"
+                                             :src="registerPhoneCountryOption.flagPath"
+                                             :alt="registerPhoneCountryOption.displayName">
+                                        <span v-else class="phone_country_menu__flag phone_country_menu__flag--placeholder" aria-hidden="true"></span>
+                                        <span class="phone_country_menu__dial"
+                                              v-text="registerPhoneCountryOption && registerPhoneCountryOption.dialCode ? registerPhoneCountryOption.dialCode : ''"></span>
+                                    </summary>
+                                    <div class="phone_country_menu__panel"
+                                         role="listbox"
+                                         th:attr="aria-label=#{auth.register.phoneCountry}">
+                                        <button v-for="option in phoneCountryOptions"
+                                                :key="'register-phone-country-' + option.code"
+                                                type="button"
+                                                class="phone_country_menu__option"
+                                                role="option"
+                                                :aria-selected="option.code === registerPhoneCountryCode"
+                                                :class="{ 'phone_country_menu__option--active': option.code === registerPhoneCountryCode }"
+                                                @click.prevent="selectPhoneCountryCode('register', option.code, $event)">
+                                            <img v-if="option.flagPath"
+                                                 class="phone_country_menu__flag"
+                                                 :src="option.flagPath"
+                                                 :alt="option.displayName">
+                                            <span v-else class="phone_country_menu__flag phone_country_menu__flag--placeholder" aria-hidden="true"></span>
+                                            <span class="phone_country_menu__option-dial" v-text="option.dialCode"></span>
+                                            <span class="phone_country_menu__option-name" v-text="option.displayName"></span>
+                                        </button>
+                                    </div>
+                                </details>
+                                <span class="auth_field__label corp_field__label"
+                                      th:text="#{auth.register.phoneCountryPlaceholder}">auth.register.phoneCountryPlaceholder</span>
+                            </label>
+                            <label class="auth_field corp_field phone_compound__number">
+                                <span class="sr-only" th:text="#{auth.register.phone}">auth.register.phone</span>
+                                <input class="auth_input corp_input"
+                                       type="tel"
+                                       autocomplete="tel-local"
+                                       data-auth-register-phone
+                                       v-model="registerPhone"
+                                       th:attr="aria-label=#{auth.register.phone},placeholder=#{auth.register.phonePlaceholder}">
+                                <span class="auth_field__label corp_field__label"
+                                      th:text="#{auth.register.phonePlaceholder}">auth.register.phonePlaceholder</span>
+                            </label>
+                        </div>
+                        <div v-if="phoneCountryOptionsLoading"
+                             class="register_city_picker__state register_state_loading"
+                             role="status"
+                             aria-live="polite">
+                            <span class="repository_live_loading__dots" aria-hidden="true">
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                            </span>
+                            <span class="repository_live_loading__text"
+                                  th:text="#{auth.register.phoneCountryLoading}">auth.register.phoneCountryLoading</span>
+                        </div>
                         <label class="auth_field corp_field">
                             <span class="sr-only" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
                             <input class="auth_input corp_input"
@@ -199,11 +257,12 @@
                         </label>
                         <label class="auth_field corp_field">
                             <span class="sr-only" th:text="#{auth.register.bio}">auth.register.bio</span>
-                            <textarea class="auth_input corp_input corp_input--textarea"
-                                      rows="3"
-                                      data-auth-register-bio
-                                      v-model="registerBio"
-                                      th:attr="aria-label=#{auth.register.bio},placeholder=#{auth.register.bioPlaceholder}"></textarea>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   data-auth-register-bio
+                                   v-model="registerBio"
+                                   th:attr="aria-label=#{auth.register.bio},placeholder=#{auth.register.bioPlaceholder}">
                             <span class="auth_field__label corp_field__label"
                                   th:text="#{auth.register.bioPlaceholder}">auth.register.bioPlaceholder</span>
                         </label>
@@ -234,7 +293,19 @@
                                 <span class="auth_field__label corp_field__label"
                                       th:text="#{auth.register.cityPlaceholder}">auth.register.cityPlaceholder</span>
                             </label>
-                            <div v-if="registerCityOptionsLoading" class="register_city_picker__state" role="status" aria-live="polite"
+                            <div v-if="registerCityOptionsLoading && showRegisterCityOptionsLoadingDots"
+                                 class="register_city_picker__state register_state_loading"
+                                 role="status"
+                                 aria-live="polite">
+                                <span class="repository_live_loading__dots" aria-hidden="true">
+                                    <span class="repository_live_loading__dot"></span>
+                                    <span class="repository_live_loading__dot"></span>
+                                    <span class="repository_live_loading__dot"></span>
+                                </span>
+                                <span class="repository_live_loading__text"
+                                      th:text="#{auth.register.cityLoading}">auth.register.cityLoading</span>
+                            </div>
+                            <div v-else-if="registerCityOptionsLoading" class="register_city_picker__state" role="status" aria-live="polite"
                                  th:text="#{auth.register.cityLoading}">auth.register.cityLoading</div>
                             <div v-else-if="showRegisterCityNoResults" class="register_city_picker__state"
                                  th:text="#{auth.register.cityNoResults}">auth.register.cityNoResults</div>
@@ -285,7 +356,19 @@
                              data-segment-panel="registerStep"
                              data-segment-value="pets">
                         <p class="register_step_hint" th:text="#{auth.register.petSpeciesHint}">auth.register.petSpeciesHint</p>
-                        <div v-if="registerPetChoicesLoading" class="register_pet_grid__state" role="status" aria-live="polite"
+                        <div v-if="registerPetChoicesLoading && showRegisterPetChoicesLoadingDots"
+                             class="register_pet_grid__state register_state_loading"
+                             role="status"
+                             aria-live="polite">
+                            <span class="repository_live_loading__dots" aria-hidden="true">
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                                <span class="repository_live_loading__dot"></span>
+                            </span>
+                            <span class="repository_live_loading__text"
+                                  th:text="#{auth.register.petSpeciesLoading}">auth.register.petSpeciesLoading</span>
+                        </div>
+                        <div v-else-if="registerPetChoicesLoading" class="register_pet_grid__state" role="status" aria-live="polite"
                              th:text="#{auth.register.petSpeciesLoading}">auth.register.petSpeciesLoading</div>
                         <div v-else-if="!registerPetChoices.length" class="register_pet_grid__state"
                              th:text="#{auth.register.petSpeciesEmpty}">auth.register.petSpeciesEmpty</div>

@@ -11,6 +11,7 @@ import { loadCountryFlagEntries, loadPetChoices } from './lib/search-data.mjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
+const distDir = path.join(rootDir, 'dist');
 const port = Number.parseInt(process.env.PORT ?? '4173', 10);
 const host = '127.0.0.1';
 const backendOrigin = new URL(process.env.BACKEND_ORIGIN ?? 'http://127.0.0.1:8080');
@@ -63,19 +64,6 @@ const E2E_RUNNER = {
   child: null
 };
 let e2eInventoryPromise = null;
-const tailwindBaseArgs = [
-  '-c',
-  'tailwind.config.js',
-  '-i',
-  './src/tailwind/site.css',
-  '-o',
-  './assets/css/site.css'
-];
-
-function binPath(name) {
-  const executable = process.platform === 'win32' ? `${name}.cmd` : name;
-  return path.join(rootDir, 'node_modules', '.bin', executable);
-}
 
 function runProcess(command, args, label) {
   return new Promise((resolve, reject) => {
@@ -131,64 +119,6 @@ function runCapture(command, args, options = {}) {
       });
     });
   });
-}
-
-function resolveTailwindCommand() {
-  const primaryBin = binPath('tailwindcss');
-  if (existsSync(primaryBin)) {
-    return {
-      command: primaryBin,
-      argsPrefix: [],
-      source: 'tailwindcss'
-    };
-  }
-
-  const legacyBin = binPath('tailwind');
-  if (existsSync(legacyBin)) {
-    return {
-      command: legacyBin,
-      argsPrefix: [],
-      source: 'tailwind'
-    };
-  }
-
-  const scopedCliEntry = path.join(rootDir, 'node_modules', '@tailwindcss', 'cli', 'dist', 'index.mjs');
-  if (existsSync(scopedCliEntry)) {
-    return {
-      command: process.execPath,
-      argsPrefix: [scopedCliEntry],
-      source: '@tailwindcss/cli'
-    };
-  }
-
-  throw new Error(
-    [
-      'Tailwind CLI not found in this frontend install.',
-      'Expected one of:',
-      `- ${primaryBin}`,
-      `- ${legacyBin}`,
-      `- ${scopedCliEntry}`,
-      '',
-      'Fix:',
-      '1) Ensure you are in the frontend folder.',
-      '2) Run `rm -rf node_modules package-lock.json && npm install`.',
-      '3) Start again with `npm run dev`.'
-    ].join('\n')
-  );
-}
-
-function startTailwindWatcher(tailwindCommand, args) {
-  const child = spawn(tailwindCommand.command, [...tailwindCommand.argsPrefix, ...args], {
-    cwd: rootDir,
-    stdio: 'inherit'
-  });
-
-  child.on('error', (error) => {
-    console.error(`tailwind watch failed to start (${tailwindCommand.source}): ${error.message}`);
-    process.exit(1);
-  });
-
-  return child;
 }
 
 function sendJson(response, statusCode, payload) {
@@ -684,8 +614,8 @@ function contentType(filePath) {
 
 function tryResolveFilePath(urlPath) {
   const candidatePath = urlPath === '/'
-    ? path.join(rootDir, 'index.html')
-    : path.join(rootDir, urlPath.replace(/^\/+/, ''));
+    ? path.join(distDir, 'index.html')
+    : path.join(distDir, urlPath.replace(/^\/+/, ''));
 
   if (existsSync(candidatePath) && statSync(candidatePath).isFile()) {
     return candidatePath;
@@ -697,10 +627,6 @@ function tryResolveFilePath(urlPath) {
   }
 
   return null;
-}
-
-function isLocalePrefixedPath(urlPath = '') {
-  return /^\/(?:de|en|ro)(?:\/|$)/i.test(urlPath);
 }
 
 function resolveDynamicPageFallback(urlPath = '') {
@@ -718,7 +644,7 @@ function resolveDynamicPageFallback(urlPath = '') {
   return '';
 }
 
-function resolveFilePath(urlPath, locale = defaultLocale) {
+function resolveFilePath(urlPath) {
   if (urlPath === '/git' || urlPath === '/git/') {
     return { redirect: '/repository/git' };
   }
@@ -731,10 +657,6 @@ function resolveFilePath(urlPath, locale = defaultLocale) {
     return { redirect: '/repository/playwright' };
   }
 
-  if (urlPath === '/api-overview' || urlPath === '/api-overview/' || urlPath === '/api-uebersicht' || urlPath === '/api-uebersicht/') {
-    return { redirect: '/repository/api' };
-  }
-
   const localePrefixed = urlPath.match(/^\/(de|en|ro)(\/.*)?$/);
   if (localePrefixed) {
     const locale = localePrefixed[1];
@@ -742,7 +664,6 @@ function resolveFilePath(urlPath, locale = defaultLocale) {
     return { redirect: `${subPath}?locale=${locale}` };
   }
 
-  const normalizedLocale = supportedLocales.includes(locale) ? locale : defaultLocale;
   const dynamicFallbackPath = resolveDynamicPageFallback(urlPath);
   const routeCandidates = [urlPath];
 
@@ -750,16 +671,7 @@ function resolveFilePath(urlPath, locale = defaultLocale) {
     routeCandidates.push(dynamicFallbackPath);
   }
 
-  const candidates = [];
-  for (const routeCandidate of routeCandidates) {
-    if (!isLocalePrefixedPath(routeCandidate) && normalizedLocale !== defaultLocale) {
-      candidates.push(routeCandidate === '/' ? `/${normalizedLocale}` : `/${normalizedLocale}${routeCandidate}`);
-    }
-
-    candidates.push(routeCandidate);
-  }
-
-  for (const candidate of [...new Set(candidates)]) {
+  for (const candidate of [...new Set(routeCandidates)]) {
     const filePath = tryResolveFilePath(candidate);
     if (filePath) {
       return { filePath };
@@ -838,21 +750,25 @@ async function servePetChoices(response) {
 }
 
 async function main() {
-  const tailwindCommand = resolveTailwindCommand();
-  const tailwindBuildArgs = [...tailwindBaseArgs, '--minify'];
-  const tailwindWatchArgs = [...tailwindBaseArgs, '--watch'];
-
   await runProcess(
-    tailwindCommand.command,
-    [...tailwindCommand.argsPrefix, ...tailwindBuildArgs],
-    `tailwind build (${tailwindCommand.source})`
+    process.execPath,
+    ['./scripts/build-css.mjs', '--minify'],
+    'css build'
   );
 
   await buildSite();
 
-  const tailwindWatcher = noWatch
+  const cssWatcher = noWatch
     ? null
-    : startTailwindWatcher(tailwindCommand, tailwindWatchArgs);
+    : spawn(process.execPath, ['./scripts/build-css.mjs', '--watch'], {
+      cwd: rootDir,
+      stdio: 'inherit'
+    });
+
+  cssWatcher?.on('error', (error) => {
+    console.error(`css watch failed to start: ${error.message}`);
+    process.exit(1);
+  });
 
   const watchers = noWatch ? [] : startFileWatchers();
 
@@ -951,7 +867,7 @@ async function main() {
       return;
     }
 
-    const resolved = resolveFilePath(requestUrl.pathname, locale);
+    const resolved = resolveFilePath(requestUrl.pathname);
 
     if (!resolved) {
       const notFoundPage = await renderLocalizedPage(rootDir, '/404', locale);
@@ -987,7 +903,7 @@ async function main() {
     cleanedUp = true;
     clearTimeout(buildTimer);
     server.close();
-    tailwindWatcher?.kill('SIGTERM');
+    cssWatcher?.kill('SIGTERM');
     E2E_RUNNER.child?.kill('SIGTERM');
     for (const watcher of watchers) {
       watcher.close();
