@@ -1,7 +1,0 @@
-<svg id="emoji" viewBox="4 16 64 40" xmlns="http://www.w3.org/2000/svg">
-  <g id="color">
-    <rect x="5" y="17" width="62" height="38" fill="#f1b31c"/>
-    <rect x="5" y="30" width="62" height="12" fill="#d22f27"/>
-    <rect x="5" y="17" width="62" height="13"/>
-  </g>
-</svg>

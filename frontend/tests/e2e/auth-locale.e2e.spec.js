@@ -18,7 +18,6 @@ test.describe('Auth modal locale routing', () => {
     const repositoryLinks = await readHeaderRepositoryMenuHrefs(page);
     expect(repositoryLinks).toEqual([
       '/repository/playwright?locale=en',
-      '/repository/api?locale=en',
       '/repository/git?locale=en',
       '/repository/kanban?locale=en'
     ]);
@@ -45,7 +44,6 @@ test.describe('Auth modal locale routing', () => {
     const repositoryLinks = await readHeaderRepositoryMenuHrefs(page);
     expect(repositoryLinks).toEqual([
       '/repository/playwright?locale=ro',
-      '/repository/api?locale=ro',
       '/repository/git?locale=ro',
       '/repository/kanban?locale=ro'
     ]);

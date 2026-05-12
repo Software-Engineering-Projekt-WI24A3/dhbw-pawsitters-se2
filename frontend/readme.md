@@ -2,10 +2,12 @@ Frontend-only workspace for Pawsitters.
 
 Structure:
 - `src/templates/` shared layout and page templates
-- `src/locales/` i18n content for `/de/`, `/en/`, and future languages
-- `src/tailwind/` design system source
+- `src/locales/` i18n keys for all supported languages
+- `src/tailwind/` design system source styles
 - `src/js/` Vue behavior
-- `assets/` built CSS, JS, vendor files, and media
+- `src/media/` source images and icons
+- `scripts/` build, check, serve, and dev runtime scripts
+- `dist/` generated frontend output (HTML routes + `/assets/**`)
 - `tests/e2e/` Playwright E2E checks
 - `tests/*.test.mjs` data/snapshot validation checks
 

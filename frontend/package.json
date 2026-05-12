@@ -8,7 +8,7 @@
     "dev": "node ./scripts/dev.mjs",
     "dev:test": "NO_WATCH=1 node ./scripts/dev.mjs",
     "build": "npm run build:css && npm run thymeleaf:build",
-    "build:css": "mkdir -p ./assets/css && tailwindcss -c tailwind.config.js -i ./src/tailwind/site.css -o ./assets/css/site.css --minify",
+    "build:css": "node ./scripts/build-css.mjs --minify",
     "serve": "node ./scripts/serve.mjs",
     "thymeleaf:build": "node ./scripts/build-site.mjs",
     "thymeleaf:check": "node ./scripts/check-thymeleaf.mjs",

@@ -1,7 +1,7 @@
 import { compile, createApp, nextTick } from '/assets/vendor/vue.esm-browser.prod.js';
 
 let gitgraphLoader = null;
-const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu, details.header_search_field';
+const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu, details.header_search_field, details.phone_country_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
 const DROPDOWN_CLOSE_DELAY_MS = 90;
@@ -19,14 +19,41 @@ const NOTIFICATION_LIMIT = 4;
 const NOTIFICATION_LIFETIME_MS = 7000;
 const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
 const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
+const PHONE_COUNTRY_PREFIX_ENDPOINTS = ['/assets/data/country-phone-prefixes.json'];
 const HEADER_SEARCH_SESSION_STORAGE_KEY = 'pawsitters.header-search-state';
 const REDIRECT_NOTIFICATION_STORAGE_KEY = 'pawsitters.redirect-notification';
 const REDIRECT_REGISTER_EMAIL_STORAGE_KEY = 'pawsitters.redirect-register-email';
+const PHONE_COUNTRY_DEFAULT_BY_LOCALE = {
+    de: 'DE',
+    en: 'US',
+    ro: 'RO'
+};
+const LOCALE_NATIVE_LABELS = {
+    de: 'Deutsch',
+    en: 'English',
+    ro: 'Romana'
+};
+const LOCALE_SWITCH_NOTIFICATION_COPY = {
+    de: {
+        title: 'Sprache gewechselt',
+        message: 'Willkommen im {language}-Bereich.'
+    },
+    en: {
+        title: 'Language switched',
+        message: 'Welcome to the {language} experience.'
+    },
+    ro: {
+        title: 'Limba a fost schimbata',
+        message: 'Bine ai venit in experienta {language}.'
+    }
+};
 const BACKEND_STATUS_ENDPOINT = '/api/auth/session';
 const BACKEND_STATUS_POLL_INTERVAL_MS = 30000;
+const LOADING_INDICATOR_DELAY_MS = 320;
 const REGISTER_STEPS = ['account', 'profile', 'pets'];
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
+const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?settings$/i;
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
     'PPL',
     'PPLA',
@@ -228,13 +255,11 @@ const headerScrollAnimationState = {
 };
 const METRIC_GROUP_FIELDS = {
     git: ['totalCommits', 'mergeCommits', 'contributorCount', 'branchCount'],
-    api: ['operationCount', 'pathCount', 'methodCount', 'tagCount'],
     board: ['openCount', 'assignedCount', 'ownerCount', 'criteriaCount'],
     playwright: ['total', 'passed', 'failed', 'pending']
 };
 const METRIC_GROUP_SELECTORS = {
     git: '.git_metrics',
-    api: '.api_metrics',
     board: '.board_metrics',
     playwright: '.playwright_metrics'
 };
@@ -723,23 +748,6 @@ function createEmptyRepository() {
             lastCommitDate: '',
             lastCommitLabel: ''
         },
-        api: {
-            source: '',
-            info: {
-                title: '',
-                version: ''
-            },
-            summary: {
-                operationCount: 0,
-                pathCount: 0,
-                methodCount: 0,
-                tagCount: 0
-            },
-            methods: [],
-            tags: [],
-            operations: [],
-            parseError: ''
-        },
         board: {
             cards: [],
             columns: [],
@@ -781,9 +789,6 @@ function normalizeRepository(repository) {
     const sourceGitRepository = sourceGit.repository && typeof sourceGit.repository === 'object' ? sourceGit.repository : {};
     const sourceGitActivity = sourceGit.activity && typeof sourceGit.activity === 'object' ? sourceGit.activity : {};
     const sourceGitRanges = sourceGit.activityRanges && typeof sourceGit.activityRanges === 'object' ? sourceGit.activityRanges : {};
-    const sourceApi = source.api && typeof source.api === 'object' ? source.api : {};
-    const sourceApiInfo = sourceApi.info && typeof sourceApi.info === 'object' ? sourceApi.info : {};
-    const sourceApiSummary = sourceApi.summary && typeof sourceApi.summary === 'object' ? sourceApi.summary : {};
     const sourceBoard = source.board && typeof source.board === 'object' ? source.board : {};
     const sourceBoardSummary = sourceBoard.summary && typeof sourceBoard.summary === 'object' ? sourceBoard.summary : {};
 
@@ -896,21 +901,6 @@ function normalizeRepository(repository) {
                     ? sourceProjectGraph.recentCommits.map(normalizeRecentCommitWithFallback)
                     : []
             }
-        },
-        api: {
-            ...empty.api,
-            ...sourceApi,
-            info: {
-                ...empty.api.info,
-                ...sourceApiInfo
-            },
-            summary: {
-                ...empty.api.summary,
-                ...sourceApiSummary
-            },
-            methods: Array.isArray(sourceApi.methods) ? sourceApi.methods : [],
-            tags: Array.isArray(sourceApi.tags) ? sourceApi.tags : [],
-            operations: Array.isArray(sourceApi.operations) ? sourceApi.operations : []
         },
         board: {
             ...empty.board,
@@ -1254,6 +1244,27 @@ function countryCodeToFlagFileName(countryCode) {
     return `${codepoints[0]}-${codepoints[1]}.svg`;
 }
 
+function normalizeDialCode(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+        return '';
+    }
+
+    const digits = String(value).replace(/\D/g, '');
+    if (!digits) {
+        return '';
+    }
+
+    return `+${digits}`;
+}
+
+function normalizePhoneNumberDigits(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+        return '';
+    }
+
+    return String(value).replace(/\D/g, '');
+}
+
 function resolveCountryName(countryCode, locale = document.documentElement.lang || 'de') {
     const normalized = normalizeCountryCode(countryCode);
     if (!normalized) {
@@ -1266,6 +1277,43 @@ function resolveCountryName(countryCode, locale = document.documentElement.lang 
     } catch {
         return normalized;
     }
+}
+
+function normalizePhoneCountryPrefixOptions(payload = {}, locale = document.documentElement.lang || 'de') {
+    const sourceCountries = Array.isArray(payload?.countries) ? payload.countries : [];
+    const seenCodes = new Set();
+    const normalized = [];
+
+    sourceCountries.forEach((entry) => {
+        const source = entry && typeof entry === 'object' ? entry : {};
+        const code = normalizeCountryCode(source.code);
+        const dialCode = normalizeDialCode(source.dialCode ?? source.phonecode);
+        if (!code || !dialCode || seenCodes.has(code)) {
+            return;
+        }
+
+        const fallbackName = typeof source.name === 'string' ? source.name.trim() : '';
+        const localizedName = resolveCountryName(code, locale);
+        const displayName = localizedName || fallbackName || code;
+        const providedFlagPath = typeof source.flagPath === 'string' ? source.flagPath.trim() : '';
+        const fallbackFlagPath = `/assets/media/country-flag/${countryCodeToFlagFileName(code)}`;
+        const flagPath = providedFlagPath || fallbackFlagPath;
+        const searchName = [displayName, fallbackName, code, dialCode]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+        normalized.push({
+            code,
+            dialCode,
+            displayName,
+            flagPath,
+            searchName
+        });
+        seenCodes.add(code);
+    });
+
+    return normalized.sort((left, right) => left.displayName.localeCompare(right.displayName, locale));
 }
 
 function isCityFeatureCode(featureCode) {
@@ -1292,6 +1340,27 @@ function normalizePostalCode(value) {
     }
 
     return digitsOnly.slice(0, 5);
+}
+
+function normalizeProfilePicturePath(value) {
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return '';
+    }
+
+    if (
+        /^https?:\/\//i.test(trimmed)
+        || trimmed.startsWith('/')
+        || /^data:/i.test(trimmed)
+    ) {
+        return trimmed;
+    }
+
+    return `/uploads/profiles/${trimmed}`;
 }
 
 function resolveCityPostalCodeFromSource(source) {
@@ -1595,6 +1664,18 @@ function normalizeUiLocaleCode(locale = document.documentElement.lang || 'de') {
     return normalized;
 }
 
+function formatTemplate(template, values = {}) {
+    const safeTemplate = typeof template === 'string' ? template : '';
+    if (!safeTemplate) {
+        return '';
+    }
+
+    return safeTemplate.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => {
+        const value = values[key];
+        return value === null || value === undefined ? '' : String(value);
+    });
+}
+
 function formatPetChoiceLabel(value, locale = document.documentElement.lang || 'de') {
     if (typeof value !== 'string') {
         return '';
@@ -1718,8 +1799,10 @@ const appRoot = document.querySelector('#app-shell');
 const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
 const headerSearchRoot = document.querySelector('[data-header-search]');
 const authModalFormRoot = document.querySelector('.auth_modal__form');
+const userSearchModalFormRoot = document.querySelector('.user_search_modal__form');
 const registerFormRoot = document.querySelector('.auth_form');
 const profilePageRoot = document.querySelector('[data-profile-view]');
+const settingsPageRoot = document.querySelector('[data-settings-view]');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
     pending: 'Pending',
@@ -1743,19 +1826,51 @@ const localizedPlaywrightLoadingLabel = playwrightRunnerRoot?.getAttribute('data
 const localizedPlaywrightNotificationTitle = playwrightRunnerRoot?.getAttribute('data-notification-title') || 'Playwright tests completed';
 const localizedPlaywrightStatusRequestFailed = playwrightRunnerRoot?.getAttribute('data-status-request-failed') || 'Playwright status request failed.';
 const localizedPlaywrightRunRequestFailed = playwrightRunnerRoot?.getAttribute('data-run-request-failed') || 'Playwright run request failed.';
+const localizedPasswordCriteriaStrings = {
+    minLength: settingsPageRoot?.dataset.settingsPasswordCriteriaMinLength
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaMinLength
+        || 'At least 15 characters',
+    maxBytes: settingsPageRoot?.dataset.settingsPasswordCriteriaMaxBytes
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaMaxBytes
+        || 'At most 72 bytes',
+    lowercase: settingsPageRoot?.dataset.settingsPasswordCriteriaLowercase
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaLowercase
+        || 'At least one lowercase letter',
+    uppercase: settingsPageRoot?.dataset.settingsPasswordCriteriaUppercase
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaUppercase
+        || 'At least one uppercase letter',
+    digit: settingsPageRoot?.dataset.settingsPasswordCriteriaDigit
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaDigit
+        || 'At least one number',
+    special: settingsPageRoot?.dataset.settingsPasswordCriteriaSpecial
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaSpecial
+        || 'At least one special character',
+    match: settingsPageRoot?.dataset.settingsPasswordCriteriaMatch
+        || registerFormRoot?.dataset.authRegisterPasswordCriteriaMatch
+        || 'Both passwords are identical'
+};
 const localizedAuthModalStrings = {
-    identifierRequired: authModalFormRoot?.dataset.authIdentifierRequired || 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    identifierRequired: authModalFormRoot?.dataset.authIdentifierRequired || 'Please enter a valid email address.',
     passwordRequired: authModalFormRoot?.dataset.authPasswordRequired || 'Please enter a password.',
     loginErrorTitle: authModalFormRoot?.dataset.authLoginErrorTitle || 'Sign in failed',
     loginFailedMessage: authModalFormRoot?.dataset.authLoginFailedMessage || 'Sign in could not be completed.',
     loginSuccessTitle: authModalFormRoot?.dataset.authLoginSuccessTitle || 'Signed in',
     loginSuccessMessage: authModalFormRoot?.dataset.authLoginSuccessMessage || 'You are now signed in.',
-    emailFoundTitle: authModalFormRoot?.dataset.authEmailFoundTitle || 'Benutzer gefunden',
-    emailFoundMessage: authModalFormRoot?.dataset.authEmailFoundMessage || 'Konto gefunden. Bitte gib jetzt dein Passwort ein.',
-    emailNotFoundTitle: authModalFormRoot?.dataset.authEmailNotFoundTitle || 'Kein Benutzer gefunden',
-    emailNotFoundMessage: authModalFormRoot?.dataset.authEmailNotFoundMessage || 'Für diese E-Mail wurde kein Konto gefunden. Du wirst zur Registrierung weitergeleitet.',
-    emailCheckFailedTitle: authModalFormRoot?.dataset.authEmailCheckFailedTitle || 'E-Mail-Prüfung fehlgeschlagen',
-    emailCheckFailedMessage: authModalFormRoot?.dataset.authEmailCheckFailedMessage || 'Die E-Mail konnte nicht geprüft werden. Bitte versuche es erneut.'
+    emailFoundTitle: authModalFormRoot?.dataset.authEmailFoundTitle || 'User found',
+    emailFoundMessage: authModalFormRoot?.dataset.authEmailFoundMessage || 'Account found. Please enter your password.',
+    emailNotFoundTitle: authModalFormRoot?.dataset.authEmailNotFoundTitle || 'No user found',
+    emailNotFoundMessage: authModalFormRoot?.dataset.authEmailNotFoundMessage || 'No account was found for this email. You will be redirected to registration.',
+    emailCheckFailedTitle: authModalFormRoot?.dataset.authEmailCheckFailedTitle || 'Email check failed',
+    emailCheckFailedMessage: authModalFormRoot?.dataset.authEmailCheckFailedMessage || 'The email could not be checked. Please try again.'
+};
+const localizedUserSearchModalStrings = {
+    invalidQuery: userSearchModalFormRoot?.dataset.userSearchInvalidQuery || 'Please enter a positive user ID or search term.',
+    loadFailed: userSearchModalFormRoot?.dataset.userSearchLoadFailed || 'Users could not be loaded.',
+    notFound: userSearchModalFormRoot?.dataset.userSearchNotFound || 'No user found for this ID.',
+    noMatches: userSearchModalFormRoot?.dataset.userSearchNoMatches || 'No matching users found.',
+    loading: userSearchModalFormRoot?.dataset.userSearchLoading || 'Loading users...',
+    empty: userSearchModalFormRoot?.dataset.userSearchEmpty || 'Enter a user ID or a search term.',
+    errorTitle: userSearchModalFormRoot?.dataset.userSearchErrorTitle || 'User search failed'
 };
 const localizedRegisterStrings = {
     firstNameRequired: registerFormRoot?.dataset.authRegisterFirstNameRequired || 'Please enter your first name.',
@@ -1766,13 +1881,17 @@ const localizedRegisterStrings = {
     passwordsMismatch: registerFormRoot?.dataset.authRegisterPasswordsMismatch || 'Both passwords must match.',
     passwordCriteriaRequired: registerFormRoot?.dataset.authRegisterPasswordCriteriaRequired || 'Please meet all password criteria.',
     passwordMinLength: registerFormRoot?.dataset.authRegisterPasswordMinLength || 'Password must be at least 15 characters long.',
-    passwordCriteriaMinLength: registerFormRoot?.dataset.authRegisterPasswordCriteriaMinLength || 'At least 15 characters',
-    passwordCriteriaMaxBytes: registerFormRoot?.dataset.authRegisterPasswordCriteriaMaxBytes || 'At most 72 bytes',
-    passwordCriteriaLowercase: registerFormRoot?.dataset.authRegisterPasswordCriteriaLowercase || 'At least one lowercase letter',
-    passwordCriteriaUppercase: registerFormRoot?.dataset.authRegisterPasswordCriteriaUppercase || 'At least one uppercase letter',
-    passwordCriteriaDigit: registerFormRoot?.dataset.authRegisterPasswordCriteriaDigit || 'At least one number',
-    passwordCriteriaSpecial: registerFormRoot?.dataset.authRegisterPasswordCriteriaSpecial || 'At least one special character',
-    passwordCriteriaMatch: registerFormRoot?.dataset.authRegisterPasswordCriteriaMatch || 'Both passwords are identical',
+    passwordCriteriaMinLength: localizedPasswordCriteriaStrings.minLength,
+    passwordCriteriaMaxBytes: localizedPasswordCriteriaStrings.maxBytes,
+    passwordCriteriaLowercase: localizedPasswordCriteriaStrings.lowercase,
+    passwordCriteriaUppercase: localizedPasswordCriteriaStrings.uppercase,
+    passwordCriteriaDigit: localizedPasswordCriteriaStrings.digit,
+    passwordCriteriaSpecial: localizedPasswordCriteriaStrings.special,
+    passwordCriteriaMatch: localizedPasswordCriteriaStrings.match,
+    phoneCountryLabel: registerFormRoot?.dataset.authRegisterPhoneCountryLabel || 'Country code',
+    phoneCountryPlaceholder: registerFormRoot?.dataset.authRegisterPhoneCountryPlaceholder || 'Country and code',
+    phoneCountryRequired: registerFormRoot?.dataset.authRegisterPhoneCountryRequired || 'Please choose a country code.',
+    phoneCountryLoading: registerFormRoot?.dataset.authRegisterPhoneCountryLoading || 'Loading country codes.',
     phoneRequired: registerFormRoot?.dataset.authRegisterPhoneRequired || 'Please enter a phone number.',
     birthDateRequired: registerFormRoot?.dataset.authRegisterBirthDateRequired || 'Please enter your birth date.',
     birthDatePast: registerFormRoot?.dataset.authRegisterBirthDatePast || 'Birth date must be in the past.',
@@ -1790,30 +1909,167 @@ const localizedRegisterStrings = {
     countryFallback: registerFormRoot?.dataset.authRegisterCountryFallback || 'Country is filled automatically after selecting a city.'
 };
 const localizedHeaderSearchStrings = {
-    destinationDescription: headerSearchRoot?.dataset.destinationDescription || 'Vermietungsorte suchen',
-    destinationCompactEmpty: headerSearchRoot?.dataset.destinationCompactEmpty || 'Irgendwo',
-    dateDescription: headerSearchRoot?.dataset.dateDescription || 'Datum hinzufügen',
-    dateCompactEmpty: headerSearchRoot?.dataset.dateCompactEmpty || 'Jederzeit',
-    petDescription: headerSearchRoot?.dataset.petDescription || 'Haustiere',
-    petCompactEmpty: headerSearchRoot?.dataset.petCompactEmpty || 'Gäste hinzufügen',
-    destinationNoResults: headerSearchRoot?.dataset.destinationNoResults || 'Keine Städte gefunden',
-    destinationLoading: headerSearchRoot?.dataset.destinationLoading || 'Städte werden geladen',
-    petLoading: headerSearchRoot?.dataset.petLoading || 'Haustiere werden geladen',
-    petEmpty: headerSearchRoot?.dataset.petEmpty || 'Keine Haustiere verfügbar',
-    backendStatusChecking: headerSearchRoot?.dataset.backendStatusChecking || 'Backend-Verbindung wird geprüft',
-    backendStatusOnline: headerSearchRoot?.dataset.backendStatusOnline || 'Backend verbunden',
-    backendStatusOffline: headerSearchRoot?.dataset.backendStatusOffline || 'Backend nicht erreichbar',
-    backendStatusRetry: headerSearchRoot?.dataset.backendStatusRetry || 'Backend-Verbindung erneut prüfen'
+    destinationDescription: headerSearchRoot?.dataset.destinationDescription || 'Search rental locations',
+    destinationCompactEmpty: headerSearchRoot?.dataset.destinationCompactEmpty || 'Anywhere',
+    dateDescription: headerSearchRoot?.dataset.dateDescription || 'Add date',
+    dateCompactEmpty: headerSearchRoot?.dataset.dateCompactEmpty || 'Anytime',
+    petDescription: headerSearchRoot?.dataset.petDescription || 'Pets',
+    petCompactEmpty: headerSearchRoot?.dataset.petCompactEmpty || 'Add guests',
+    destinationNoResults: headerSearchRoot?.dataset.destinationNoResults || 'No cities found',
+    destinationLoading: headerSearchRoot?.dataset.destinationLoading || 'Loading cities',
+    petLoading: headerSearchRoot?.dataset.petLoading || 'Loading pets',
+    petEmpty: headerSearchRoot?.dataset.petEmpty || 'No pets available',
+    backendStatusChecking: headerSearchRoot?.dataset.backendStatusChecking || 'Checking backend connection',
+    backendStatusOnline: headerSearchRoot?.dataset.backendStatusOnline || 'Backend connected',
+    backendStatusOffline: headerSearchRoot?.dataset.backendStatusOffline || 'Backend unreachable',
+    backendStatusRetry: headerSearchRoot?.dataset.backendStatusRetry || 'Retry backend connection check'
 };
 const localizedProfileStrings = {
-    loading: profilePageRoot?.dataset.profileLoadingLabel || 'Profil wird geladen.',
-    authRequired: profilePageRoot?.dataset.profileAuthRequired || 'Bitte logge dich ein, um dieses Profil anzusehen.',
-    notFound: profilePageRoot?.dataset.profileNotFound || 'Dieses Profil wurde nicht gefunden.',
-    loadFailed: profilePageRoot?.dataset.profileLoadFailed || 'Profil konnte nicht geladen werden.',
-    routeMissing: profilePageRoot?.dataset.profileRouteMissing || 'Bitte öffne eine Profil-URL mit Benutzer-ID.',
+    loading: profilePageRoot?.dataset.profileLoadingLabel || 'Loading profile.',
+    authRequired: profilePageRoot?.dataset.profileAuthRequired || 'Please sign in to view this profile.',
+    notFound: profilePageRoot?.dataset.profileNotFound || 'This profile could not be found.',
+    loadFailed: profilePageRoot?.dataset.profileLoadFailed || 'Profile could not be loaded.',
+    routeMissing: profilePageRoot?.dataset.profileRouteMissing || 'Please open a profile URL with a user ID.',
     rolePetOwner: profilePageRoot?.dataset.profileRolePetOwner || 'Pet owner',
-    roleHost: profilePageRoot?.dataset.profileRoleHost || 'Host'
+    roleHost: profilePageRoot?.dataset.profileRoleHost || 'Host',
+    ratingHeadingTemplate: profilePageRoot?.dataset.profileRatingHeadingTemplate || 'Reviews for {firstName} ({count})',
+    ratingAriaTemplate: profilePageRoot?.dataset.profileRatingAriaTemplate || '{rating} out of 5 stars from {count} ratings',
+    ratingFirstNameFallback: profilePageRoot?.dataset.profileRatingFirstNameFallback || 'this profile'
 };
+const localizedSettingsStrings = {
+    loading: settingsPageRoot?.dataset.settingsLoadingLabel || 'Loading settings.',
+    authRequired: settingsPageRoot?.dataset.settingsAuthRequired || 'Please sign in to open settings.',
+    loadFailed: settingsPageRoot?.dataset.settingsLoadFailed || 'Settings could not be loaded.',
+    emptyValue: settingsPageRoot?.dataset.settingsEmptyValue || '—',
+    editTitleTemplate: settingsPageRoot?.dataset.settingsEditTitleTemplate || 'Edit {field}',
+    editAriaTemplate: settingsPageRoot?.dataset.settingsEditAriaTemplate || 'Edit {field}',
+    modalSave: settingsPageRoot?.dataset.settingsModalSave || 'Save',
+    closeAria: settingsPageRoot?.dataset.settingsModalCloseAria || 'Close edit dialog',
+    saveSuccessTitle: settingsPageRoot?.dataset.settingsSaveSuccessTitle || 'Changes saved',
+    saveSuccessTemplate: settingsPageRoot?.dataset.settingsSaveSuccessTemplate || '{field} was updated successfully.',
+    saveErrorTitle: settingsPageRoot?.dataset.settingsSaveErrorTitle || 'Save failed',
+    saveErrorMessage: settingsPageRoot?.dataset.settingsSaveErrorMessage || 'Your changes could not be saved.',
+    emailChangedTitle: settingsPageRoot?.dataset.settingsEmailChangedTitle || 'Email updated',
+    emailChangedMessage: settingsPageRoot?.dataset.settingsEmailChangedMessage || 'Please sign in again with your new email address.',
+    passwordChangedTitle: settingsPageRoot?.dataset.settingsPasswordChangedTitle || 'Password updated',
+    passwordChangedMessage: settingsPageRoot?.dataset.settingsPasswordChangedMessage || 'Please sign in again with your new password.',
+    passwordMasked: settingsPageRoot?.dataset.settingsPasswordMasked || '************',
+    validationRequired: settingsPageRoot?.dataset.settingsValidationRequired || 'Please fill out this field.',
+    validationEmail: settingsPageRoot?.dataset.settingsValidationEmail || 'Please enter a valid email address.',
+    validationEmailExists: settingsPageRoot?.dataset.settingsValidationEmailExists || 'This email address is already in use.',
+    validationBirthDate: settingsPageRoot?.dataset.settingsValidationBirthDate || 'Please enter a valid birth date in the past.',
+    validationPostalCode: settingsPageRoot?.dataset.settingsValidationPostalCode || 'Postal code must contain exactly 5 digits.',
+    validationCity: settingsPageRoot?.dataset.settingsValidationCity || localizedRegisterStrings.cityRequired,
+    validationPhoneCountry: settingsPageRoot?.dataset.settingsValidationPhoneCountry || localizedRegisterStrings.phoneCountryRequired,
+    validationCurrentPasswordRequired: settingsPageRoot?.dataset.settingsValidationCurrentPasswordRequired || 'Please enter your current password.',
+    validationCurrentPasswordInvalid: settingsPageRoot?.dataset.settingsValidationCurrentPasswordInvalid || 'Your current password is incorrect.',
+    validationNewPasswordRequired: settingsPageRoot?.dataset.settingsValidationNewPasswordRequired || 'Please enter a new password.',
+    validationPasswordConfirmationRequired: settingsPageRoot?.dataset.settingsValidationPasswordConfirmationRequired || 'Please repeat your new password.',
+    validationPasswordsMismatch: settingsPageRoot?.dataset.settingsValidationPasswordsMismatch || 'Both new passwords must match.',
+    validationPasswordCriteriaRequired: settingsPageRoot?.dataset.settingsValidationPasswordCriteriaRequired || 'Please meet all password criteria.',
+    validationSpecies: settingsPageRoot?.dataset.settingsValidationSpecies || 'Please select at least one pet species.',
+    petHint: settingsPageRoot?.dataset.settingsPetHint || 'Choose the pet species you want to care for.',
+    imageUploadLabel: settingsPageRoot?.dataset.settingsImageUploadLabel || 'Upload profile picture (optional)',
+    imageUploadHint: settingsPageRoot?.dataset.settingsImageUploadHint || 'If you pick a file, it will be uploaded directly.',
+    imageSelectedTemplate: settingsPageRoot?.dataset.settingsImageSelectedTemplate || 'Selected: {name}',
+    cityLoading: settingsPageRoot?.dataset.settingsCityLoading || localizedRegisterStrings.cityLoading,
+    cityNoResults: settingsPageRoot?.dataset.settingsCityNoResults || localizedRegisterStrings.cityNoResults,
+    cityResultsAria: settingsPageRoot?.dataset.settingsCityResultsAria || localizedRegisterStrings.cityResultsAria,
+    rolePetOwner: settingsPageRoot?.dataset.settingsRolePetOwner || 'Pet owner',
+    roleHost: settingsPageRoot?.dataset.settingsRoleHost || 'Host',
+    labels: {
+        firstName: settingsPageRoot?.dataset.settingsLabelFirstName || 'First name',
+        lastName: settingsPageRoot?.dataset.settingsLabelLastName || 'Last name',
+        email: settingsPageRoot?.dataset.settingsLabelEmail || 'Email',
+        password: settingsPageRoot?.dataset.settingsLabelPassword || 'Password',
+        phone: settingsPageRoot?.dataset.settingsLabelPhone || 'Phone',
+        birthDate: settingsPageRoot?.dataset.settingsLabelBirthDate || 'Birth date',
+        emergencyContact: settingsPageRoot?.dataset.settingsLabelEmergencyContact || 'Emergency contact',
+        profilePicture: settingsPageRoot?.dataset.settingsLabelProfilePicture || 'Profile picture',
+        bio: settingsPageRoot?.dataset.settingsLabelBio || 'Bio',
+        role: settingsPageRoot?.dataset.settingsLabelRole || 'Role',
+        phoneCountry: settingsPageRoot?.dataset.settingsLabelPhoneCountry || localizedRegisterStrings.phoneCountryLabel,
+        city: settingsPageRoot?.dataset.settingsLabelCity || 'City',
+        postalCode: settingsPageRoot?.dataset.settingsLabelPostalCode || 'Postal code',
+        acceptedPetSpecies: settingsPageRoot?.dataset.settingsLabelAcceptedPets || 'Accepted pet species'
+    },
+    placeholders: {
+        firstName: settingsPageRoot?.dataset.settingsPlaceholderFirstName || 'First name',
+        lastName: settingsPageRoot?.dataset.settingsPlaceholderLastName || 'Last name',
+        email: settingsPageRoot?.dataset.settingsPlaceholderEmail || 'Email',
+        password: settingsPageRoot?.dataset.settingsPlaceholderPassword || 'Password',
+        currentPassword: settingsPageRoot?.dataset.settingsPlaceholderCurrentPassword || 'Current password',
+        newPassword: settingsPageRoot?.dataset.settingsPlaceholderNewPassword || 'New password',
+        confirmPassword: settingsPageRoot?.dataset.settingsPlaceholderConfirmPassword || 'Repeat new password',
+        phone: settingsPageRoot?.dataset.settingsPlaceholderPhone || 'Phone',
+        phoneCountry: settingsPageRoot?.dataset.settingsPlaceholderPhoneCountry || localizedRegisterStrings.phoneCountryPlaceholder,
+        birthDate: settingsPageRoot?.dataset.settingsPlaceholderBirthDate || 'Birth date',
+        emergencyContact: settingsPageRoot?.dataset.settingsPlaceholderEmergencyContact || 'Emergency contact',
+        profilePicture: settingsPageRoot?.dataset.settingsPlaceholderProfilePicture || 'Profile picture',
+        bio: settingsPageRoot?.dataset.settingsPlaceholderBio || 'Bio',
+        city: settingsPageRoot?.dataset.settingsPlaceholderCity || 'City',
+        postalCode: settingsPageRoot?.dataset.settingsPlaceholderPostalCode || 'Postal code'
+    }
+};
+const localizedAppStrings = {
+    genericUser: appRoot?.dataset.authGenericUser || 'User',
+    sessionGreetingTemplate: appRoot?.dataset.authSessionGreetingTemplate || 'Hello, {firstName}',
+    loginSuccessTemplate: appRoot?.dataset.authLoginSuccessTemplate || 'Hello, {fullName}! You are now signed in.',
+    registerSuccessTemplate: appRoot?.dataset.authRegisterSuccessTemplate || 'Welcome, {fullName}! Your account is ready.',
+    logoutSuccessTitle: appRoot?.dataset.authLogoutSuccessTitle || 'Logged out',
+    logoutSuccessTemplate: appRoot?.dataset.authLogoutSuccessTemplate || 'You have been logged out successfully, {firstName}.',
+    profileDocumentTitleTemplate: appRoot?.dataset.profileDocumentTitleTemplate || '{brand} | Profile',
+    notificationDismissAria: appRoot?.dataset.notificationDismissAria || 'Dismiss notification'
+};
+
+function buildPasswordCriteria(password = '', passwordConfirmation = '', labels = localizedPasswordCriteriaStrings) {
+    const safePassword = typeof password === 'string' ? password : '';
+    const safePasswordConfirmation = typeof passwordConfirmation === 'string' ? passwordConfirmation : '';
+    const passwordBytes = new TextEncoder().encode(safePassword).length;
+    const hasLowercase = /\p{Ll}/u.test(safePassword);
+    const hasUppercase = /\p{Lu}/u.test(safePassword);
+    const hasDigit = /\d/u.test(safePassword);
+    const hasSpecial = /[^\p{L}\p{N}\s]/u.test(safePassword);
+    const passwordsMatch = Boolean(safePasswordConfirmation) && safePassword === safePasswordConfirmation;
+
+    return [
+        {
+            id: 'min-length',
+            label: labels.minLength,
+            met: Array.from(safePassword).length >= 15
+        },
+        {
+            id: 'max-bytes',
+            label: labels.maxBytes,
+            met: passwordBytes <= 72
+        },
+        {
+            id: 'lowercase',
+            label: labels.lowercase,
+            met: hasLowercase
+        },
+        {
+            id: 'uppercase',
+            label: labels.uppercase,
+            met: hasUppercase
+        },
+        {
+            id: 'digit',
+            label: labels.digit,
+            met: hasDigit
+        },
+        {
+            id: 'special',
+            label: labels.special,
+            met: hasSpecial
+        },
+        {
+            id: 'match',
+            label: labels.match,
+            met: passwordsMatch
+        }
+    ];
+}
 const initialHeaderSearchState = readHeaderSearchSessionState();
 
 createApp({
@@ -1825,6 +2081,7 @@ createApp({
         return {
             menuOpen: false,
             loginModalOpen: false,
+            userSearchModalOpen: false,
             authSessionLoggedIn: false,
             authSessionEmail: '',
             authSessionUserId: null,
@@ -1833,6 +2090,7 @@ createApp({
             authSessionRequestId: 0,
             authSessionProfileRequestId: 0,
             profileViewLoading: false,
+            showProfileViewLoadingDots: false,
             profileViewError: '',
             profileViewRequestedUserId: null,
             profileViewUser: null,
@@ -1840,6 +2098,34 @@ createApp({
             profileViewBaseDocumentTitle: typeof document !== 'undefined'
                 ? String(document.title || '').trim()
                 : 'Pawsitters',
+            settingsViewLoading: false,
+            showSettingsViewLoadingDots: false,
+            settingsViewError: '',
+            settingsViewUser: null,
+            settingsCityLocationOption: null,
+            settingsCityLookupRequestId: 0,
+            settingsCityLookupAbortController: null,
+            settingsStrings: localizedSettingsStrings,
+            settingsEditModalOpen: false,
+            settingsEditField: '',
+            settingsEditValue: '',
+            settingsPhoneCountryCode: '',
+            settingsCityQuery: '',
+            settingsCitySelectionKey: '',
+            settingsCitySelectedOption: null,
+            settingsCityOptions: [],
+            settingsCityOptionsLoading: false,
+            showSettingsCityOptionsLoadingDots: false,
+            settingsCitySearchDebounceHandle: null,
+            settingsCitySearchAbortController: null,
+            settingsCitySearchRequestId: 0,
+            settingsEditCurrentPassword: '',
+            settingsEditNewPassword: '',
+            settingsEditPasswordConfirmation: '',
+            settingsEditSpecies: [],
+            settingsEditProfileFile: null,
+            settingsEditProfileFileName: '',
+            settingsEditSaving: false,
             backendStatusState: 'checking',
             backendStatusChecking: false,
             backendStatusRequestId: 0,
@@ -1850,12 +2136,23 @@ createApp({
             loginLookupPending: false,
             loginLookupRequestId: 0,
             loginMailCheckedFor: '',
+            userSearchQuery: '',
+            userSearchLoading: false,
+            showUserSearchLoadingDots: false,
+            userSearchStatusMessage: '',
+            userSearchStatusTone: 'info',
+            userSearchResults: [],
+            userSearchRequestId: 0,
+            userSearchDirectoryRequestId: 0,
+            userSearchDirectoryLoaded: false,
+            userSearchDirectory: [],
             registerStep: REGISTER_STEPS[0],
             registerFirstName: '',
             registerLastName: '',
             registerEmail: '',
             registerPassword: '',
             registerPasswordConfirmation: '',
+            registerPhoneCountryCode: '',
             registerPhone: '',
             registerBirthDate: '',
             registerEmergencyContact: '',
@@ -1871,12 +2168,17 @@ createApp({
             registerCitySelectionKey: '',
             registerCityOptions: [],
             registerCityOptionsLoading: false,
+            showRegisterCityOptionsLoadingDots: false,
             registerCitySearchDebounceHandle: null,
             registerCitySearchAbortController: null,
             registerCitySearchRequestId: 0,
             registerPetChoices: [],
             registerPetChoicesLoading: false,
+            showRegisterPetChoicesLoadingDots: false,
             registerAcceptedPetSpecies: [],
+            phoneCountryOptions: [],
+            phoneCountryOptionsLoading: false,
+            phoneCountryOptionsPromise: null,
             registerSubmitPending: false,
             scrolled: false,
             headerScrollSyncFrame: 0,
@@ -1890,6 +2192,7 @@ createApp({
             selectedLocation: initialHeaderSearchState.selectedLocation,
             locationOptions: [],
             locationOptionsLoading: false,
+            showLocationOptionsLoadingDots: false,
             locationSearchDebounceHandle: null,
             locationSearchAbortController: null,
             locationSearchRequestId: 0,
@@ -1897,8 +2200,11 @@ createApp({
             dateRangeEnd: initialHeaderSearchState.dateRangeEnd,
             dateCalendarYear: todayDate.getFullYear(),
             dateCalendarMonth: todayDate.getMonth(),
+            settingsBirthDateCalendarYear: todayDate.getFullYear(),
+            settingsBirthDateCalendarMonth: todayDate.getMonth(),
             petChoices: [],
             petChoicesLoading: false,
+            showPetChoicesLoadingDots: false,
             petChoiceCounts: {
                 ...initialHeaderSearchState.petChoiceCounts
             },
@@ -1957,14 +2263,12 @@ createApp({
             animatedMetrics: createMetricAnimationState(),
             metricAnimationFrames: {
                 git: 0,
-                api: 0,
                 board: 0,
                 playwright: 0
             },
             metricAnimationTargets: createMetricAnimationState(),
             metricAnimationHasPlayed: {
                 git: false,
-                api: false,
                 board: false,
                 playwright: false
             },
@@ -1976,8 +2280,10 @@ createApp({
             playwrightLoadingLabel: localizedPlaywrightLoadingLabel,
             playwrightNotificationTitle: localizedPlaywrightNotificationTitle,
             notifications: [],
+            notificationDismissAria: localizedAppStrings.notificationDismissAria,
             notificationCounter: 0,
             notificationTimers: {},
+            loadingIndicatorTimers: {},
             dropdownQueueHandle: null,
             dropdownQueuedTargetId: ''
         };
@@ -1988,55 +2294,18 @@ createApp({
             yesterday.setDate(yesterday.getDate() - 1);
             return toDateInputValue(yesterday);
         },
+        registerPhoneCountryOption() {
+            return this.findPhoneCountryOptionByCode(this.registerPhoneCountryCode);
+        },
+        settingsPhoneCountryOption() {
+            return this.findPhoneCountryOptionByCode(this.settingsPhoneCountryCode);
+        },
         registerPasswordCriteria() {
             const password = typeof this.registerPassword === 'string' ? this.registerPassword : '';
             const passwordConfirmation = typeof this.registerPasswordConfirmation === 'string'
                 ? this.registerPasswordConfirmation
                 : '';
-            const passwordBytes = new TextEncoder().encode(password).length;
-            const hasLowercase = /\p{Ll}/u.test(password);
-            const hasUppercase = /\p{Lu}/u.test(password);
-            const hasDigit = /\d/u.test(password);
-            const hasSpecial = /[^\p{L}\p{N}\s]/u.test(password);
-            const passwordsMatch = Boolean(passwordConfirmation) && password === passwordConfirmation;
-
-            return [
-                {
-                    id: 'min-length',
-                    label: localizedRegisterStrings.passwordCriteriaMinLength,
-                    met: Array.from(password).length >= 15
-                },
-                {
-                    id: 'max-bytes',
-                    label: localizedRegisterStrings.passwordCriteriaMaxBytes,
-                    met: passwordBytes <= 72
-                },
-                {
-                    id: 'lowercase',
-                    label: localizedRegisterStrings.passwordCriteriaLowercase,
-                    met: hasLowercase
-                },
-                {
-                    id: 'uppercase',
-                    label: localizedRegisterStrings.passwordCriteriaUppercase,
-                    met: hasUppercase
-                },
-                {
-                    id: 'digit',
-                    label: localizedRegisterStrings.passwordCriteriaDigit,
-                    met: hasDigit
-                },
-                {
-                    id: 'special',
-                    label: localizedRegisterStrings.passwordCriteriaSpecial,
-                    met: hasSpecial
-                },
-                {
-                    id: 'match',
-                    label: localizedRegisterStrings.passwordCriteriaMatch,
-                    met: passwordsMatch
-                }
-            ];
+            return buildPasswordCriteria(password, passwordConfirmation, localizedPasswordCriteriaStrings);
         },
         allRegisterPasswordCriteriaMet() {
             return this.registerPasswordCriteria.every((criterion) => criterion.met);
@@ -2056,6 +2325,22 @@ createApp({
         showRegisterCityNoResults() {
             const query = typeof this.registerCityQuery === 'string' ? this.registerCityQuery.trim() : '';
             return !this.registerCityOptionsLoading && query.length >= 2 && this.filteredRegisterCityOptions.length === 0;
+        },
+        filteredSettingsCityOptions() {
+            const query = typeof this.settingsCityQuery === 'string' ? this.settingsCityQuery.trim().toLowerCase() : '';
+            const options = Array.isArray(this.settingsCityOptions) ? this.settingsCityOptions : [];
+
+            if (!query) {
+                return options.slice(0, 12);
+            }
+
+            return options
+                .filter((option) => option.searchName.includes(query) || option.countryCode.toLowerCase().includes(query))
+                .slice(0, 12);
+        },
+        showSettingsCityNoResults() {
+            const query = typeof this.settingsCityQuery === 'string' ? this.settingsCityQuery.trim() : '';
+            return !this.settingsCityOptionsLoading && query.length >= 2 && this.filteredSettingsCityOptions.length === 0;
         },
         registerCountryFallbackLabel() {
             return localizedRegisterStrings.countryFallback;
@@ -2138,6 +2423,35 @@ createApp({
         dateSelectionEndLabel() {
             const locale = document.documentElement.lang || 'de';
             return formatSearchDate(this.dateRangeEnd, locale) || '--';
+        },
+        settingsBirthDateSelectionLabel() {
+            const locale = document.documentElement.lang || 'de';
+            return formatSearchDate(this.settingsEditValue, locale) || '--';
+        },
+        settingsBirthDateCalendarMonthLabel() {
+            const locale = document.documentElement.lang || 'de';
+            return formatCalendarMonthLabel(
+                this.settingsBirthDateCalendarYear,
+                this.settingsBirthDateCalendarMonth,
+                locale
+            );
+        },
+        settingsBirthDateCalendarWeekdayLabels() {
+            const locale = document.documentElement.lang || 'de';
+            return getCalendarWeekdayLabels(locale);
+        },
+        settingsBirthDateCalendarDays() {
+            const locale = document.documentElement.lang || 'de';
+            const selectedDate = this.settingsEditField === 'birthDate'
+                ? normalizeDateInputValue(this.settingsEditValue)
+                : '';
+            return buildDateCalendarDays({
+                year: this.settingsBirthDateCalendarYear,
+                month: this.settingsBirthDateCalendarMonth,
+                rangeStart: selectedDate,
+                rangeEnd: selectedDate,
+                locale
+            });
         },
         totalPetCount() {
             return Object.values(this.petChoiceCounts).reduce((total, value) => {
@@ -2338,33 +2652,302 @@ createApp({
             const parts = [postalCode, city].filter(Boolean);
             return parts.length ? parts.join(' ') : '—';
         },
-        profileViewRatingLabel() {
+        profileViewRatingValue() {
             const rating = Number(this.profileViewUser?.rating);
-            const ratingsCount = Number(this.profileViewUser?.numberOfRatings);
-            const safeRatingsCount = Number.isFinite(ratingsCount) ? Math.max(0, Math.round(ratingsCount)) : 0;
-
-            if (!Number.isFinite(rating) || rating <= 0 || safeRatingsCount <= 0) {
-                return '—';
+            if (!Number.isFinite(rating)) {
+                return 0;
             }
 
-            return `${rating.toFixed(1)} (${safeRatingsCount})`;
+            return Math.min(5, Math.max(0, rating));
         },
-        profileViewAcceptedPetSpeciesLabels() {
+        profileViewRatingCount() {
+            const ratingsCount = Number(this.profileViewUser?.numberOfRatings);
+            if (!Number.isFinite(ratingsCount)) {
+                return 0;
+            }
+
+            return Math.max(0, Math.round(ratingsCount));
+        },
+        profileViewRatingFirstName() {
+            const firstName = typeof this.profileViewUser?.firstName === 'string'
+                ? this.profileViewUser.firstName.trim()
+                : '';
+            if (firstName) {
+                return firstName;
+            }
+
+            const displayName = typeof this.profileViewDisplayName === 'string'
+                ? this.profileViewDisplayName.trim()
+                : '';
+            if (displayName) {
+                return displayName.split(/\s+/)[0] || this.profileStrings.ratingFirstNameFallback;
+            }
+
+            return this.profileStrings.ratingFirstNameFallback;
+        },
+        profileViewRatingHeading() {
+            return formatTemplate(this.profileStrings.ratingHeadingTemplate, {
+                firstName: this.profileViewRatingFirstName,
+                count: this.profileViewRatingCount
+            });
+        },
+        profileViewRatingAriaLabel() {
+            return formatTemplate(this.profileStrings.ratingAriaTemplate, {
+                rating: this.profileViewRatingValue.toFixed(1),
+                count: this.profileViewRatingCount
+            });
+        },
+        profileViewRatingStarFills() {
+            const rating = this.profileViewRatingValue;
+            return Array.from({ length: 5 }, (_, index) => {
+                const fill = Math.max(0, Math.min(1, rating - index)) * 100;
+                return Number(fill.toFixed(2));
+            });
+        },
+        profileViewAcceptedPetSpecies() {
             const acceptedPetSpecies = Array.isArray(this.profileViewUser?.acceptedPetSpecies)
                 ? this.profileViewUser.acceptedPetSpecies
                 : [];
             const locale = document.documentElement.lang || 'de';
 
             return acceptedPetSpecies
-                .map((species) => formatPetChoiceLabel(species, locale))
-                .filter(Boolean);
+                .map((species) => {
+                    if (typeof species !== 'string') {
+                        return null;
+                    }
+
+                    const normalizedSpecies = species.trim().toUpperCase();
+                    if (!normalizedSpecies) {
+                        return null;
+                    }
+
+                    return {
+                        value: normalizedSpecies,
+                        label: formatPetChoiceLabel(normalizedSpecies, locale),
+                        emojiPath: resolvePetChoiceEmojiPath(normalizedSpecies)
+                    };
+                })
+                .filter((species) => Boolean(species?.label));
+        },
+        settingsViewDisplayName() {
+            if (!this.settingsViewUser) {
+                return '';
+            }
+
+            const firstName = typeof this.settingsViewUser.firstName === 'string'
+                ? this.settingsViewUser.firstName.trim()
+                : '';
+            const lastName = typeof this.settingsViewUser.lastName === 'string'
+                ? this.settingsViewUser.lastName.trim()
+                : '';
+            const fullName = [firstName, lastName].filter(Boolean).join(' ');
+            return fullName || this.settingsViewUser.email || '';
+        },
+        settingsViewInitial() {
+            const sourceText = this.settingsViewDisplayName || this.settingsStrings.emptyValue || 'S';
+            const firstCharacter = sourceText.trim().charAt(0) || 'S';
+            return firstCharacter.toUpperCase();
+        },
+        settingsViewRoleLabel() {
+            const role = typeof this.settingsViewUser?.role === 'string'
+                ? this.settingsViewUser.role.trim().toUpperCase()
+                : '';
+
+            if (role === 'HOST') {
+                return this.settingsStrings.roleHost;
+            }
+
+            if (role === 'PET_OWNER') {
+                return this.settingsStrings.rolePetOwner;
+            }
+
+            return role || this.settingsStrings.emptyValue;
+        },
+        settingsViewAcceptedPetSpecies() {
+            const acceptedPetSpecies = Array.isArray(this.settingsViewUser?.acceptedPetSpecies)
+                ? this.settingsViewUser.acceptedPetSpecies
+                : [];
+            const locale = document.documentElement.lang || 'de';
+
+            return acceptedPetSpecies
+                .map((species) => {
+                    if (typeof species !== 'string') {
+                        return null;
+                    }
+
+                    const normalizedSpecies = species.trim().toUpperCase();
+                    if (!normalizedSpecies) {
+                        return null;
+                    }
+
+                    return {
+                        value: normalizedSpecies,
+                        label: formatPetChoiceLabel(normalizedSpecies, locale),
+                        emojiPath: resolvePetChoiceEmojiPath(normalizedSpecies)
+                    };
+                })
+                .filter((species) => Boolean(species?.label));
+        },
+        settingsFactCards() {
+            if (!this.settingsViewUser) {
+                return [];
+            }
+
+            const emptyValue = this.settingsStrings.emptyValue;
+            const settingsPhoneDisplay = this.buildSettingsPhoneDisplayParts(this.settingsViewUser.phone || '');
+            const settingsCityDisplay = this.buildSettingsCityDisplayParts(this.settingsViewUser.city || '');
+            const acceptedSpeciesLabel = this.settingsViewAcceptedPetSpecies.length
+                ? this.settingsViewAcceptedPetSpecies.map((species) => species.label).join(', ')
+                : emptyValue;
+            const locationParts = [
+                typeof this.settingsViewUser.postalCode === 'string' ? this.settingsViewUser.postalCode.trim() : '',
+                typeof this.settingsViewUser.city === 'string' ? this.settingsViewUser.city.trim() : ''
+            ].filter(Boolean);
+
+            return [
+                {
+                    key: 'firstName',
+                    label: this.settingsStrings.labels.firstName,
+                    displayValue: this.settingsViewUser.firstName || emptyValue
+                },
+                {
+                    key: 'lastName',
+                    label: this.settingsStrings.labels.lastName,
+                    displayValue: this.settingsViewUser.lastName || emptyValue
+                },
+                {
+                    key: 'email',
+                    label: this.settingsStrings.labels.email,
+                    displayValue: this.settingsViewUser.email || emptyValue
+                },
+                {
+                    key: 'password',
+                    label: this.settingsStrings.labels.password,
+                    displayValue: this.settingsStrings.passwordMasked
+                },
+                {
+                    key: 'phone',
+                    label: this.settingsStrings.labels.phone,
+                    displayValue: settingsPhoneDisplay.displayValue || emptyValue,
+                    phoneFlagPath: settingsPhoneDisplay.flagPath,
+                    phoneCountryName: settingsPhoneDisplay.countryName
+                },
+                {
+                    key: 'birthDate',
+                    label: this.settingsStrings.labels.birthDate,
+                    displayValue: this.formatProfileDate(this.settingsViewUser.birthDate) || emptyValue
+                },
+                {
+                    key: 'emergencyContact',
+                    label: this.settingsStrings.labels.emergencyContact,
+                    displayValue: this.settingsViewUser.emergencyContact || emptyValue
+                },
+                {
+                    key: 'role',
+                    label: this.settingsStrings.labels.role,
+                    displayValue: this.settingsViewRoleLabel || emptyValue
+                },
+                {
+                    key: 'city',
+                    label: this.settingsStrings.labels.city,
+                    displayValue: settingsCityDisplay.displayValue || emptyValue,
+                    cityFlagPath: settingsCityDisplay.flagPath,
+                    cityCountryName: settingsCityDisplay.countryName
+                },
+                {
+                    key: 'postalCode',
+                    label: this.settingsStrings.labels.postalCode,
+                    displayValue: locationParts[0] || emptyValue
+                },
+                {
+                    key: 'bio',
+                    label: this.settingsStrings.labels.bio,
+                    displayValue: this.settingsViewUser.bio || emptyValue,
+                    wide: true
+                },
+                {
+                    key: 'acceptedPetSpecies',
+                    label: this.settingsStrings.labels.acceptedPetSpecies,
+                    displayValue: acceptedSpeciesLabel,
+                    wide: true
+                }
+            ];
+        },
+        settingsEditModalTitle() {
+            const fieldLabel = this.getSettingsFieldLabel(this.settingsEditField);
+            return this.settingsStrings.editTitleTemplate.replace('{field}', fieldLabel);
+        },
+        settingsEditPlaceholder() {
+            const placeholder = this.settingsStrings.placeholders[this.settingsEditField];
+            if (typeof placeholder === 'string' && placeholder.trim()) {
+                return placeholder.trim();
+            }
+
+            return this.getSettingsFieldLabel(this.settingsEditField);
+        },
+        settingsEditInputType() {
+            if (this.settingsEditField === 'email') {
+                return 'email';
+            }
+
+            if (this.settingsEditField === 'password') {
+                return 'password';
+            }
+
+            if (this.settingsEditField === 'birthDate') {
+                return 'date';
+            }
+
+            if (this.settingsEditField === 'phone') {
+                return 'tel';
+            }
+
+            if (this.settingsEditField === 'profilePicture') {
+                return 'url';
+            }
+
+            return 'text';
+        },
+        settingsPasswordCriteria() {
+            const password = typeof this.settingsEditNewPassword === 'string' ? this.settingsEditNewPassword : '';
+            const passwordConfirmation = typeof this.settingsEditPasswordConfirmation === 'string'
+                ? this.settingsEditPasswordConfirmation
+                : '';
+            return buildPasswordCriteria(password, passwordConfirmation, localizedPasswordCriteriaStrings);
+        },
+        allSettingsPasswordCriteriaMet() {
+            return this.settingsPasswordCriteria.every((criterion) => criterion.met);
+        },
+        settingsPetChoiceOptions() {
+            if (Array.isArray(this.registerPetChoices) && this.registerPetChoices.length) {
+                return this.registerPetChoices;
+            }
+
+            const locale = document.documentElement.lang || 'de';
+            return DEFAULT_PET_CHOICES.map((value) => ({
+                value,
+                label: formatPetChoiceLabel(value, locale),
+                emojiPath: resolvePetChoiceEmojiPath(value)
+            }));
+        },
+        settingsProfileImageSelectionLabel() {
+            const fileName = typeof this.settingsEditProfileFileName === 'string'
+                ? this.settingsEditProfileFileName.trim()
+                : '';
+            if (!fileName) {
+                return this.settingsStrings.imageUploadHint;
+            }
+
+            return this.settingsStrings.imageSelectedTemplate.replace('{name}', fileName);
         },
         authSessionGreeting() {
             const sourceFirstName = this.normalizeAuthSessionFirstName(this.authSessionFirstName)
                 || this.deriveFirstNameFromEmail(this.authSessionEmail)
-                || 'User';
+                || localizedAppStrings.genericUser;
             const truncatedFirstName = this.truncateAuthSessionName(sourceFirstName, 8);
-            return `Hallo, ${truncatedFirstName || 'User'}`;
+            return formatTemplate(localizedAppStrings.sessionGreetingTemplate, {
+                firstName: truncatedFirstName || localizedAppStrings.genericUser
+            });
         },
         authSessionInitial() {
             const sourceEmail = typeof this.authSessionEmail === 'string' ? this.authSessionEmail.trim() : '';
@@ -2383,6 +2966,30 @@ createApp({
             nextTick(() => {
                 this.initializeDropdowns();
             });
+        },
+        profileViewLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showProfileViewLoadingDots', 'profileViewLoading', nextValue);
+        },
+        settingsViewLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showSettingsViewLoadingDots', 'settingsViewLoading', nextValue);
+        },
+        settingsCityOptionsLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showSettingsCityOptionsLoadingDots', 'settingsCityOptionsLoading', nextValue);
+        },
+        userSearchLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showUserSearchLoadingDots', 'userSearchLoading', nextValue);
+        },
+        registerCityOptionsLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showRegisterCityOptionsLoadingDots', 'registerCityOptionsLoading', nextValue);
+        },
+        registerPetChoicesLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showRegisterPetChoicesLoadingDots', 'registerPetChoicesLoading', nextValue);
+        },
+        locationOptionsLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showLocationOptionsLoadingDots', 'locationOptionsLoading', nextValue);
+        },
+        petChoicesLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showPetChoicesLoadingDots', 'petChoicesLoading', nextValue);
         },
         locationQuery(nextValue) {
             this.scheduleLocationSearch(nextValue);
@@ -2432,6 +3039,7 @@ createApp({
         this.initializePlaywrightRunner();
         window.addEventListener('scroll', this.syncScrollState, { passive: true });
         window.addEventListener('resize', this.handleResize, { passive: true });
+        document.addEventListener('scroll', this.repositionOpenPhoneCountryDropdownPanels, true);
         document.addEventListener('pointerdown', this.handleDocumentPointerDown);
         document.addEventListener('toggle', this.handleDocumentDropdownToggle, true);
         document.addEventListener('click', this.handleDocumentClick);
@@ -2440,10 +3048,12 @@ createApp({
         this.consumeRedirectNotification();
         this.initializeRegisterFlow();
         this.initializeProfileView();
+        this.initializeSettingsView();
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.syncScrollState);
         window.removeEventListener('resize', this.handleResize);
+        document.removeEventListener('scroll', this.repositionOpenPhoneCountryDropdownPanels, true);
         document.removeEventListener('pointerdown', this.handleDocumentPointerDown);
         document.removeEventListener('toggle', this.handleDocumentDropdownToggle, true);
         document.removeEventListener('click', this.handleDocumentClick);
@@ -2459,8 +3069,11 @@ createApp({
         this.stopPlaywrightPolling();
         this.stopAllMetricAnimations();
         this.clearNotificationTimers();
+        this.clearAllLoadingIndicatorTimers();
         this.clearLocationSearchRuntime();
         this.clearRegisterCitySearchRuntime();
+        this.clearSettingsCitySearchRuntime();
+        this.clearSettingsCityLookupRuntime();
         if (this.headerScrollSyncFrame > 0) {
             window.cancelAnimationFrame(this.headerScrollSyncFrame);
             this.headerScrollSyncFrame = 0;
@@ -2471,6 +3084,51 @@ createApp({
         document.body.classList.remove('body--modal-open');
     },
     methods: {
+        clearLoadingIndicatorTimer(targetFlag = '') {
+            if (!targetFlag) {
+                return;
+            }
+
+            const activeTimer = this.loadingIndicatorTimers?.[targetFlag];
+            if (typeof activeTimer === 'number') {
+                window.clearTimeout(activeTimer);
+            }
+            this.loadingIndicatorTimers[targetFlag] = null;
+        },
+        updateDelayedLoadingIndicator(targetFlag = '', sourceFlag = '', isLoading = false, delayMs = LOADING_INDICATOR_DELAY_MS) {
+            if (!targetFlag || !sourceFlag || typeof this[targetFlag] !== 'boolean' || typeof this[sourceFlag] !== 'boolean') {
+                return;
+            }
+
+            this.clearLoadingIndicatorTimer(targetFlag);
+
+            if (!isLoading) {
+                this[targetFlag] = false;
+                return;
+            }
+
+            const normalizedDelay = Number.isFinite(Number(delayMs)) ? Math.max(0, Number(delayMs)) : LOADING_INDICATOR_DELAY_MS;
+            if (normalizedDelay === 0) {
+                this[targetFlag] = true;
+                return;
+            }
+
+            const timerHandle = window.setTimeout(() => {
+                this.loadingIndicatorTimers[targetFlag] = null;
+                if (this[sourceFlag]) {
+                    this[targetFlag] = true;
+                }
+            }, normalizedDelay);
+            this.loadingIndicatorTimers[targetFlag] = timerHandle;
+        },
+        clearAllLoadingIndicatorTimers() {
+            Object.keys(this.loadingIndicatorTimers || {}).forEach((targetFlag) => {
+                this.clearLoadingIndicatorTimer(targetFlag);
+                if (typeof this[targetFlag] === 'boolean') {
+                    this[targetFlag] = false;
+                }
+            });
+        },
         persistHeaderSearchState() {
             writeHeaderSearchSessionState({
                 headerCenterTab: this.headerCenterTab,
@@ -2810,6 +3468,48 @@ createApp({
             this.dateRangeEnd = '';
             this.syncDateCalendarView();
         },
+        syncSettingsBirthDateCalendarView(referenceValue = '') {
+            const normalizedReference = normalizeDateInputValue(referenceValue);
+            const fallbackDate = new Date();
+            const viewDate = normalizedReference
+                ? parseDateInputValue(normalizedReference)
+                : fallbackDate;
+
+            if (!viewDate) {
+                return;
+            }
+
+            this.settingsBirthDateCalendarYear = viewDate.getFullYear();
+            this.settingsBirthDateCalendarMonth = viewDate.getMonth();
+        },
+        moveSettingsBirthDateCalendar(monthOffset) {
+            const normalizedOffset = Number(monthOffset);
+            if (!Number.isFinite(normalizedOffset) || normalizedOffset === 0) {
+                return;
+            }
+
+            const nextViewDate = new Date(
+                this.settingsBirthDateCalendarYear,
+                this.settingsBirthDateCalendarMonth + Math.trunc(normalizedOffset),
+                1
+            );
+            this.settingsBirthDateCalendarYear = nextViewDate.getFullYear();
+            this.settingsBirthDateCalendarMonth = nextViewDate.getMonth();
+        },
+        selectSettingsBirthDateCalendarDay(day) {
+            const selectedDateValue = normalizeDateInputValue(day?.iso);
+            if (!selectedDateValue) {
+                return;
+            }
+
+            if (selectedDateValue === normalizeDateInputValue(this.settingsEditValue)) {
+                this.settingsEditValue = '';
+                return;
+            }
+
+            this.settingsEditValue = selectedDateValue;
+            this.syncSettingsBirthDateCalendarView(selectedDateValue);
+        },
         getPetCount(value) {
             const count = Number(this.petChoiceCounts[value]);
             if (!Number.isFinite(count) || count < 0) {
@@ -2843,9 +3543,27 @@ createApp({
         triggerHeaderSearch() {
             this.closeAllDropdowns();
         },
-        pushNotification({ title = '', message = '', tone = 'info', lifetimeMs = NOTIFICATION_LIFETIME_MS } = {}) {
+        normalizeNotificationTone(tone) {
+            const normalizedTone = typeof tone === 'string' ? tone.trim().toLowerCase() : '';
+
+            if (normalizedTone === 'success') {
+                return 'success';
+            }
+
+            if (normalizedTone === 'error' || normalizedTone === 'warning') {
+                return 'error';
+            }
+
+            if (normalizedTone === 'neutral' || normalizedTone === 'info') {
+                return 'neutral';
+            }
+
+            return 'neutral';
+        },
+        pushNotification({ title = '', message = '', tone = 'neutral', lifetimeMs = NOTIFICATION_LIFETIME_MS } = {}) {
             const trimmedTitle = typeof title === 'string' ? title.trim() : '';
             const trimmedMessage = typeof message === 'string' ? message.trim() : '';
+            const normalizedTone = this.normalizeNotificationTone(tone);
 
             if (!trimmedTitle && !trimmedMessage) {
                 return;
@@ -2857,7 +3575,7 @@ createApp({
                 id,
                 title: trimmedTitle,
                 message: trimmedMessage,
-                tone
+                tone: normalizedTone
             };
 
             this.notifications = [...this.notifications, nextNotification].slice(-NOTIFICATION_LIMIT);
@@ -2872,7 +3590,7 @@ createApp({
         rememberRedirectNotification(notification = {}) {
             const title = typeof notification.title === 'string' ? notification.title.trim() : '';
             const message = typeof notification.message === 'string' ? notification.message.trim() : '';
-            const tone = typeof notification.tone === 'string' ? notification.tone.trim() : 'info';
+            const tone = this.normalizeNotificationTone(notification?.tone);
             if (!title && !message) {
                 return;
             }
@@ -2907,11 +3625,20 @@ createApp({
 
             try {
                 const payload = JSON.parse(rawPayload);
-                this.pushNotification({
-                    title: payload?.title,
-                    message: payload?.message,
-                    tone: payload?.tone === 'warning' || payload?.tone === 'success' ? payload.tone : 'info'
-                });
+                const showNotification = () => {
+                    this.pushNotification({
+                        title: payload?.title,
+                        message: payload?.message,
+                        tone: payload?.tone
+                    });
+                };
+
+                if (document.readyState === 'complete') {
+                    showNotification();
+                    return;
+                }
+
+                window.addEventListener('load', showNotification, { once: true });
             } catch {
                 return;
             }
@@ -2995,15 +3722,6 @@ createApp({
                     mergeCommits: this.repository.git.mergeCommits,
                     contributorCount: this.repository.git.contributorCount,
                     branchCount: this.repository.git.branchCount
-                };
-            }
-
-            if (group === 'api') {
-                return {
-                    operationCount: this.repository.api.summary.operationCount,
-                    pathCount: this.repository.api.summary.pathCount,
-                    methodCount: this.repository.api.summary.methodCount,
-                    tagCount: this.repository.api.summary.tagCount
                 };
             }
 
@@ -3411,79 +4129,36 @@ createApp({
             };
         },
         buildAuthSuccessNotification(kind, identity = {}) {
-            const locale = (document.documentElement.lang || 'de').toLowerCase();
             const normalizedIdentity = this.buildAuthIdentity(identity);
-            const displayFullName = normalizedIdentity.fullName || normalizedIdentity.firstName || 'User';
-            const displayFirstName = normalizedIdentity.firstName || 'User';
+            const displayFullName = normalizedIdentity.fullName || normalizedIdentity.firstName || localizedAppStrings.genericUser;
+            const displayFirstName = normalizedIdentity.firstName || localizedAppStrings.genericUser;
 
             if (kind === 'login') {
-                if (locale === 'en') {
-                    return {
-                        title: localizedAuthModalStrings.loginSuccessTitle,
-                        message: `Hello, ${displayFullName}! You are now signed in.`,
-                        tone: 'success'
-                    };
-                }
-
-                if (locale === 'ro') {
-                    return {
-                        title: localizedAuthModalStrings.loginSuccessTitle,
-                        message: `Salut, ${displayFullName}! Te-ai autentificat cu succes.`,
-                        tone: 'success'
-                    };
-                }
-
                 return {
                     title: localizedAuthModalStrings.loginSuccessTitle,
-                    message: `Hallo, ${displayFullName}! Du bist erfolgreich eingeloggt.`,
+                    message: formatTemplate(localizedAppStrings.loginSuccessTemplate, {
+                        fullName: displayFullName
+                    }),
                     tone: 'success'
                 };
             }
 
             if (kind === 'register') {
-                if (locale === 'en') {
-                    return {
-                        title: localizedRegisterStrings.registerSuccessTitle,
-                        message: `Welcome, ${displayFullName}! Your account is ready.`,
-                        tone: 'success'
-                    };
-                }
-
-                if (locale === 'ro') {
-                    return {
-                        title: localizedRegisterStrings.registerSuccessTitle,
-                        message: `Bine ai venit, ${displayFullName}! Contul tău este gata.`,
-                        tone: 'success'
-                    };
-                }
-
                 return {
                     title: localizedRegisterStrings.registerSuccessTitle,
-                    message: `Hallo, ${displayFullName}! Willkommen bei Pawsitters.`,
+                    message: formatTemplate(localizedAppStrings.registerSuccessTemplate, {
+                        fullName: displayFullName
+                    }),
                     tone: 'success'
                 };
             }
 
             if (kind === 'logout') {
-                if (locale === 'en') {
-                    return {
-                        title: 'Logged out',
-                        message: `You have been logged out successfully, ${displayFirstName}.`,
-                        tone: 'success'
-                    };
-                }
-
-                if (locale === 'ro') {
-                    return {
-                        title: 'Deconectare reușită',
-                        message: `Te-ai deconectat cu succes, ${displayFirstName}.`,
-                        tone: 'success'
-                    };
-                }
-
                 return {
-                    title: 'Logout erfolgreich',
-                    message: `Du bist erfolgreich ausgelogged, ${displayFirstName}.`,
+                    title: localizedAppStrings.logoutSuccessTitle,
+                    message: formatTemplate(localizedAppStrings.logoutSuccessTemplate, {
+                        firstName: displayFirstName
+                    }),
                     tone: 'success'
                 };
             }
@@ -3642,6 +4317,10 @@ createApp({
                     return;
                 }
                 this.clearAuthSessionIdentity();
+                this.applyRouteAccessRules({
+                    loggedIn: false,
+                    email: ''
+                });
             }
         },
         async openCurrentUserProfile() {
@@ -3661,6 +4340,20 @@ createApp({
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
             window.location.assign(profilePath);
+        },
+        openCurrentUserSettings() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            const settingsPath = this.buildSettingsPath();
+            if (!settingsPath) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign(settingsPath);
         },
         async logoutCurrentUser() {
             if (!this.authSessionLoggedIn) {
@@ -3686,11 +4379,13 @@ createApp({
                     lastName: this.authSessionLastName,
                     email: this.authSessionEmail
                 };
+                this.dispatchAuthSuccessNotification('logout', logoutNotificationIdentity, {
+                    persistOnRedirect: true
+                });
                 this.clearAuthSessionIdentity();
                 this.menuOpen = false;
                 this.closeAllDropdowns({ immediate: true });
-                this.dispatchAuthSuccessNotification('logout', logoutNotificationIdentity);
-                this.refreshAuthSession();
+                window.location.assign('/');
             } catch {
                 return;
             }
@@ -3716,12 +4411,430 @@ createApp({
         normalizeLoginIdentifier(value) {
             return typeof value === 'string' ? value.trim() : '';
         },
+        findPhoneCountryOptionByCode(countryCode = '') {
+            const normalizedCountryCode = normalizeCountryCode(countryCode);
+            if (!normalizedCountryCode) {
+                return null;
+            }
+
+            const options = Array.isArray(this.phoneCountryOptions) ? this.phoneCountryOptions : [];
+            return options.find((option) => option.code === normalizedCountryCode) || null;
+        },
+        selectPhoneCountryCode(targetField = 'register', countryCode = '', event = null) {
+            const normalizedCountryCode = normalizeCountryCode(countryCode);
+            if (!this.findPhoneCountryOptionByCode(normalizedCountryCode)) {
+                return;
+            }
+
+            if (targetField === 'settings') {
+                this.settingsPhoneCountryCode = normalizedCountryCode;
+            } else {
+                this.registerPhoneCountryCode = normalizedCountryCode;
+            }
+
+            const details = event?.currentTarget?.closest?.('details');
+            if (details) {
+                this.closeDropdown(details, { immediate: true });
+            }
+        },
+        getPreferredPhoneCountryCode() {
+            const localeCode = normalizeUiLocaleCode(document.documentElement.lang || 'de');
+            const preferredCountryCode = PHONE_COUNTRY_DEFAULT_BY_LOCALE[localeCode] || '';
+            if (preferredCountryCode && this.findPhoneCountryOptionByCode(preferredCountryCode)) {
+                return preferredCountryCode;
+            }
+
+            const firstCountryCode = this.phoneCountryOptions[0]?.code || '';
+            return normalizeCountryCode(firstCountryCode);
+        },
+        buildFallbackPhoneCountryOptions(locale = document.documentElement.lang || 'de') {
+            const fallbackCountryCodes = ['DE', 'US', 'RO'];
+            return fallbackCountryCodes.map((code) => {
+                const dialCode = normalizeDialCode(
+                    code === 'DE'
+                        ? '49'
+                        : (code === 'US' ? '1' : '40')
+                );
+                const displayName = resolveCountryName(code, locale) || code;
+                return {
+                    code,
+                    dialCode,
+                    displayName,
+                    flagPath: `/assets/media/country-flag/${countryCodeToFlagFileName(code)}`,
+                    searchName: `${displayName} ${code} ${dialCode}`.toLowerCase()
+                };
+            });
+        },
+        applyInitialPhoneCountrySelection() {
+            const preferredCountryCode = this.getPreferredPhoneCountryCode();
+            if (!preferredCountryCode) {
+                return;
+            }
+
+            if (!this.findPhoneCountryOptionByCode(this.registerPhoneCountryCode)) {
+                this.registerPhoneCountryCode = preferredCountryCode;
+            }
+
+            if (!this.findPhoneCountryOptionByCode(this.settingsPhoneCountryCode)) {
+                this.settingsPhoneCountryCode = preferredCountryCode;
+            }
+        },
+        async ensurePhoneCountryOptionsLoaded() {
+            if (Array.isArray(this.phoneCountryOptions) && this.phoneCountryOptions.length) {
+                this.applyInitialPhoneCountrySelection();
+                return;
+            }
+
+            if (this.phoneCountryOptionsPromise) {
+                await this.phoneCountryOptionsPromise;
+                this.applyInitialPhoneCountrySelection();
+                return;
+            }
+
+            this.phoneCountryOptionsLoading = true;
+            this.phoneCountryOptionsPromise = (async () => {
+                const locale = document.documentElement.lang || 'de';
+                try {
+                    const payload = await fetchFirstJsonPayload(PHONE_COUNTRY_PREFIX_ENDPOINTS);
+                    const normalizedOptions = normalizePhoneCountryPrefixOptions(payload, locale);
+                    this.phoneCountryOptions = normalizedOptions.length
+                        ? normalizedOptions
+                        : this.buildFallbackPhoneCountryOptions(locale);
+                } catch {
+                    this.phoneCountryOptions = this.buildFallbackPhoneCountryOptions(locale);
+                } finally {
+                    this.phoneCountryOptionsLoading = false;
+                    this.phoneCountryOptionsPromise = null;
+                }
+            })();
+
+            await this.phoneCountryOptionsPromise;
+            this.applyInitialPhoneCountrySelection();
+        },
+        formatPhoneWithCountryCode(countryCode = '', localNumber = '') {
+            const option = this.findPhoneCountryOptionByCode(countryCode);
+            const dialCode = normalizeDialCode(option?.dialCode || '');
+            const normalizedLocalNumber = normalizePhoneNumberDigits(localNumber);
+            if (!dialCode) {
+                return normalizedLocalNumber;
+            }
+
+            if (!normalizedLocalNumber) {
+                return dialCode;
+            }
+
+            return `${dialCode} ${normalizedLocalNumber}`;
+        },
+        parsePhoneWithCountryCode(value = '') {
+            const rawValue = typeof value === 'string' ? value.trim() : '';
+            if (!rawValue) {
+                return {
+                    countryCode: this.getPreferredPhoneCountryCode(),
+                    localNumber: ''
+                };
+            }
+
+            const sanitized = rawValue.replace(/\s+/g, '');
+            const normalizedInput = sanitized.startsWith('00')
+                ? `+${sanitized.slice(2)}`
+                : sanitized;
+            const compactPhone = normalizedInput.replace(/(?!^\+)\D/g, '');
+            const options = Array.isArray(this.phoneCountryOptions) ? this.phoneCountryOptions : [];
+            const sortedOptions = [...options]
+                .filter((option) => normalizeDialCode(option.dialCode))
+                .sort((left, right) => {
+                    const leftDial = normalizeDialCode(left.dialCode);
+                    const rightDial = normalizeDialCode(right.dialCode);
+                    return rightDial.length - leftDial.length;
+                });
+
+            if (compactPhone.startsWith('+')) {
+                const matchedOption = sortedOptions.find((option) => compactPhone.startsWith(normalizeDialCode(option.dialCode)));
+                if (matchedOption) {
+                    const matchedDialCode = normalizeDialCode(matchedOption.dialCode);
+                    const localNumber = normalizePhoneNumberDigits(compactPhone.slice(matchedDialCode.length));
+                    return {
+                        countryCode: matchedOption.code,
+                        localNumber
+                    };
+                }
+            }
+
+            return {
+                countryCode: this.getPreferredPhoneCountryCode(),
+                localNumber: normalizePhoneNumberDigits(rawValue)
+            };
+        },
+        buildSettingsPhoneDisplayParts(phoneValue = '') {
+            const rawValue = typeof phoneValue === 'string' ? phoneValue.trim() : '';
+            if (!rawValue) {
+                return {
+                    displayValue: '',
+                    flagPath: '',
+                    countryName: ''
+                };
+            }
+
+            const parsed = this.parsePhoneWithCountryCode(rawValue);
+            const option = this.findPhoneCountryOptionByCode(parsed.countryCode);
+            const hasExplicitCountryCode = rawValue.startsWith('+') || rawValue.startsWith('00');
+            if (!option || !hasExplicitCountryCode) {
+                return {
+                    displayValue: rawValue,
+                    flagPath: '',
+                    countryName: ''
+                };
+            }
+
+            return {
+                displayValue: this.formatPhoneWithCountryCode(option.code, parsed.localNumber) || rawValue,
+                flagPath: option.flagPath || '',
+                countryName: option.displayName || ''
+            };
+        },
+        resolveCityOptionMatch(options = [], cityValue = '', postalCodeValue = '') {
+            const normalizedCity = typeof cityValue === 'string' ? cityValue.trim().toLowerCase() : '';
+            const normalizedPostalCode = normalizePostalCode(postalCodeValue);
+            const normalizedOptions = Array.isArray(options)
+                ? options.map((option) => normalizeCitySearchOption(option)).filter(Boolean)
+                : [];
+            if (!normalizedCity || !normalizedOptions.length) {
+                return null;
+            }
+
+            const exactCityAndPostalMatch = normalizedOptions.find((option) => {
+                const optionCity = typeof option.cityName === 'string' ? option.cityName.trim().toLowerCase() : '';
+                const optionPostalCode = normalizePostalCode(option.postalCode);
+                return optionCity === normalizedCity && normalizedPostalCode && optionPostalCode === normalizedPostalCode;
+            });
+            if (exactCityAndPostalMatch) {
+                return exactCityAndPostalMatch;
+            }
+
+            const exactCityMatch = normalizedOptions.find((option) => {
+                const optionCity = typeof option.cityName === 'string' ? option.cityName.trim().toLowerCase() : '';
+                return optionCity === normalizedCity;
+            });
+            if (exactCityMatch) {
+                return exactCityMatch;
+            }
+
+            return normalizedOptions[0] || null;
+        },
+        clearSettingsCityLookupRuntime() {
+            if (this.settingsCityLookupAbortController) {
+                this.settingsCityLookupAbortController.abort();
+                this.settingsCityLookupAbortController = null;
+            }
+        },
+        clearSettingsCitySearchRuntime() {
+            if (typeof this.settingsCitySearchDebounceHandle === 'number') {
+                window.clearTimeout(this.settingsCitySearchDebounceHandle);
+            }
+            this.settingsCitySearchDebounceHandle = null;
+
+            if (this.settingsCitySearchAbortController) {
+                this.settingsCitySearchAbortController.abort();
+                this.settingsCitySearchAbortController = null;
+            }
+        },
+        clearSettingsCitySelection({ clearQuery = false } = {}) {
+            this.settingsCitySelectionKey = '';
+            this.settingsCitySelectedOption = null;
+            this.settingsCityOptions = [];
+
+            if (clearQuery) {
+                this.settingsCityQuery = '';
+                this.settingsEditValue = '';
+            }
+        },
+        async syncSettingsCityLocationOption({ preferredOption = null } = {}) {
+            const currentCity = typeof this.settingsViewUser?.city === 'string'
+                ? this.settingsViewUser.city.trim()
+                : '';
+            const currentPostalCode = normalizePostalCode(this.settingsViewUser?.postalCode || '');
+            if (!currentCity) {
+                this.settingsCityLocationOption = null;
+                this.clearSettingsCityLookupRuntime();
+                return;
+            }
+
+            const normalizedPreferredOption = normalizeCitySearchOption(preferredOption || {});
+            if (normalizedPreferredOption) {
+                const preferredCity = typeof normalizedPreferredOption.cityName === 'string'
+                    ? normalizedPreferredOption.cityName.trim().toLowerCase()
+                    : '';
+                if (preferredCity && preferredCity === currentCity.toLowerCase()) {
+                    this.settingsCityLocationOption = normalizedPreferredOption;
+                    return;
+                }
+            }
+
+            const requestId = this.settingsCityLookupRequestId + 1;
+            this.settingsCityLookupRequestId = requestId;
+            this.clearSettingsCityLookupRuntime();
+            const abortController = new AbortController();
+            this.settingsCityLookupAbortController = abortController;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchCitySearchResults(currentCity, locale, abortController.signal);
+                if (requestId !== this.settingsCityLookupRequestId) {
+                    return;
+                }
+
+                const options = normalizeCitySearchResults(payload, locale);
+                const matchedOption = this.resolveCityOptionMatch(options, currentCity, currentPostalCode);
+                this.settingsCityLocationOption = matchedOption;
+            } catch (error) {
+                if (error?.name !== 'AbortError' && requestId === this.settingsCityLookupRequestId) {
+                    this.settingsCityLocationOption = null;
+                }
+            } finally {
+                if (this.settingsCityLookupAbortController === abortController) {
+                    this.settingsCityLookupAbortController = null;
+                }
+            }
+        },
+        buildSettingsCityDisplayParts(cityValue = '') {
+            const normalizedCity = typeof cityValue === 'string' ? cityValue.trim() : '';
+            if (!normalizedCity) {
+                return {
+                    displayValue: '',
+                    flagPath: '',
+                    countryName: ''
+                };
+            }
+
+            const locationOption = normalizeCitySearchOption(this.settingsCityLocationOption || {});
+            const optionCity = typeof locationOption?.cityName === 'string'
+                ? locationOption.cityName.trim().toLowerCase()
+                : '';
+            if (!locationOption || optionCity !== normalizedCity.toLowerCase()) {
+                return {
+                    displayValue: normalizedCity,
+                    flagPath: '',
+                    countryName: ''
+                };
+            }
+
+            return {
+                displayValue: normalizedCity,
+                flagPath: locationOption.flagPath || '',
+                countryName: locationOption.countryName || locationOption.countryCode || ''
+            };
+        },
+        handleSettingsCityInput() {
+            const query = typeof this.settingsCityQuery === 'string' ? this.settingsCityQuery.trim() : '';
+            this.settingsEditValue = query;
+
+            if (!query) {
+                this.clearSettingsCitySelection({ clearQuery: true });
+                this.settingsCityOptionsLoading = false;
+                this.clearSettingsCitySearchRuntime();
+                return;
+            }
+
+            const selectedCity = typeof this.settingsCitySelectedOption?.cityName === 'string'
+                ? this.settingsCitySelectedOption.cityName.trim()
+                : '';
+            if (!this.settingsCitySelectionKey || selectedCity !== query) {
+                this.clearSettingsCitySelection();
+            }
+
+            this.scheduleSettingsCitySearch(query);
+        },
+        scheduleSettingsCitySearch(query) {
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (typeof this.settingsCitySearchDebounceHandle === 'number') {
+                window.clearTimeout(this.settingsCitySearchDebounceHandle);
+                this.settingsCitySearchDebounceHandle = null;
+            }
+
+            if (trimmedQuery.length < 2) {
+                if (this.settingsCitySearchAbortController) {
+                    this.settingsCitySearchAbortController.abort();
+                    this.settingsCitySearchAbortController = null;
+                }
+                this.settingsCityOptions = [];
+                this.settingsCityOptionsLoading = false;
+                return;
+            }
+
+            this.settingsCitySearchDebounceHandle = window.setTimeout(() => {
+                this.fetchSettingsCityOptions(trimmedQuery);
+            }, 240);
+        },
+        async fetchSettingsCityOptions(query) {
+            const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+            if (trimmedQuery.length < 2) {
+                this.settingsCityOptions = [];
+                this.settingsCityOptionsLoading = false;
+                return;
+            }
+
+            const requestId = this.settingsCitySearchRequestId + 1;
+            this.settingsCitySearchRequestId = requestId;
+            if (this.settingsCitySearchAbortController) {
+                this.settingsCitySearchAbortController.abort();
+            }
+
+            const abortController = new AbortController();
+            this.settingsCitySearchAbortController = abortController;
+            this.settingsCityOptionsLoading = true;
+
+            try {
+                const locale = document.documentElement.lang || 'de';
+                const payload = await fetchCitySearchResults(trimmedQuery, locale, abortController.signal);
+                if (requestId !== this.settingsCitySearchRequestId) {
+                    return;
+                }
+
+                this.settingsCityOptions = normalizeCitySearchResults(payload, locale);
+            } catch (error) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+
+                if (requestId !== this.settingsCitySearchRequestId) {
+                    return;
+                }
+
+                this.settingsCityOptions = [];
+            } finally {
+                if (requestId === this.settingsCitySearchRequestId) {
+                    this.settingsCityOptionsLoading = false;
+                }
+
+                if (this.settingsCitySearchAbortController === abortController) {
+                    this.settingsCitySearchAbortController = null;
+                }
+            }
+        },
+        selectSettingsCityOption(option) {
+            const normalizedOption = normalizeCitySearchOption(option || {});
+            if (!normalizedOption) {
+                return;
+            }
+
+            const city = typeof normalizedOption.cityName === 'string'
+                ? normalizedOption.cityName.trim()
+                : '';
+            this.settingsEditValue = city;
+            this.settingsCityQuery = city;
+            this.settingsCitySelectionKey = normalizedOption.id || city;
+            this.settingsCitySelectedOption = normalizedOption;
+            this.settingsCityOptions = [];
+            this.settingsCityOptionsLoading = false;
+            this.clearSettingsCitySearchRuntime();
+        },
         initializeRegisterFlow() {
             if (!this.isRegisterPath(window.location.pathname)) {
                 return;
             }
 
             this.consumeRegisterPrefillEmail();
+            this.ensurePhoneCountryOptionsLoaded();
             this.loadRegisterPetChoices();
             nextTick(() => {
                 this.updateSegmentedIndicators();
@@ -3745,6 +4858,777 @@ createApp({
 
             await this.loadProfileById(requestedUserId);
         },
+        async initializeSettingsView() {
+            if (!settingsPageRoot) {
+                return;
+            }
+
+            this.settingsViewLoading = true;
+            this.settingsViewError = '';
+            this.settingsViewUser = null;
+
+            if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
+                try {
+                    await this.loadRegisterPetChoices();
+                } catch {
+                    // Optional preload only.
+                }
+            }
+
+            await this.ensurePhoneCountryOptionsLoaded();
+            await this.loadCurrentUserSettings();
+        },
+        async loadCurrentUserSettings() {
+            if (!settingsPageRoot) {
+                return;
+            }
+
+            this.settingsViewLoading = true;
+            this.settingsViewError = '';
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    if (response.status === 401 || response.status === 403) {
+                        this.settingsViewError = this.settingsStrings.authRequired;
+                        window.location.assign(this.buildNotFoundPath());
+                        return;
+                    }
+
+                    this.settingsViewError = this.settingsStrings.loadFailed;
+                    return;
+                }
+
+                this.applyUpdatedSettingsUser(payload?.data || {});
+            } catch {
+                this.settingsViewError = this.settingsStrings.loadFailed;
+            } finally {
+                this.settingsViewLoading = false;
+            }
+        },
+        getSettingsFieldLabel(fieldKey = '') {
+            if (typeof fieldKey !== 'string' || !fieldKey.trim()) {
+                return '';
+            }
+
+            const normalizedFieldKey = fieldKey.trim();
+            return this.settingsStrings.labels[normalizedFieldKey] || normalizedFieldKey;
+        },
+        formatSettingsEditButtonAriaLabel(fieldLabel = '') {
+            const normalizedLabel = typeof fieldLabel === 'string' ? fieldLabel.trim() : '';
+            if (!normalizedLabel) {
+                return this.settingsStrings.modalSave;
+            }
+
+            return this.settingsStrings.editAriaTemplate.replace('{field}', normalizedLabel);
+        },
+        readSettingsFieldValue(fieldKey = '') {
+            if (!this.settingsViewUser || typeof fieldKey !== 'string') {
+                return '';
+            }
+
+            if (fieldKey === 'acceptedPetSpecies') {
+                return Array.isArray(this.settingsViewUser.acceptedPetSpecies)
+                    ? [...this.settingsViewUser.acceptedPetSpecies]
+                    : [];
+            }
+
+            if (fieldKey === 'role') {
+                return this.settingsViewUser.role || 'PET_OWNER';
+            }
+
+            if (fieldKey === 'password') {
+                return '';
+            }
+
+            if (fieldKey === 'birthDate') {
+                return normalizeDateInputValue(this.settingsViewUser.birthDate);
+            }
+
+            if (fieldKey === 'postalCode') {
+                return typeof this.settingsViewUser.postalCode === 'string'
+                    ? this.settingsViewUser.postalCode
+                    : '';
+            }
+
+            if (fieldKey === 'city') {
+                return typeof this.settingsViewUser.city === 'string'
+                    ? this.settingsViewUser.city
+                    : '';
+            }
+
+            const directValue = this.settingsViewUser[fieldKey];
+            return typeof directValue === 'string' ? directValue : '';
+        },
+        async openSettingsEditModal(fieldKey = '') {
+            if (!settingsPageRoot || !this.settingsViewUser || typeof fieldKey !== 'string' || !fieldKey.trim()) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.settingsEditField = fieldKey.trim();
+            this.settingsEditValue = '';
+            this.settingsPhoneCountryCode = '';
+            this.settingsCityQuery = '';
+            this.settingsCitySelectionKey = '';
+            this.settingsCitySelectedOption = null;
+            this.settingsCityOptions = [];
+            this.settingsCityOptionsLoading = false;
+            this.settingsEditCurrentPassword = '';
+            this.settingsEditNewPassword = '';
+            this.settingsEditPasswordConfirmation = '';
+            this.settingsEditSpecies = [];
+            this.settingsEditProfileFile = null;
+            this.settingsEditProfileFileName = '';
+            this.settingsEditSaving = false;
+            this.clearSettingsCitySearchRuntime();
+
+            if (this.settingsEditField === 'phone') {
+                await this.ensurePhoneCountryOptionsLoaded();
+                const parsedPhone = this.parsePhoneWithCountryCode(this.readSettingsFieldValue('phone'));
+                this.settingsPhoneCountryCode = parsedPhone.countryCode || this.getPreferredPhoneCountryCode();
+                this.settingsEditValue = parsedPhone.localNumber;
+            } else if (this.settingsEditField === 'city') {
+                const cityValue = this.readSettingsFieldValue('city');
+                const normalizedLocationOption = normalizeCitySearchOption(this.settingsCityLocationOption || {});
+                this.settingsEditValue = cityValue;
+                this.settingsCityQuery = cityValue;
+
+                if (normalizedLocationOption) {
+                    const optionCityName = typeof normalizedLocationOption.cityName === 'string'
+                        ? normalizedLocationOption.cityName.trim().toLowerCase()
+                        : '';
+                    if (cityValue && optionCityName === cityValue.trim().toLowerCase()) {
+                        this.settingsCitySelectionKey = normalizedLocationOption.id || cityValue;
+                        this.settingsCitySelectedOption = normalizedLocationOption;
+                    }
+                }
+
+                this.scheduleSettingsCitySearch(cityValue);
+            } else if (this.settingsEditField === 'acceptedPetSpecies') {
+                const species = this.readSettingsFieldValue('acceptedPetSpecies');
+                this.settingsEditSpecies = Array.isArray(species) ? species : [];
+            } else {
+                this.settingsEditValue = this.readSettingsFieldValue(this.settingsEditField);
+            }
+
+            if (this.settingsEditField === 'birthDate') {
+                this.syncSettingsBirthDateCalendarView(this.settingsEditValue);
+            }
+
+            this.settingsEditModalOpen = true;
+            this.syncModalBodyLock();
+            this.focusSettingsEditInput();
+        },
+        closeSettingsEditModal() {
+            if (!this.settingsEditModalOpen) {
+                return;
+            }
+
+            this.settingsEditModalOpen = false;
+            this.settingsEditField = '';
+            this.settingsEditValue = '';
+            this.settingsPhoneCountryCode = '';
+            this.settingsCityQuery = '';
+            this.settingsCitySelectionKey = '';
+            this.settingsCitySelectedOption = null;
+            this.settingsCityOptions = [];
+            this.settingsCityOptionsLoading = false;
+            this.settingsEditCurrentPassword = '';
+            this.settingsEditNewPassword = '';
+            this.settingsEditPasswordConfirmation = '';
+            this.settingsEditSpecies = [];
+            this.settingsEditProfileFile = null;
+            this.settingsEditProfileFileName = '';
+            this.settingsEditSaving = false;
+            this.clearSettingsCitySearchRuntime();
+            this.syncSettingsBirthDateCalendarView();
+            this.syncModalBodyLock();
+        },
+        focusSettingsEditInput() {
+            nextTick(() => {
+                if (this.settingsEditField === 'birthDate') {
+                    const birthDateTarget = document.querySelector(
+                        '.settings_edit_modal__date .header_search_date__day--single, .settings_edit_modal__date .header_search_date__day--today, .settings_edit_modal__date .header_search_date__day'
+                    );
+                    birthDateTarget?.focus();
+                    return;
+                }
+
+                if (this.settingsEditField === 'phone') {
+                    document.querySelector('[data-settings-edit-phone-number]')?.focus();
+                    return;
+                }
+
+                if (this.settingsEditField === 'city') {
+                    document.querySelector('[data-settings-edit-city-input]')?.focus();
+                    return;
+                }
+
+                document.querySelector('[data-settings-edit-input]')?.focus();
+            });
+        },
+        handleSettingsProfileImageSelection(event) {
+            const file = event?.target?.files?.[0] ?? null;
+            this.settingsEditProfileFile = file instanceof File ? file : null;
+            this.settingsEditProfileFileName = this.settingsEditProfileFile?.name || '';
+        },
+        isSettingsEditSpeciesSelected(value) {
+            return this.settingsEditSpecies.includes(value);
+        },
+        toggleSettingsEditSpecies(value) {
+            if (!value) {
+                return;
+            }
+
+            if (this.isSettingsEditSpeciesSelected(value)) {
+                this.settingsEditSpecies = this.settingsEditSpecies.filter((selectedValue) => selectedValue !== value);
+                return;
+            }
+
+            this.settingsEditSpecies = [...this.settingsEditSpecies, value];
+        },
+        validateSettingsEditField(fieldKey = '') {
+            if (!fieldKey) {
+                return {
+                    valid: false,
+                    message: this.settingsStrings.validationRequired,
+                    payloadValue: ''
+                };
+            }
+
+            if (fieldKey === 'acceptedPetSpecies') {
+                const normalizedSpecies = this.settingsEditSpecies
+                    .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                    .filter(Boolean);
+
+                if (!normalizedSpecies.length) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationSpecies,
+                        payloadValue: []
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: [...new Set(normalizedSpecies)]
+                };
+            }
+
+            if (fieldKey === 'role') {
+                const normalizedRole = typeof this.settingsEditValue === 'string'
+                    ? this.settingsEditValue.trim().toUpperCase()
+                    : '';
+                if (!['PET_OWNER', 'HOST'].includes(normalizedRole)) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: normalizedRole
+                };
+            }
+
+            if (fieldKey === 'birthDate') {
+                const normalizedDate = normalizeDateInputValue(this.settingsEditValue);
+                const parsedDate = parseDateInputValue(normalizedDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (!parsedDate || parsedDate >= today) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationBirthDate,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: normalizedDate
+                };
+            }
+
+            if (fieldKey === 'postalCode') {
+                const normalizedPostalCode = normalizePostalCode(this.settingsEditValue);
+                if (!/^\d{5}$/.test(normalizedPostalCode)) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationPostalCode,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: normalizedPostalCode
+                };
+            }
+
+            if (fieldKey === 'city') {
+                const normalizedCity = typeof this.settingsCityQuery === 'string'
+                    ? this.settingsCityQuery.trim()
+                    : '';
+                if (!normalizedCity) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationCity,
+                        payloadValue: ''
+                    };
+                }
+
+                const selectedCity = typeof this.settingsCitySelectedOption?.cityName === 'string'
+                    ? this.settingsCitySelectedOption.cityName.trim()
+                    : '';
+                if (selectedCity && selectedCity.toLowerCase() === normalizedCity.toLowerCase()) {
+                    this.settingsEditValue = selectedCity;
+                } else {
+                    this.settingsEditValue = normalizedCity;
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: this.settingsEditValue
+                };
+            }
+
+            if (fieldKey === 'email') {
+                const normalizedEmail = this.normalizeLoginIdentifier(this.settingsEditValue).toLowerCase();
+                if (!this.isEmailIdentifier(normalizedEmail)) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationEmail,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: normalizedEmail
+                };
+            }
+
+            if (fieldKey === 'phone') {
+                const normalizedCountryCode = normalizeCountryCode(this.settingsPhoneCountryCode);
+                const normalizedLocalNumber = normalizePhoneNumberDigits(this.settingsEditValue);
+
+                if (!this.findPhoneCountryOptionByCode(normalizedCountryCode)) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationPhoneCountry,
+                        payloadValue: ''
+                    };
+                }
+
+                if (!normalizedLocalNumber) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                this.settingsPhoneCountryCode = normalizedCountryCode;
+                this.settingsEditValue = normalizedLocalNumber;
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: this.formatPhoneWithCountryCode(normalizedCountryCode, normalizedLocalNumber)
+                };
+            }
+
+            if (fieldKey === 'password') {
+                const currentPassword = typeof this.settingsEditCurrentPassword === 'string'
+                    ? this.settingsEditCurrentPassword
+                    : '';
+                const newPassword = typeof this.settingsEditNewPassword === 'string'
+                    ? this.settingsEditNewPassword
+                    : '';
+                const passwordConfirmation = typeof this.settingsEditPasswordConfirmation === 'string'
+                    ? this.settingsEditPasswordConfirmation
+                    : '';
+
+                if (!currentPassword.trim()) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationCurrentPasswordRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                if (!newPassword.trim()) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationNewPasswordRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                if (!passwordConfirmation.trim()) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationPasswordConfirmationRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                if (newPassword !== passwordConfirmation) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationPasswordsMismatch,
+                        payloadValue: ''
+                    };
+                }
+
+                if (!this.allSettingsPasswordCriteriaMet) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationPasswordCriteriaRequired,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: newPassword
+                };
+            }
+
+            const normalizedValue = typeof this.settingsEditValue === 'string'
+                ? this.settingsEditValue.trim()
+                : '';
+
+            if (!normalizedValue && !(fieldKey === 'profilePicture' && this.settingsEditProfileFile)) {
+                return {
+                    valid: false,
+                    message: this.settingsStrings.validationRequired,
+                    payloadValue: ''
+                };
+            }
+
+            return {
+                valid: true,
+                message: '',
+                payloadValue: normalizedValue
+            };
+        },
+        buildSettingsPatchPayload(fieldKey = '', payloadValue = '') {
+            if (!fieldKey) {
+                return {};
+            }
+
+            if (fieldKey === 'acceptedPetSpecies') {
+                return { acceptedPetSpecies: payloadValue };
+            }
+
+            if (fieldKey === 'role') {
+                return { role: payloadValue };
+            }
+
+            if (fieldKey === 'birthDate') {
+                return { birthDate: payloadValue };
+            }
+
+            if (fieldKey === 'postalCode') {
+                return { postalCode: payloadValue };
+            }
+
+            if (fieldKey === 'city') {
+                const normalizedPostalCode = normalizePostalCode(this.settingsCitySelectedOption?.postalCode || '');
+                const payload = { city: payloadValue };
+                if (/^\d{5}$/.test(normalizedPostalCode)) {
+                    payload.postalCode = normalizedPostalCode;
+                }
+                return payload;
+            }
+
+            if (fieldKey === 'email') {
+                return { email: payloadValue };
+            }
+
+            if (fieldKey === 'password') {
+                return { password: payloadValue };
+            }
+
+            return { [fieldKey]: payloadValue };
+        },
+        async checkSettingsEmailExists(email = '') {
+            const normalizedEmail = this.normalizeLoginIdentifier(email).toLowerCase();
+            if (!this.isEmailIdentifier(normalizedEmail)) {
+                return null;
+            }
+
+            try {
+                const response = await fetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedEmail)}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    return null;
+                }
+
+                return payload?.data?.exists === true;
+            } catch {
+                return null;
+            }
+        },
+        async verifySettingsCurrentPassword() {
+            const normalizedEmail = this.normalizeLoginIdentifier(
+                this.settingsViewUser?.email || this.authSessionEmail
+            ).toLowerCase();
+            const currentPassword = typeof this.settingsEditCurrentPassword === 'string'
+                ? this.settingsEditCurrentPassword
+                : '';
+
+            if (!this.isEmailIdentifier(normalizedEmail) || !currentPassword.trim()) {
+                return null;
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        email: normalizedEmail,
+                        password: currentPassword
+                    })
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    return false;
+                }
+
+                return true;
+            } catch {
+                return null;
+            }
+        },
+        applyUpdatedSettingsUser(userData = {}, options = {}) {
+            const { preferredCityOption = null } = options;
+            const normalizedUser = this.normalizeProfileUser(userData || {});
+            this.settingsViewUser = normalizedUser;
+            this.syncSettingsCityLocationOption({ preferredOption: preferredCityOption });
+            this.authSessionEmail = normalizedUser.email || this.authSessionEmail;
+            this.authSessionUserId = this.normalizeProfileUserId(normalizedUser.id) ?? this.authSessionUserId;
+            this.authSessionFirstName = normalizedUser.firstName || this.authSessionFirstName;
+            this.authSessionLastName = normalizedUser.lastName || this.authSessionLastName;
+        },
+        async forceLogoutAfterSettingsUpdate() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+            } catch {
+                // Ignore logout request errors and continue client-side cleanup.
+            }
+
+            this.closeSettingsEditModal();
+            this.clearAuthSessionIdentity();
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign('/');
+        },
+        async submitSettingsEditForm() {
+            if (this.settingsEditSaving || !this.settingsViewUser) {
+                return;
+            }
+
+            const normalizedUserId = this.normalizeProfileUserId(this.settingsViewUser.id);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return;
+            }
+
+            const fieldKey = typeof this.settingsEditField === 'string'
+                ? this.settingsEditField.trim()
+                : '';
+            if (!fieldKey) {
+                return;
+            }
+
+            const fieldLabel = this.getSettingsFieldLabel(fieldKey);
+            const previousEmail = this.settingsViewUser.email || '';
+            const previousEmailNormalized = this.normalizeLoginIdentifier(previousEmail).toLowerCase();
+            this.settingsEditSaving = true;
+
+            try {
+                if (fieldKey === 'profilePicture' && this.settingsEditProfileFile) {
+                    const formData = new FormData();
+                    formData.append('image', this.settingsEditProfileFile);
+
+                    const response = await fetch(`/api/users/${normalizedUserId}/profile-image`, {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store',
+                        body: formData
+                    });
+                    const payload = await response.json().catch(() => ({}));
+
+                    if (!response.ok || payload?.success === false) {
+                        const backendMessage = typeof payload?.message === 'string'
+                            ? payload.message.trim()
+                            : '';
+                        const detailMessage = Array.isArray(payload?.error?.details)
+                            ? payload.error.details
+                                .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                                .find(Boolean)
+                            : '';
+                        this.pushNotification({
+                            title: this.settingsStrings.saveErrorTitle,
+                            message: detailMessage || backendMessage || this.settingsStrings.saveErrorMessage,
+                            tone: 'warning'
+                        });
+                        return;
+                    }
+
+                    this.applyUpdatedSettingsUser(payload?.data || {});
+                    this.closeSettingsEditModal();
+                    this.pushNotification({
+                        title: this.settingsStrings.saveSuccessTitle,
+                        message: this.settingsStrings.saveSuccessTemplate.replace('{field}', fieldLabel),
+                        tone: 'success'
+                    });
+                    return;
+                }
+
+                const validation = this.validateSettingsEditField(fieldKey);
+                if (!validation.valid) {
+                    this.pushNotification({
+                        title: this.settingsStrings.saveErrorTitle,
+                        message: validation.message || this.settingsStrings.saveErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                if (fieldKey === 'email' && validation.payloadValue !== previousEmailNormalized) {
+                    const emailExists = await this.checkSettingsEmailExists(validation.payloadValue);
+                    if (emailExists === true) {
+                        this.pushNotification({
+                            title: this.settingsStrings.saveErrorTitle,
+                            message: this.settingsStrings.validationEmailExists,
+                            tone: 'warning'
+                        });
+                        return;
+                    }
+                }
+
+                if (fieldKey === 'password') {
+                    const currentPasswordValid = await this.verifySettingsCurrentPassword();
+                    if (currentPasswordValid !== true) {
+                        this.pushNotification({
+                            title: this.settingsStrings.saveErrorTitle,
+                            message: currentPasswordValid === false
+                                ? this.settingsStrings.validationCurrentPasswordInvalid
+                                : this.settingsStrings.saveErrorMessage,
+                            tone: 'warning'
+                        });
+                        return;
+                    }
+                }
+
+                const patchPayload = this.buildSettingsPatchPayload(fieldKey, validation.payloadValue);
+                const response = await fetch(`/api/users/${normalizedUserId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify(patchPayload)
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    const backendMessage = typeof payload?.message === 'string'
+                        ? payload.message.trim()
+                        : '';
+                    const detailMessage = Array.isArray(payload?.error?.details)
+                        ? payload.error.details
+                            .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                            .find(Boolean)
+                        : '';
+                    this.pushNotification({
+                        title: this.settingsStrings.saveErrorTitle,
+                        message: detailMessage || backendMessage || this.settingsStrings.saveErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.applyUpdatedSettingsUser(payload?.data || {}, {
+                    preferredCityOption: fieldKey === 'city' ? this.settingsCitySelectedOption : null
+                });
+                this.closeSettingsEditModal();
+
+                if (fieldKey === 'email' && validation.payloadValue !== previousEmailNormalized) {
+                    this.rememberRedirectNotification({
+                        title: this.settingsStrings.emailChangedTitle,
+                        message: this.settingsStrings.emailChangedMessage,
+                        tone: 'warning'
+                    });
+                    await this.forceLogoutAfterSettingsUpdate();
+                    return;
+                }
+
+                if (fieldKey === 'password') {
+                    this.rememberRedirectNotification({
+                        title: this.settingsStrings.passwordChangedTitle,
+                        message: this.settingsStrings.passwordChangedMessage,
+                        tone: 'warning'
+                    });
+                    await this.forceLogoutAfterSettingsUpdate();
+                    return;
+                }
+
+                this.pushNotification({
+                    title: this.settingsStrings.saveSuccessTitle,
+                    message: this.settingsStrings.saveSuccessTemplate.replace('{field}', fieldLabel),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.settingsStrings.saveErrorTitle,
+                    message: this.settingsStrings.saveErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.settingsEditSaving = false;
+            }
+        },
         buildProfileDocumentTitle(user = null) {
             const sourceTitle = typeof this.profileViewBaseDocumentTitle === 'string'
                 ? this.profileViewBaseDocumentTitle.trim()
@@ -3760,7 +5644,9 @@ createApp({
                 return `${brandLabel} | ${fullName}`;
             }
 
-            return sourceTitle || `${brandLabel} | Profil`;
+            return sourceTitle || formatTemplate(localizedAppStrings.profileDocumentTitleTemplate, {
+                brand: brandLabel
+            });
         },
         applyProfileDocumentTitle(user = null) {
             if (!profilePageRoot || typeof document === 'undefined') {
@@ -3815,12 +5701,14 @@ createApp({
                 .filter(Boolean);
 
             return {
+                id: this.normalizeProfileUserId(value?.id),
                 email: typeof value?.email === 'string' ? value.email.trim().toLowerCase() : '',
                 firstName: typeof value?.firstName === 'string' ? value.firstName.trim() : '',
                 lastName: typeof value?.lastName === 'string' ? value.lastName.trim() : '',
                 phone: typeof value?.phone === 'string' ? value.phone.trim() : '',
                 birthDate: normalizeDateInputValue(value?.birthDate),
-                profilePicture: typeof value?.profilePicture === 'string' ? value.profilePicture.trim() : '',
+                emergencyContact: typeof value?.emergencyContact === 'string' ? value.emergencyContact.trim() : '',
+                profilePicture: normalizeProfilePicturePath(value?.profilePicture),
                 bio: typeof value?.bio === 'string' ? value.bio.trim() : '',
                 role: typeof value?.role === 'string' ? value.role.trim().toUpperCase() : '',
                 postalCode: typeof value?.postalCode === 'string' ? value.postalCode.trim() : '',
@@ -3829,6 +5717,13 @@ createApp({
                 numberOfRatings: Number(value?.numberOfRatings),
                 acceptedPetSpecies
             };
+        },
+        handleProfileAvatarError() {
+            if (!this.profileViewUser || typeof this.profileViewUser !== 'object') {
+                return;
+            }
+
+            this.profileViewUser.profilePicture = '';
         },
         formatProfileDate(value) {
             const normalizedDate = normalizeDateInputValue(value);
@@ -4055,7 +5950,8 @@ createApp({
             return true;
         },
         validateRegisterProfileStep() {
-            const phone = typeof this.registerPhone === 'string' ? this.registerPhone.trim() : '';
+            let phoneCountryCode = normalizeCountryCode(this.registerPhoneCountryCode);
+            const phone = normalizePhoneNumberDigits(this.registerPhone);
             const birthDate = normalizeDateInputValue(this.registerBirthDate);
             const emergencyContact = typeof this.registerEmergencyContact === 'string'
                 ? this.registerEmergencyContact.trim()
@@ -4071,6 +5967,11 @@ createApp({
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
+            if (!this.findPhoneCountryOptionByCode(phoneCountryCode)) {
+                phoneCountryCode = this.getPreferredPhoneCountryCode();
+            }
+
+            this.registerPhoneCountryCode = phoneCountryCode;
             this.registerPhone = phone;
             this.registerBirthDate = birthDate;
             this.registerEmergencyContact = emergencyContact;
@@ -4079,6 +5980,15 @@ createApp({
             this.registerRole = role || 'PET_OWNER';
             this.registerCity = city;
             this.registerPostalCode = postalCode;
+
+            if (!this.findPhoneCountryOptionByCode(phoneCountryCode)) {
+                this.pushNotification({
+                    title: localizedRegisterStrings.registerErrorTitle,
+                    message: localizedRegisterStrings.phoneCountryRequired,
+                    tone: 'warning'
+                });
+                return false;
+            }
 
             if (!phone) {
                 this.pushNotification({
@@ -4350,7 +6260,7 @@ createApp({
                 password: typeof this.registerPassword === 'string' ? this.registerPassword : '',
                 firstName: typeof this.registerFirstName === 'string' ? this.registerFirstName.trim() : '',
                 lastName: typeof this.registerLastName === 'string' ? this.registerLastName.trim() : '',
-                phone: typeof this.registerPhone === 'string' ? this.registerPhone.trim() : '',
+                phone: this.formatPhoneWithCountryCode(this.registerPhoneCountryCode, this.registerPhone),
                 birthDate: normalizeDateInputValue(this.registerBirthDate),
                 emergencyContact: typeof this.registerEmergencyContact === 'string'
                     ? this.registerEmergencyContact.trim()
@@ -4456,6 +6366,9 @@ createApp({
         isProfileBasePath(pathname) {
             return ROUTE_GUARD_PROFILE_BASE_PATTERN.test(this.normalizeRoutePath(pathname));
         },
+        isSettingsPath(pathname) {
+            return ROUTE_GUARD_SETTINGS_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
         getRouteAccessRules() {
             return [
                 {
@@ -4469,6 +6382,12 @@ createApp({
                     pathPattern: ROUTE_GUARD_PROFILE_BASE_PATTERN,
                     redirectWhen: 'authenticated',
                     target: 'ownProfile'
+                },
+                {
+                    id: 'settings-auth-only',
+                    pathPattern: ROUTE_GUARD_SETTINGS_PATTERN,
+                    redirectWhen: 'unauthenticated',
+                    target: 'notFound'
                 }
             ];
         },
@@ -4495,6 +6414,10 @@ createApp({
 
             if (rule.target === 'ownProfile') {
                 return this.buildProfilePath(session?.userId ?? this.authSessionUserId);
+            }
+
+            if (rule.target === 'notFound') {
+                return this.buildNotFoundPath();
             }
 
             if (typeof rule.target === 'string' && rule.target.trim()) {
@@ -4547,6 +6470,129 @@ createApp({
             const localePrefixMatch = String(pathname || '').match(/^\/(de|en|ro)(?:\/|$)/i);
             return localePrefixMatch ? `/${localePrefixMatch[1].toLowerCase()}` : '';
         },
+        resolveCurrentLocaleCode() {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            if (localePrefix) {
+                return normalizeUiLocaleCode(localePrefix.slice(1));
+            }
+
+            try {
+                const localeFromQuery = new URL(window.location.href).searchParams.get('locale');
+                if (localeFromQuery) {
+                    return normalizeUiLocaleCode(localeFromQuery);
+                }
+            } catch {
+                // Ignore URL parsing errors and continue with fallback.
+            }
+
+            return normalizeUiLocaleCode(document.documentElement.lang || 'de');
+        },
+        resolveCanonicalLocaleSwitchPath(pathname = window.location.pathname) {
+            const normalizedPath = this.normalizeRoutePath(pathname);
+            const localePrefix = this.extractLocalePrefix(normalizedPath);
+            const pathWithoutLocale = localePrefix
+                ? (normalizedPath.slice(localePrefix.length) || '/')
+                : normalizedPath;
+
+            const routeAliasMap = {
+                '/git': '/repository/git',
+                '/playwright': '/repository/playwright',
+                '/kanban': '/repository/kanban'
+            };
+
+            return routeAliasMap[pathWithoutLocale] || pathWithoutLocale;
+        },
+        resolveLocaleCodeFromHref(href = '', fallbackLocaleCode = '') {
+            if (typeof href !== 'string' || !href.trim()) {
+                return '';
+            }
+
+            try {
+                const parsed = new URL(href, window.location.origin);
+                const localePrefix = this.extractLocalePrefix(parsed.pathname);
+                if (localePrefix) {
+                    return normalizeUiLocaleCode(localePrefix.slice(1));
+                }
+
+                const localeFromQuery = parsed.searchParams.get('locale');
+                if (localeFromQuery) {
+                    return normalizeUiLocaleCode(localeFromQuery);
+                }
+
+                const normalizedFallbackLocale = normalizeUiLocaleCode(fallbackLocaleCode);
+                if (normalizedFallbackLocale) {
+                    return normalizedFallbackLocale;
+                }
+
+                return '';
+            } catch {
+                return '';
+            }
+        },
+        buildLocaleSwitchNavigationTarget(targetLocaleCode = '') {
+            const normalizedTargetLocaleCode = normalizeUiLocaleCode(targetLocaleCode);
+            if (!normalizedTargetLocaleCode) {
+                return '';
+            }
+
+            let currentUrl;
+            try {
+                currentUrl = new URL(window.location.href);
+            } catch {
+                return '';
+            }
+
+            const canonicalPath = this.resolveCanonicalLocaleSwitchPath(currentUrl.pathname);
+            const nextUrl = new URL(canonicalPath, window.location.origin);
+            currentUrl.searchParams.forEach((value, key) => {
+                if (String(key).toLowerCase() === 'locale') {
+                    return;
+                }
+                nextUrl.searchParams.append(key, value);
+            });
+
+            if (normalizedTargetLocaleCode !== 'de') {
+                nextUrl.searchParams.set('locale', normalizedTargetLocaleCode);
+            }
+
+            nextUrl.hash = currentUrl.hash;
+
+            return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+        },
+        resolveLocaleSwitchNavigationTarget(anchorElement) {
+            if (!(anchorElement instanceof HTMLElement)) {
+                return '';
+            }
+
+            const href = anchorElement.getAttribute('href') || '';
+            const targetLocaleCodeFromData = normalizeUiLocaleCode(anchorElement.dataset.localeCode || '');
+            const targetLocaleCode = targetLocaleCodeFromData || this.resolveLocaleCodeFromHref(
+                href,
+                this.resolveCurrentLocaleCode() || 'de'
+            );
+            if (!targetLocaleCode) {
+                return '';
+            }
+
+            const currentLocaleCode = this.resolveCurrentLocaleCode();
+            if (targetLocaleCode === currentLocaleCode) {
+                return '';
+            }
+
+            this.rememberRedirectNotification(this.buildLocaleSwitchNotification(targetLocaleCode));
+            return this.buildLocaleSwitchNavigationTarget(targetLocaleCode);
+        },
+        buildLocaleSwitchNotification(localeCode = '') {
+            const normalizedLocaleCode = normalizeUiLocaleCode(localeCode);
+            const copy = LOCALE_SWITCH_NOTIFICATION_COPY[normalizedLocaleCode] || LOCALE_SWITCH_NOTIFICATION_COPY.de;
+            const languageLabel = LOCALE_NATIVE_LABELS[normalizedLocaleCode] || normalizedLocaleCode.toUpperCase();
+
+            return {
+                title: copy.title,
+                message: formatTemplate(copy.message, { language: languageLabel }),
+                tone: 'success'
+            };
+        },
         buildHomeRedirectPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
             const homePath = localePrefix || '/';
@@ -4577,6 +6623,23 @@ createApp({
             }
 
             return `${registerUrl.pathname}${registerUrl.search}`;
+        },
+        buildNotFoundPath() {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            const notFoundPath = localePrefix ? `${localePrefix}/404` : '/404';
+            const currentUrl = new URL(window.location.href);
+            const notFoundUrl = new URL(notFoundPath, window.location.origin);
+            const localeParam = currentUrl.searchParams.get('locale');
+
+            if (localeParam) {
+                notFoundUrl.searchParams.set('locale', localeParam);
+            }
+
+            return `${notFoundUrl.pathname}${notFoundUrl.search}`;
+        },
+        buildSettingsPath() {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            return localePrefix ? `${localePrefix}/settings` : '/settings';
         },
         buildProfilePath(userId = null) {
             const normalizedUserId = this.normalizeProfileUserId(userId);
@@ -4757,6 +6820,8 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             this.activeGitCommitModalHash = '';
             this.activeBoardCardKey = '';
+            this.closeSettingsEditModal();
+            this.closeUserSearchModal();
             this.resetLoginModalState();
             this.loginModalOpen = true;
             this.syncModalBodyLock();
@@ -4765,6 +6830,282 @@ createApp({
         openLoginModalFromMenu() {
             this.menuOpen = false;
             this.openLoginModal();
+        },
+        focusUserSearchField() {
+            nextTick(() => {
+                document.querySelector('[data-user-search-input]')?.focus();
+            });
+        },
+        normalizeUserSearchQuery(value) {
+            return typeof value === 'string' ? value.trim() : '';
+        },
+        normalizeUserSearchResult(user = {}) {
+            const normalizedId = this.normalizeProfileUserId(user?.id);
+            if (!Number.isInteger(normalizedId) || normalizedId <= 0) {
+                return null;
+            }
+
+            const firstName = typeof user?.firstName === 'string' ? user.firstName.trim() : '';
+            const lastName = typeof user?.lastName === 'string' ? user.lastName.trim() : '';
+            const email = typeof user?.email === 'string' ? user.email.trim().toLowerCase() : '';
+            const city = typeof user?.city === 'string' ? user.city.trim() : '';
+            const profilePicture = normalizeProfilePicturePath(user?.profilePicture);
+            const role = typeof user?.role === 'string' ? user.role.trim().toUpperCase() : '';
+            const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || email || `#${normalizedId}`;
+            const initial = (displayName.charAt(0) || '#').toUpperCase();
+            const searchableText = [normalizedId, firstName, lastName, email, city, role]
+                .join(' ')
+                .toLowerCase();
+
+            return {
+                id: normalizedId,
+                firstName,
+                lastName,
+                email,
+                city,
+                profilePicture,
+                role,
+                displayName,
+                initial,
+                searchableText
+            };
+        },
+        handleUserSearchAvatarError(user) {
+            if (!user || typeof user !== 'object') {
+                return;
+            }
+
+            user.profilePicture = '';
+        },
+        sortUserSearchResults(users = []) {
+            return [...users].sort((left, right) => {
+                if (left.id !== right.id) {
+                    return left.id - right.id;
+                }
+
+                return left.displayName.localeCompare(right.displayName, document.documentElement.lang || 'de');
+            });
+        },
+        async fetchUserSearchUserById(userId, options = {}) {
+            const allowNotFound = options?.allowNotFound === true;
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return null;
+            }
+
+            const response = await fetch(`/api/users/${normalizedUserId}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload?.success === false) {
+                if (allowNotFound && response.status === 404) {
+                    return null;
+                }
+
+                const backendMessage = typeof payload?.message === 'string'
+                    ? payload.message.trim()
+                    : '';
+                throw new Error(backendMessage || localizedUserSearchModalStrings.loadFailed);
+            }
+
+            return this.normalizeUserSearchResult(payload?.data || {});
+        },
+        async loadUserSearchDirectory() {
+            if (this.userSearchDirectoryLoaded) {
+                return this.sortUserSearchResults(this.userSearchDirectory);
+            }
+
+            const requestId = this.userSearchDirectoryRequestId + 1;
+            this.userSearchDirectoryRequestId = requestId;
+            const users = [];
+            const knownIds = new Set();
+            const maxScanId = 600;
+            const maxConsecutiveMisses = 24;
+            let consecutiveMisses = 0;
+            let foundAnyUser = false;
+
+            for (let currentId = 1; currentId <= maxScanId; currentId += 1) {
+                if (requestId !== this.userSearchDirectoryRequestId) {
+                    return [];
+                }
+
+                const user = await this.fetchUserSearchUserById(currentId, { allowNotFound: true });
+                if (user) {
+                    foundAnyUser = true;
+                    consecutiveMisses = 0;
+                    if (!knownIds.has(user.id)) {
+                        knownIds.add(user.id);
+                        users.push(user);
+                    }
+                    continue;
+                }
+
+                if (!foundAnyUser) {
+                    continue;
+                }
+
+                consecutiveMisses += 1;
+                if (consecutiveMisses >= maxConsecutiveMisses) {
+                    break;
+                }
+            }
+
+            if (requestId !== this.userSearchDirectoryRequestId) {
+                return [];
+            }
+
+            this.userSearchDirectory = this.sortUserSearchResults(users);
+            this.userSearchDirectoryLoaded = true;
+            return this.userSearchDirectory;
+        },
+        async performUserSearch(options = {}) {
+            const nextQuery = this.normalizeUserSearchQuery(options?.query ?? this.userSearchQuery);
+            const loadDirectory = options?.loadDirectory !== false;
+            const requestId = this.userSearchRequestId + 1;
+            this.userSearchRequestId = requestId;
+            this.userSearchQuery = nextQuery;
+            this.userSearchLoading = true;
+            this.userSearchResults = [];
+            this.userSearchStatusTone = 'info';
+            this.userSearchStatusMessage = localizedUserSearchModalStrings.loading;
+
+            try {
+                if (!nextQuery) {
+                    const directory = loadDirectory
+                        ? await this.loadUserSearchDirectory()
+                        : this.sortUserSearchResults(this.userSearchDirectory);
+                    if (requestId !== this.userSearchRequestId) {
+                        return;
+                    }
+
+                    this.userSearchResults = directory;
+                    this.userSearchStatusMessage = directory.length
+                        ? ''
+                        : localizedUserSearchModalStrings.empty;
+                    return;
+                }
+
+                const isNumericIdQuery = /^\d+$/.test(nextQuery);
+                if (isNumericIdQuery) {
+                    const directUser = await this.fetchUserSearchUserById(nextQuery, { allowNotFound: true });
+                    if (requestId !== this.userSearchRequestId) {
+                        return;
+                    }
+
+                    if (!directUser) {
+                        this.userSearchResults = [];
+                        this.userSearchStatusTone = 'error';
+                        this.userSearchStatusMessage = localizedUserSearchModalStrings.notFound;
+                        return;
+                    }
+
+                    this.userSearchResults = [directUser];
+                    this.userSearchStatusMessage = '';
+                    return;
+                }
+
+                const directory = loadDirectory
+                    ? await this.loadUserSearchDirectory()
+                    : this.sortUserSearchResults(this.userSearchDirectory);
+                if (requestId !== this.userSearchRequestId) {
+                    return;
+                }
+
+                const normalizedNeedle = nextQuery.toLowerCase();
+                const matches = directory.filter((user) => user.searchableText.includes(normalizedNeedle));
+                this.userSearchResults = matches;
+                this.userSearchStatusMessage = matches.length
+                    ? ''
+                    : localizedUserSearchModalStrings.noMatches;
+            } catch (error) {
+                if (requestId !== this.userSearchRequestId) {
+                    return;
+                }
+
+                const statusMessage = error?.message || localizedUserSearchModalStrings.loadFailed;
+                this.userSearchStatusTone = 'error';
+                this.userSearchStatusMessage = statusMessage;
+                this.pushNotification({
+                    title: localizedUserSearchModalStrings.errorTitle,
+                    message: statusMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                if (requestId === this.userSearchRequestId) {
+                    this.userSearchLoading = false;
+                }
+            }
+        },
+        async handleUserSearchSubmit() {
+            const normalizedQuery = this.normalizeUserSearchQuery(this.userSearchQuery);
+            if (!normalizedQuery && !this.userSearchDirectoryLoaded) {
+                await this.performUserSearch({
+                    query: '',
+                    loadDirectory: true
+                });
+                return;
+            }
+
+            if (!normalizedQuery && this.userSearchDirectoryLoaded) {
+                this.userSearchResults = this.sortUserSearchResults(this.userSearchDirectory);
+                this.userSearchStatusTone = 'info';
+                this.userSearchStatusMessage = this.userSearchResults.length
+                    ? ''
+                    : localizedUserSearchModalStrings.empty;
+                return;
+            }
+
+            if (!normalizedQuery) {
+                this.userSearchStatusTone = 'error';
+                this.userSearchStatusMessage = localizedUserSearchModalStrings.invalidQuery;
+                return;
+            }
+
+            await this.performUserSearch({
+                query: normalizedQuery,
+                loadDirectory: true
+            });
+        },
+        openUserSearchModal() {
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.activeGitCommitModalHash = '';
+            this.activeBoardCardKey = '';
+            this.closeSettingsEditModal();
+            this.closeLoginModal();
+            this.userSearchModalOpen = true;
+            this.userSearchQuery = '';
+            this.userSearchResults = [];
+            this.userSearchStatusTone = 'info';
+            this.userSearchStatusMessage = localizedUserSearchModalStrings.loading;
+            this.syncModalBodyLock();
+            this.focusUserSearchField();
+            this.performUserSearch({
+                query: '',
+                loadDirectory: true
+            });
+        },
+        openUserSearchModalFromMenu() {
+            this.menuOpen = false;
+            this.openUserSearchModal();
+        },
+        closeUserSearchModal() {
+            if (!this.userSearchModalOpen) {
+                return;
+            }
+
+            this.userSearchModalOpen = false;
+            this.userSearchLoading = false;
+            this.userSearchStatusMessage = '';
+            this.userSearchStatusTone = 'info';
+            this.userSearchRequestId += 1;
+            this.userSearchDirectoryRequestId += 1;
+            this.syncModalBodyLock();
         },
         setHeaderCenterTab(tab) {
             const nextTab = tab === 'about' ? 'about' : 'discover';
@@ -4796,7 +7137,13 @@ createApp({
         syncModalBodyLock() {
             document.body.classList.toggle(
                 'body--modal-open',
-                Boolean(this.loginModalOpen || this.activeGitCommitModalHash || this.activeBoardCardKey)
+                Boolean(
+                    this.loginModalOpen
+                    || this.userSearchModalOpen
+                    || this.settingsEditModalOpen
+                    || this.activeGitCommitModalHash
+                    || this.activeBoardCardKey
+                )
             );
         },
         closeRepositoryModal() {
@@ -4904,6 +7251,9 @@ createApp({
             this.enforceSingleOpenDropdown(details, { immediate: true });
             details.open = true;
             this.setDropdownExpanded(details, true);
+            if (this.isPhoneCountryDropdown(details)) {
+                this.positionPhoneCountryDropdownPanel(details);
+            }
             if (this.isHeaderSearchDropdown(details)) {
                 this.setHeaderSearchInteractionExpanded(true);
             }
@@ -4912,6 +7262,9 @@ createApp({
             const firstFrame = window.requestAnimationFrame(() => {
                 const secondFrame = window.requestAnimationFrame(() => {
                     details.classList.add('is-open');
+                    if (this.isPhoneCountryDropdown(details)) {
+                        this.positionPhoneCountryDropdownPanel(details);
+                    }
                     dropdownFrames.delete(details);
                     this.syncHeaderSearchInteractionState();
                 });
@@ -4934,6 +7287,68 @@ createApp({
                 .forEach((details) => this.closeDropdown(details, { immediate }));
 
             this.syncHeaderSearchInteractionState();
+        },
+        isPhoneCountryDropdown(details) {
+            return Boolean(details?.classList?.contains('phone_country_menu'));
+        },
+        repositionOpenPhoneCountryDropdownPanels() {
+            this.getDropdowns()
+                .filter((details) => this.isPhoneCountryDropdown(details) && details.open)
+                .forEach((details) => this.positionPhoneCountryDropdownPanel(details));
+        },
+        positionPhoneCountryDropdownPanel(details) {
+            if (!this.isPhoneCountryDropdown(details) || !details.open) {
+                return;
+            }
+
+            const summary = details.querySelector('summary');
+            const panel = details.querySelector('.phone_country_menu__panel');
+            if (!summary || !panel) {
+                return;
+            }
+
+            const viewportPadding = 12;
+            const panelGap = 6;
+            const minimumPanelHeight = 120;
+            const summaryRect = summary.getBoundingClientRect();
+            const maxPanelWidth = Math.max(160, window.innerWidth - (viewportPadding * 2));
+            const panelWidth = Math.min(Math.max(summaryRect.width, 160), maxPanelWidth);
+            const maxPanelLeft = window.innerWidth - panelWidth - viewportPadding;
+            const clampedLeft = Math.min(Math.max(summaryRect.left, viewportPadding), Math.max(viewportPadding, maxPanelLeft));
+            const availableBelow = window.innerHeight - summaryRect.bottom - viewportPadding - panelGap;
+            const availableAbove = summaryRect.top - viewportPadding - panelGap;
+            const shouldOpenUpwards = availableBelow < minimumPanelHeight && availableAbove > availableBelow;
+            const availableHeight = shouldOpenUpwards ? availableAbove : availableBelow;
+            const maxHeight = Math.max(96, Math.floor(Math.max(availableHeight, 96)));
+            const top = shouldOpenUpwards
+                ? Math.round(summaryRect.top - panelGap)
+                : Math.round(summaryRect.bottom + panelGap);
+
+            details.classList.add('phone_country_menu--overlay');
+            panel.style.left = `${Math.round(clampedLeft)}px`;
+            panel.style.right = 'auto';
+            panel.style.top = `${top}px`;
+            panel.style.width = `${Math.round(panelWidth)}px`;
+            panel.style.maxHeight = `${maxHeight}px`;
+            panel.style.transform = shouldOpenUpwards ? 'translateY(-100%)' : 'translateY(0)';
+        },
+        resetPhoneCountryDropdownPanel(details) {
+            if (!this.isPhoneCountryDropdown(details)) {
+                return;
+            }
+
+            const panel = details.querySelector('.phone_country_menu__panel');
+            details.classList.remove('phone_country_menu--overlay');
+            if (!panel) {
+                return;
+            }
+
+            panel.style.left = '';
+            panel.style.right = '';
+            panel.style.top = '';
+            panel.style.width = '';
+            panel.style.maxHeight = '';
+            panel.style.transform = '';
         },
         initializeDropdowns() {
             this.getDropdowns().forEach((details) => {
@@ -4960,8 +7375,10 @@ createApp({
                     if (details.open) {
                         this.enforceSingleOpenDropdown(details, { immediate: true });
                         this.setDropdownExpanded(details, true);
+                        this.positionPhoneCountryDropdownPanel(details);
                     } else {
                         this.setDropdownExpanded(details, false);
+                        this.resetPhoneCountryDropdownPanel(details);
                     }
 
                     this.syncHeaderSearchInteractionState();
@@ -5003,6 +7420,10 @@ createApp({
                 return;
             }
 
+            if (details.dataset.dropdownDisabled === 'true') {
+                return;
+            }
+
             if (details.classList.contains('is-open')) {
                 this.closeDropdown(details);
                 return;
@@ -5038,6 +7459,7 @@ createApp({
 
             this.clearDropdownAnimation(details);
             this.setDropdownExpanded(details, false);
+            this.resetPhoneCountryDropdownPanel(details);
 
             if (immediate) {
                 details.classList.remove('is-open');
@@ -5140,6 +7562,15 @@ createApp({
                 return;
             }
 
+            if (anchorElement.matches('.locale_menu__item')) {
+                event.preventDefault();
+                const localeSwitchTarget = this.resolveLocaleSwitchNavigationTarget(anchorElement);
+                if (localeSwitchTarget) {
+                    window.location.assign(localeSwitchTarget);
+                }
+                return;
+            }
+
             const href = anchorElement.getAttribute('href') || '';
             if (!this.isLegacyLoginHref(href) && anchorElement.dataset.legacyLoginModal !== 'true') {
                 return;
@@ -5155,6 +7586,16 @@ createApp({
 
             if (this.loginModalOpen) {
                 this.closeLoginModal();
+                return;
+            }
+
+            if (this.userSearchModalOpen) {
+                this.closeUserSearchModal();
+                return;
+            }
+
+            if (this.settingsEditModalOpen) {
+                this.closeSettingsEditModal();
                 return;
             }
 
@@ -5341,7 +7782,6 @@ createApp({
                 this.repositoryError = '';
                 shouldSyncRepositoryState = true;
                 this.animateMetricGroup('git');
-                this.animateMetricGroup('api');
                 this.animateMetricGroup('board');
             } catch (error) {
                 if (error?.name === 'AbortError') {

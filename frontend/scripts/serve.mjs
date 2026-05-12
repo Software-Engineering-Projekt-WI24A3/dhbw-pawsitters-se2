@@ -4,16 +4,16 @@ import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { defaultLocale, renderLocalizedPage, supportedLocales } from './lib/thymeleaf-preview.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
+const distDir = path.join(rootDir, 'dist');
 const port = Number.parseInt(process.env.PORT ?? '4173', 10);
 const host = process.env.HOST ?? '127.0.0.1';
 const backendOrigin = new URL(process.env.BACKEND_ORIGIN ?? 'http://127.0.0.1:8080');
 const BACKEND_PROXY_PATH_PREFIXES = ['/api/', '/actuator/'];
-const DEFAULT_LOCALE = 'de';
-const SUPPORTED_LOCALES = new Set(['de', 'en', 'ro']);
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'keep-alive',
@@ -45,17 +45,17 @@ function contentType(filePath) {
 
 function resolveLocale(localeValue = '') {
   const normalized = String(localeValue || '').trim().toLowerCase();
-  if (SUPPORTED_LOCALES.has(normalized)) {
+  if (supportedLocales.includes(normalized)) {
     return normalized;
   }
 
-  return DEFAULT_LOCALE;
+  return defaultLocale;
 }
 
 function tryResolveFilePath(urlPath) {
   const candidatePath = urlPath === '/'
-    ? path.join(rootDir, 'index.html')
-    : path.join(rootDir, urlPath.replace(/^\/+/, ''));
+    ? path.join(distDir, 'index.html')
+    : path.join(distDir, urlPath.replace(/^\/+/, ''));
 
   if (existsSync(candidatePath) && statSync(candidatePath).isFile()) {
     return candidatePath;
@@ -69,8 +69,23 @@ function tryResolveFilePath(urlPath) {
   return null;
 }
 
-function isLocalePrefixedPath(urlPath = '') {
-  return /^\/(?:de|en|ro)(?:\/|$)/i.test(urlPath);
+function resolveLocalePrefixedRedirect(requestUrl) {
+  const localePrefixed = String(requestUrl?.pathname || '').match(/^\/(de|en|ro)(\/.*)?$/i);
+  if (!localePrefixed) {
+    return '';
+  }
+
+  const locale = localePrefixed[1].toLowerCase();
+  const subPath = localePrefixed[2] || '/';
+  const redirectUrl = new URL(subPath, `http://${host}:${port}`);
+  requestUrl.searchParams.forEach((value, key) => {
+    if (String(key).toLowerCase() === 'locale') {
+      return;
+    }
+    redirectUrl.searchParams.append(key, value);
+  });
+  redirectUrl.searchParams.set('locale', locale);
+  return `${redirectUrl.pathname}${redirectUrl.search}`;
 }
 
 function resolveDynamicPageFallback(urlPath = '') {
@@ -88,8 +103,19 @@ function resolveDynamicPageFallback(urlPath = '') {
   return '';
 }
 
-function resolveFilePath(urlPath, locale = DEFAULT_LOCALE) {
-  const normalizedLocale = resolveLocale(locale);
+function resolveFilePath(urlPath) {
+  if (urlPath === '/git' || urlPath === '/git/') {
+    return { redirect: '/repository/git' };
+  }
+
+  if (urlPath === '/kanban' || urlPath === '/kanban/') {
+    return { redirect: '/repository/kanban' };
+  }
+
+  if (urlPath === '/playwright' || urlPath === '/playwright/') {
+    return { redirect: '/repository/playwright' };
+  }
+
   const dynamicFallbackPath = resolveDynamicPageFallback(urlPath);
   const routeCandidates = [urlPath];
 
@@ -97,19 +123,10 @@ function resolveFilePath(urlPath, locale = DEFAULT_LOCALE) {
     routeCandidates.push(dynamicFallbackPath);
   }
 
-  const candidates = [];
-
-  for (const routeCandidate of routeCandidates) {
-    if (!isLocalePrefixedPath(routeCandidate) && normalizedLocale !== DEFAULT_LOCALE) {
-      candidates.push(routeCandidate === '/' ? `/${normalizedLocale}` : `/${normalizedLocale}${routeCandidate}`);
-    }
-    candidates.push(routeCandidate);
-  }
-
-  for (const candidate of [...new Set(candidates)]) {
+  for (const candidate of [...new Set(routeCandidates)]) {
     const resolved = tryResolveFilePath(candidate);
     if (resolved) {
-      return resolved;
+      return { filePath: resolved };
     }
   }
 
@@ -204,8 +221,8 @@ function main() {
       const locale = resolveLocale(requestUrl.searchParams.get('locale'));
 
       if (requestUrl.pathname === '/api/repository/live.json') {
-        const localizedSnapshotPath = path.join(rootDir, 'assets', 'data', `repository-live.${locale}.json`);
-        const fallbackSnapshotPath = path.join(rootDir, 'assets', 'data', `repository-live.${DEFAULT_LOCALE}.json`);
+        const localizedSnapshotPath = path.join(distDir, 'assets', 'data', `repository-live.${locale}.json`);
+        const fallbackSnapshotPath = path.join(distDir, 'assets', 'data', `repository-live.${defaultLocale}.json`);
         const snapshotPath = existsSync(localizedSnapshotPath) ? localizedSnapshotPath : fallbackSnapshotPath;
 
         if (existsSync(snapshotPath) && statSync(snapshotPath).isFile()) {
@@ -222,7 +239,7 @@ function main() {
       }
 
       if (requestUrl.pathname === '/api/pets/choices' || requestUrl.pathname === '/api/pets/choices.json') {
-        const petChoicesPath = path.join(rootDir, 'assets', 'data', 'pet-choices.json');
+        const petChoicesPath = path.join(distDir, 'assets', 'data', 'pet-choices.json');
         if (existsSync(petChoicesPath) && statSync(petChoicesPath).isFile()) {
           await serveFile(response, petChoicesPath);
           return;
@@ -230,7 +247,7 @@ function main() {
       }
 
       if (requestUrl.pathname === '/api/locations/countries.json') {
-        const countryFlagsPath = path.join(rootDir, 'assets', 'data', 'country-flags.json');
+        const countryFlagsPath = path.join(distDir, 'assets', 'data', 'country-flags.json');
         if (existsSync(countryFlagsPath) && statSync(countryFlagsPath).isFile()) {
           await serveFile(response, countryFlagsPath);
           return;
@@ -242,16 +259,49 @@ function main() {
         return;
       }
 
-      const resolvedPath = resolveFilePath(requestUrl.pathname, locale);
-
-      if (resolvedPath) {
-        await serveFile(response, resolvedPath);
+      const localePrefixedRedirect = resolveLocalePrefixedRedirect(requestUrl);
+      if (localePrefixedRedirect) {
+        response.writeHead(302, { Location: localePrefixedRedirect });
+        response.end();
         return;
       }
 
-      const notFoundPath = resolveFilePath('/404', locale) || path.join(rootDir, '404.html');
-      if (existsSync(notFoundPath) && statSync(notFoundPath).isFile()) {
-        await serveFile(response, notFoundPath, 404);
+      const dynamicFallbackPath = resolveDynamicPageFallback(requestUrl.pathname);
+      const localizedPage = await renderLocalizedPage(rootDir, requestUrl.pathname, locale)
+        ?? (
+          dynamicFallbackPath && dynamicFallbackPath !== requestUrl.pathname
+            ? await renderLocalizedPage(rootDir, dynamicFallbackPath, locale)
+            : null
+        );
+      if (localizedPage) {
+        const isNotFoundRoute = requestUrl.pathname === '/404' || requestUrl.pathname === '/404.html';
+        response.writeHead(isNotFoundRoute ? 404 : 200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        response.end(localizedPage);
+        return;
+      }
+
+      const resolved = resolveFilePath(requestUrl.pathname);
+      if (resolved?.redirect) {
+        response.writeHead(302, { Location: resolved.redirect });
+        response.end();
+        return;
+      }
+
+      if (resolved?.filePath) {
+        await serveFile(response, resolved.filePath);
+        return;
+      }
+
+      const notFoundPage = await renderLocalizedPage(rootDir, '/404', locale);
+      if (notFoundPage) {
+        response.writeHead(404, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        response.end(notFoundPage);
         return;
       }
 
@@ -264,7 +314,7 @@ function main() {
   });
 
   server.listen(port, host, () => {
-    console.log(`Pawsitters static server running at http://${host}:${port}/`);
+    console.log(`Pawsitters server running at http://${host}:${port}/`);
   });
 }
 

@@ -15,9 +15,9 @@ async function main() {
   assert.ok(results.find((entry) => entry.locale === defaultLocale && entry.pageKey === 'home'));
   assert.ok(results.find((entry) => entry.pageKey === 'register'));
   assert.ok(results.find((entry) => entry.pageKey === 'profile'));
+  assert.ok(results.find((entry) => entry.pageKey === 'settings'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryGit'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryPlaywright'));
-  assert.ok(results.find((entry) => entry.pageKey === 'repositoryApi'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryKanban'));
   assert.ok(results.find((entry) => entry.pageKey === 'notFound'));
 

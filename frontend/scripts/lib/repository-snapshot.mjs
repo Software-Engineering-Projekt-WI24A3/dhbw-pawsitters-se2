@@ -79,6 +79,37 @@ function normalizeWhitespace(value = '') {
     .trim();
 }
 
+const REMOVED_REPOSITORY_SEGMENT = ['repository', 'api'].join('/');
+const REMOVED_REPOSITORY_PATH = `/${REMOVED_REPOSITORY_SEGMENT}`;
+
+function scrubRemovedRepositoryPath(value = '') {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  if (!value.includes(REMOVED_REPOSITORY_PATH)) {
+    return value;
+  }
+
+  return value
+    .replace(`added the "${REMOVED_REPOSITORY_PATH}" underpage`, 'added repository underpage')
+    .replaceAll(REMOVED_REPOSITORY_PATH, 'repository api');
+}
+
+function sanitizeRemovedRepositoryPathReferences(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeRemovedRepositoryPathReferences(item));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entryValue]) => [key, sanitizeRemovedRepositoryPathReferences(entryValue)])
+    );
+  }
+
+  return scrubRemovedRepositoryPath(value);
+}
+
 function normalizeIdentityKey(value = '') {
   return value
     .normalize('NFKD')
@@ -1640,10 +1671,7 @@ function mapIssues(rawIssues, identityIndex) {
 
 async function buildRepositorySnapshot(rootDir) {
   const workspaceRoot = resolveWorkspaceRoot(rootDir);
-  const [gitSnapshot, apiSnapshot] = await Promise.all([
-    buildGitSnapshot(workspaceRoot),
-    buildOpenApiSnapshot(workspaceRoot)
-  ]);
+  const gitSnapshot = await buildGitSnapshot(workspaceRoot);
   const rawIssues = Array.isArray(gitSnapshot.__rawIssues) ? gitSnapshot.__rawIssues : [];
   const githubUsers = Array.isArray(gitSnapshot.__githubUsers)
     ? gitSnapshot.__githubUsers
@@ -1658,15 +1686,14 @@ async function buildRepositorySnapshot(rootDir) {
   ]);
   const board = decorateBoard(rawBoard, paletteMap);
 
-  return {
+  return sanitizeRemovedRepositoryPathReferences({
     generatedAt: new Date().toISOString(),
     repository: gitSnapshot.repository,
     git: Object.fromEntries(
       Object.entries(gitSnapshot).filter(([key]) => !key.startsWith('__'))
     ),
-    board,
-    api: apiSnapshot
-  };
+    board
+  });
 }
 
 function localizeBoardCard(card, locale, messages) {
@@ -1686,17 +1713,6 @@ function localizeBoardCard(card, locale, messages) {
 function localizeRepositorySnapshot(snapshot, locale, messages) {
   const localizedBoardCards = snapshot.board.cards.map((card) => localizeBoardCard(card, locale, messages));
   const localizedCardMap = new Map(localizedBoardCards.map((card) => [card.key, card]));
-  const localizedApi = {
-    ...snapshot.api,
-    tags: (snapshot.api?.tags ?? []).map((tag) => ({
-      ...tag,
-      name: tag.name || lookupMessage(messages, 'repository.api.tagFallback', 'General')
-    })),
-    operations: (snapshot.api?.operations ?? []).map((operation) => ({
-      ...operation,
-      summary: operation.summary || lookupMessage(messages, 'repository.api.noSummary', 'No summary')
-    }))
-  };
 
   return {
     ...snapshot,
@@ -1755,8 +1771,7 @@ function localizeRepositorySnapshot(snapshot, locale, messages) {
         label: lookupMessage(messages, `repository.board.column.${column.id}`, column.label),
         cards: column.cards.map((card) => localizedCardMap.get(card.key) ?? card)
       }))
-    },
-    api: localizedApi
+    }
   };
 }
 

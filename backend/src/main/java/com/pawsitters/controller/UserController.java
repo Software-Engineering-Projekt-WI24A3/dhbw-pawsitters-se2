@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,10 +34,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 
 @Validated
 @RestController
@@ -121,13 +125,19 @@ public class UserController {
         User user = userService.updateUser(
                 id,
                 authentication.getName(),
+                request.email(),
+                request.password(),
                 request.firstName(),
                 request.lastName(),
                 request.phone(),
                 request.birthDate(),
                 request.emergencyContact(),
                 request.profilePicture(),
-                request.bio()
+                request.bio(),
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
         );
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
@@ -145,13 +155,19 @@ public class UserController {
         User user = userService.patchUser(
                 id,
                 authentication.getName(),
+                request.email(),
+                request.password(),
                 request.firstName(),
                 request.lastName(),
                 request.phone(),
                 request.birthDate(),
                 request.emergencyContact(),
                 request.profilePicture(),
-                request.bio()
+                request.bio(),
+                request.role(),
+                request.postalCode(),
+                request.city(),
+                request.acceptedPetSpecies()
         );
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
@@ -202,12 +218,30 @@ public class UserController {
         }
 
         try {
-            String filename = UUID.randomUUID() + "-" + upload.getOriginalFilename();
+            String contentType = upload.getContentType();
+            if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+                throw new IllegalArgumentException("Nur Bilddateien sind erlaubt.");
+            }
+
+            byte[] bytes = upload.getBytes();
+            if (bytes.length > 5 * 1024 * 1024) {
+                throw new IllegalArgumentException("Das Profilbild darf maximal 5 MB groß sein.");
+            }
+
+            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(bytes));
+            if (bufferedImage == null) {
+                throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
+            }
+
+            String safeFilename = sanitizeUploadFilename(upload.getOriginalFilename());
+            String extension = resolveImageExtension(contentType, safeFilename);
+            String filename = UUID.randomUUID() + extension;
             Path uploadPath = Paths.get(uploadDir);
             Files.createDirectories(uploadPath);
-            Files.write(uploadPath.resolve(filename), upload.getBytes());
+            Files.write(uploadPath.resolve(filename), bytes);
+            String publicImagePath = "/uploads/profiles/" + filename;
 
-            User user = userService.updateProfileImage(id, authentication.getName(), filename);
+            User user = userService.updateProfileImage(id, authentication.getName(), publicImagePath);
             return ResponseEntity.ok(ApiResponse.success(
                     HttpStatus.OK,
                     "Profile image uploaded successfully.",
@@ -221,5 +255,42 @@ public class UserController {
                     e
             );
         }
+    }
+
+    private String sanitizeUploadFilename(String rawFilename) {
+        String original = StringUtils.hasText(rawFilename) ? rawFilename.trim() : "profile-image";
+        String normalizedSeparators = original.replace('\\', '/');
+        int lastSlash = normalizedSeparators.lastIndexOf('/');
+        String safe = lastSlash >= 0 ? normalizedSeparators.substring(lastSlash + 1) : normalizedSeparators;
+        return safe.isBlank() ? "profile-image" : safe;
+    }
+
+    private String resolveImageExtension(String contentType, String safeFilename) {
+        String lowerFilename = safeFilename.toLowerCase();
+        if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+            return ".jpg";
+        }
+        if (lowerFilename.endsWith(".png")) {
+            return ".png";
+        }
+        if (lowerFilename.endsWith(".gif")) {
+            return ".gif";
+        }
+        if (lowerFilename.endsWith(".webp")) {
+            return ".webp";
+        }
+        if (lowerFilename.endsWith(".bmp")) {
+            return ".bmp";
+        }
+
+        String normalizedContentType = contentType == null ? "" : contentType.trim().toLowerCase();
+        return switch (normalizedContentType) {
+            case "image/jpeg", "image/jpg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/gif" -> ".gif";
+            case "image/webp" -> ".webp";
+            case "image/bmp" -> ".bmp";
+            default -> throw new IllegalArgumentException("Nur JPEG, PNG, GIF, WebP und BMP Dateien sind erlaubt.");
+        };
     }
 }
