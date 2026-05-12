@@ -1155,22 +1155,6 @@ async function writeSearchDataAssets(rootDir) {
   );
 }
 
-async function writeRepositorySnapshotAssets(rootDir) {
-  const dataDirectory = resolveBuildOutputPath(rootDir, path.join('assets', 'data'));
-  await fs.mkdir(dataDirectory, { recursive: true });
-
-  const baseSnapshot = await loadRepositorySnapshot(rootDir);
-  await Promise.all(supportedLocales.map(async (locale) => {
-    const messages = await loadMessages(rootDir, locale);
-    const localizedSnapshot = localizeRepositorySnapshot(baseSnapshot, locale, messages);
-    await fs.writeFile(
-      path.join(dataDirectory, `repository-live.${locale}.json`),
-      `${JSON.stringify(localizedSnapshot, null, 2)}\n`,
-      'utf8'
-    );
-  }));
-}
-
 async function buildPageContext(rootDir, locale, pageKey) {
   const messages = await loadMessages(rootDir, locale);
 
@@ -1316,7 +1300,6 @@ export async function buildPreview(rootDir) {
     copyAssetIfExists(rootDir, 'src/media/2699.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '2699.svg')),
     copyAssetIfExists(rootDir, 'src/media/favicon.png', path.join(buildOutputDirectoryName, 'assets', 'media', 'favicon.png')),
     writeSearchDataAssets(rootDir),
-    writeRepositorySnapshotAssets(rootDir),
     copyDirectory(
       rootDir,
       'src/media/country-flag',

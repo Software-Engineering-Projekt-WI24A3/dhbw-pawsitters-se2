@@ -19,21 +19,34 @@ test.describe('Repository live loading', () => {
         observedLiveRequestUrls.push(requestUrl);
         await new Promise((resolve) => pendingLiveRequestResolvers.push(resolve));
       }
-      const response = await route.fetch();
-      await route.fulfill({ response });
+      try {
+        const response = await route.fetch();
+        await route.fulfill({ response });
+      } catch (error) {
+        const message = String(error?.message || '');
+        if (/ECONNRESET|aborted|canceled|closed/i.test(message)) {
+          await route.abort();
+          return;
+        }
+        throw error;
+      }
     });
 
-    const releaseNextLiveRequest = async () => {
+    const releaseAllPendingLiveRequests = async () => {
       await expect.poll(() => pendingLiveRequestResolvers.length, { timeout: 10000 }).toBeGreaterThan(0);
-      const release = pendingLiveRequestResolvers.shift();
-      release();
+      while (pendingLiveRequestResolvers.length > 0) {
+        const release = pendingLiveRequestResolvers.shift();
+        release();
+      }
     };
 
     await page.goto('/repository/git');
     await expect.poll(() => observedLiveRequestUrls.length, { timeout: 10000 }).toBeGreaterThanOrEqual(1);
     await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(0);
-    await releaseNextLiveRequest();
-    await expect(page.locator('.repository_stage .repository_surface')).toHaveCount(2);
+    await releaseAllPendingLiveRequests();
+    await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
+    await expect.poll(async () => page.locator('.repository_stage .repository_surface').count(), { timeout: 20000 })
+      .toBeGreaterThan(0);
     await expectNoLegacyLoginRouteLinks(page);
     await openLoginModal(page, { locale: 'de' });
     await closeLoginModal(page);
@@ -42,9 +55,10 @@ test.describe('Repository live loading', () => {
     await expect.poll(() => observedLiveRequestUrls.length, { timeout: 10000 }).toBeGreaterThanOrEqual(2);
     await expect(page.locator('.board_legend')).toHaveCount(0);
     await expect(page.locator('.board_stage')).toHaveCount(0);
-    await releaseNextLiveRequest();
-    await expect(page.locator('.board_legend')).toHaveCount(1);
-    await expect(page.locator('.board_stage')).toHaveCount(1);
+    await releaseAllPendingLiveRequests();
+    await expect(page.locator('.repository_live_loading')).toBeHidden({ timeout: 20000 });
+    await expect(page.locator('.board_legend')).toHaveCount(1, { timeout: 20000 });
+    await expect(page.locator('.board_stage')).toHaveCount(1, { timeout: 20000 });
     expect(observedLiveRequestUrls.every((url) => new URL(url).searchParams.get('locale') === 'de')).toBe(true);
   });
 

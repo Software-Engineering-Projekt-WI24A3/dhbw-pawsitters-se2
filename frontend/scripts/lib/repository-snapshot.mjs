@@ -252,58 +252,277 @@ function parseRemote(remoteUrl = '') {
   };
 }
 
-function buildGitSnapshotFallback({
+function buildGithubCommitIdentity(commit) {
+  const authorLogin = normalizeWhitespace(commit?.author?.login ?? commit?.committer?.login ?? '');
+  const authorName = normalizeWhitespace(commit?.commit?.author?.name ?? authorLogin ?? 'Unknown Author');
+  const authorEmail = normalizeWhitespace(
+    commit?.commit?.author?.email
+      ?? (authorLogin ? `${authorLogin}@users.noreply.github.com` : '')
+  );
+
+  return {
+    login: authorLogin || authorName,
+    name: authorName || authorLogin || 'Unknown Author',
+    email: authorEmail || `${normalizeIdentityKey(authorName || authorLogin || 'unknown')}@users.noreply.github.com`,
+    avatarUrl: commit?.author?.avatar_url || commit?.committer?.avatar_url || '',
+    profileUrl: commit?.author?.html_url || commit?.committer?.html_url || (authorLogin ? `https://github.com/${authorLogin}` : '')
+  };
+}
+
+function buildCommitImportLogFromGithubCommits(commits = []) {
+  return commits.map((commit) => {
+    const identity = buildGithubCommitIdentity(commit);
+    const commitDate = normalizeWhitespace(commit?.commit?.author?.date ?? commit?.commit?.committer?.date ?? '');
+    const subject = normalizeWhitespace(String(commit?.commit?.message || '').split('\n')[0]);
+    const parents = Array.isArray(commit?.parents)
+      ? commit.parents.map((parent) => normalizeWhitespace(parent?.sha)).filter(Boolean).join(' ')
+      : '';
+
+    return `${normalizeWhitespace(commit?.sha)}\x1f${parents}\x1f${identity.name}\x1f${identity.email}\x1f${commitDate}\x1f${subject}\x1e`;
+  }).join('');
+}
+
+function buildRecentCommitLogFromGithubCommits(commits = []) {
+  return commits.map((commit) => {
+    const identity = buildGithubCommitIdentity(commit);
+    const hash = normalizeWhitespace(commit?.sha);
+    const shortHash = hash.slice(0, 7);
+    const commitDate = normalizeWhitespace(commit?.commit?.author?.date ?? commit?.commit?.committer?.date ?? '');
+    const shortDate = toDateKey(commitDate);
+    const subject = normalizeWhitespace(String(commit?.commit?.message || '').split('\n')[0]);
+    return `${hash}\x1f${shortHash}\x1f${shortDate}\x1f${identity.name}\x1f${identity.email}\x1f${subject}\x1e`;
+  }).join('');
+}
+
+function dedupeGithubCommitsBySha(commits = []) {
+  const seenHashes = new Set();
+  const unique = [];
+
+  commits.forEach((commit) => {
+    const hash = normalizeWhitespace(commit?.sha);
+    if (!hash || seenHashes.has(hash)) {
+      return;
+    }
+
+    seenHashes.add(hash);
+    unique.push(commit);
+  });
+
+  return unique;
+}
+
+async function fetchGithubBranchCommits(owner, repo, branchName, perPage = 80) {
+  const resourcePath = `/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(branchName)}&per_page=${Math.max(1, perPage)}`;
+  const commits = await fetchGithubApiJson(resourcePath, { optional: false });
+  if (!Array.isArray(commits)) {
+    throw new Error(`GitHub API returned no commits for branch ${branchName}`);
+  }
+
+  return commits;
+}
+
+function buildAuthorSummariesFromGithubCommits(commits = [], identityIndex = new Map()) {
+  const authorCounter = commits.reduce((counter, commit) => {
+    const identity = buildGithubCommitIdentity(commit);
+    indexIdentity(identityIndex, identity);
+    const key = normalizeIdentityKey(identity.email) || normalizeIdentityKey(identity.login);
+    const existing = counter.get(key) ?? {
+      count: 0,
+      identity
+    };
+    existing.count += 1;
+    existing.identity = existing.identity || identity;
+    counter.set(key, existing);
+    return counter;
+  }, new Map());
+
+  const authorIdentities = [...authorCounter.values()].map((entry) => entry.identity.login || entry.identity.name);
+  const paletteMap = buildPaletteMap(authorIdentities);
+  const maxCount = Math.max(...[...authorCounter.values()].map((entry) => entry.count), 1);
+
+  return [...authorCounter.values()]
+    .map(({ count, identity }) => {
+      const tone = paletteMap.get(identity.login || identity.name) ?? AUTHOR_PALETTE[0];
+      const share = Math.max(12, Math.round((count / maxCount) * 100));
+      return {
+        count,
+        linesContributed: 0,
+        additions: 0,
+        deletions: 0,
+        name: identity.name || identity.login,
+        login: identity.login || identity.name,
+        avatarUrl: identity.avatarUrl || '',
+        profileUrl: identity.profileUrl || (identity.login ? `https://github.com/${identity.login}` : ''),
+        initials: initials(identity.name || identity.login),
+        share,
+        style: `--author-share:${share}%;`,
+        toneStyle: `${toneStyle(tone)}--author-share:${share}%;`
+      };
+    })
+    .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
+}
+
+async function buildGitSnapshotFromGithubApi({
   remoteUrl = '',
   owner = '',
   repo = '',
   currentBranch = '',
-  totalCommitsRaw = '0',
-  mergeCommitsRaw = '0',
-  lastCommitDate = '',
-  reason = ''
+  reason = '',
+  rawIssues = [],
+  githubUsers = []
 } = {}) {
-  const activityCounts = new Map();
   const repositoryOwner = normalizeWhitespace(owner);
   const repositoryName = normalizeWhitespace(repo);
-  const repositoryLabel = repositoryOwner && repositoryName
-    ? `${repositoryOwner}/${repositoryName}`
-    : '';
-  const parsedTotalCommits = Number.parseInt(totalCommitsRaw || '0', 10);
-  const parsedMergeCommits = Number.parseInt(mergeCommitsRaw || '0', 10);
+  const repositoryLabel = `${repositoryOwner}/${repositoryName}`;
+
+  const repositoryMeta = await fetchGithubApiJson(`/repos/${repositoryOwner}/${repositoryName}`, { optional: false });
+  const apiDefaultBranch = normalizeWhitespace(repositoryMeta?.default_branch ?? '');
+  const requestedBranch = normalizeWhitespace(currentBranch);
+  const defaultBranch = requestedBranch || apiDefaultBranch || 'main';
+
+  const fetchedBranches = await fetchGithubApiJson(
+    `/repos/${repositoryOwner}/${repositoryName}/branches?per_page=100`,
+    { optional: false }
+  );
+  if (!Array.isArray(fetchedBranches) || fetchedBranches.length === 0) {
+    throw new Error('GitHub API returned no repository branches.');
+  }
+
+  const MAX_BRANCHES = 12;
+  const prioritizedBranchNames = [
+    defaultBranch,
+    ...fetchedBranches.map((branch) => normalizeWhitespace(branch?.name)).filter(Boolean)
+  ].filter(Boolean);
+  const selectedBranchNames = [...new Set(prioritizedBranchNames)].slice(0, MAX_BRANCHES);
+
+  const branchCommitEntries = await Promise.all(selectedBranchNames.map(async (branchName) => {
+    const commits = await fetchGithubBranchCommits(repositoryOwner, repositoryName, branchName, 80);
+    return {
+      branchName,
+      commits: dedupeGithubCommitsBySha(commits)
+    };
+  }));
+  const populatedBranchEntries = branchCommitEntries.filter((entry) => entry.commits.length > 0);
+  if (populatedBranchEntries.length === 0) {
+    throw new Error('GitHub API returned empty commit histories for all selected branches.');
+  }
+
+  const effectiveDefaultBranch = populatedBranchEntries.find((entry) => entry.branchName === defaultBranch)?.branchName
+    || populatedBranchEntries[0].branchName;
+  const defaultBranchEntry = populatedBranchEntries.find((entry) => entry.branchName === effectiveDefaultBranch)
+    || populatedBranchEntries[0];
+  const lastCommitDate = normalizeWhitespace(
+    defaultBranchEntry?.commits?.[0]?.commit?.author?.date
+      ?? defaultBranchEntry?.commits?.[0]?.commit?.committer?.date
+      ?? ''
+  );
+
+  const identityIndex = new Map();
+  githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
+
+  const branchGraphs = {};
+  const activityCounts = new Map();
+  const allCommits = [];
+
+  populatedBranchEntries.forEach((entry) => {
+    const refsMap = new Map();
+    entry.commits.forEach((commit, index) => {
+      const refs = [];
+      if (index === 0) {
+        refs.push(entry.branchName);
+        if (entry.branchName === effectiveDefaultBranch) {
+          refs.push('HEAD');
+        }
+      }
+
+      const hash = normalizeWhitespace(commit?.sha);
+      if (hash) {
+        refsMap.set(hash, refs);
+      }
+
+      const activityDate = normalizeWhitespace(commit?.commit?.author?.date ?? commit?.commit?.committer?.date ?? '');
+      const activityKey = toDateKey(activityDate);
+      if (activityKey) {
+        activityCounts.set(activityKey, (activityCounts.get(activityKey) ?? 0) + 1);
+      }
+
+      allCommits.push(commit);
+      indexIdentity(identityIndex, buildGithubCommitIdentity(commit));
+    });
+
+    const importLog = buildCommitImportLogFromGithubCommits(entry.commits);
+    const recentLog = buildRecentCommitLogFromGithubCommits(entry.commits);
+    const branchLastCommitDate = normalizeWhitespace(
+      entry.commits[0]?.commit?.author?.date ?? entry.commits[0]?.commit?.committer?.date ?? ''
+    );
+
+    branchGraphs[entry.branchName] = {
+      branch: entry.branchName,
+      graphImport: parseCommitImport(importLog, refsMap, identityIndex),
+      recentCommits: parseBranchCommits(recentLog, identityIndex),
+      lastCommitDate: branchLastCommitDate,
+      lastCommitLabel: displayDate(branchLastCommitDate)
+    };
+  });
+
+  const uniqueProjectCommits = dedupeGithubCommitsBySha(allCommits);
+  const projectRefsMap = new Map();
+  const headBranchGraph = branchGraphs[effectiveDefaultBranch];
+  if (headBranchGraph?.graphImport?.[0]?.hash) {
+    projectRefsMap.set(headBranchGraph.graphImport[0].hash, ['HEAD', effectiveDefaultBranch]);
+  }
+  const projectImportLog = buildCommitImportLogFromGithubCommits(uniqueProjectCommits);
+  const projectRecentLog = buildRecentCommitLogFromGithubCommits(uniqueProjectCommits);
+  const projectGraph = {
+    branch: effectiveDefaultBranch,
+    graphImport: parseCommitImport(projectImportLog, projectRefsMap, identityIndex),
+    recentCommits: parseBranchCommits(projectRecentLog, identityIndex),
+    lastCommitDate,
+    lastCommitLabel: displayDate(lastCommitDate)
+  };
+
+  const authors = buildAuthorSummariesFromGithubCommits(defaultBranchEntry.commits, identityIndex);
+  const totalCommits = uniqueProjectCommits.length;
+  const mergeCommits = uniqueProjectCommits.filter((commit) => {
+    const parentCount = Array.isArray(commit?.parents) ? commit.parents.length : 0;
+    return parentCount > 1;
+  }).length;
 
   return {
-    remoteUrl,
+    remoteUrl: remoteUrl || `${normalizeWhitespace(repositoryMeta?.html_url) || `https://github.com/${repositoryLabel}`}.git`,
     repository: {
       owner: repositoryOwner,
       name: repositoryName,
       label: repositoryLabel
     },
-    branch: currentBranch,
-    defaultBranch: currentBranch,
-    totalCommits: Number.isFinite(parsedTotalCommits) ? parsedTotalCommits : 0,
-    mergeCommits: Number.isFinite(parsedMergeCommits) ? parsedMergeCommits : 0,
-    branchCount: 0,
-    contributorCount: 0,
-    authors: [],
+    branch: effectiveDefaultBranch,
+    defaultBranch: effectiveDefaultBranch,
+    totalCommits,
+    mergeCommits,
+    branchCount: populatedBranchEntries.length,
+    contributorCount: authors.length,
+    authors,
     activity: {
       week: createActivitySeries(activityCounts, 'week'),
       month: createActivitySeries(activityCounts, 'month'),
       year: createActivitySeries(activityCounts, 'year')
     },
-    branches: [],
-    branchGraphs: {},
-    projectGraph: {
-      branch: currentBranch,
-      graphImport: [],
-      recentCommits: [],
-      lastCommitDate,
-      lastCommitLabel: displayDate(lastCommitDate)
-    },
+    branches: populatedBranchEntries.map((entry) => ({
+      name: entry.branchName,
+      ref: entry.branchName,
+      hash: normalizeWhitespace(entry.commits[0]?.sha ?? ''),
+      lastCommitDate: normalizeWhitespace(entry.commits[0]?.commit?.author?.date ?? entry.commits[0]?.commit?.committer?.date ?? ''),
+      remoteOnly: false,
+      selected: entry.branchName === effectiveDefaultBranch,
+      lastCommitLabel: displayDate(entry.commits[0]?.commit?.author?.date ?? entry.commits[0]?.commit?.committer?.date ?? '')
+    })),
+    branchGraphs,
+    projectGraph,
     lastCommitDate,
     lastCommitLabel: displayDate(lastCommitDate),
     buildWarning: reason,
-    __rawIssues: [],
-    __githubUsers: []
+    __rawIssues: rawIssues,
+    __githubUsers: githubUsers
   };
 }
 
@@ -741,64 +960,69 @@ async function runJsonOptional(command, args, cwd, contextLabel) {
   }
 }
 
-async function fetchOpenIssues(owner, repo, workspaceRoot) {
-  const issues = await runJsonOptional(
-    'gh',
-    ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
-    workspaceRoot,
-    'GitHub issues API'
-  );
-
-  if (!Array.isArray(issues)) {
-    return [];
-  }
-
-  return issues.filter((issue) => !issue.pull_request);
+function resolveGithubApiOrigin() {
+  const configuredOrigin = normalizeWhitespace(process.env.GITHUB_API_ORIGIN ?? '');
+  return configuredOrigin || 'https://api.github.com';
 }
 
-async function fetchGithubUserSafe(login, workspaceRoot) {
+function buildGithubApiRequestHeaders() {
+  const token = normalizeWhitespace(process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '');
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'pawsitters-repository-snapshot'
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+async function fetchGithubApiJson(resourcePath, { optional = true } = {}) {
+  if (typeof fetch !== 'function') {
+    if (optional) {
+      return null;
+    }
+    throw new Error('Fetch API is unavailable in this Node.js runtime.');
+  }
+
+  const normalizedPath = String(resourcePath || '').replace(/^\/+/, '');
+  const url = new URL(normalizedPath, `${resolveGithubApiOrigin().replace(/\/+$/, '')}/`);
+
   try {
-    return await runJsonRequired('gh', ['api', `users/${login}`], workspaceRoot, `GitHub user API (${login})`);
+    const response = await fetch(url, {
+      headers: buildGithubApiRequestHeaders()
+    });
+    if (!response.ok) {
+      if (optional) {
+        return null;
+      }
+      throw new Error(`GitHub API request failed with status ${response.status} for ${url.toString()}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    const notFound = String(error?.stderr || '').includes('Not Found')
-      || String(error?.stdout || '').includes('"Not Found"');
-    if (notFound) {
-      return { login };
+    if (optional) {
+      return null;
     }
     throw error;
   }
 }
 
-async function fetchGithubIdentityByCommitEmail(owner, repo, authorEmail, workspaceRoot) {
-  const email = normalizeWhitespace(authorEmail);
-  if (!email) {
-    return null;
-  }
+async function fetchOpenIssues(owner, repo, workspaceRoot) {
+  const cliIssues = await runJsonOptional(
+    'gh',
+    ['api', `repos/${owner}/${repo}/issues?state=open&per_page=100`],
+    workspaceRoot,
+    'GitHub issues API'
+  );
+  const apiIssues = Array.isArray(cliIssues)
+    ? cliIssues
+    : await fetchGithubApiJson(`/repos/${owner}/${repo}/issues?state=open&per_page=100`);
+  const issues = Array.isArray(apiIssues) ? apiIssues : [];
 
-  try {
-    const commits = await runJsonRequired(
-      'gh',
-      ['api', `repos/${owner}/${repo}/commits?author=${encodeURIComponent(email)}&per_page=1`],
-      workspaceRoot,
-      `GitHub commits API (${email})`
-    );
-
-    const commit = Array.isArray(commits) ? commits[0] : null;
-    const user = commit?.author;
-    if (!user?.login) {
-      return null;
-    }
-
-    return {
-      login: user.login,
-      name: user.login,
-      email,
-      avatarUrl: user.avatar_url || user.avatarUrl || '',
-      profileUrl: user.html_url || user.profileUrl || `https://github.com/${user.login}`
-    };
-  } catch {
-    return null;
-  }
+  return issues.filter((issue) => !issue.pull_request);
 }
 
 function prepareBody(body = '') {
@@ -861,7 +1085,9 @@ function splitIssueTitle(title = '') {
 function inferColumnId(issue) {
   const { track } = splitIssueTitle(issue.title);
   const milestone = normalizeWhitespace(issue.milestone?.title ?? '');
-  const labels = issue.labels.map((label) => normalizeWhitespace(label.name ?? label)).join(' ');
+  const labels = (Array.isArray(issue?.labels) ? issue.labels : [])
+    .map((label) => normalizeWhitespace(label.name ?? label))
+    .join(' ');
   const body = normalizeWhitespace(issue.body ?? '');
   const typeName = normalizeWhitespace(issue.type?.name ?? '');
   const corpus = [track, issue.title, milestone, labels, body, typeName]
@@ -1152,51 +1378,45 @@ function indexIdentity(index, identity) {
 }
 
 async function fetchGithubUsers(owner, repo, issues, workspaceRoot) {
-  const contributors = await runJsonOptional(
+  const contributorsFromCli = await runJsonOptional(
     'gh',
     ['api', `repos/${owner}/${repo}/contributors?per_page=100`],
     workspaceRoot,
     'GitHub contributors API'
-  ) ?? [];
+  );
+  const contributorsFromApi = Array.isArray(contributorsFromCli)
+    ? contributorsFromCli
+    : await fetchGithubApiJson(`/repos/${owner}/${repo}/contributors?per_page=100`);
+  const contributors = Array.isArray(contributorsFromApi) ? contributorsFromApi : [];
 
-  const logins = new Set([
-    ...contributors.map((user) => user.login),
-    ...issues.flatMap((issue) => [
-      issue.user?.login,
-      ...issue.assignees.map((assignee) => assignee.login)
-    ])
-  ].filter(Boolean));
+  const issueUsers = issues.flatMap((issue) => {
+    const assignees = Array.isArray(issue?.assignees) ? issue.assignees : [];
+    return [issue?.user, ...assignees].filter(Boolean);
+  });
+  const knownUsers = [...contributors, ...issueUsers];
 
-  const userDetails = await Promise.all([...logins].map(async (login) => {
-    const user = await fetchGithubUserSafe(login, workspaceRoot);
-    return buildIdentityFromUser(user ?? { login });
-  }));
-
-  return userDetails.filter(Boolean);
-}
-
-async function resolveAuthorIdentity(authorName, authorEmail, identityIndex, workspaceRoot) {
-  const aliasCandidates = [
-    authorEmail,
-    authorEmail.match(/\+([^@]+)@users\.noreply\.github\.com$/i)?.[1]
-  ].filter(Boolean);
-
-  for (const candidate of aliasCandidates) {
-    const identity = identityIndex.get(normalizeIdentityKey(candidate));
-    if (identity) {
-      return identity;
+  const identitiesByLogin = new Map();
+  knownUsers.forEach((user) => {
+    const identity = buildIdentityFromUser(user);
+    if (!identity?.login) {
+      return;
     }
-  }
 
-  const normalizedAuthorName = normalizeIdentityKey(authorName);
-  if (normalizedAuthorName) {
-    const directLoginMatch = identityIndex.get(normalizedAuthorName);
-    if (directLoginMatch && normalizeIdentityKey(directLoginMatch.login) === normalizedAuthorName) {
-      return directLoginMatch;
+    const existing = identitiesByLogin.get(identity.login);
+    if (!existing) {
+      identitiesByLogin.set(identity.login, identity);
+      return;
     }
-  }
 
-  return null;
+    identitiesByLogin.set(identity.login, {
+      ...existing,
+      name: existing.name || identity.name,
+      avatarUrl: existing.avatarUrl || identity.avatarUrl,
+      profileUrl: existing.profileUrl || identity.profileUrl
+    });
+  });
+
+  return [...identitiesByLogin.values()];
 }
 
 function parseAuthorContributionStats(logOutput) {
@@ -1375,20 +1595,26 @@ async function buildGitSnapshot(workspaceRoot) {
   githubUsers.forEach((identity) => indexIdentity(identityIndex, identity));
 
   const authorStats = parseAuthorContributionStats(authorContributionLog);
-  const commitEmails = [...new Set(authorStats
-    .map((author) => normalizeWhitespace(author.authorEmail))
-    .filter(Boolean))];
-  const commitEmailIdentities = await Promise.all(commitEmails.map((email) => {
-    return fetchGithubIdentityByCommitEmail(owner, repo, email, workspaceRoot);
-  }));
-  commitEmailIdentities
-    .filter(Boolean)
-    .forEach((identity) => indexIdentity(identityIndex, identity));
+  authorStats.forEach((author) => {
+    const normalizedEmail = normalizeWhitespace(author.authorEmail);
+    if (!normalizedEmail) {
+      return;
+    }
 
-  await Promise.all(authorStats.map(async (author) => {
-    const identity = await resolveAuthorIdentity(author.authorName, author.authorEmail, identityIndex, workspaceRoot);
-    indexIdentity(identityIndex, identity);
-  }));
+    const existingIdentity = identityIndex.get(normalizeIdentityKey(normalizedEmail));
+    if (existingIdentity) {
+      return;
+    }
+
+    const synthesizedIdentity = {
+      login: normalizeWhitespace(author.authorName) || normalizedEmail,
+      name: normalizeWhitespace(author.authorName) || normalizedEmail,
+      email: normalizedEmail,
+      avatarUrl: '',
+      profileUrl: ''
+    };
+    indexIdentity(identityIndex, synthesizedIdentity);
+  });
 
   const activityCounts = activityLog
     .split('\n')
@@ -1506,6 +1732,21 @@ async function buildGitSnapshot(workspaceRoot) {
     })
     .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
 
+  const hasUsableBranches = branchList.length > 0;
+  const hasUsableGraph = projectGraph.graphImport.length > 0 && projectGraph.recentCommits.length > 0;
+  const hasUsableContributors = authors.length > 0;
+  if (!hasUsableBranches || !hasUsableGraph || !hasUsableContributors) {
+    return buildGitSnapshotFromGithubApi({
+      remoteUrl,
+      owner,
+      repo,
+      currentBranch: currentBranchName || 'develop',
+      reason: 'Git/CLI metadata unavailable; using live GitHub API repository data.',
+      rawIssues,
+      githubUsers
+    });
+  }
+
   return {
     remoteUrl,
     repository: {
@@ -1583,6 +1824,8 @@ function decorateBoard(rawBoard, paletteMap) {
 
 function mapIssues(rawIssues, identityIndex) {
   const cards = rawIssues.map((issue) => {
+    const labels = Array.isArray(issue?.labels) ? issue.labels : [];
+    const assignees = Array.isArray(issue?.assignees) ? issue.assignees : [];
     const normalizedBody = prepareBody(issue.body);
     const { track, title } = splitIssueTitle(issue.title);
     const columnId = inferColumnId(issue);
@@ -1610,9 +1853,9 @@ function mapIssues(rawIssues, identityIndex) {
       hasEndpoints: endpoints.length > 0,
       criteria,
       hasCriteria: criteria.length > 0,
-      labels: issue.labels.map((label) => normalizeWhitespace(label.name ?? label)).filter(Boolean),
-      hasLabels: issue.labels.length > 0,
-      assignees: issue.assignees.map((assignee) => {
+      labels: labels.map((label) => normalizeWhitespace(label.name ?? label)).filter(Boolean),
+      hasLabels: labels.length > 0,
+      assignees: assignees.map((assignee) => {
         const identity = identityIndex.get(normalizeIdentityKey(assignee.login))
           || buildIdentityFromUser(assignee)
           || null;
@@ -1624,7 +1867,7 @@ function mapIssues(rawIssues, identityIndex) {
           profileUrl: identity?.profileUrl || assignee.html_url || `https://github.com/${assignee.login}`
         };
       }),
-      assigneeCount: issue.assignees.length,
+      assigneeCount: assignees.length,
       author: authorIdentity
         ? {
           login: authorIdentity.login,

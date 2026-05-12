@@ -4,484 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updated things for successfull e2e testings">
-      <change afterPath="$PROJECT_DIR$/frontend/src/media/1F50D.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/media/2699.svg" afterDir="false" />
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updated the hole website - implemented a lot, also on the backend">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/UserPatchRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/UserPatchRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/UserUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/UserUpdateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/config/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/AuthController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/validation/PasswordRegistrationValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/validation/PasswordRegistrationValidator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/UserIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/UserIntegrationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/UserServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/UserServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/404/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/api-overview/index 2.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/api-overview/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/css/site.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/data/country-flags.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/data/pet-choices.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/data/repository-live.de.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/data/repository-live.en.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/data/repository-live.ro.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/js/site.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/1F4CB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/1F512.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/1F9D1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/404.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-amphibian/1F438.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F413.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F414.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F423.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F424.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F425.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F426-200D-1F525.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F426-200D-2B1B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F426.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F427.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F54A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F983.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F985.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F986.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F989.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F99A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F99C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F9A2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F9A4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1F9A9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1FAB6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1FABD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bird/1FABF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F40C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F41B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F41C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F41D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F41E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F577.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F578.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F982.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F98B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F997.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F99F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1F9A0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1FAB0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1FAB1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1FAB2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-bug/1FAB3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F400.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F401.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F402.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F403.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F404.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F405.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F406.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F407.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F408-200D-2B1B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F408.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F40E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F40F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F410.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F411.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F412.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F415-200D-1F9BA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F415.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F416.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F417.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F418.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F428.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F429.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F42A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F42B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F42D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F42E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F42F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F430.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F431.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F434.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F435.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F436.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F437.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F439.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43B-200D-2744-FE0F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F43F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F981.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F984.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F987.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F98A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F98C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F98D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F98F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F992.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F993.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F994.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F998.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F999.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F99B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F99D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9A8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9AB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9AC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1F9AE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1FACE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-mammal/1FACF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F40B.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F419.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F41A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F41F.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F420.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F421.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F42C.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F433.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F980.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F988.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F990.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F991.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F99E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F9AA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1F9AD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1FAB8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1FABC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-marine/1FACD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F409.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F40A.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F40D.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F422.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F432.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F98E.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F995.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/animal-reptile/1F996.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E6-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1EF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E7-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E8-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1EF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1E9-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EA-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1EF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EB-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EC-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1ED-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EE-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1EF-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F0-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F1-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F2-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F5.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F3-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F4-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F5-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F6-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F7-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1EF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FD.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F8-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1E9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1ED.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1EF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F1.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F4.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F7.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1F9-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FA-1F1FF.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1E8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1EE.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1F3.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FB-1F1FA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1EB.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FC-1F1F8.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FD-1F1F0.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1EA.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FE-1F1F9.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1E6.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1F2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/country-flag/1F1FF-1F1FC.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/favicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/pawsitters-scene.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/media/search-lense.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/vendor/gitgraph.umd.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/assets/vendor/vue.esm-browser.prod.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/404/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/profile/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/register/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/repository/api/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/repository/git/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/repository/kanban/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/en/repository/playwright/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/git/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/kanban/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/nginx.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/playwright/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/profile/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/api/index 2.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/api/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/git/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/kanban/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/repository/playwright/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/404/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/profile/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/register/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/repository/api/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/repository/git/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/repository/kanban/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ro/repository/playwright/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/security/AuthIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/security/AuthIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/playwright.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/playwright.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/repository-snapshot.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/scripts/serve.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/serve.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/verify-tailwind 2.mjs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-api 2.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-api.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-git.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-kanban.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/repository-playwright.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-flows.e2e.spec 2.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/auth-locale.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-playwright.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/repository-live.test.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/repository-live.test.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-git.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/repository-loading.e2e.spec.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -523,6 +62,9 @@
       <entry key="agent-panel" value="GPT-5.2-Codex" />
       <entry key="chat-panel" value="GPT-5.2-Codex" />
     </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="737" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -607,27 +149,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
-    "Shell Script.Projektstart.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "n__feature__working-on-the-footer-and-search-engine",
-    "javascript.preferred.runtime.type.id": "node",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck&quot;,
+    &quot;Shell Script.Projektstart.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;n__feature__fixing-bugs-from-the-recent-merge&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src/media" />
@@ -695,6 +237,7 @@
       <workItem from="1778334655193" duration="3501000" />
       <workItem from="1778427823789" duration="1423000" />
       <workItem from="1778490221650" duration="368000" />
+      <workItem from="1778621154707" duration="1019000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />

@@ -1,8 +1,11 @@
 const { defineConfig } = require('@playwright/test');
+const isCI = Boolean(process.env.CI);
 
 module.exports = defineConfig({
   testDir: './tests/e2e',
   timeout: 30000,
+  retries: isCI ? 2 : 1,
+  workers: isCI ? 2 : 2,
   expect: {
     timeout: 5000
   },

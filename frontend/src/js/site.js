@@ -249,8 +249,12 @@ const PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH = '/assets/media/animal-mammal/1F43E.
 const HEADER_SCROLL_PROGRESS_RANGE_PX = 84;
 const HEADER_SCROLL_COMPACT_ENTER_PX = 22;
 const HEADER_SCROLL_COMPACT_EXIT_PX = 8;
+const HEADER_SCROLL_PROGRESS_EPSILON = 0.0005;
+const HEADER_SCROLL_SMOOTHING_DOWN = 0.32;
+const HEADER_SCROLL_SMOOTHING_UP = 0.22;
 const headerScrollAnimationState = {
     progress: 0,
+    targetProgress: 0,
     appliedProgress: Number.NaN
 };
 const METRIC_GROUP_FIELDS = {
@@ -1741,10 +1745,49 @@ function resolvePetChoiceEmojiPath(value) {
     return PET_CHOICE_EMOJI_ASSET_PATHS[normalizedValue] || PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
 }
 
+function shouldSendApiCredentials(fetchInput) {
+    let urlValue = '';
+    if (typeof fetchInput === 'string') {
+        urlValue = fetchInput;
+    } else if (fetchInput instanceof URL) {
+        urlValue = fetchInput.toString();
+    } else if (typeof Request !== 'undefined' && fetchInput instanceof Request) {
+        urlValue = fetchInput.url || '';
+    }
+
+    if (!urlValue) {
+        return false;
+    }
+
+    if (urlValue.startsWith('/api/') || urlValue.startsWith('/actuator/')) {
+        return true;
+    }
+
+    try {
+        const parsedUrl = new URL(urlValue, window.location.origin);
+        const isSameOrigin = parsedUrl.origin === window.location.origin;
+        const isApiPath = parsedUrl.pathname.startsWith('/api/') || parsedUrl.pathname.startsWith('/actuator/');
+        return isSameOrigin && isApiPath;
+    } catch {
+        return false;
+    }
+}
+
+function apiFetch(fetchInput, options = {}) {
+    if (!shouldSendApiCredentials(fetchInput) || options.credentials !== undefined) {
+        return fetch(fetchInput, options);
+    }
+
+    return fetch(fetchInput, {
+        ...options,
+        credentials: 'include'
+    });
+}
+
 async function fetchFirstJsonPayload(urls = []) {
     for (const url of urls) {
         try {
-            const response = await fetch(url, {
+            const response = await apiFetch(url, {
                 headers: {
                     Accept: 'application/json'
                 },
@@ -2182,7 +2225,9 @@ createApp({
             registerSubmitPending: false,
             scrolled: false,
             headerScrollSyncFrame: 0,
+            headerScrollAnimationFrame: 0,
             headerScrollPendingY: 0,
+            headerScrollProgress: 0,
             headerSurfaceElement: null,
             headerSearchTabsResizeObserver: null,
             headerSearchInteractionExpanded: false,
@@ -2358,7 +2403,9 @@ createApp({
                 .slice(0, 70);
         },
         headerSearchCompactMode() {
-            return this.headerCenterTab === 'discover' && this.scrolled && !this.headerSearchInteractionExpanded;
+            return this.headerCenterTab === 'discover'
+                && this.headerScrollProgress >= 0.52
+                && !this.headerSearchInteractionExpanded;
         },
         locationDisplayValue() {
             if (this.selectedLocation && this.selectedLocation.label) {
@@ -3078,7 +3125,12 @@ createApp({
             window.cancelAnimationFrame(this.headerScrollSyncFrame);
             this.headerScrollSyncFrame = 0;
         }
+        if (this.headerScrollAnimationFrame > 0) {
+            window.cancelAnimationFrame(this.headerScrollAnimationFrame);
+            this.headerScrollAnimationFrame = 0;
+        }
         headerScrollAnimationState.progress = 0;
+        headerScrollAnimationState.targetProgress = 0;
         headerScrollAnimationState.appliedProgress = Number.NaN;
         this.headerSurfaceElement = null;
         document.body.classList.remove('body--modal-open');
@@ -3214,7 +3266,7 @@ createApp({
             }
 
             try {
-                const response = await fetch(BACKEND_STATUS_ENDPOINT, {
+                const response = await apiFetch(BACKEND_STATUS_ENDPOINT, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -3987,7 +4039,7 @@ createApp({
             this.playwrightStatusLoading = true;
 
             try {
-                const response = await fetch(`/api/tests/e2e/status.json?from=${from}`, {
+                const response = await apiFetch(`/api/tests/e2e/status.json?from=${from}`, {
                     headers: {
                         Accept: 'application/json',
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -4023,7 +4075,7 @@ createApp({
             this.playwrightRunPending = true;
 
             try {
-                const response = await fetch('/api/tests/e2e/run', {
+                const response = await apiFetch('/api/tests/e2e/run', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json'
@@ -4202,7 +4254,7 @@ createApp({
             const fallbackFirstName = this.deriveFirstNameFromEmail(normalizedEmail);
 
             try {
-                const response = await fetch('/api/users/me', {
+                const response = await apiFetch('/api/users/me', {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -4252,7 +4304,7 @@ createApp({
             this.authSessionRequestId = requestId;
 
             try {
-                const response = await fetch('/api/auth/session', {
+                const response = await apiFetch('/api/auth/session', {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -4361,7 +4413,7 @@ createApp({
             }
 
             try {
-                const response = await fetch('/api/auth/logout', {
+                const response = await apiFetch('/api/auth/logout', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json'
@@ -4887,7 +4939,7 @@ createApp({
             this.settingsViewError = '';
 
             try {
-                const response = await fetch('/api/users/me', {
+                const response = await apiFetch('/api/users/me', {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -5379,7 +5431,7 @@ createApp({
             }
 
             try {
-                const response = await fetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedEmail)}`, {
+                const response = await apiFetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedEmail)}`, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -5409,7 +5461,7 @@ createApp({
             }
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await apiFetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json',
@@ -5443,7 +5495,7 @@ createApp({
         },
         async forceLogoutAfterSettingsUpdate() {
             try {
-                await fetch('/api/auth/logout', {
+                await apiFetch('/api/auth/logout', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json'
@@ -5487,7 +5539,7 @@ createApp({
                     const formData = new FormData();
                     formData.append('image', this.settingsEditProfileFile);
 
-                    const response = await fetch(`/api/users/${normalizedUserId}/profile-image`, {
+                    const response = await apiFetch(`/api/users/${normalizedUserId}/profile-image`, {
                         method: 'POST',
                         headers: {
                             Accept: 'application/json'
@@ -5561,7 +5613,7 @@ createApp({
                 }
 
                 const patchPayload = this.buildSettingsPatchPayload(fieldKey, validation.payloadValue);
-                const response = await fetch(`/api/users/${normalizedUserId}`, {
+                const response = await apiFetch(`/api/users/${normalizedUserId}`, {
                     method: 'PATCH',
                     headers: {
                         Accept: 'application/json',
@@ -5753,7 +5805,7 @@ createApp({
             this.applyProfileDocumentTitle();
 
             try {
-                const response = await fetch(`/api/users/${normalizedUserId}`, {
+                const response = await apiFetch(`/api/users/${normalizedUserId}`, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -6305,7 +6357,7 @@ createApp({
             this.registerSubmitPending = true;
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await apiFetch('/api/auth/register', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json',
@@ -6711,7 +6763,7 @@ createApp({
                 this.loginLookupPending = true;
 
                 try {
-                    const response = await fetch('/api/auth/login', {
+                    const response = await apiFetch('/api/auth/login', {
                         method: 'POST',
                         headers: {
                             Accept: 'application/json',
@@ -6767,7 +6819,7 @@ createApp({
             this.loginLookupPending = true;
 
             try {
-                const response = await fetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedIdentifier)}`, {
+                const response = await apiFetch(`/api/users/mailExists?mail=${encodeURIComponent(normalizedIdentifier)}`, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json'
@@ -6904,7 +6956,7 @@ createApp({
                 return null;
             }
 
-            const response = await fetch(`/api/users/${normalizedUserId}`, {
+            const response = await apiFetch(`/api/users/${normalizedUserId}`, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json'
@@ -7766,7 +7818,7 @@ createApp({
                     params.set('_', Date.now().toString(36));
                 }
 
-                const response = await fetch(`/api/repository/live.json?${params.toString()}`, {
+                const response = await apiFetch(`/api/repository/live.json?${params.toString()}`, {
                     headers: {
                         Accept: 'application/json',
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -9042,6 +9094,7 @@ createApp({
                 ? Math.min(1, Math.max(0, numericValue))
                 : 0;
             const effectiveProgress = this.headerSearchInteractionExpanded ? 0 : clamped;
+            this.headerScrollProgress = effectiveProgress;
             if (Math.abs(effectiveProgress - headerScrollAnimationState.appliedProgress) < 0.0005) {
                 return;
             }
@@ -9073,6 +9126,35 @@ createApp({
 
             this.applyHeaderSurfaceScrollProgress(clamped);
         },
+        startHeaderScrollProgressAnimation() {
+            if (this.headerScrollAnimationFrame > 0) {
+                return;
+            }
+
+            const step = () => {
+                this.headerScrollAnimationFrame = 0;
+                const target = Math.min(1, Math.max(0, Number(headerScrollAnimationState.targetProgress) || 0));
+                const current = Math.min(1, Math.max(0, Number(headerScrollAnimationState.progress) || 0));
+                const delta = target - current;
+
+                if (Math.abs(delta) < HEADER_SCROLL_PROGRESS_EPSILON) {
+                    if (Math.abs(target - current) > 0) {
+                        this.setHeaderScrollProgress(target, this.scrolled);
+                    }
+
+                    return;
+                }
+
+                const smoothing = delta > 0
+                    ? HEADER_SCROLL_SMOOTHING_DOWN
+                    : HEADER_SCROLL_SMOOTHING_UP;
+                const nextProgress = current + (delta * smoothing);
+                this.setHeaderScrollProgress(nextProgress, this.scrolled);
+                this.headerScrollAnimationFrame = window.requestAnimationFrame(step);
+            };
+
+            this.headerScrollAnimationFrame = window.requestAnimationFrame(step);
+        },
         syncScrollState() {
             const scrollY = Math.max(0, window.scrollY || 0);
             this.headerScrollPendingY = scrollY;
@@ -9089,12 +9171,19 @@ createApp({
                     ? HEADER_SCROLL_COMPACT_EXIT_PX
                     : HEADER_SCROLL_COMPACT_ENTER_PX;
                 const nextScrolled = pendingY > compactThreshold;
-                const progressUnchanged = Math.abs(nextProgress - headerScrollAnimationState.progress) < 0.0005;
-                if (progressUnchanged && nextScrolled === this.scrolled) {
+                const progressUnchanged = Math.abs(nextProgress - headerScrollAnimationState.targetProgress) < HEADER_SCROLL_PROGRESS_EPSILON;
+
+                headerScrollAnimationState.targetProgress = nextProgress;
+
+                if (nextScrolled !== this.scrolled) {
+                    this.setHeaderScrollProgress(headerScrollAnimationState.progress, nextScrolled);
+                }
+
+                if (progressUnchanged) {
                     return;
                 }
 
-                this.setHeaderScrollProgress(nextProgress, nextScrolled);
+                this.startHeaderScrollProgressAnimation();
             });
         },
         handleResize() {

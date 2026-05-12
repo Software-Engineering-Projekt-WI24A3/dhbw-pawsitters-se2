@@ -16,8 +16,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -379,6 +382,51 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.loggedIn").value(true))
                 .andExpect(jsonPath("$.data.email").value(baseEmail));
+    }
+
+    @Test
+    void loginSetsSecureCookieWhenForwardedProtoIsHttps() throws Exception {
+        String baseEmail = "secure.cookie." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "StrongPhrase123!");
+
+        Map<String, String> loginPayload = new HashMap<>();
+        loginPayload.put("email", baseEmail);
+        loginPayload.put("password", "StrongPhrase123!");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .header("X-Forwarded-Proto", "https")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginPayload)))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", containsString("Secure")));
+    }
+
+    @Test
+    void loginSetsSecureCookieWhenStandardForwardedProtoIsHttps() throws Exception {
+        String baseEmail = "secure.forwarded." + UUID.randomUUID() + "@test.de";
+        registerUser(baseEmail, "StrongPhrase123!");
+
+        Map<String, String> loginPayload = new HashMap<>();
+        loginPayload.put("email", baseEmail);
+        loginPayload.put("password", "StrongPhrase123!");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .header("Forwarded", "for=192.0.2.10;proto=https;host=example.test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginPayload)))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", containsString("Secure")));
+    }
+
+    @Test
+    void corsPreflightForSessionAllowsConfiguredLocalOrigin() throws Exception {
+        mockMvc.perform(options("/api/auth/session")
+                        .header("Origin", "http://localhost:3000")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "Authorization"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"));
     }
 
     @Test

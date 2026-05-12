@@ -4,7 +4,7 @@ import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defaultLocale, renderLocalizedPage, supportedLocales } from './lib/thymeleaf-preview.mjs';
+import { defaultLocale, loadLocalizedRepositorySnapshot, renderLocalizedPage, supportedLocales } from './lib/thymeleaf-preview.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -150,7 +150,52 @@ function shouldProxyToBackend(pathname) {
   return BACKEND_PROXY_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-function buildProxyRequestHeaders(requestHeaders = {}) {
+function firstHeaderValue(headerValue) {
+  if (Array.isArray(headerValue)) {
+    return headerValue[0] ?? '';
+  }
+
+  return typeof headerValue === 'string' ? headerValue : '';
+}
+
+function parseForwardedProto(forwardedHeaderValue = '') {
+  const firstEntry = firstHeaderValue(forwardedHeaderValue).split(',')[0]?.trim() || '';
+  if (!firstEntry) {
+    return '';
+  }
+
+  const parameters = firstEntry.split(';');
+  for (const parameter of parameters) {
+    const [key = '', rawValue = ''] = parameter.split('=', 2);
+    if (key.trim().toLowerCase() !== 'proto') {
+      continue;
+    }
+
+    const unquotedValue = rawValue.trim().replace(/^"(.+)"$/, '$1').trim();
+    return unquotedValue.toLowerCase();
+  }
+
+  return '';
+}
+
+function resolveForwardedProto(request) {
+  const requestHeaders = request?.headers ?? {};
+  const forwardedProtoHeader = firstHeaderValue(requestHeaders['x-forwarded-proto']);
+  const forwardedProtoFromHeader = forwardedProtoHeader.split(',')[0]?.trim().toLowerCase() || '';
+  if (forwardedProtoFromHeader === 'https' || forwardedProtoFromHeader === 'http') {
+    return forwardedProtoFromHeader;
+  }
+
+  const forwardedHeaderProto = parseForwardedProto(requestHeaders.forwarded);
+  if (forwardedHeaderProto === 'https' || forwardedHeaderProto === 'http') {
+    return forwardedHeaderProto;
+  }
+
+  return request?.socket?.encrypted ? 'https' : 'http';
+}
+
+function buildProxyRequestHeaders(request) {
+  const requestHeaders = request?.headers ?? {};
   const headers = {};
 
   Object.entries(requestHeaders).forEach(([name, value]) => {
@@ -165,7 +210,7 @@ function buildProxyRequestHeaders(requestHeaders = {}) {
   if (typeof requestHeaders.host === 'string' && requestHeaders.host.trim()) {
     headers['x-forwarded-host'] = requestHeaders.host;
   }
-  headers['x-forwarded-proto'] = 'http';
+  headers['x-forwarded-proto'] = resolveForwardedProto(request);
 
   return headers;
 }
@@ -189,7 +234,7 @@ async function proxyToBackend(request, response, requestUrl) {
       upstreamUrl,
       {
         method: request.method ?? 'GET',
-        headers: buildProxyRequestHeaders(request.headers)
+        headers: buildProxyRequestHeaders(request)
       },
       (upstreamResponse) => {
         applyProxyResponseHeaders(response, upstreamResponse.headers);
@@ -214,6 +259,30 @@ async function proxyToBackend(request, response, requestUrl) {
   });
 }
 
+async function serveRepositorySnapshot(requestUrl, response) {
+  const requestedLocale = requestUrl.searchParams.get('locale') ?? defaultLocale;
+  const locale = supportedLocales.includes(requestedLocale) ? requestedLocale : defaultLocale;
+  const forceFresh = requestUrl.searchParams.get('refresh') === '1';
+
+  try {
+    const snapshot = await loadLocalizedRepositorySnapshot(rootDir, locale, { fresh: forceFresh });
+    response.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store'
+    });
+    response.end(`${JSON.stringify(snapshot)}\n`);
+  } catch (error) {
+    response.writeHead(500, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store'
+    });
+    response.end(`${JSON.stringify({
+      error: 'repository_snapshot_failed',
+      message: error.message
+    })}\n`);
+  }
+}
+
 function main() {
   const server = http.createServer(async (request, response) => {
     try {
@@ -221,20 +290,7 @@ function main() {
       const locale = resolveLocale(requestUrl.searchParams.get('locale'));
 
       if (requestUrl.pathname === '/api/repository/live.json') {
-        const localizedSnapshotPath = path.join(distDir, 'assets', 'data', `repository-live.${locale}.json`);
-        const fallbackSnapshotPath = path.join(distDir, 'assets', 'data', `repository-live.${defaultLocale}.json`);
-        const snapshotPath = existsSync(localizedSnapshotPath) ? localizedSnapshotPath : fallbackSnapshotPath;
-
-        if (existsSync(snapshotPath) && statSync(snapshotPath).isFile()) {
-          await serveFile(response, snapshotPath);
-          return;
-        }
-
-        response.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
-        response.end(`${JSON.stringify({
-          error: 'repository_snapshot_missing',
-          message: 'Missing repository snapshot file'
-        })}\n`);
+        await serveRepositorySnapshot(requestUrl, response);
         return;
       }
 
