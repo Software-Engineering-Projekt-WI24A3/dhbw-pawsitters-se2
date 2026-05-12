@@ -3,7 +3,7 @@
 <body>
 <header id="site-shell-header" class="header_shell" th:fragment="siteHeader(currentLocale, localeLinks, currentLocaleLabel, currentLocaleCode, currentLocaleFlagPath)">
     <div class="main_container">
-        <div :class="scrolled ? 'header_surface header_surface--scrolled' : 'header_surface'">
+        <div class="header_surface">
             <a class="brand_mark" href="/" th:href="${homePath}" th:attr="aria-label=#{brand.name}" @click="closeMenu()">
                 <span class="brand_mark__tile" aria-hidden="true">
                     <img class="brand_mark__icon" th:src="@{/assets/media/favicon.png}" src="/assets/media/favicon.png" alt="">
@@ -38,7 +38,6 @@
                                   data-backend-status-offline=#{header.backend.offline},
                                   data-backend-status-retry=#{header.backend.retry}">
                         <div class="header_search_tabs"
-                             :class="{ 'header_search_tabs--hidden': scrolled }"
                              role="tablist"
                              th:attr="aria-label=#{header.tabs.aria}">
                             <button class="header_search_tab"
@@ -61,8 +60,7 @@
                                     th:text="#{header.tabs.about}">header.tabs.about</button>
                         </div>
 
-                        <div class="header_search_shell"
-                             :class="{ 'header_search_shell--tabs-hidden': scrolled }">
+                        <div class="header_search_shell">
                             <div class="header_search_mode header_search_mode--discover"
                                  id="header-search-panel-discover"
                                  role="tabpanel"
@@ -283,9 +281,8 @@
                                 </div>
                             </section>
                         </div>
-                        <div v-if="!scrolled"
-                             class="header_backend_status"
-                             :class="{
+                        <div class="header_backend_status"
+                             :class="{ 'header_backend_status--compact': headerSearchCompactMode,
                                  'header_backend_status--online': backendStatusState === 'online',
                                  'header_backend_status--offline': backendStatusState === 'offline',
                                  'header_backend_status--checking': backendStatusState === 'checking'

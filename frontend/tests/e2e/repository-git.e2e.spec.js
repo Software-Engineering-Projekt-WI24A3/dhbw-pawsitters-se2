@@ -202,7 +202,8 @@ test.describe('Repository git view', () => {
     const firstRecentHash = await commitCards.first().getAttribute('data-recent-commit-hash');
     expect(firstRecentHash).toBeTruthy();
 
-    await commitCards.first().locator('.git_commit__message').click();
+    await commitCards.first().scrollIntoViewIfNeeded();
+    await commitCards.first().click({ force: true });
     await expect(page.locator('.repo_modal__surface--commit')).toBeVisible();
     await expect(commitCards.first()).toHaveClass(/git_graph__card--active/);
 

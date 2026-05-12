@@ -137,7 +137,52 @@ function shouldProxyToBackend(pathname) {
   return BACKEND_PROXY_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-function buildProxyRequestHeaders(requestHeaders = {}) {
+function firstHeaderValue(headerValue) {
+  if (Array.isArray(headerValue)) {
+    return headerValue[0] ?? '';
+  }
+
+  return typeof headerValue === 'string' ? headerValue : '';
+}
+
+function parseForwardedProto(forwardedHeaderValue = '') {
+  const firstEntry = firstHeaderValue(forwardedHeaderValue).split(',')[0]?.trim() || '';
+  if (!firstEntry) {
+    return '';
+  }
+
+  const parameters = firstEntry.split(';');
+  for (const parameter of parameters) {
+    const [key = '', rawValue = ''] = parameter.split('=', 2);
+    if (key.trim().toLowerCase() !== 'proto') {
+      continue;
+    }
+
+    const unquotedValue = rawValue.trim().replace(/^"(.+)"$/, '$1').trim();
+    return unquotedValue.toLowerCase();
+  }
+
+  return '';
+}
+
+function resolveForwardedProto(request) {
+  const requestHeaders = request?.headers ?? {};
+  const forwardedProtoHeader = firstHeaderValue(requestHeaders['x-forwarded-proto']);
+  const forwardedProtoFromHeader = forwardedProtoHeader.split(',')[0]?.trim().toLowerCase() || '';
+  if (forwardedProtoFromHeader === 'https' || forwardedProtoFromHeader === 'http') {
+    return forwardedProtoFromHeader;
+  }
+
+  const forwardedHeaderProto = parseForwardedProto(requestHeaders.forwarded);
+  if (forwardedHeaderProto === 'https' || forwardedHeaderProto === 'http') {
+    return forwardedHeaderProto;
+  }
+
+  return request?.socket?.encrypted ? 'https' : 'http';
+}
+
+function buildProxyRequestHeaders(request) {
+  const requestHeaders = request?.headers ?? {};
   const headers = {};
 
   Object.entries(requestHeaders).forEach(([name, value]) => {
@@ -152,7 +197,7 @@ function buildProxyRequestHeaders(requestHeaders = {}) {
   if (typeof requestHeaders.host === 'string' && requestHeaders.host.trim()) {
     headers['x-forwarded-host'] = requestHeaders.host;
   }
-  headers['x-forwarded-proto'] = 'http';
+  headers['x-forwarded-proto'] = resolveForwardedProto(request);
 
   return headers;
 }
@@ -176,7 +221,7 @@ async function proxyToBackend(request, response, requestUrl) {
       upstreamUrl,
       {
         method: request.method ?? 'GET',
-        headers: buildProxyRequestHeaders(request.headers)
+        headers: buildProxyRequestHeaders(request)
       },
       (upstreamResponse) => {
         applyProxyResponseHeaders(response, upstreamResponse.headers);
