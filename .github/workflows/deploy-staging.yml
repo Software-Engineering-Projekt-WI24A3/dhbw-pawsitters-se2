@@ -143,7 +143,7 @@ jobs:
                 continue
               fi
 
-              if docker exec -e MYSQL_PWD="$root_password_candidate" "$mysql_container" mysqladmin ping -uroot --silent >/dev/null 2>&1; then
+              if docker exec -e MYSQL_PWD="$root_password_candidate" "$mysql_container" mysql -uroot -e 'SELECT 1' >/dev/null 2>&1; then
                 root_password_for_login="$root_password_candidate"
                 break
               fi
