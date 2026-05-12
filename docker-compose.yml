@@ -12,7 +12,7 @@ services:
     volumes:
       - pawsitters_mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} -e 'SELECT 1' >/dev/null"]
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$${MYSQL_PASSWORD}\" mysql -h 127.0.0.1 -u\"$${MYSQL_USER}\" -e 'SELECT 1' >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 12
