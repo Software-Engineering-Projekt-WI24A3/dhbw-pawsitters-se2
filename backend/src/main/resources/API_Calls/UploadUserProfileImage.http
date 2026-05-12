@@ -11,3 +11,9 @@ Content-Type: image/png
 --boundary--
 
 ###
+
+### Profilbild loeschen
+DELETE {{baseUrl}}/api/users/1/profile-image
+Authorization: Bearer {{token}}
+
+###

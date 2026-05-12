@@ -31,16 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.IOException;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
-import javax.imageio.ImageIO;
 
 @Validated
 @RestController
@@ -48,7 +38,6 @@ import javax.imageio.ImageIO;
 public class UserController {
 
     private final UserService userService;
-    private final String uploadDir = "uploads/profiles/";
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -213,48 +202,26 @@ public class UserController {
                                                                         Authentication authentication,
                                                                         HttpServletRequest servletRequest) {
         MultipartFile upload = file != null ? file : image;
-        if (upload == null || upload.isEmpty()) {
-            throw new IllegalArgumentException("Datei ist leer.");
-        }
+        User user = userService.uploadProfileImage(id, authentication.getName(), upload);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Profile image uploaded successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
+    }
 
-        try {
-            String contentType = upload.getContentType();
-            if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
-                throw new IllegalArgumentException("Nur Bilddateien sind erlaubt.");
-            }
-
-            byte[] bytes = upload.getBytes();
-            if (bytes.length > 5 * 1024 * 1024) {
-                throw new IllegalArgumentException("Das Profilbild darf maximal 5 MB groß sein.");
-            }
-
-            BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(bytes));
-            if (bufferedImage == null) {
-                throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
-            }
-
-            String safeFilename = sanitizeUploadFilename(upload.getOriginalFilename());
-            String extension = resolveImageExtension(contentType, safeFilename);
-            String filename = UUID.randomUUID() + extension;
-            Path uploadPath = Paths.get(uploadDir);
-            Files.createDirectories(uploadPath);
-            Files.write(uploadPath.resolve(filename), bytes);
-            String publicImagePath = "/uploads/profiles/" + filename;
-
-            User user = userService.updateProfileImage(id, authentication.getName(), publicImagePath);
-            return ResponseEntity.ok(ApiResponse.success(
-                    HttpStatus.OK,
-                    "Profile image uploaded successfully.",
-                    UserResponse.from(user),
-                    servletRequest.getRequestURI()
-            ));
-        } catch (IOException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Fehler beim Speichern der Datei: " + e.getMessage(),
-                    e
-            );
-        }
+    @DeleteMapping("/{id}/profile-image")
+    public ResponseEntity<ApiResponse<UserResponse>> deleteProfileImage(@PathVariable Long id,
+                                                                        Authentication authentication,
+                                                                        HttpServletRequest servletRequest) {
+        User user = userService.deleteProfileImage(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Profile image deleted successfully.",
+                UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
     }
 
     private String sanitizeUploadFilename(String rawFilename) {

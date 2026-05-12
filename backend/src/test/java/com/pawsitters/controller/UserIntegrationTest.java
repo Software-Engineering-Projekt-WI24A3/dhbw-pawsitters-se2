@@ -1,7 +1,9 @@
 package com.pawsitters.controller;
 
+import com.pawsitters.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -10,6 +12,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.HashMap;
@@ -18,7 +27,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -36,6 +48,9 @@ class UserIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${app.upload.dir}")
+    private String uploadRoot;
 
     @Test
     void currentUserResponseContainsPublicFieldsOnly() throws Exception {
@@ -250,6 +265,113 @@ class UserIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.profilePicture", startsWith("/uploads/profiles/")));
+    void registrationWithoutProfilePictureUsesDefaultPlaceholder() throws Exception {
+        String email = "user.placeholder." + UUID.randomUUID() + "@test.de";
+        Map<String, Object> payload = buildRegisterPayload(email, "StrongPhrase123!");
+        payload.remove("profilePicture");
+
+        String response = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String token = objectMapper.readTree(response).get("data").get("token").asText();
+
+        mockMvc.perform(get("/api/users/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.profilePicture").value(UserService.DEFAULT_PROFILE_PICTURE));
+    }
+
+    @Test
+    void profileImageCanBeUploadedReplacedAndDeleted() throws Exception {
+        String email = "user.image." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(email, "StrongPhrase123!");
+        Long userId = currentUserId(token);
+
+        String firstProfilePicture = uploadProfileImage(token, userId, "profile.png", "image/png", createMinimalPng(0xFF0000));
+        assertThat(firstProfilePicture, startsWith("/uploads/profiles/user-" + userId + "-"));
+        Path firstUpload = uploadedProfileImagePath(firstProfilePicture);
+        assertTrue(Files.exists(firstUpload), "first upload should exist");
+
+        String secondProfilePicture = uploadProfileImage(token, userId, "profile.png", "image/png", createMinimalPng(0x0000FF));
+        assertThat(secondProfilePicture, startsWith("/uploads/profiles/user-" + userId + "-"));
+        assertNotEquals(firstProfilePicture, secondProfilePicture);
+        assertFalse(Files.exists(firstUpload), "old profile image should be cleaned up");
+
+        Path secondUpload = uploadedProfileImagePath(secondProfilePicture);
+        assertTrue(Files.exists(secondUpload), "second upload should exist");
+
+        mockMvc.perform(delete("/api/users/{id}/profile-image", userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.profilePicture").value(UserService.DEFAULT_PROFILE_PICTURE));
+
+        assertFalse(Files.exists(secondUpload), "deleted profile image should be cleaned up");
+    }
+
+    @Test
+    void profileImageUploadAcceptsValidWebp() throws Exception {
+        String email = "user.webp-image." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(email, "StrongPhrase123!");
+        Long userId = currentUserId(token);
+
+        String profilePicture = uploadProfileImage(token, userId, "profile.webp", "image/webp", createMinimalWebp());
+
+        assertThat(profilePicture, startsWith("/uploads/profiles/user-" + userId + "-"));
+        assertTrue(profilePicture.endsWith(".webp"));
+        assertTrue(Files.exists(uploadedProfileImagePath(profilePicture)), "webp upload should exist");
+    }
+
+    @Test
+    void profileImageUploadRejectsInvalidFiles() throws Exception {
+        String email = "user.invalid-image." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(email, "StrongPhrase123!");
+        Long userId = currentUserId(token);
+
+        expectProfileImageUploadBadRequest(token, userId, new MockMultipartFile(
+                "image", "profile.png", "image/png", new byte[0]
+        ));
+        expectProfileImageUploadBadRequest(token, userId, new MockMultipartFile(
+                "image", "profile.png", "text/plain", createMinimalPng(0x00FF00)
+        ));
+        expectProfileImageUploadBadRequest(token, userId, new MockMultipartFile(
+                "image", "profile.png", "image/png", "not an image".getBytes(StandardCharsets.UTF_8)
+        ));
+        expectProfileImageUploadBadRequest(token, userId, new MockMultipartFile(
+                "image", "profile.txt", "image/png", createMinimalPng(0x00FF00)
+        ));
+    }
+
+    @Test
+    void onlyOwnerCanUploadOrDeleteProfileImage() throws Exception {
+        String ownerToken = registerUser("user.owner." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
+        Long ownerId = currentUserId(ownerToken);
+        String attackerToken = registerUser("user.attacker." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
+
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "profile.png",
+                "image/png",
+                createMinimalPng(0x00FF00)
+        );
+
+        mockMvc.perform(multipart("/api/users/{id}/profile-image", ownerId)
+                        .file(image)
+                        .header("Authorization", "Bearer " + attackerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(delete("/api/users/{id}/profile-image", ownerId)
+                        .header("Authorization", "Bearer " + attackerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
     }
 
     private Long currentUserId(String token) throws Exception {
@@ -290,5 +412,52 @@ class UserIntegrationTest {
         payload.put("bio", "Test user");
         payload.put("role", "PET_OWNER");
         return payload;
+    }
+
+    private String uploadProfileImage(String token,
+                                      Long userId,
+                                      String filename,
+                                      String contentType,
+                                      byte[] bytes) throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", filename, contentType, bytes);
+        String response = mockMvc.perform(multipart("/api/users/{id}/profile-image", userId)
+                        .file(image)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.profilePicture").isString())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readTree(response).get("data").get("profilePicture").asText();
+    }
+
+    private void expectProfileImageUploadBadRequest(String token, Long userId, MockMultipartFile image) throws Exception {
+        mockMvc.perform(multipart("/api/users/{id}/profile-image", userId)
+                        .file(image)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    private Path uploadedProfileImagePath(String profilePicture) {
+        String relativePath = profilePicture.replaceFirst("^/uploads/", "");
+        return Paths.get(uploadRoot, relativePath).normalize();
+    }
+
+    private byte[] createMinimalPng(int rgbColor) throws Exception {
+        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0, 0, rgbColor);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", output);
+        return output.toByteArray();
+    }
+
+    private byte[] createMinimalWebp() {
+        return Base64.getDecoder().decode(
+                "UklGRgQBAABXRUJQVlA4WAoAAAAYAAAAAAAAAAAAVlA4TAgAAAAvAAAAEIiICEVYSUbWAAAASUkqAAgAAAAGABIBAwABAAAAAQAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAADEBAgAQAAAAZgAAAGmHBAABAAAAdgAAAAAAAABgAAAAAQAAAGAAAAABAAAAcGFpbnQubmV0IDUuMC4xAAUAAJAHAAQAAAAwMjMwAaADAAEAAAABAAAAAqAEAAEAAAABAAAAA6AEAAEAAAABAAAABaAEAAEAAAC4AAAAAAAAAAIAAQACAAQAAABSOTgAAgAHAAQAAAAwMTAwAAAAAA=="
+        );
     }
 }

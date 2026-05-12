@@ -52,11 +52,20 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin; then
+              exit 0
+            fi
+
+            sleep "$((attempt * 10))"
+          done
+
+          exit 1
 
       - name: Build and push backend image
         uses: docker/build-push-action@v7
@@ -107,8 +116,24 @@ jobs:
             sleep 2
           done
 
-          test "$healthy" = "1"
-          curl -fsS http://127.0.0.1:8081/ > /dev/null
+          if [ "$healthy" != "1" ]; then
+            docker compose -f docker-compose.staging.yml logs --tail=100
+            exit 1
+          fi
+
+          frontend_ready=0
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8081/ > /dev/null; then
+              frontend_ready=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$frontend_ready" != "1" ]; then
+            docker compose -f docker-compose.staging.yml logs --tail=100
+            exit 1
+          fi
 
       - name: Stop smoke-test stack
         if: always()
