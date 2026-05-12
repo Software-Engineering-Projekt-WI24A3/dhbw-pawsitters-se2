@@ -10,7 +10,6 @@ Content-Type: application/json
   "phone": "+49 123 456789",
   "birthDate": "1990-05-15",
   "emergencyContact": "+49 987 654321",
-  "profilePicture": "https://example.com/profile.jpg",
   "bio": "Ich liebe Haustiere und bin ein erfahrener Pet-Sitter",
   "role": "HOST",
   "postalCode": "68159",
