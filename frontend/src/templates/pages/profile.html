@@ -97,6 +97,11 @@
                             data-segmented-value="ownPets"
                             @click="setSegment('profileViewTab', 'ownPets')"
                             th:text="#{profile.page.tabs.ownPets}">profile.page.tabs.ownPets</button>
+                    <button class="repository_segmented__button"
+                            type="button"
+                            data-segmented-value="offers"
+                            @click="setSegment('profileViewTab', 'offers')"
+                            th:text="#{profile.page.tabs.offers}">profile.page.tabs.offers</button>
                     <span class="repository_segmented__indicator" aria-hidden="true"></span>
                 </div>
 
@@ -216,7 +221,68 @@
 
                         <div v-else class="my_pets_empty">
                             <h3 class="my_pets_empty__title" th:text="#{myPets.page.emptyTitle}">myPets.page.emptyTitle</h3>
-                            <p class="my_pets_empty__text" th:text="#{myPets.page.emptyText}">myPets.page.emptyText</p>
+                        </div>
+                    </section>
+                </section>
+
+                <section v-show="profileViewTab === 'offers'"
+                         data-segment-panel="profileViewTab"
+                         data-segment-value="offers"
+                         class="profile_panel__tab_panel profile_panel__tab_panel--offers">
+                    <section class="my_offers_carousel profile_offers_carousel"
+                             th:attr="aria-label=#{myOffers.page.carouselAria}">
+                        <template v-if="myOffersOffers.length && myOffersActiveOffer">
+                            <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                    type="button"
+                                    @click="navigateMyOffersCarousel(-1)"
+                                    :aria-label="myOffersStrings.actions.previous">
+                                <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                </svg>
+                            </button>
+
+                            <div class="my_offers_carousel__viewport">
+                                <article v-for="item in myOffersCarouselRenderItems"
+                                         :key="'profile-offers-card-' + item.offer.id"
+                                         class="my_offers_carousel__card"
+                                         :class="item.positionClass">
+                                    <div class="my_offers_card">
+                                        <div class="my_offers_card__header">
+                                            <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
+                                        </div>
+                                        <h3 class="my_offers_card__title" v-text="item.offer.title"></h3>
+                                        <p class="my_offers_card__description" v-text="item.offer.description"></p>
+
+                                        <div class="my_offers_card__species" v-if="resolveMyOfferSpecies(item.offer).length">
+                                            <span class="my_offers_card__species_chip"
+                                                  v-for="species in resolveMyOfferSpecies(item.offer)"
+                                                  :key="'profile-offer-species-' + item.offer.id + '-' + species.value">
+                                                <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                                <span v-text="species.label"></span>
+                                            </span>
+                                        </div>
+
+                                        <ul class="my_offers_card__services" v-if="resolveMyOfferServiceList(item.offer).length">
+                                            <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(item.offer)"
+                                                :key="'profile-offer-service-' + item.offer.id + '-' + serviceIndex"
+                                                v-text="service"></li>
+                                        </ul>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                    type="button"
+                                    @click="navigateMyOffersCarousel(1)"
+                                    :aria-label="myOffersStrings.actions.next">
+                                <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                </svg>
+                            </button>
+                        </template>
+
+                        <div v-else class="my_offers_empty">
+                            <h3 class="my_offers_empty__title" th:text="#{myOffers.page.emptyTitle}">myOffers.page.emptyTitle</h3>
                         </div>
                     </section>
                 </section>

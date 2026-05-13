@@ -67,6 +67,20 @@ public class OfferService {
         return offerRepository.findByHostIdOrderByIdDesc(user.getId());
     }
 
+    @Transactional(readOnly = true)
+    public List<Offer> getProfileOffersForHostId(Long hostId, String requesterEmail) {
+        User host = userRepository.findById(hostId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User nicht gefunden."));
+        List<Offer> offers = offerRepository.findByHostIdOrderByIdDesc(host.getId());
+        if (requesterEmail != null && requesterEmail.equalsIgnoreCase(host.getEmail())) {
+            return offers;
+        }
+
+        return offers.stream()
+                .filter((offer) -> offer.getStatus() == OfferStatus.PUBLISHED)
+                .toList();
+    }
+
     @Transactional
     public Offer withdrawOfferForHostEmail(Long offerId, String hostEmail) {
         Offer offer = getOwnedOffer(offerId, hostEmail);

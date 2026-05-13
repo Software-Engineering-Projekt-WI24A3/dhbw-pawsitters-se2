@@ -410,7 +410,8 @@
       "ownProfileButton": "Profilul meu public",
       "tabs": {
         "information": "Informații",
-        "ownPets": "Animalele mele"
+        "ownPets": "Animalele mele",
+        "offers": "Oferte de îngrijire"
       },
       "role": {
         "hostFromTemplate": "GAZDĂ DIN {flag} {city}",
@@ -444,7 +445,7 @@
       "authRequired": "Te rugăm să te autentifici pentru a-ți gestiona animalele.",
       "loadFailed": "Animalele nu au putut fi încărcate.",
       "emptyTitle": "Încă nu ai animale",
-      "emptyText": "Adaugă primul animal și încarcă imediat o fotografie.",
+      "emptyText": "Încă nu ai animale",
       "introDescription": "Salvează aici animalele tale, ca să le poți selecta rapid la o cerere de plasare.",
       "countTemplateSingular": "{count} animal în profilul tău",
       "countTemplatePlural": "{count} animale în profilul tău",
@@ -505,8 +506,8 @@
       "loading": "Se încarcă ofertele.",
       "authRequired": "Te rugăm să te autentifici pentru a-ți gestiona ofertele.",
       "loadFailed": "Ofertele nu au putut fi încărcate.",
-      "emptyTitle": "Încă nu ai oferte",
-      "emptyText": "Creează primul pachet de îngrijire și păstrează-l ca draft sau publică-l imediat.",
+      "emptyTitle": "Încă nu ai oferte de îngrijire",
+      "emptyText": "Încă nu ai oferte de îngrijire",
       "introDescription": "Aici vezi toate pachetele tale de îngrijire, inclusiv drafturile salvate.",
       "countTemplateSingular": "{count} ofertă în profilul tău",
       "countTemplatePlural": "{count} oferte în profilul tău",

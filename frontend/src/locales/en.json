@@ -410,7 +410,8 @@
       "ownProfileButton": "My public profile",
       "tabs": {
         "information": "Information",
-        "ownPets": "Own pets"
+        "ownPets": "Own pets",
+        "offers": "Care offers"
       },
       "role": {
         "hostFromTemplate": "HOST FROM {flag} {city}",
@@ -444,7 +445,7 @@
       "authRequired": "Please sign in to manage your pets.",
       "loadFailed": "Pets could not be loaded.",
       "emptyTitle": "No pets yet",
-      "emptyText": "Add your first pet and upload a photo right away.",
+      "emptyText": "No pets yet",
       "introDescription": "Save your own pets here so you can quickly select them when creating a placement request.",
       "countTemplateSingular": "{count} pet in your profile",
       "countTemplatePlural": "{count} pets in your profile",
@@ -505,8 +506,8 @@
       "loading": "Loading offers.",
       "authRequired": "Please sign in to manage your offers.",
       "loadFailed": "Offers could not be loaded.",
-      "emptyTitle": "No offers yet",
-      "emptyText": "Create your first care package and keep it as a draft or publish it instantly.",
+      "emptyTitle": "No care offers yet",
+      "emptyText": "No care offers yet",
       "introDescription": "See all your own care packages here, including saved drafts.",
       "countTemplateSingular": "{count} offer in your profile",
       "countTemplatePlural": "{count} offers in your profile",
