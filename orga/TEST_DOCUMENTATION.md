@@ -1,11 +1,11 @@
 
-# Backend-Testdokumentation
+# Testdokumentation
 
-Diese Datei dokumentiert alle aktuell vorhandenen Backend-Tests. Pro Test ist festgehalten, was geprueft wird, welches Ergebnis erwartet wird und ob der Test einen normalen Fall oder einen Edge Case abdeckt.
+Diese Datei dokumentiert alle aktuell vorhandenen automatisierten Tests im Backend und Frontend. Pro Test ist festgehalten, was geprüft wird, welches Ergebnis erwartet wird und ob der Test einen normalen Fall oder einen Edge Case abdeckt.
 
 Hinweis: `JWTServiceTest.java` liegt aktuell unter `backend/src/main/java/com/pawsitters/security`, ist aber inhaltlich eine Backend-Testklasse.
 
-## Uebersicht
+## Übersicht Backend
 
 | Bereich | Testklasse | Anzahl Tests |
 | --- | --- | ---: |
@@ -18,7 +18,23 @@ Hinweis: `JWTServiceTest.java` liegt aktuell unter `backend/src/main/java/com/pa
 | Pet-Controller | `PetIntegrationTest` | 3 |
 | Offer-Controller | `OfferIntegrationTest` | 2 |
 | User-Controller | `UserIntegrationTest` | 6 |
-| **Gesamt** |  | **68** |
+| **Gesamt Backend** |  | **68** |
+
+## Übersicht Frontend
+
+| Bereich | Testdatei | Anzahl Tests |
+| --- | --- | ---: |
+| Authentifizierung (E2E) | `auth-flows.e2e.spec.js` | 2 |
+| Lokalisierung (E2E) | `auth-locale.e2e.spec.js` | 3 |
+| Repository Git (E2E) | `repository-git.e2e.spec.js` | 3 |
+| Repository Kanban (E2E) | `repository-kanban.e2e.spec.js` | 1 |
+| Repository Loading (E2E) | `repository-loading.e2e.spec.js` | 2 |
+| Repository Playwright (E2E) | `repository-playwright.e2e.spec.js` | 2 |
+| Startseite (E2E) | `shell-home.e2e.spec.js` | 1 |
+| Graph Data Parsing (Unit) | `repository-graph-data.test.mjs` | 7 |
+| Repository Snapshot (Unit) | `repository-live.test.mjs` | 3 |
+| Suchdaten & Enums (Unit) | `search-data.test.mjs` | 2 |
+| **Gesamt Frontend** |  | **26** |
 
 ## `AuthIntegrationTest`
 
@@ -150,3 +166,101 @@ Integrationstests fuer User-Endpunkte, Fehler-Envelopes und Rollenberechtigungen
 | `invalidMailExistsQueryReturnsValidationEnvelope` | `mailExists`-Abfrage mit ungueltiger E-Mail. | HTTP 400, Fehlercode `VALIDATION_FAILED`, Fehlerdetails sind vorhanden. | Edge Case |
 | `nonAdminCannotUpdateRoles` | Nicht-Admin versucht seine Rolle zu aendern. | HTTP 403, `success=false`, Fehlercode `ACCESS_DENIED`. | Edge Case |
 | `missingUserReturnsNotFoundEnvelope` | Abruf eines nicht existierenden Users. | HTTP 404, `success=false`, Fehlercode `NOT_FOUND`. | Edge Case |
+
+## Frontend-Tests
+
+### `auth-flows.e2e.spec.js` (End-to-End)
+
+Integrationstests für die Authentifizierungs-Flows im Frontend (Login & Registrierung).
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `completes full registration flow and redirects from /register to home` | Kompletter Registrierungs-Flow inkl. Navigation und Ausfüllen des Formulars. | Erfolgreiche Registrierung, Token wird gespeichert und der User wird auf die Startseite weitergeleitet. | Normalfall |
+| `completes full modal login flow with mail check and hides login button when authenticated` | Login-Flow über das Modal inklusive vorheriger Prüfung der E-Mail-Existenz. | Login ist erfolgreich und der Login-Button verschwindet nach erfolgreicher Anmeldung. | Normalfall |
+
+### `auth-locale.e2e.spec.js` (End-to-End)
+
+Tests für die korrekte Lokalisierung und Spracheinstellungen in den Auth-Modals.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should open login modal in English and switch back to German` | Öffnen des Login-Modals und Wechseln der Sprache von Englisch zu Deutsch. | Modal wird in der korrekten Sprache angezeigt und lässt sich erfolgreich umschalten. | Normalfall |
+| `should open login modal from register page and switch locale to English` | Öffnen des Login-Modals von der Registrierungsseite aus und Wechsel auf Englisch. | Die Sprache wird korrekt auf Englisch umgestellt. | Normalfall |
+| `should open the login modal when clicking a legacy /login link` | Klick auf einen alten bzw. ungültigen `/login`-Link. | Das Login-Modal öffnet sich anstatt einen 404-Fehler zu werfen. | Edge Case |
+
+### `repository-git.e2e.spec.js` (End-to-End)
+
+Tests für die Darstellung der Git-Historie und Aktivitäten.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should render git activity and timeline interactions from live data` | Darstellung der Git-Aktivität und Interaktionen in der Timeline mit Live-Daten. | Timeline und Aktivitäten werden fehlerfrei geladen und gerendert. | Normalfall |
+| `should render distinct heights for top activity bars` | Darstellung der Aktivitäts-Balken. | Die Balken haben unterschiedliche, an die Anzahl der Commits angepasste Höhen. | Normalfall |
+| `should reload timeline after manual repository refresh` | Aktualisierung der Timeline nach manuellem Refresh. | Die Timeline wird mit den neuesten Daten neu geladen. | Normalfall |
+
+### `repository-kanban.e2e.spec.js` (End-to-End)
+
+Tests für das Kanban-Board.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should keep exactly one active board column and render matching cards` | Rendering und Verhalten der Spalten im Kanban-Board. | Es ist stets genau eine Spalte aktiv und zeigt die jeweils dazugehörigen Karten an. | Normalfall |
+
+### `repository-loading.e2e.spec.js` (End-to-End)
+
+Tests für das Verhalten bei Ladevorgängen von Repository-Daten.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should keep git and kanban content pending until live data resolves` | Anzeige während des initialen Ladevorgangs. | Lade-Indikatoren bleiben sichtbar, bis alle Daten vollständig geladen wurden. | Normalfall |
+| `should request a fresh snapshot when the refresh action is triggered` | Verhalten bei manuellem Refresh. | Es wird ein neuer Snapshot vom Server angefragt. | Normalfall |
+
+### `repository-playwright.e2e.spec.js` (End-to-End)
+
+Tests für die Playwright-Test-UI im Frontend.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should render a minimal start state, run tests, and show completion notification` | Testausführung in der Playwright-UI. | Minimaler Startzustand wird gerendert, Tests laufen durch und es erscheint eine Erfolgsmeldung. | Normalfall |
+| `should expose consistent repository switch navigation targets` | Navigation zwischen verschiedenen Repositories. | Die Navigationsziele sind konsistent und die Navigation funktioniert korrekt. | Normalfall |
+
+### `shell-home.e2e.spec.js` (End-to-End)
+
+Tests für die Startseite.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `should render the global start page without repository graph content` | Rendern der globalen Startseite. | Seite wird fehlerfrei und ohne spezifische Repository-Graphen dargestellt. | Normalfall |
+
+### `repository-graph-data.test.mjs` (Unit)
+
+Unit-Tests für die Verarbeitung von Commit- und Graphendaten.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `parseCommitImport keeps only parent links that exist in payload` | Filtern von in der Payload nicht vorhandenen Parent-Commits. | Es werden nur existierende Parent-Commits behalten. | Normalfall |
+| `parseCommitImport preserves existing commit metadata` | Verarbeitung von Commit-Metadaten. | Metadaten (Hash, Autor, Datum etc.) bleiben unversehrt. | Normalfall |
+| `parseBranchCommits does not map by author display name` | Zuweisung von Commits zu Autoren. | Autoren werden nicht fehlerhaft über den reinen Anzeigenamen (Display Name) gemappt. | Edge Case |
+| `parseAuthorContributionStats counts commits and changed lines per author` | Aggregation von Commits und Codezeilen-Änderungen pro Autor. | Statistiken pro Autor werden korrekt summiert. | Normalfall |
+| `parseAuthorContributionStats ignores malformed and binary numstat entries` | Verarbeitung defekter oder binärer Statistik-Einträge. | Solche Einträge werden ignoriert und führen nicht zu Berechnungsfehlern. | Edge Case |
+| `createActivitySeries applies tie-breaking for duplicate max counts` | Erstellung der Aktivitätsserien bei gleichen Max-Werten (Tie-Break). | Bei gleichen Werten wird ein konsistenter Tie-Break angewandt. | Edge Case |
+| `parseOpenApiYamlSnapshot extracts dynamic operations and tags` | Extrahieren von dynamischen Operationen und Tags aus einer OpenAPI-YAML. | Die Daten werden vollständig und korrekt geparst. | Normalfall |
+
+### `repository-live.test.mjs` (Unit)
+
+Unit-Tests für das Laden und Validieren der Live-Snapshots.
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `live repository snapshot exposes real git and board data` | Bereitstellung von tatsächlichen Git- und Kanban-Daten über den Snapshot. | Es werden valide Daten mit den korrekten Feldern geliefert. | Normalfall |
+| `repository pages do not embed static snapshot payloads` | Überprüfung auf ungewollte feste Snapshots in den HTML-Templates. | Die Templates enthalten keine hardcodierten JSON-Snapshots. | Edge Case |
+| `fresh repository snapshots rebuild and replace the in-memory cache` | Erneuerung des Caches beim Anfordern eines frischen Snapshots. | Der In-Memory-Cache wird korrekt aktualisiert. | Normalfall |
+
+### `search-data.test.mjs` (Unit)
+
+Unit-Tests für das Auslesen von Suchdaten (z. B. Tierarten).
+
+| Test | Was wird getestet? | Erwartetes Ergebnis | Falltyp |
+| --- | --- | --- | --- |
+| `loadPetChoices reads and normalizes values from backend enum when backend is available` | Auslesen der Tierarten aus dem Java-Backend (Enum `PetChoice.java`). | Optionen werden ausgelesen, normalisiert (z. B. `DOG`) und zurückgegeben. | Normalfall |
+| `loadPetChoices falls back to frontend assets data when backend source is unavailable` | Verhalten, wenn das Backend nicht erreichbar ist. | Es wird auf eine statische JSON-Datei im Frontend zurückgegriffen. | Edge Case |

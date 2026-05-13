@@ -1,3 +1,38 @@
+# Einsatz von Künstlicher Intelligenz im Projekt "Pawsitters"
+
+Im Rahmen der Entwicklung des "Pawsitters"-Projekts kam Künstliche Intelligenz (KI) in verschiedenen Phasen des Software Development Life Cycles (SDLC) zum Einsatz. Die KI fungierte dabei vorwiegend als Assistenzsystem (z. B. durch Tools wie GitHub Copilot oder dedizierte LLM-Agenten), um Entwicklungsprozesse zu beschleunigen und die Code- sowie Dokumentationsqualität zu unterstützen.
+
+## Anwendungsbereiche der KI
+**Automatisierte Dokumentationserstellung**: Die KI wurde intensiv genutzt, um aus bestehendem Quellcode oder Spezifikationen strukturierte Dokumentationen abzuleiten. So half sie beispielsweise bei der Extraktion von API-Endpunkten aus der OpenAPI-YAML-Datei in lesbare Tabellen oder bei der Ausformulierung der Architekturdokumentation basierend auf dem Java-Backend-Code.
+
+**Erstellung von Diagrammen (Mermaid)**: Die Übersetzung von Code-Strukturen in visuelle Darstellungen ist oft zeitaufwändig. Die KI half bei der automatisierten Generierung von Mermaid-Code für komplexe Klassendiagramme und Entity-Relationship-Modelle (ER-Diagramme) durch die Analyse der bestehenden Entitäten und Relationen im Code.
+
+**Code-Generierung und Boilerplate**: Bei der Erstellung von Standard-Strukturen, wie Repositories, grundlegenden CRUD-Operationen oder Konfigurationsdateien, nahm die KI viel repetitive Fleißarbeit ab (Boilerplate-Code).
+
+**Code-Analyse und "Pair Programming"**: Als virtueller Reviewer und Pair-Programming-Partner half die KI dabei, den Code auf Best Practices zu überprüfen, Refactoring-Vorschläge zu unterbreiten und logische Fehler zu identifizieren.
+
+**Testing-Unterstützung**: Die KI lieferte wertvolle Unterstützung beim Schreiben von Unit- und Integrationstests, indem sie Randfälle (Edge Cases) vorschlug und Mocking-Strukturen generierte.
+
+## Vorteile
+**Enorme Zeitersparnis bei Routineaufgaben**: Repetitive Aufgaben (z.B. das Anlegen dutzender Use-Case-Beschreibungen im gleichen Format oder das Schreiben von Standard-Gettern/Settern) wurden in Bruchteilen der sonst benötigten Zeit erledigt.
+**Schnelles Prototyping**: Ideen und Architekturentwürfe konnten durch KI-Unterstützung extrem schnell in ersten, funktionierenden Code überführt werden.
+**Visuelle Klarheit**: Das automatische Generieren von Mermaid-Diagrammen sorgte dafür, dass die Architekturdokumentation visuell ansprechend und nah am tatsächlichen Code blieb, ohne dass Diagramme manuell gezeichnet werden mussten.
+**Überwindung von Schreibblockaden ("Blank Page Syndrome")**: Die KI bot stets einen soliden Startpunkt, sei es für eine komplexe Methode oder ein neues Dokumentationskapitel, auf dem die Entwickler aufbauen konnten.
+
+## Nachteile und Herausforderungen
+**Fehlender systemweiter Kontext ("Big Picture")**: Während die KI bei isolierten Dateien oder Methoden sehr gute Ergebnisse liefert, verliert sie bei komplexen, dateiübergreifenden Architekturentscheidungen oft den Überblick. Die Integration von KI-generiertem Code in das Gesamtsystem erfordert zwingend das tiefgehende Verständnis der menschlichen Entwickler.
+**Gefahr von "Halluzinationen"**: Gelegentlich schlug die KI Bibliotheken, Methoden oder Abhängigkeiten vor, die entweder veraltet waren oder gar nicht existierten. Dies führte vereinzelt zu Fehlern, die erst zur Compile-Zeit oder beim Testen auffielen.
+**Hoher Aufwand für Review und Verifikation**: Kein generierter Code oder Text kann blind übernommen werden. Die gewonnene Zeit bei der Erstellung muss teilweise in ein sehr genaues Code-Review investiert werden, da Fehler der KI oft subtil sind (z.B. Logikfehler, die syntaktisch korrekt aussehen).
+**Sicherheit und Datenschutz**: Beim Einsatz von KI-Tools muss stets darauf geachtet werden, dass keine sensiblen Daten (wie API-Keys oder Zugangsdaten) als Kontext an externe Modelle gesendet werden.
+**Abhängigkeit und Lerneffekt**: Wenn zu viel Kernlogik von der KI generiert wird, besteht die Gefahr, dass das tiefe technische Verständnis für die eigene Codebasis im Team abnimmt.
+
+## Fazit
+Im "Pawsitters"-Projekt hat sich der Einsatz von KI als äußerst wertvoller Hebel zur Effizienzsteigerung erwiesen, insbesondere bei der Dokumentation, Visualisierung (Mermaid) und bei der Generierung von Basis-Code. Um qualitativ hochwertige und sichere Software zu gewährleisten, ist die kritische Prüfung und Steuerung durch die Entwickler jedoch weiterhin unerlässlich.
+
+---
+
+# Konkrete KI Prompts
+
 Prompt 1, Claude Sonnet 4.6: Rolle: Handle als Senior Software Architekt und erfahrener Projektmanager.Kontext: Wir sind ein Team von 3 Studierenden und entwickeln die Java-Plattform „Pawsitters“ mit Spring Boot.Das Ziel ist es, Tierhalter und Gastgeber zusammenzubringen.Aufgabe: Erstelle eine umfassende Projektstrategie, um die maximale Punktzahl in den fünf Bewertungsbereichen (Code, Architektur, Testing, Security, Teamarbeit/CI) zu erreichen.  Erarbeite sowohl ein Konzept wie das projekt zu strukturieren ist, als auch folgendes: Berücksichtige dabei folgende Anforderungen:Arbeitsaufteilung: Schlage eine sinnvolle Rollenverteilung für 3 Personen vor, die sicherstellt, dass alle Beiträge im Repository sichtbar und nachvollziehbar sind. 2. Architektur-Plan: Entwirf eine Schichtenarchitektur (Controller, Service, Repository) und definiere die Kern-Entitäten (User, Pet, Request, Offer). 3. Testing-Strategie: Erstelle einen Plan für die 10 verpflichtenden Unit-Tests und erkläre, wie wir die TEST_DOCUMENTATION.md effizient führen. 4. Security (Shift Left): Entwickle ein Konzept, wie wir „Shift Security Left“ von Anfang an anwenden und welche sensiblen Daten (DSGVO-relevant) besonders geschützt werden müssen. 5. CI/CD & Git: Schlage einen Branching-Workflow vor und definiere eine einfache CI-Pipeline, die bei jedem Push automatisch Tests ausführt. 6. KI-Dokumentation: Erstelle ein System, wie wir die Nutzung von KI-Tools (wie dir) lückenlos in der KI_PROMPTS.md dokumentieren, ohne den Arbeitsfluss zu unterbrechen.Format: Strukturiere die Antwort in Meilensteine (Sprints) und gib konkrete Tipps für die technische Umsetzung.
 Prompt 2, Claude Sonnet 4.6: Dieser Fehler tritt im H2 Controller auf, woraus entsteht er und wie beheben wir ihn: Whitelabel Error Page This application has no explicit mapping for /error, so you are seeing this as a fallback. Wed Apr 15 15:12:34 CEST 2026 There was an unexpected error (type=Not Found, status=404).
 Prompt 3, Claude Sonnet 4.6: schreib mir getter & setter für den user, sie sollte sich voll an den bestehenden User Deklarationen orientieren.
