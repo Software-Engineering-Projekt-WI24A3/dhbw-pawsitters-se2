@@ -61,6 +61,12 @@ public class OfferService {
         return getOwnedOffer(offerId, hostEmail);
     }
 
+    @Transactional(readOnly = true)
+    public List<Offer> getOffersForUserEmail(String userEmail) {
+        User user = getUserByEmail(userEmail);
+        return offerRepository.findByHostIdOrderByIdDesc(user.getId());
+    }
+
     @Transactional
     public Offer withdrawOfferForHostEmail(Long offerId, String hostEmail) {
         Offer offer = getOwnedOffer(offerId, hostEmail);
@@ -74,11 +80,15 @@ public class OfferService {
     }
 
     private User getHostByEmail(String hostEmail) {
-        User user = userRepository.findByEmailIgnoreCase(hostEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User nicht gefunden."));
+        User user = getUserByEmail(hostEmail);
         if (user.getRole() != UserRole.HOST) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nur Gastgeber koennen Angebote erstellen.");
         }
         return user;
+    }
+
+    private User getUserByEmail(String userEmail) {
+        return userRepository.findByEmailIgnoreCase(userEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User nicht gefunden."));
     }
 }

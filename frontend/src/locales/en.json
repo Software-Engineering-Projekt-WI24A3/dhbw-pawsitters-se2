@@ -36,6 +36,10 @@
       "title": "Pawsitters | My Pets",
       "description": "Protected area to manage your pets with image uploads and a curated carousel."
     },
+    "myOffers": {
+      "title": "Pawsitters | My Offers",
+      "description": "Protected area to manage your care packages as drafts and published offers."
+    },
     "settings": {
       "title": "Pawsitters | Settings",
       "description": "Protected settings area for editing your profile information."
@@ -77,6 +81,7 @@
     "openUserMenu": "Open user menu",
     "profile": "View profile",
     "myPets": "My pets",
+    "myOffers": "My offers",
     "settings": "Settings",
     "logout": "Sign out",
     "login": "Sign in",
@@ -403,6 +408,10 @@
       "loadFailed": "Profile could not be loaded.",
       "routeMissing": "Please open a profile URL with a user ID.",
       "ownProfileButton": "My public profile",
+      "tabs": {
+        "information": "Information",
+        "ownPets": "Own pets"
+      },
       "role": {
         "hostFromTemplate": "HOST FROM {flag} {city}",
         "hostCountryFlagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg",
@@ -483,6 +492,67 @@
         "deleteSuccessTemplate": "{name} was removed.",
         "uploadSuccessTitle": "Image updated",
         "uploadSuccessTemplate": "{name}'s image was updated.",
+        "actionErrorTitle": "Action failed",
+        "actionErrorMessage": "The action could not be completed."
+      }
+    }
+  },
+  "myOffers": {
+    "page": {
+      "bannerAlt": "Munich banner for offers",
+      "eyebrow": "My offers",
+      "title": "Manage care packages",
+      "loading": "Loading offers.",
+      "authRequired": "Please sign in to manage your offers.",
+      "loadFailed": "Offers could not be loaded.",
+      "emptyTitle": "No offers yet",
+      "emptyText": "Create your first care package and keep it as a draft or publish it instantly.",
+      "introDescription": "See all your own care packages here, including saved drafts.",
+      "countTemplateSingular": "{count} offer in your profile",
+      "countTemplatePlural": "{count} offers in your profile",
+      "carouselAria": "Carousel of your offers",
+      "createLinkLabel": "Create offer",
+      "openDetailsTemplate": "Open offer {name}",
+      "modalCloseAria": "Close offer dialog",
+      "formAddTitle": "Create a new care package",
+      "formAddHint": "Save your offer as a draft first. You can publish it right after.",
+      "labels": {
+        "title": "Title",
+        "description": "Description",
+        "price": "Price per day",
+        "species": "Accepted pet species",
+        "services": "Services",
+        "status": "Status",
+        "statusDraft": "Draft",
+        "statusPublished": "Published"
+      },
+      "placeholders": {
+        "title": "Short offer title",
+        "description": "Describe routine, structure, and strengths",
+        "price": "e.g. 39.90",
+        "services": "Services, separated by commas"
+      },
+      "actions": {
+        "previous": "Previous offer",
+        "next": "Next offer",
+        "save": "Save as draft",
+        "cancel": "Cancel",
+        "publish": "Publish",
+        "withdraw": "Withdraw"
+      },
+      "validation": {
+        "requiredTemplate": "Please fill in {field}.",
+        "price": "Please enter a valid price greater than 0.",
+        "species": "Please select at least one species.",
+        "services": "Please enter at least one service."
+      },
+      "notifications": {
+        "createSuccessTitle": "Offer saved",
+        "createSuccessTemplate": "{name} was saved as a draft.",
+        "publishSuccessTitle": "Offer published",
+        "publishSuccessTemplate": "{name} is now published.",
+        "withdrawSuccessTitle": "Offer withdrawn",
+        "withdrawSuccessTemplate": "{name} is now back in draft mode.",
         "actionErrorTitle": "Action failed",
         "actionErrorMessage": "The action could not be completed."
       }

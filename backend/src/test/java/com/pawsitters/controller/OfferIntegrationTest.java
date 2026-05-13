@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -66,6 +68,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.data.id").value(offerId))
                 .andExpect(jsonPath("$.data.title").value(title))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"));
+        assertOwnOfferStatus(token, offerId, "DRAFT");
 
         assertMarketplaceDoesNotContain(token, title);
 
@@ -75,6 +78,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Offer published successfully."))
                 .andExpect(jsonPath("$.data.status").value("PUBLISHED"));
+        assertOwnOfferStatus(token, offerId, "PUBLISHED");
 
         mockMvc.perform(get("/api/marketplace/offers")
                         .header("Authorization", "Bearer " + token))
@@ -89,6 +93,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Offer withdrawn successfully."))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"));
+        assertOwnOfferStatus(token, offerId, "DRAFT");
 
         assertMarketplaceDoesNotContain(token, title);
     }
@@ -119,6 +124,24 @@ class OfferIntegrationTest {
                 throw new AssertionError("Marketplace should not contain draft offer " + title);
             }
         }
+    }
+
+    private void assertOwnOfferStatus(String token, Long offerId, String expectedStatus) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/offers")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+
+        JsonNode offers = objectMapper.readTree(result.getResponse().getContentAsString()).get("data");
+        for (JsonNode offer : offers) {
+            if (offerId.equals(offer.get("id").asLong())) {
+                assertEquals(expectedStatus, offer.get("status").asText());
+                return;
+            }
+        }
+
+        fail("Offer " + offerId + " was not returned by GET /api/offers");
     }
 
     private Map<String, Object> buildOfferPayload(String title) {

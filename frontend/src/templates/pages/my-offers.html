@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.myOffers.title}, #{meta.myOffers.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-profile page-settings page-my-offers', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="profile_page settings_page my_offers_page"
+             data-my-offers-view
+             th:attr="data-my-offers-loading-label=#{myOffers.page.loading},
+                      data-my-offers-auth-required=#{myOffers.page.authRequired},
+                      data-my-offers-load-failed=#{myOffers.page.loadFailed},
+                      data-my-offers-empty-title=#{myOffers.page.emptyTitle},
+                      data-my-offers-empty-text=#{myOffers.page.emptyText},
+                      data-my-offers-intro-description=#{myOffers.page.introDescription},
+                      data-my-offers-count-template-singular=#{myOffers.page.countTemplateSingular},
+                      data-my-offers-count-template-plural=#{myOffers.page.countTemplatePlural},
+                      data-my-offers-create-link-label=#{myOffers.page.createLinkLabel},
+                      data-my-offers-create-success-title=#{myOffers.page.notifications.createSuccessTitle},
+                      data-my-offers-create-success-template=#{myOffers.page.notifications.createSuccessTemplate},
+                      data-my-offers-publish-success-title=#{myOffers.page.notifications.publishSuccessTitle},
+                      data-my-offers-publish-success-template=#{myOffers.page.notifications.publishSuccessTemplate},
+                      data-my-offers-withdraw-success-title=#{myOffers.page.notifications.withdrawSuccessTitle},
+                      data-my-offers-withdraw-success-template=#{myOffers.page.notifications.withdrawSuccessTemplate},
+                      data-my-offers-action-error-title=#{myOffers.page.notifications.actionErrorTitle},
+                      data-my-offers-action-error-message=#{myOffers.page.notifications.actionErrorMessage},
+                      data-my-offers-validation-required-template=#{myOffers.page.validation.requiredTemplate},
+                      data-my-offers-validation-price=#{myOffers.page.validation.price},
+                      data-my-offers-validation-species=#{myOffers.page.validation.species},
+                      data-my-offers-validation-services=#{myOffers.page.validation.services},
+                      data-my-offers-form-add-title=#{myOffers.page.formAddTitle},
+                      data-my-offers-form-add-hint=#{myOffers.page.formAddHint},
+                      data-my-offers-label-title=#{myOffers.page.labels.title},
+                      data-my-offers-label-description=#{myOffers.page.labels.description},
+                      data-my-offers-label-price=#{myOffers.page.labels.price},
+                      data-my-offers-label-species=#{myOffers.page.labels.species},
+                      data-my-offers-label-services=#{myOffers.page.labels.services},
+                      data-my-offers-label-status=#{myOffers.page.labels.status},
+                      data-my-offers-label-status-draft=#{myOffers.page.labels.statusDraft},
+                      data-my-offers-label-status-published=#{myOffers.page.labels.statusPublished},
+                      data-my-offers-placeholder-title=#{myOffers.page.placeholders.title},
+                      data-my-offers-placeholder-description=#{myOffers.page.placeholders.description},
+                      data-my-offers-placeholder-price=#{myOffers.page.placeholders.price},
+                      data-my-offers-placeholder-services=#{myOffers.page.placeholders.services},
+                      data-my-offers-action-previous=#{myOffers.page.actions.previous},
+                      data-my-offers-action-next=#{myOffers.page.actions.next},
+                      data-my-offers-action-save=#{myOffers.page.actions.save},
+                      data-my-offers-action-cancel=#{myOffers.page.actions.cancel},
+                      data-my-offers-action-publish=#{myOffers.page.actions.publish},
+                      data-my-offers-action-withdraw=#{myOffers.page.actions.withdraw},
+                      data-my-offers-open-details-template=#{myOffers.page.openDetailsTemplate},
+                      data-my-offers-carousel-aria=#{myOffers.page.carouselAria},
+                      data-my-offers-modal-close-aria=#{myOffers.page.modalCloseAria}">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner"
+                     src="https://citytourcard-muenchen.com/media/pages/blog/easy-insider/tipps-fuer-deinen-ersten-besuch-in-muenchen/78df8cdcc8-1693428778/foto-von-ian-kelsall-auf-unsplash_1216.webp"
+                     th:attr="alt=#{myOffers.page.bannerAlt}"
+                     alt="myOffers.page.bannerAlt">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__heading">
+                <p class="profile_hero__eyebrow" th:text="#{myOffers.page.eyebrow}">myOffers.page.eyebrow</p>
+                <h1 class="profile_hero__title" th:text="#{myOffers.page.title}">myOffers.page.title</h1>
+            </div>
+            <div class="profile_hero__avatar_ring settings_profile_avatar">
+                <img v-if="myOffersViewUser && myOffersViewUser.profilePicture"
+                     class="profile_hero__avatar"
+                     :src="myOffersViewUser.profilePicture"
+                     :alt="myOffersDisplayName">
+                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="myOffersViewInitial"></span>
+            </div>
+        </header>
+
+        <article class="profile_panel my_offers_panel">
+            <div v-if="myOffersViewLoading && showMyOffersViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="myOffersStrings.loading"></span>
+            </div>
+
+            <p v-else-if="myOffersViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="myOffersStrings.loading"></p>
+
+            <p v-else-if="myOffersViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="myOffersViewError"></p>
+
+            <div v-else class="profile_panel__content my_offers_panel__content">
+                <div class="my_offers_intro">
+                    <h2 class="profile_panel__name" v-text="myOffersDisplayName"></h2>
+                    <button class="my_offers_intro__create_link"
+                            type="button"
+                            @click="openMyOffersCreateModal()"
+                            v-text="myOffersStrings.createLinkLabel"></button>
+                    <p class="my_offers_intro__subtitle" v-text="myOffersStrings.introDescription"></p>
+                    <p class="my_offers_intro__count" v-text="myOffersCountLabel"></p>
+                </div>
+
+                <section class="my_offers_carousel"
+                         th:attr="aria-label=#{myOffers.page.carouselAria}">
+                    <template v-if="myOffersOffers.length && myOffersActiveOffer">
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                type="button"
+                                @click="navigateMyOffersCarousel(-1)"
+                                :aria-label="myOffersStrings.actions.previous">
+                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                            </svg>
+                        </button>
+
+                        <div class="my_offers_carousel__viewport">
+                            <article v-for="item in myOffersCarouselRenderItems"
+                                     :key="'my-offers-card-' + item.offer.id"
+                                     class="my_offers_carousel__card"
+                                     :class="item.positionClass">
+                                <button class="my_offers_card"
+                                        type="button"
+                                        @click="setMyOffersCarouselIndex(item.index)"
+                                        :aria-label="buildMyOfferOpenDetailsLabel(item.offer)">
+                                    <div class="my_offers_card__header">
+                                        <span class="my_offers_card__status_badge"
+                                              :class="'my_offers_card__status_badge--' + item.offer.statusLower"
+                                              v-text="resolveMyOfferStatusLabel(item.offer)"></span>
+                                        <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
+                                    </div>
+                                    <h3 class="my_offers_card__title" v-text="item.offer.title"></h3>
+                                    <p class="my_offers_card__description" v-text="item.offer.description"></p>
+
+                                    <div class="my_offers_card__species" v-if="resolveMyOfferSpecies(item.offer).length">
+                                        <span class="my_offers_card__species_chip"
+                                              v-for="species in resolveMyOfferSpecies(item.offer)"
+                                              :key="'my-offer-species-' + item.offer.id + '-' + species.value">
+                                            <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                            <span v-text="species.label"></span>
+                                        </span>
+                                    </div>
+
+                                    <ul class="my_offers_card__services" v-if="resolveMyOfferServiceList(item.offer).length">
+                                        <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(item.offer)"
+                                            :key="'my-offer-service-' + item.offer.id + '-' + serviceIndex"
+                                            v-text="service"></li>
+                                    </ul>
+
+                                    <div class="my_offers_card__actions" v-if="item.isCenter">
+                                        <button v-if="item.offer.status === 'DRAFT'"
+                                                class="button"
+                                                type="button"
+                                                :disabled="myOffersActionPendingId === item.offer.id"
+                                                @click.stop="publishMyOffer(item.offer)"
+                                                v-text="myOffersStrings.actions.publish"></button>
+                                        <button v-else
+                                                class="button button--secondary"
+                                                type="button"
+                                                :disabled="myOffersActionPendingId === item.offer.id"
+                                                @click.stop="withdrawMyOffer(item.offer)"
+                                                v-text="myOffersStrings.actions.withdraw"></button>
+                                    </div>
+                                </button>
+                            </article>
+                        </div>
+
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                type="button"
+                                @click="navigateMyOffersCarousel(1)"
+                                :aria-label="myOffersStrings.actions.next">
+                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                            </svg>
+                        </button>
+
+                        <div class="my_offers_dots">
+                            <button class="my_offers_dots__dot"
+                                    type="button"
+                                    v-for="(offer, index) in myOffersOffers"
+                                    :key="'my-offers-dot-' + offer.id"
+                                    :class="{ 'my_offers_dots__dot--active': index === myOffersCarouselIndex }"
+                                    @click="setMyOffersCarouselIndex(index)"
+                                    :aria-label="buildMyOfferOpenDetailsLabel(offer)"></button>
+                        </div>
+                    </template>
+
+                    <div v-else class="my_offers_empty">
+                        <h3 class="my_offers_empty__title" v-text="myOffersStrings.emptyTitle"></h3>
+                        <p class="my_offers_empty__text" v-text="myOffersStrings.emptyText"></p>
+                    </div>
+                </section>
+            </div>
+        </article>
+
+        <transition name="auth_modal_presence">
+            <div v-if="myOffersCreateModalOpen"
+                 class="auth_modal settings_edit_modal"
+                 role="dialog"
+                 aria-modal="true"
+                 @click.self="closeMyOffersCreateModal()">
+                <article class="auth_modal__surface settings_edit_modal__surface">
+                    <button class="auth_modal__close"
+                            type="button"
+                            @click="closeMyOffersCreateModal()"
+                            :aria-label="myOffersStrings.modalCloseAria">
+                        <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                            <path d="M5 5 15 15M15 5 5 15"></path>
+                        </svg>
+                        <span class="sr-only" v-text="myOffersStrings.modalCloseAria"></span>
+                    </button>
+
+                    <div class="auth_modal__brand">
+                        <span class="auth_modal__brand-tile" aria-hidden="true">
+                            <img class="auth_modal__brand-icon"
+                                 th:src="@{/assets/media/1F391.svg}"
+                                 src="/assets/media/1F391.svg"
+                                 alt="">
+                        </span>
+                    </div>
+                    <h2 class="auth_modal__title settings_edit_modal__title" v-text="myOffersStrings.formAddTitle"></h2>
+                    <p class="my_offers_form__hint" v-text="myOffersStrings.formAddHint"></p>
+
+                    <form class="auth_modal__form settings_edit_modal__form"
+                          novalidate
+                          @submit.prevent="submitMyOfferForm()">
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.title"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myOffersForm.title"
+                                   :placeholder="myOffersStrings.placeholders.title"
+                                   :aria-label="myOffersStrings.labels.title">
+                            <span class="corp_field__label" v-text="myOffersStrings.placeholders.title"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.description"></span>
+                            <textarea class="auth_input corp_input corp_input--textarea"
+                                      rows="4"
+                                      v-model="myOffersForm.description"
+                                      :placeholder="myOffersStrings.placeholders.description"
+                                      :aria-label="myOffersStrings.labels.description"></textarea>
+                            <span class="corp_field__label" v-text="myOffersStrings.placeholders.description"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.price"></span>
+                            <input class="auth_input corp_input"
+                                   type="number"
+                                   min="0.01"
+                                   step="0.01"
+                                   inputmode="decimal"
+                                   v-model="myOffersForm.pricePerDay"
+                                   :placeholder="myOffersStrings.placeholders.price"
+                                   :aria-label="myOffersStrings.labels.price">
+                            <span class="corp_field__label" v-text="myOffersStrings.placeholders.price"></span>
+                        </label>
+
+                        <div class="my_offers_form__species">
+                            <p class="my_offers_form__species_label" v-text="myOffersStrings.labels.species"></p>
+                            <div class="register_pet_grid settings_edit_modal__species-grid">
+                                <button type="button"
+                                        class="register_pet_choice"
+                                        v-for="choice in myOffersSpeciesChoices"
+                                        :key="'my-offers-species-' + choice.value"
+                                        :class="{ 'register_pet_choice--active': isMyOfferSpeciesSelected(choice.value) }"
+                                        @click.prevent="toggleMyOfferSpeciesSelection(choice.value)"
+                                        :aria-pressed="isMyOfferSpeciesSelected(choice.value).toString()">
+                                    <img class="register_pet_choice__emoji" :src="choice.emojiPath" alt="" aria-hidden="true">
+                                    <span class="register_pet_choice__label" v-text="choice.label"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.services"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myOffersForm.services"
+                                   :placeholder="myOffersStrings.placeholders.services"
+                                   :aria-label="myOffersStrings.labels.services">
+                            <span class="corp_field__label" v-text="myOffersStrings.placeholders.services"></span>
+                        </label>
+
+                        <div class="settings_edit_modal__actions">
+                            <button class="button auth_modal__submit settings_edit_modal__save"
+                                    type="submit"
+                                    :disabled="myOffersFormSaving"
+                                    v-text="myOffersStrings.actions.save"></button>
+                            <button class="button button--secondary"
+                                    type="button"
+                                    :disabled="myOffersFormSaving"
+                                    @click="closeMyOffersCreateModal()"
+                                    v-text="myOffersStrings.actions.cancel"></button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </transition>
+    </section>
+</th:block>
+</html>

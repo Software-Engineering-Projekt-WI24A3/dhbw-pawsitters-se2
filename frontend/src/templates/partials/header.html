@@ -360,6 +360,16 @@
                         </button>
                         <button class="repo_menu__item repo_menu__item--button"
                                 type="button"
+                                @click="openCurrentUserOffers()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/1F391.svg}"
+                                 src="/assets/media/1F391.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.myOffers}">nav.myOffers</span>
+                        </button>
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
                                 @click="openCurrentUserSettings()">
                             <img class="repo_menu__item-icon"
                                  th:src="@{/assets/media/2699.svg}"

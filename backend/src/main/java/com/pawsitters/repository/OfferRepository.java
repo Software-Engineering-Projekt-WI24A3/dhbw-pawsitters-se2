@@ -13,6 +13,9 @@ import java.util.Optional;
 public interface OfferRepository extends JpaRepository<Offer, Long> {
 
     @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
+    List<Offer> findByHostIdOrderByIdDesc(Long hostId);
+
+    @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
     @Query("""
             select offer
             from Offer offer

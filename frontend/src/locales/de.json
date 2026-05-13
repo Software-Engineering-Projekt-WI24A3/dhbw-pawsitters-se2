@@ -36,6 +36,10 @@
       "title": "Pawsitters | Meine Haustiere",
       "description": "Geschützter Bereich zur Verwaltung deiner Haustiere mit Bild-Upload und Karussell."
     },
+    "myOffers": {
+      "title": "Pawsitters | Meine Angebote",
+      "description": "Geschützter Bereich zum Verwalten deiner Betreuungspakete als Entwurf und Veröffentlichung."
+    },
     "settings": {
       "title": "Pawsitters | Einstellungen",
       "description": "Geschützter Einstellungsbereich zur Bearbeitung deiner Profildaten."
@@ -77,6 +81,7 @@
     "openUserMenu": "Benutzermenü öffnen",
     "profile": "Profil ansehen",
     "myPets": "Meine Haustiere",
+    "myOffers": "Meine Angebote",
     "settings": "Einstellungen",
     "logout": "Ausloggen",
     "login": "Einloggen",
@@ -403,6 +408,10 @@
       "loadFailed": "Profil konnte nicht geladen werden.",
       "routeMissing": "Bitte öffne eine Profil-URL mit Benutzer-ID.",
       "ownProfileButton": "Mein öffentliches Profil",
+      "tabs": {
+        "information": "Informationen",
+        "ownPets": "Eigene Haustiere"
+      },
       "role": {
         "hostFromTemplate": "GASTGEBER AUS {flag} {city}",
         "hostCountryFlagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg",
@@ -483,6 +492,67 @@
         "deleteSuccessTemplate": "{name} wurde entfernt.",
         "uploadSuccessTitle": "Bild aktualisiert",
         "uploadSuccessTemplate": "Das Bild von {name} wurde aktualisiert.",
+        "actionErrorTitle": "Aktion fehlgeschlagen",
+        "actionErrorMessage": "Die Aktion konnte nicht abgeschlossen werden."
+      }
+    }
+  },
+  "myOffers": {
+    "page": {
+      "bannerAlt": "Muenchen-Banner fuer Angebote",
+      "eyebrow": "Meine Angebote",
+      "title": "Betreuungspakete verwalten",
+      "loading": "Angebote werden geladen.",
+      "authRequired": "Bitte logge dich ein, um deine Angebote zu verwalten.",
+      "loadFailed": "Angebote konnten nicht geladen werden.",
+      "emptyTitle": "Noch keine Angebote",
+      "emptyText": "Erstelle dein erstes Betreuungspaket und speichere es als Entwurf oder veroeffentliche es direkt.",
+      "introDescription": "Hier siehst du alle eigenen Betreuungspakete inklusive gespeicherter Entwuerfe.",
+      "countTemplateSingular": "{count} Angebot in deinem Profil",
+      "countTemplatePlural": "{count} Angebote in deinem Profil",
+      "carouselAria": "Karussell deiner Angebote",
+      "createLinkLabel": "Angebot einstellen",
+      "openDetailsTemplate": "Angebot {name} anzeigen",
+      "modalCloseAria": "Angebots-Dialog schliessen",
+      "formAddTitle": "Neues Betreuungspaket anlegen",
+      "formAddHint": "Erstelle ein Angebot als Entwurf. Du kannst es danach direkt veroeffentlichen.",
+      "labels": {
+        "title": "Titel",
+        "description": "Beschreibung",
+        "price": "Preis pro Tag",
+        "species": "Betreute Tierarten",
+        "services": "Leistungen",
+        "status": "Status",
+        "statusDraft": "Entwurf",
+        "statusPublished": "Veroeffentlicht"
+      },
+      "placeholders": {
+        "title": "Kurzer Angebotsname",
+        "description": "Beschreibe Ablauf, Tagesstruktur und besondere Staerken",
+        "price": "z. B. 39.90",
+        "services": "Leistungen, mit Komma getrennt"
+      },
+      "actions": {
+        "previous": "Vorheriges Angebot",
+        "next": "Naechstes Angebot",
+        "save": "Als Entwurf speichern",
+        "cancel": "Abbrechen",
+        "publish": "Veroeffentlichen",
+        "withdraw": "Zurueckziehen"
+      },
+      "validation": {
+        "requiredTemplate": "Bitte fülle {field} aus.",
+        "price": "Bitte gib einen gueltigen Preis groesser als 0 ein.",
+        "species": "Bitte waehle mindestens eine Tierart aus.",
+        "services": "Bitte gib mindestens eine Leistung an."
+      },
+      "notifications": {
+        "createSuccessTitle": "Angebot gespeichert",
+        "createSuccessTemplate": "{name} wurde als Entwurf gespeichert.",
+        "publishSuccessTitle": "Angebot veroeffentlicht",
+        "publishSuccessTemplate": "{name} ist jetzt veroeffentlicht.",
+        "withdrawSuccessTitle": "Angebot zurueckgezogen",
+        "withdrawSuccessTemplate": "{name} wurde wieder als Entwurf markiert.",
         "actionErrorTitle": "Aktion fehlgeschlagen",
         "actionErrorMessage": "Die Aktion konnte nicht abgeschlossen werden."
       }

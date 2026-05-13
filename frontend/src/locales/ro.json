@@ -36,6 +36,10 @@
       "title": "Pawsitters | Animalele mele",
       "description": "Zonă protejată pentru gestionarea animalelor tale, cu upload de imagini și carusel dedicat."
     },
+    "myOffers": {
+      "title": "Pawsitters | Ofertele mele",
+      "description": "Zonă protejată pentru gestionarea pachetelor tale de îngrijire, ca draft sau publicate."
+    },
     "settings": {
       "title": "Pawsitters | Setări",
       "description": "Zonă protejată de setări pentru editarea datelor profilului tău."
@@ -77,6 +81,7 @@
     "openUserMenu": "Deschide meniul utilizator",
     "profile": "Vezi profilul",
     "myPets": "Animalele mele",
+    "myOffers": "Ofertele mele",
     "settings": "Setări",
     "logout": "Deconectare",
     "login": "Autentificare",
@@ -403,6 +408,10 @@
       "loadFailed": "Profilul nu a putut fi încărcat.",
       "routeMissing": "Te rugăm să deschizi un URL de profil cu un ID de utilizator.",
       "ownProfileButton": "Profilul meu public",
+      "tabs": {
+        "information": "Informații",
+        "ownPets": "Animalele mele"
+      },
       "role": {
         "hostFromTemplate": "GAZDĂ DIN {flag} {city}",
         "hostCountryFlagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg",
@@ -483,6 +492,67 @@
         "deleteSuccessTemplate": "{name} a fost eliminat.",
         "uploadSuccessTitle": "Imagine actualizată",
         "uploadSuccessTemplate": "Imaginea pentru {name} a fost actualizată.",
+        "actionErrorTitle": "Acțiune eșuată",
+        "actionErrorMessage": "Acțiunea nu a putut fi finalizată."
+      }
+    }
+  },
+  "myOffers": {
+    "page": {
+      "bannerAlt": "Banner din München pentru oferte",
+      "eyebrow": "Ofertele mele",
+      "title": "Gestionează pachetele de îngrijire",
+      "loading": "Se încarcă ofertele.",
+      "authRequired": "Te rugăm să te autentifici pentru a-ți gestiona ofertele.",
+      "loadFailed": "Ofertele nu au putut fi încărcate.",
+      "emptyTitle": "Încă nu ai oferte",
+      "emptyText": "Creează primul pachet de îngrijire și păstrează-l ca draft sau publică-l imediat.",
+      "introDescription": "Aici vezi toate pachetele tale de îngrijire, inclusiv drafturile salvate.",
+      "countTemplateSingular": "{count} ofertă în profilul tău",
+      "countTemplatePlural": "{count} oferte în profilul tău",
+      "carouselAria": "Caruselul ofertelor tale",
+      "createLinkLabel": "Creează ofertă",
+      "openDetailsTemplate": "Deschide oferta {name}",
+      "modalCloseAria": "Închide dialogul ofertei",
+      "formAddTitle": "Creează un pachet nou de îngrijire",
+      "formAddHint": "Salvează oferta ca draft. O poți publica imediat după.",
+      "labels": {
+        "title": "Titlu",
+        "description": "Descriere",
+        "price": "Preț pe zi",
+        "species": "Specii acceptate",
+        "services": "Servicii",
+        "status": "Status",
+        "statusDraft": "Draft",
+        "statusPublished": "Publicată"
+      },
+      "placeholders": {
+        "title": "Titlu scurt al ofertei",
+        "description": "Descrie rutina, programul și punctele forte",
+        "price": "ex. 39.90",
+        "services": "Servicii, separate prin virgulă"
+      },
+      "actions": {
+        "previous": "Oferta anterioară",
+        "next": "Oferta următoare",
+        "save": "Salvează ca draft",
+        "cancel": "Anulează",
+        "publish": "Publică",
+        "withdraw": "Retrage"
+      },
+      "validation": {
+        "requiredTemplate": "Te rugăm să completezi {field}.",
+        "price": "Te rugăm să introduci un preț valid mai mare decât 0.",
+        "species": "Te rugăm să selectezi cel puțin o specie.",
+        "services": "Te rugăm să introduci cel puțin un serviciu."
+      },
+      "notifications": {
+        "createSuccessTitle": "Oferta a fost salvată",
+        "createSuccessTemplate": "{name} a fost salvată ca draft.",
+        "publishSuccessTitle": "Oferta a fost publicată",
+        "publishSuccessTemplate": "{name} este acum publicată.",
+        "withdrawSuccessTitle": "Oferta a fost retrasă",
+        "withdrawSuccessTemplate": "{name} este din nou în draft.",
         "actionErrorTitle": "Acțiune eșuată",
         "actionErrorMessage": "Acțiunea nu a putut fi finalizată."
       }

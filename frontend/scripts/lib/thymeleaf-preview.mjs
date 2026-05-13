@@ -18,6 +18,7 @@ const pageDefinitions = [
   { key: 'register', templatePath: 'pages/register.html' },
   { key: 'profile', templatePath: 'pages/profile.html' },
   { key: 'myPets', templatePath: 'pages/my-pets.html' },
+  { key: 'myOffers', templatePath: 'pages/my-offers.html' },
   { key: 'settings', templatePath: 'pages/settings.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
   { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
@@ -29,6 +30,7 @@ const routeToPageKey = new Map([
   ['/register', 'register'],
   ['/profile', 'profile'],
   ['/profile/my-pets', 'myPets'],
+  ['/profile/my-offers', 'myOffers'],
   ['/profile/settings', 'settings'],
   ['/repository/git', 'repositoryGit'],
   ['/repository/playwright', 'repositoryPlaywright'],
@@ -508,6 +510,8 @@ function resolveRoutePath(pageKey) {
       return '/profile';
     case 'myPets':
       return '/profile/my-pets';
+    case 'myOffers':
+      return '/profile/my-offers';
     case 'settings':
       return '/profile/settings';
     case 'repositoryGit':
@@ -1231,8 +1235,10 @@ async function cleanupLegacyRootOutputs(rootDir) {
     'register',
     'profile',
     'profile/my-pets',
+    'profile/my-offers',
     'profile/settings',
     'my-pets',
+    'my-offers',
     'settings',
     'repository',
     'git',
