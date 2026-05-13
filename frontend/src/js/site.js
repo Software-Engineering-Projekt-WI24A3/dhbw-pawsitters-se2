@@ -54,6 +54,7 @@ const REGISTER_STEPS = ['account', 'profile', 'pets'];
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
+const ROUTE_GUARD_MY_OFFERS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-offers$/i;
 const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/settings$/i;
 const DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/pawsitters-scene.svg';
 const LEGACY_DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/favicon.png';
@@ -1935,6 +1936,7 @@ const userSearchModalFormRoot = document.querySelector('.user_search_modal__form
 const registerFormRoot = document.querySelector('.auth_form');
 const profilePageRoot = document.querySelector('[data-profile-view]');
 const myPetsPageRoot = document.querySelector('[data-my-pets-view]');
+const myOffersPageRoot = document.querySelector('[data-my-offers-view]');
 const settingsPageRoot = document.querySelector('[data-settings-view]');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
@@ -2125,6 +2127,57 @@ const localizedMyPetsStrings = {
         specialNeeds: myPetsPageRoot?.dataset.myPetsPlaceholderSpecialNeeds || 'Special needs'
     }
 };
+const localizedMyOffersStrings = {
+    loading: myOffersPageRoot?.dataset.myOffersLoadingLabel || 'Loading offers.',
+    authRequired: myOffersPageRoot?.dataset.myOffersAuthRequired || 'Please sign in to manage your offers.',
+    loadFailed: myOffersPageRoot?.dataset.myOffersLoadFailed || 'Offers could not be loaded.',
+    emptyTitle: myOffersPageRoot?.dataset.myOffersEmptyTitle || 'No offers yet',
+    emptyText: myOffersPageRoot?.dataset.myOffersEmptyText || 'Create your first care package.',
+    introDescription: myOffersPageRoot?.dataset.myOffersIntroDescription || 'Review all of your own care packages, including drafts.',
+    countTemplateSingular: myOffersPageRoot?.dataset.myOffersCountTemplateSingular || '{count} offer in your profile',
+    countTemplatePlural: myOffersPageRoot?.dataset.myOffersCountTemplatePlural || '{count} offers in your profile',
+    createLinkLabel: myOffersPageRoot?.dataset.myOffersCreateLinkLabel || 'Create offer',
+    createSuccessTitle: myOffersPageRoot?.dataset.myOffersCreateSuccessTitle || 'Offer saved',
+    createSuccessTemplate: myOffersPageRoot?.dataset.myOffersCreateSuccessTemplate || '{name} was saved as a draft.',
+    publishSuccessTitle: myOffersPageRoot?.dataset.myOffersPublishSuccessTitle || 'Offer published',
+    publishSuccessTemplate: myOffersPageRoot?.dataset.myOffersPublishSuccessTemplate || '{name} is now published.',
+    withdrawSuccessTitle: myOffersPageRoot?.dataset.myOffersWithdrawSuccessTitle || 'Offer withdrawn',
+    withdrawSuccessTemplate: myOffersPageRoot?.dataset.myOffersWithdrawSuccessTemplate || '{name} is now in draft mode.',
+    actionErrorTitle: myOffersPageRoot?.dataset.myOffersActionErrorTitle || 'Action failed',
+    actionErrorMessage: myOffersPageRoot?.dataset.myOffersActionErrorMessage || 'The action could not be completed.',
+    validationRequiredTemplate: myOffersPageRoot?.dataset.myOffersValidationRequiredTemplate || 'Please fill in {field}.',
+    validationPrice: myOffersPageRoot?.dataset.myOffersValidationPrice || 'Please enter a valid price greater than 0.',
+    validationSpecies: myOffersPageRoot?.dataset.myOffersValidationSpecies || 'Please select at least one species.',
+    validationServices: myOffersPageRoot?.dataset.myOffersValidationServices || 'Please enter at least one service.',
+    formAddTitle: myOffersPageRoot?.dataset.myOffersFormAddTitle || 'Create a new care package',
+    formAddHint: myOffersPageRoot?.dataset.myOffersFormAddHint || 'Save your offer as a draft first.',
+    openDetailsTemplate: myOffersPageRoot?.dataset.myOffersOpenDetailsTemplate || 'Open offer {name}',
+    modalCloseAria: myOffersPageRoot?.dataset.myOffersModalCloseAria || 'Close offer dialog',
+    actions: {
+        previous: myOffersPageRoot?.dataset.myOffersActionPrevious || 'Previous offer',
+        next: myOffersPageRoot?.dataset.myOffersActionNext || 'Next offer',
+        save: myOffersPageRoot?.dataset.myOffersActionSave || 'Save as draft',
+        cancel: myOffersPageRoot?.dataset.myOffersActionCancel || 'Cancel',
+        publish: myOffersPageRoot?.dataset.myOffersActionPublish || 'Publish',
+        withdraw: myOffersPageRoot?.dataset.myOffersActionWithdraw || 'Withdraw'
+    },
+    labels: {
+        title: myOffersPageRoot?.dataset.myOffersLabelTitle || 'Title',
+        description: myOffersPageRoot?.dataset.myOffersLabelDescription || 'Description',
+        price: myOffersPageRoot?.dataset.myOffersLabelPrice || 'Price per day',
+        species: myOffersPageRoot?.dataset.myOffersLabelSpecies || 'Species',
+        services: myOffersPageRoot?.dataset.myOffersLabelServices || 'Services',
+        status: myOffersPageRoot?.dataset.myOffersLabelStatus || 'Status',
+        statusDraft: myOffersPageRoot?.dataset.myOffersLabelStatusDraft || 'Draft',
+        statusPublished: myOffersPageRoot?.dataset.myOffersLabelStatusPublished || 'Published'
+    },
+    placeholders: {
+        title: myOffersPageRoot?.dataset.myOffersPlaceholderTitle || 'Offer title',
+        description: myOffersPageRoot?.dataset.myOffersPlaceholderDescription || 'Describe your package',
+        price: myOffersPageRoot?.dataset.myOffersPlaceholderPrice || 'e.g. 39.90',
+        services: myOffersPageRoot?.dataset.myOffersPlaceholderServices || 'Services separated by commas'
+    }
+};
 const localizedSettingsStrings = {
     loading: settingsPageRoot?.dataset.settingsLoadingLabel || 'Loading settings.',
     authRequired: settingsPageRoot?.dataset.settingsAuthRequired || 'Please sign in to open settings.',
@@ -2289,6 +2342,7 @@ createApp({
             profileViewBaseDocumentTitle: typeof document !== 'undefined'
                 ? String(document.title || '').trim()
                 : 'Pawsitters',
+            profileViewTab: 'information',
             myPetsViewLoading: false,
             showMyPetsViewLoadingDots: false,
             myPetsViewError: '',
@@ -2315,6 +2369,23 @@ createApp({
             myPetsFormImageFile: null,
             myPetsFormImageFileName: '',
             myPetsFormSaving: false,
+            myOffersViewLoading: false,
+            showMyOffersViewLoadingDots: false,
+            myOffersViewError: '',
+            myOffersViewUser: null,
+            myOffersOffers: [],
+            myOffersStrings: localizedMyOffersStrings,
+            myOffersCarouselIndex: 0,
+            myOffersActionPendingId: null,
+            myOffersCreateModalOpen: false,
+            myOffersForm: {
+                title: '',
+                description: '',
+                pricePerDay: '',
+                acceptedPetSpecies: [],
+                services: ''
+            },
+            myOffersFormSaving: false,
             settingsViewLoading: false,
             showSettingsViewLoadingDots: false,
             settingsViewError: '',
@@ -2850,14 +2921,7 @@ createApp({
             const hostCountryFlagPath = typeof this.profileStrings.hostCountryFlagPath === 'string'
                 ? this.profileStrings.hostCountryFlagPath.trim()
                 : '';
-            const cityToken = '__PROFILE_CITY__';
-            let selectedTemplate = '';
-
-            if (role === 'HOST') {
-                selectedTemplate = this.profileStrings.hostFromTemplate;
-            } else if (role === 'PET_OWNER') {
-                selectedTemplate = this.profileStrings.petOwnerFromTemplate;
-            } else {
+            if (role !== 'HOST' && role !== 'PET_OWNER') {
                 return {
                     label: role || '',
                     prefix: '',
@@ -2868,28 +2932,13 @@ createApp({
                 };
             }
 
-            const cityTokenTemplate = formatTemplate(selectedTemplate, {
-                flag: '',
-                city: cityToken
-            }).replace(/\s{2,}/g, ' ').trim();
-            const label = cityTokenTemplate.replace(cityToken, hostCity).replace(/\s{2,}/g, ' ').trim();
-
-            const cityTokenIndex = cityTokenTemplate.indexOf(cityToken);
-            const hasCityToken = cityTokenIndex >= 0;
-            const prefix = hasCityToken
-                ? cityTokenTemplate.slice(0, cityTokenIndex).trim()
-                : '';
-            const suffix = hasCityToken
-                ? cityTokenTemplate.slice(cityTokenIndex + cityToken.length).trim()
-                : '';
-
             return {
-                label,
-                prefix,
+                label: hostCity,
+                prefix: '',
                 city: hostCity,
-                suffix,
+                suffix: '',
                 flagPath: hostCountryFlagPath,
-                showFlaggedCity: Boolean(hasCityToken && hostCity && hostCountryFlagPath)
+                showFlaggedCity: Boolean(hostCity && hostCountryFlagPath)
             };
         },
         profileViewBirthDateLabel() {
@@ -3156,6 +3205,115 @@ createApp({
                 return left.relativeOffset - right.relativeOffset;
             });
         },
+        myOffersDisplayName() {
+            if (this.myOffersViewUser) {
+                const firstName = typeof this.myOffersViewUser.firstName === 'string'
+                    ? this.myOffersViewUser.firstName.trim()
+                    : '';
+                const lastName = typeof this.myOffersViewUser.lastName === 'string'
+                    ? this.myOffersViewUser.lastName.trim()
+                    : '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ');
+                if (fullName) {
+                    return fullName;
+                }
+                if (this.myOffersViewUser.email) {
+                    return this.myOffersViewUser.email;
+                }
+            }
+
+            const sessionName = [this.authSessionFirstName, this.authSessionLastName]
+                .map((value) => typeof value === 'string' ? value.trim() : '')
+                .filter(Boolean)
+                .join(' ');
+            if (sessionName) {
+                return sessionName;
+            }
+
+            const normalizedEmail = this.normalizePotentiallyEncodedEmail(this.authSessionEmail);
+            if (normalizedEmail) {
+                return normalizedEmail;
+            }
+
+            return localizedAppStrings.genericUser;
+        },
+        myOffersViewInitial() {
+            const sourceText = this.myOffersDisplayName || 'O';
+            const firstCharacter = sourceText.trim().charAt(0) || 'O';
+            return firstCharacter.toUpperCase();
+        },
+        myOffersCountLabel() {
+            const offerCount = Array.isArray(this.myOffersOffers) ? this.myOffersOffers.length : 0;
+            const template = offerCount === 1
+                ? this.myOffersStrings.countTemplateSingular
+                : this.myOffersStrings.countTemplatePlural;
+            return formatTemplate(template, {
+                count: offerCount
+            });
+        },
+        myOffersSpeciesChoices() {
+            if (Array.isArray(this.registerPetChoices) && this.registerPetChoices.length) {
+                return this.registerPetChoices;
+            }
+
+            const locale = document.documentElement.lang || 'de';
+            return DEFAULT_PET_CHOICES.map((value) => ({
+                value,
+                label: formatPetChoiceLabel(value, locale),
+                emojiPath: resolvePetChoiceEmojiPath(value)
+            }));
+        },
+        myOffersActiveOffer() {
+            if (!Array.isArray(this.myOffersOffers) || !this.myOffersOffers.length) {
+                return null;
+            }
+
+            const safeIndex = Math.min(
+                Math.max(0, Number.isFinite(this.myOffersCarouselIndex) ? this.myOffersCarouselIndex : 0),
+                this.myOffersOffers.length - 1
+            );
+            return this.myOffersOffers[safeIndex] || null;
+        },
+        myOffersCarouselRenderItems() {
+            const offers = Array.isArray(this.myOffersOffers) ? this.myOffersOffers : [];
+            if (!offers.length) {
+                return [];
+            }
+
+            const visibleItems = offers
+                .map((offer, index) => {
+                    const relativeOffset = this.getMyOffersCarouselRelativeOffset(index, offers.length);
+                    const absoluteOffset = Math.abs(relativeOffset);
+                    if (absoluteOffset > 1) {
+                        return null;
+                    }
+
+                    let positionClass = 'my_offers_carousel__card--center';
+                    if (relativeOffset === -1) {
+                        positionClass = 'my_offers_carousel__card--left';
+                    } else if (relativeOffset === 1) {
+                        positionClass = 'my_offers_carousel__card--right';
+                    }
+
+                    return {
+                        offer,
+                        index,
+                        relativeOffset,
+                        absoluteOffset,
+                        isCenter: relativeOffset === 0,
+                        positionClass
+                    };
+                })
+                .filter(Boolean);
+
+            return visibleItems.sort((left, right) => {
+                if (left.absoluteOffset !== right.absoluteOffset) {
+                    return right.absoluteOffset - left.absoluteOffset;
+                }
+
+                return left.relativeOffset - right.relativeOffset;
+            });
+        },
         settingsViewDisplayName() {
             if (!this.settingsViewUser) {
                 return '';
@@ -3393,11 +3551,28 @@ createApp({
                 this.initializeDropdowns();
             });
         },
+        profileViewTab(nextValue) {
+            if (!profilePageRoot) {
+                return;
+            }
+
+            if (nextValue !== 'information' && nextValue !== 'ownPets') {
+                this.profileViewTab = 'information';
+                return;
+            }
+
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
+        },
         profileViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showProfileViewLoadingDots', 'profileViewLoading', nextValue);
         },
         myPetsViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showMyPetsViewLoadingDots', 'myPetsViewLoading', nextValue);
+        },
+        myOffersViewLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showMyOffersViewLoadingDots', 'myOffersViewLoading', nextValue);
         },
         settingsViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showSettingsViewLoadingDots', 'settingsViewLoading', nextValue);
@@ -3444,6 +3619,23 @@ createApp({
                 } else if (!nextValue.some((pet) => pet.id === normalizedDeletePetId)) {
                     this.closeMyPetsDeleteModal();
                 }
+            }
+        },
+        myOffersOffers(nextValue) {
+            if (!Array.isArray(nextValue) || !nextValue.length) {
+                this.myOffersCarouselIndex = 0;
+                this.myOffersActionPendingId = null;
+                return;
+            }
+
+            const maxIndex = nextValue.length - 1;
+            if (!Number.isInteger(this.myOffersCarouselIndex) || this.myOffersCarouselIndex < 0) {
+                this.myOffersCarouselIndex = 0;
+                return;
+            }
+
+            if (this.myOffersCarouselIndex > maxIndex) {
+                this.myOffersCarouselIndex = maxIndex;
             }
         },
         settingsCityOptionsLoading(nextValue) {
@@ -3522,6 +3714,7 @@ createApp({
         this.initializeRegisterFlow();
         this.initializeProfileView();
         this.initializeMyPetsView();
+        this.initializeMyOffersView();
         this.initializeSettingsView();
     },
     beforeUnmount() {
@@ -4834,6 +5027,20 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             window.location.assign(myPetsPath);
         },
+        openCurrentUserOffers() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            const myOffersPath = this.buildMyOffersPath();
+            if (!myOffersPath) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign(myOffersPath);
+        },
         openCurrentUserSettings() {
             if (!this.authSessionLoggedIn) {
                 return;
@@ -5339,12 +5546,18 @@ createApp({
             }
 
             this.applyProfileDocumentTitle();
+            this.profileViewTab = 'information';
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
             const requestedUserId = this.extractProfileRouteUserId(window.location.pathname);
             this.profileViewRequestedUserId = requestedUserId;
 
             if (!Number.isInteger(requestedUserId) || requestedUserId <= 0) {
                 this.profileViewError = this.profileStrings.routeMissing;
                 this.profileViewUser = null;
+                this.myPetsPets = [];
+                this.myPetsCarouselIndex = 0;
                 this.profileViewLoading = false;
                 return;
             }
@@ -5381,6 +5594,570 @@ createApp({
             }
 
             await this.loadMyPetsViewData();
+        },
+        async initializeMyOffersView() {
+            if (!myOffersPageRoot) {
+                return;
+            }
+
+            this.myOffersViewLoading = true;
+            this.myOffersViewError = '';
+            this.myOffersViewUser = null;
+            this.myOffersOffers = [];
+            this.myOffersCarouselIndex = 0;
+            this.myOffersActionPendingId = null;
+            this.myOffersCreateModalOpen = false;
+            this.myOffersFormSaving = false;
+            this.resetMyOffersForm();
+            this.syncModalBodyLock();
+
+            if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
+                try {
+                    await this.loadRegisterPetChoices();
+                } catch {
+                    // Optional preload only.
+                }
+            }
+
+            await this.loadMyOffersViewData();
+        },
+        normalizeMyOfferStatus(value = '') {
+            const normalizedStatus = typeof value === 'string'
+                ? value.trim().toUpperCase()
+                : '';
+            return normalizedStatus === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT';
+        },
+        normalizeMyOffer(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const normalizedTitle = typeof value?.title === 'string' ? value.title.trim() : '';
+            const normalizedDescription = typeof value?.description === 'string' ? value.description.trim() : '';
+            const rawPrice = typeof value?.pricePerDay === 'string'
+                ? value.pricePerDay.trim().replace(',', '.')
+                : value?.pricePerDay;
+            const normalizedPrice = Number.parseFloat(String(rawPrice ?? ''));
+            const acceptedPetSpecies = Array.isArray(value?.acceptedPetSpecies)
+                ? [...new Set(
+                    value.acceptedPetSpecies
+                        .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                        .filter(Boolean)
+                )]
+                : [];
+            const services = Array.isArray(value?.services)
+                ? value.services
+                    .map((service) => (typeof service === 'string' ? service.trim() : ''))
+                    .filter(Boolean)
+                : [];
+            const normalizedStatus = this.normalizeMyOfferStatus(value?.status);
+
+            return {
+                id: normalizedId,
+                title: normalizedTitle,
+                description: normalizedDescription,
+                pricePerDay: Number.isFinite(normalizedPrice) ? normalizedPrice : 0,
+                acceptedPetSpecies,
+                services,
+                status: normalizedStatus,
+                statusLower: normalizedStatus.toLowerCase()
+            };
+        },
+        buildMyOffersActionErrorMessage(payload = {}) {
+            const backendMessage = typeof payload?.message === 'string'
+                ? payload.message.trim()
+                : '';
+            const detailMessage = Array.isArray(payload?.error?.details)
+                ? payload.error.details
+                    .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                    .find(Boolean)
+                : '';
+
+            return detailMessage || backendMessage || this.myOffersStrings.actionErrorMessage;
+        },
+        async loadMyOffersViewData() {
+            if (!myOffersPageRoot) {
+                return;
+            }
+
+            this.myOffersViewLoading = true;
+            this.myOffersViewError = '';
+
+            try {
+                const [profileResponse, offersResponse] = await Promise.all([
+                    apiFetch('/api/users/me', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    }),
+                    apiFetch('/api/offers', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    })
+                ]);
+                const profilePayload = await profileResponse.json().catch(() => ({}));
+                const offersPayload = await offersResponse.json().catch(() => ({}));
+
+                if (
+                    profileResponse.status === 401
+                    || profileResponse.status === 403
+                    || offersResponse.status === 401
+                    || offersResponse.status === 403
+                ) {
+                    this.myOffersViewError = this.myOffersStrings.authRequired;
+                    window.location.assign(this.buildNotFoundPath());
+                    return;
+                }
+
+                if (
+                    !profileResponse.ok
+                    || profilePayload?.success === false
+                    || !offersResponse.ok
+                    || offersPayload?.success === false
+                ) {
+                    this.myOffersViewError = this.myOffersStrings.loadFailed;
+                    return;
+                }
+
+                this.myOffersViewUser = this.normalizeProfileUser(profilePayload?.data || {});
+                const normalizedOffers = Array.isArray(offersPayload?.data)
+                    ? offersPayload.data
+                        .map((offer) => this.normalizeMyOffer(offer))
+                        .filter((offer) => Number.isInteger(offer.id) && offer.id > 0)
+                    : [];
+                this.myOffersOffers = normalizedOffers;
+                this.myOffersCarouselIndex = 0;
+            } catch {
+                this.myOffersViewError = this.myOffersStrings.loadFailed;
+            } finally {
+                this.myOffersViewLoading = false;
+            }
+        },
+        getMyOffersCarouselRelativeOffset(index, totalCount = null) {
+            const normalizedIndex = Number(index);
+            const offers = Array.isArray(this.myOffersOffers) ? this.myOffersOffers : [];
+            const normalizedCount = Number.isFinite(Number(totalCount))
+                ? Math.max(0, Math.round(Number(totalCount)))
+                : offers.length;
+
+            if (!Number.isInteger(normalizedIndex) || normalizedCount <= 0) {
+                return 0;
+            }
+
+            const safeActiveIndex = Number.isInteger(this.myOffersCarouselIndex)
+                ? Math.min(Math.max(0, this.myOffersCarouselIndex), normalizedCount - 1)
+                : 0;
+            let offset = normalizedIndex - safeActiveIndex;
+            const halfRange = normalizedCount / 2;
+
+            if (offset > halfRange) {
+                offset -= normalizedCount;
+            } else if (offset < -halfRange) {
+                offset += normalizedCount;
+            }
+
+            return Math.round(offset);
+        },
+        setMyOffersCarouselIndex(index) {
+            const normalizedIndex = Number(index);
+            if (!Array.isArray(this.myOffersOffers) || !this.myOffersOffers.length || !Number.isFinite(normalizedIndex)) {
+                this.myOffersCarouselIndex = 0;
+                return;
+            }
+
+            const maxIndex = this.myOffersOffers.length - 1;
+            this.myOffersCarouselIndex = Math.min(maxIndex, Math.max(0, Math.round(normalizedIndex)));
+        },
+        navigateMyOffersCarousel(direction = 1) {
+            if (!Array.isArray(this.myOffersOffers) || !this.myOffersOffers.length) {
+                this.myOffersCarouselIndex = 0;
+                return;
+            }
+
+            const normalizedDirection = Number(direction) < 0 ? -1 : 1;
+            const itemCount = this.myOffersOffers.length;
+            const currentIndex = Number.isInteger(this.myOffersCarouselIndex) ? this.myOffersCarouselIndex : 0;
+            const nextIndex = (currentIndex + normalizedDirection + itemCount) % itemCount;
+            this.myOffersCarouselIndex = nextIndex;
+        },
+        buildMyOfferOpenDetailsLabel(offer = null) {
+            const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
+            return formatTemplate(this.myOffersStrings.openDetailsTemplate, {
+                name: offerName || this.myOffersStrings.labels.title
+            });
+        },
+        resolveMyOfferStatusLabel(offer = null) {
+            const normalizedStatus = this.normalizeMyOfferStatus(offer?.status);
+            return normalizedStatus === 'PUBLISHED'
+                ? this.myOffersStrings.labels.statusPublished
+                : this.myOffersStrings.labels.statusDraft;
+        },
+        resolveMyOfferSpecies(offer = null) {
+            const sourceSpecies = Array.isArray(offer?.acceptedPetSpecies) ? offer.acceptedPetSpecies : [];
+            const locale = document.documentElement.lang || 'de';
+
+            return sourceSpecies
+                .map((species) => {
+                    if (typeof species !== 'string') {
+                        return null;
+                    }
+
+                    const normalizedSpecies = species.trim().toUpperCase();
+                    if (!normalizedSpecies) {
+                        return null;
+                    }
+
+                    return {
+                        value: normalizedSpecies,
+                        label: formatPetChoiceLabel(normalizedSpecies, locale),
+                        emojiPath: resolvePetChoiceEmojiPath(normalizedSpecies)
+                    };
+                })
+                .filter(Boolean);
+        },
+        resolveMyOfferServiceList(offer = null) {
+            const sourceServices = Array.isArray(offer?.services) ? offer.services : [];
+            return sourceServices
+                .map((service) => (typeof service === 'string' ? service.trim() : ''))
+                .filter(Boolean)
+                .slice(0, 5);
+        },
+        formatMyOfferPrice(value = null) {
+            const numericValue = Number.parseFloat(String(value ?? '').replace(',', '.'));
+            if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                return '—';
+            }
+
+            try {
+                const localeCode = normalizeUiLocaleCode(document.documentElement.lang || 'de');
+                return new Intl.NumberFormat(localeCode, {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(numericValue);
+            } catch {
+                return `${numericValue.toFixed(2)} €`;
+            }
+        },
+        isMyOfferSpeciesSelected(value = '') {
+            const normalizedValue = typeof value === 'string' ? value.trim().toUpperCase() : '';
+            if (!normalizedValue) {
+                return false;
+            }
+
+            return Array.isArray(this.myOffersForm?.acceptedPetSpecies)
+                ? this.myOffersForm.acceptedPetSpecies.includes(normalizedValue)
+                : false;
+        },
+        toggleMyOfferSpeciesSelection(value = '') {
+            const normalizedValue = typeof value === 'string' ? value.trim().toUpperCase() : '';
+            if (!normalizedValue) {
+                return;
+            }
+
+            const currentSelection = Array.isArray(this.myOffersForm?.acceptedPetSpecies)
+                ? [...this.myOffersForm.acceptedPetSpecies]
+                : [];
+
+            if (currentSelection.includes(normalizedValue)) {
+                this.myOffersForm.acceptedPetSpecies = currentSelection.filter((species) => species !== normalizedValue);
+                return;
+            }
+
+            this.myOffersForm.acceptedPetSpecies = [...currentSelection, normalizedValue];
+        },
+        resetMyOffersForm() {
+            this.myOffersForm = {
+                title: '',
+                description: '',
+                pricePerDay: '',
+                acceptedPetSpecies: [],
+                services: ''
+            };
+        },
+        openMyOffersCreateModal() {
+            if (!myOffersPageRoot) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.resetMyOffersForm();
+            this.myOffersFormSaving = false;
+            this.myOffersCreateModalOpen = true;
+            this.syncModalBodyLock();
+
+            nextTick(() => {
+                document.querySelector('[data-my-offers-view] .settings_edit_modal__field input')?.focus();
+            });
+        },
+        closeMyOffersCreateModal() {
+            if (!this.myOffersCreateModalOpen) {
+                return;
+            }
+
+            this.myOffersCreateModalOpen = false;
+            this.myOffersFormSaving = false;
+            this.resetMyOffersForm();
+            this.syncModalBodyLock();
+        },
+        parseMyOfferServices(rawValue = '') {
+            if (typeof rawValue !== 'string') {
+                return [];
+            }
+
+            return [...new Set(
+                rawValue
+                    .split(/[,\n;]+/)
+                    .map((service) => service.trim())
+                    .filter(Boolean)
+            )];
+        },
+        validateMyOfferForm() {
+            const normalizedTitle = typeof this.myOffersForm?.title === 'string'
+                ? this.myOffersForm.title.trim()
+                : '';
+            const normalizedDescription = typeof this.myOffersForm?.description === 'string'
+                ? this.myOffersForm.description.trim()
+                : '';
+            const normalizedPriceInput = typeof this.myOffersForm?.pricePerDay === 'string' || typeof this.myOffersForm?.pricePerDay === 'number'
+                ? String(this.myOffersForm.pricePerDay).trim().replace(',', '.')
+                : '';
+            const normalizedPrice = Number.parseFloat(normalizedPriceInput);
+            const normalizedSpecies = Array.isArray(this.myOffersForm?.acceptedPetSpecies)
+                ? [...new Set(
+                    this.myOffersForm.acceptedPetSpecies
+                        .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                        .filter(Boolean)
+                )]
+                : [];
+            const normalizedServices = this.parseMyOfferServices(this.myOffersForm?.services || '');
+
+            const requiredMessageFor = (fieldLabel) => formatTemplate(this.myOffersStrings.validationRequiredTemplate, {
+                field: fieldLabel
+            });
+
+            if (!normalizedTitle) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myOffersStrings.labels.title)
+                };
+            }
+
+            if (!normalizedDescription) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myOffersStrings.labels.description)
+                };
+            }
+
+            if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
+                return {
+                    valid: false,
+                    message: this.myOffersStrings.validationPrice
+                };
+            }
+
+            if (!normalizedSpecies.length) {
+                return {
+                    valid: false,
+                    message: this.myOffersStrings.validationSpecies
+                };
+            }
+
+            if (!normalizedServices.length) {
+                return {
+                    valid: false,
+                    message: this.myOffersStrings.validationServices
+                };
+            }
+
+            this.myOffersForm = {
+                ...this.myOffersForm,
+                title: normalizedTitle,
+                description: normalizedDescription,
+                pricePerDay: normalizedPriceInput,
+                acceptedPetSpecies: normalizedSpecies,
+                services: normalizedServices.join(', ')
+            };
+
+            return {
+                valid: true,
+                payload: {
+                    title: normalizedTitle,
+                    description: normalizedDescription,
+                    pricePerDay: Number(normalizedPrice.toFixed(2)),
+                    acceptedPetSpecies: normalizedSpecies,
+                    services: normalizedServices
+                }
+            };
+        },
+        upsertMyOfferInCollection(offer = null, options = {}) {
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                return null;
+            }
+
+            const selectInsertedOffer = options?.selectInsertedOffer !== false;
+            const previousOffers = Array.isArray(this.myOffersOffers) ? [...this.myOffersOffers] : [];
+            const existingIndex = previousOffers.findIndex((entry) => entry.id === normalizedOffer.id);
+
+            if (existingIndex >= 0) {
+                previousOffers.splice(existingIndex, 1, normalizedOffer);
+            } else {
+                previousOffers.unshift(normalizedOffer);
+            }
+
+            this.myOffersOffers = previousOffers;
+
+            if (selectInsertedOffer) {
+                const nextIndex = previousOffers.findIndex((entry) => entry.id === normalizedOffer.id);
+                this.myOffersCarouselIndex = nextIndex >= 0 ? nextIndex : 0;
+            }
+
+            return normalizedOffer;
+        },
+        async submitMyOfferForm() {
+            if (this.myOffersFormSaving) {
+                return;
+            }
+
+            const validation = this.validateMyOfferForm();
+            if (!validation.valid) {
+                this.pushNotification({
+                    title: this.myOffersStrings.actionErrorTitle,
+                    message: validation.message || this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            this.myOffersFormSaving = true;
+
+            try {
+                const response = await apiFetch('/api/offers', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify(validation.payload)
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.actionErrorTitle,
+                        message: this.buildMyOffersActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const normalizedOffer = this.upsertMyOfferInCollection(payload?.data || {}, {
+                    selectInsertedOffer: true
+                });
+                if (!normalizedOffer) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.actionErrorTitle,
+                        message: this.myOffersStrings.actionErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.closeMyOffersCreateModal();
+                this.pushNotification({
+                    title: this.myOffersStrings.createSuccessTitle,
+                    message: formatTemplate(this.myOffersStrings.createSuccessTemplate, {
+                        name: normalizedOffer.title || this.myOffersStrings.labels.title
+                    }),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.myOffersStrings.actionErrorTitle,
+                    message: this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.myOffersFormSaving = false;
+            }
+        },
+        async updateMyOfferStatus(offer = null, statusAction = 'publish') {
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                return;
+            }
+
+            const normalizedAction = statusAction === 'withdraw' ? 'withdraw' : 'publish';
+            if (this.myOffersActionPendingId === normalizedOffer.id) {
+                return;
+            }
+
+            this.myOffersActionPendingId = normalizedOffer.id;
+
+            try {
+                const response = await apiFetch(`/api/offers/${normalizedOffer.id}/${normalizedAction}`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.actionErrorTitle,
+                        message: this.buildMyOffersActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const nextOffer = this.upsertMyOfferInCollection(payload?.data || {}, {
+                    selectInsertedOffer: true
+                });
+                if (!nextOffer) {
+                    return;
+                }
+
+                const successTitle = normalizedAction === 'publish'
+                    ? this.myOffersStrings.publishSuccessTitle
+                    : this.myOffersStrings.withdrawSuccessTitle;
+                const successTemplate = normalizedAction === 'publish'
+                    ? this.myOffersStrings.publishSuccessTemplate
+                    : this.myOffersStrings.withdrawSuccessTemplate;
+
+                this.pushNotification({
+                    title: successTitle,
+                    message: formatTemplate(successTemplate, {
+                        name: nextOffer.title || this.myOffersStrings.labels.title
+                    }),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.myOffersStrings.actionErrorTitle,
+                    message: this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                if (this.myOffersActionPendingId === normalizedOffer.id) {
+                    this.myOffersActionPendingId = null;
+                }
+            }
+        },
+        async publishMyOffer(offer = null) {
+            await this.updateMyOfferStatus(offer, 'publish');
+        },
+        async withdrawMyOffer(offer = null) {
+            await this.updateMyOfferStatus(offer, 'withdraw');
         },
         normalizeMyPetImagePath(value = '') {
             if (typeof value !== 'string') {
@@ -7024,6 +7801,7 @@ createApp({
         },
         normalizeProfileUser(value = {}) {
             const acceptedPetSpeciesRaw = value?.acceptedPetSpecies;
+            const petsRaw = Array.isArray(value?.pets) ? value.pets : [];
             const acceptedPetSpeciesArray = Array.isArray(acceptedPetSpeciesRaw)
                 ? acceptedPetSpeciesRaw
                 : (acceptedPetSpeciesRaw && typeof acceptedPetSpeciesRaw === 'object'
@@ -7032,6 +7810,9 @@ createApp({
             const acceptedPetSpecies = acceptedPetSpeciesArray
                 .map((species) => typeof species === 'string' ? species.trim().toUpperCase() : '')
                 .filter(Boolean);
+            const pets = petsRaw
+                .map((pet) => this.normalizeMyPet(pet))
+                .filter((pet) => Number.isInteger(pet.id) && pet.id > 0);
 
             return {
                 id: this.normalizeProfileUserId(value?.id),
@@ -7048,7 +7829,8 @@ createApp({
                 city: typeof value?.city === 'string' ? value.city.trim() : '',
                 rating: Number(value?.rating),
                 numberOfRatings: Number(value?.numberOfRatings),
-                acceptedPetSpecies
+                acceptedPetSpecies,
+                pets
             };
         },
         handleProfileAvatarError() {
@@ -7090,7 +7872,13 @@ createApp({
             this.profileViewLoading = true;
             this.profileViewError = '';
             this.profileViewUser = null;
+            this.profileViewTab = 'information';
+            this.myPetsPets = [];
+            this.myPetsCarouselIndex = 0;
             this.applyProfileDocumentTitle();
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
 
             try {
                 const response = await apiFetch(`/api/users/${normalizedUserId}`, {
@@ -7114,7 +7902,12 @@ createApp({
                 }
 
                 this.profileViewUser = this.normalizeProfileUser(payload?.data || {});
+                this.myPetsPets = Array.isArray(this.profileViewUser?.pets) ? [...this.profileViewUser.pets] : [];
+                this.myPetsCarouselIndex = 0;
                 this.applyProfileDocumentTitle(this.profileViewUser);
+                nextTick(() => {
+                    this.updateSegmentedIndicators();
+                });
             } catch {
                 this.profileViewError = this.profileStrings.loadFailed;
             } finally {
@@ -7720,6 +8513,9 @@ createApp({
         isMyPetsPath(pathname) {
             return ROUTE_GUARD_MY_PETS_PATTERN.test(this.normalizeRoutePath(pathname));
         },
+        isMyOffersPath(pathname) {
+            return ROUTE_GUARD_MY_OFFERS_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
         isSettingsPath(pathname) {
             return ROUTE_GUARD_SETTINGS_PATTERN.test(this.normalizeRoutePath(pathname));
         },
@@ -7740,6 +8536,12 @@ createApp({
                 {
                     id: 'my-pets-auth-only',
                     pathPattern: ROUTE_GUARD_MY_PETS_PATTERN,
+                    redirectWhen: 'unauthenticated',
+                    target: 'notFound'
+                },
+                {
+                    id: 'my-offers-auth-only',
+                    pathPattern: ROUTE_GUARD_MY_OFFERS_PATTERN,
                     redirectWhen: 'unauthenticated',
                     target: 'notFound'
                 },
@@ -8004,6 +8806,10 @@ createApp({
         buildMyPetsPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
             return localePrefix ? `${localePrefix}/profile/my-pets` : '/profile/my-pets';
+        },
+        buildMyOffersPath() {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            return localePrefix ? `${localePrefix}/profile/my-offers` : '/profile/my-offers';
         },
         buildProfilePath(userId = null) {
             const normalizedUserId = this.normalizeProfileUserId(userId);
@@ -8446,6 +9252,7 @@ createApp({
             this.closeMyPetsAddModal();
             this.closeMyPetsDetailModal();
             this.closeMyPetsDeleteModal();
+            this.closeMyOffersCreateModal();
             this.closeSettingsEditModal();
             this.closeLoginModal();
             this.userSearchModalOpen = true;
@@ -8514,6 +9321,7 @@ createApp({
                     || this.myPetsAddModalOpen
                     || this.myPetsDetailModalOpen
                     || this.myPetsDeleteModalOpen
+                    || this.myOffersCreateModalOpen
                     || this.activeGitCommitModalHash
                     || this.activeBoardCardKey
                 )
@@ -8989,6 +9797,11 @@ createApp({
                 }
 
                 this.closeMyPetsDetailModal();
+                return;
+            }
+
+            if (this.myOffersCreateModalOpen) {
+                this.closeMyOffersCreateModal();
                 return;
             }
 

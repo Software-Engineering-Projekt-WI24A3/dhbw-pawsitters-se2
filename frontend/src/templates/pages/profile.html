@@ -84,64 +84,141 @@
                     </template>
                 </p>
 
-                <dl class="profile_facts">
-                    <div class="profile_facts__item">
-                        <dt th:text="#{profile.page.labels.email}">profile.page.labels.email</dt>
-                        <dd v-text="profileViewUser.email"></dd>
-                    </div>
-                    <div class="profile_facts__item">
-                        <dt th:text="#{profile.page.labels.phone}">profile.page.labels.phone</dt>
-                        <dd v-text="profileViewPhoneLabel"></dd>
-                    </div>
-                    <div class="profile_facts__item">
-                        <dt th:text="#{profile.page.labels.birthDate}">profile.page.labels.birthDate</dt>
-                        <dd v-text="profileViewBirthDateLabel"></dd>
-                    </div>
-                    <div class="profile_facts__item">
-                        <dt th:text="#{profile.page.labels.location}">profile.page.labels.location</dt>
-                        <dd v-text="profileViewLocationLabel"></dd>
-                    </div>
-                </dl>
+                <div class="repository_segmented repository_segmented--profile"
+                     data-segmented="profileViewTab"
+                     data-active="information">
+                    <button class="repository_segmented__button"
+                            type="button"
+                            data-segmented-value="information"
+                            @click="setSegment('profileViewTab', 'information')"
+                            th:text="#{profile.page.tabs.information}">profile.page.tabs.information</button>
+                    <button class="repository_segmented__button"
+                            type="button"
+                            data-segmented-value="ownPets"
+                            @click="setSegment('profileViewTab', 'ownPets')"
+                            th:text="#{profile.page.tabs.ownPets}">profile.page.tabs.ownPets</button>
+                    <span class="repository_segmented__indicator" aria-hidden="true"></span>
+                </div>
 
-                <section class="profile_bio" v-if="profileViewUser.bio">
-                    <h3 class="profile_bio__title" th:text="#{profile.page.labels.bio}">profile.page.labels.bio</h3>
-                    <p class="profile_bio__text" v-text="profileViewUser.bio"></p>
+                <section v-show="profileViewTab === 'information'"
+                         data-segment-panel="profileViewTab"
+                         data-segment-value="information"
+                         class="profile_panel__tab_panel profile_panel__tab_panel--info">
+                    <dl class="profile_facts">
+                        <div class="profile_facts__item">
+                            <dt th:text="#{profile.page.labels.email}">profile.page.labels.email</dt>
+                            <dd v-text="profileViewUser.email"></dd>
+                        </div>
+                        <div class="profile_facts__item">
+                            <dt th:text="#{profile.page.labels.phone}">profile.page.labels.phone</dt>
+                            <dd v-text="profileViewPhoneLabel"></dd>
+                        </div>
+                    </dl>
+
+                    <section class="profile_bio" v-if="profileViewUser.bio">
+                        <h3 class="profile_bio__title" th:text="#{profile.page.labels.bio}">profile.page.labels.bio</h3>
+                        <p class="profile_bio__text" v-text="profileViewUser.bio"></p>
+                    </section>
+
+                    <section class="profile_species" v-if="profileViewAcceptedPetSpecies.length">
+                        <h3 class="profile_species__title" th:text="#{profile.page.labels.acceptedPets}">profile.page.labels.acceptedPets</h3>
+                        <ul class="profile_species__list">
+                            <li v-for="species in profileViewAcceptedPetSpecies"
+                                :key="species.value"
+                                class="profile_species__chip">
+                                <img class="profile_species__icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                <span class="profile_species__label" v-text="species.label"></span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="profile_rating">
+                        <h3 class="profile_rating__title" v-text="profileViewRatingHeading"></h3>
+                        <div class="profile_rating__stars"
+                             role="img"
+                             :aria-label="profileViewRatingAriaLabel">
+                            <span v-for="(fill, index) in profileViewRatingStarFills"
+                                  :key="'profile-rating-star-' + index"
+                                  class="profile_rating__star"
+                                  :style="{ '--profile-star-fill': (fill + '%') }"
+                                  aria-hidden="true">
+                                <span class="profile_rating__star-layer profile_rating__star-layer--base">
+                                    <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
+                                        <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                                    </svg>
+                                </span>
+                                <span class="profile_rating__star-layer profile_rating__star-layer--fill">
+                                    <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
+                                        <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                                    </svg>
+                                </span>
+                            </span>
+                        </div>
+                    </section>
                 </section>
 
-                <section class="profile_species" v-if="profileViewAcceptedPetSpecies.length">
-                    <h3 class="profile_species__title" th:text="#{profile.page.labels.acceptedPets}">profile.page.labels.acceptedPets</h3>
-                    <ul class="profile_species__list">
-                        <li v-for="species in profileViewAcceptedPetSpecies"
-                            :key="species.value"
-                            class="profile_species__chip">
-                            <img class="profile_species__icon" :src="species.emojiPath" alt="" aria-hidden="true">
-                            <span class="profile_species__label" v-text="species.label"></span>
-                        </li>
-                    </ul>
-                </section>
+                <section v-show="profileViewTab === 'ownPets'"
+                         data-segment-panel="profileViewTab"
+                         data-segment-value="ownPets"
+                         class="profile_panel__tab_panel profile_panel__tab_panel--pets">
+                    <section class="my_pets_reel_shell profile_pets_reel_shell"
+                             th:attr="aria-label=#{myPets.page.carouselAria}">
+                        <template v-if="myPetsPets.length && myPetsActivePet">
+                            <button class="my_pets_reel__nav my_pets_reel__nav--prev"
+                                    type="button"
+                                    @click="navigateMyPetsCarousel(-1)"
+                                    :aria-label="myPetsStrings.actions.previous">
+                                <svg class="my_pets_reel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                </svg>
+                            </button>
 
-                <section class="profile_rating">
-                    <h3 class="profile_rating__title" v-text="profileViewRatingHeading"></h3>
-                    <div class="profile_rating__stars"
-                         role="img"
-                         :aria-label="profileViewRatingAriaLabel">
-                        <span v-for="(fill, index) in profileViewRatingStarFills"
-                              :key="'profile-rating-star-' + index"
-                              class="profile_rating__star"
-                              :style="{ '--profile-star-fill': (fill + '%') }"
-                              aria-hidden="true">
-                            <span class="profile_rating__star-layer profile_rating__star-layer--base">
-                                <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
-                                    <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                            <div class="my_pets_reel__viewport">
+                                <article v-for="item in myPetsCarouselRenderItems"
+                                         :key="'profile-pets-reel-' + item.pet.id"
+                                         class="my_pets_reel__card"
+                                         :class="item.positionClass">
+                                    <div class="my_pets_reel__card_static">
+                                        <div class="my_pets_reel__media">
+                                            <img class="my_pets_reel__image"
+                                                 :src="resolveMyPetImagePath(item.pet)"
+                                                 :alt="item.pet.name"
+                                                 loading="lazy"
+                                                 decoding="async">
+                                        </div>
+                                        <span class="my_pets_reel__species">
+                                            <img class="my_pets_reel__species_icon"
+                                                 :src="resolveMyPetSpeciesEmoji(item.pet)"
+                                                 alt=""
+                                                 aria-hidden="true">
+                                            <span v-text="resolveMyPetSpeciesLabel(item.pet)"></span>
+                                        </span>
+                                        <span class="my_pets_reel__name" v-text="item.pet.name"></span>
+                                    </div>
+
+                                    <div class="my_pets_reel__reflection" aria-hidden="true">
+                                        <img class="my_pets_reel__reflection_image"
+                                             :src="resolveMyPetImagePath(item.pet)"
+                                             alt="">
+                                    </div>
+                                </article>
+                            </div>
+
+                            <button class="my_pets_reel__nav my_pets_reel__nav--next"
+                                    type="button"
+                                    @click="navigateMyPetsCarousel(1)"
+                                    :aria-label="myPetsStrings.actions.next">
+                                <svg class="my_pets_reel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
                                 </svg>
-                            </span>
-                            <span class="profile_rating__star-layer profile_rating__star-layer--fill">
-                                <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
-                                    <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
-                                </svg>
-                            </span>
-                        </span>
-                    </div>
+                            </button>
+                        </template>
+
+                        <div v-else class="my_pets_empty">
+                            <h3 class="my_pets_empty__title" th:text="#{myPets.page.emptyTitle}">myPets.page.emptyTitle</h3>
+                            <p class="my_pets_empty__text" th:text="#{myPets.page.emptyText}">myPets.page.emptyText</p>
+                        </div>
+                    </section>
                 </section>
             </div>
         </article>

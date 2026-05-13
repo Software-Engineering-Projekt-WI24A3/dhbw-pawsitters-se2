@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @Validated
 @RequestMapping("/api/offers")
@@ -27,6 +29,22 @@ public class OfferController {
 
     public OfferController(OfferService offerService) {
         this.offerService = offerService;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OfferResponse>>> getOwnOffers(Authentication authentication,
+                                                                         HttpServletRequest servletRequest) {
+        List<OfferResponse> offers = offerService.getOffersForUserEmail(authentication.getName())
+                .stream()
+                .map(OfferResponse::from)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Offers retrieved successfully.",
+                offers,
+                servletRequest.getRequestURI(),
+                offers.size()
+        ));
     }
 
     @PostMapping
