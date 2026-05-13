@@ -1,0 +1,322 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="myPetsModals">
+    <transition name="auth_modal_presence">
+        <div v-if="myPetsAddModalOpen"
+             class="auth_modal settings_edit_modal"
+             data-my-pets-add-modal
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeMyPetsAddModal()">
+            <article class="auth_modal__surface settings_edit_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        @click="closeMyPetsAddModal()"
+                        :aria-label="myPetsStrings.modalCloseAria">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" v-text="myPetsStrings.modalCloseAria"></span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/animal-mammal/1F415.svg}"
+                             src="/assets/media/animal-mammal/1F415.svg"
+                             alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title settings_edit_modal__title" v-text="myPetsStrings.formAddTitle"></h2>
+
+                <form class="auth_modal__form settings_edit_modal__form"
+                      novalidate
+                      @submit.prevent="submitMyPetForm()">
+                    <label class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="myPetsStrings.labels.name"></span>
+                        <input class="auth_input corp_input"
+                               type="text"
+                               autocomplete="off"
+                               v-model="myPetsForm.name"
+                               :placeholder="myPetsStrings.placeholders.name"
+                               :aria-label="myPetsStrings.labels.name"
+                               data-my-pets-form-name>
+                        <span class="corp_field__label" v-text="myPetsStrings.placeholders.name"></span>
+                    </label>
+
+                    <label class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="myPetsStrings.labels.species"></span>
+                        <select class="auth_input corp_input corp_input--select"
+                                v-model="myPetsForm.species"
+                                :aria-label="myPetsStrings.labels.species">
+                            <option v-for="choice in myPetsSpeciesChoices"
+                                    :key="'my-pets-add-species-' + choice.value"
+                                    :value="choice.value"
+                                    v-text="choice.label"></option>
+                        </select>
+                        <span class="corp_field__label" v-text="myPetsStrings.labels.species"></span>
+                    </label>
+
+                    <label class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="myPetsStrings.labels.breed"></span>
+                        <input class="auth_input corp_input"
+                               type="text"
+                               autocomplete="off"
+                               v-model="myPetsForm.breed"
+                               :placeholder="myPetsStrings.placeholders.breed"
+                               :aria-label="myPetsStrings.labels.breed">
+                        <span class="corp_field__label" v-text="myPetsStrings.placeholders.breed"></span>
+                    </label>
+
+                    <label class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="myPetsStrings.labels.age"></span>
+                        <input class="auth_input corp_input"
+                               type="number"
+                               min="0"
+                               step="1"
+                               inputmode="numeric"
+                               v-model="myPetsForm.age"
+                               :placeholder="myPetsStrings.placeholders.age"
+                               :aria-label="myPetsStrings.labels.age">
+                        <span class="corp_field__label" v-text="myPetsStrings.placeholders.age"></span>
+                    </label>
+
+                    <label class="auth_field corp_field settings_edit_modal__field">
+                        <span class="sr-only" v-text="myPetsStrings.labels.specialNeeds"></span>
+                        <input class="auth_input corp_input"
+                               type="text"
+                               autocomplete="off"
+                               v-model="myPetsForm.specialNeeds"
+                               :placeholder="myPetsStrings.placeholders.specialNeeds"
+                               :aria-label="myPetsStrings.labels.specialNeeds">
+                        <span class="corp_field__label" v-text="myPetsStrings.placeholders.specialNeeds"></span>
+                    </label>
+
+                    <div class="settings_edit_modal__upload">
+                        <label class="settings_edit_modal__upload-label" v-text="myPetsStrings.labels.image"></label>
+                        <input class="settings_edit_modal__upload-input"
+                               type="file"
+                               accept="image/*"
+                               @change="handleMyPetFormImageSelection">
+                        <p class="settings_edit_modal__upload-hint" v-text="myPetsSelectedImageLabel"></p>
+                    </div>
+
+                    <div class="settings_edit_modal__actions">
+                        <button class="button auth_modal__submit settings_edit_modal__save"
+                                type="submit"
+                                :disabled="myPetsFormSaving"
+                                v-text="myPetsFormSubmitLabel"></button>
+                        <button class="button button--secondary"
+                                type="button"
+                                :disabled="myPetsFormSaving"
+                                @click="closeMyPetsAddModal()"
+                                v-text="myPetsStrings.actions.cancel"></button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </transition>
+
+    <transition name="auth_modal_presence">
+        <div v-if="myPetsDetailModalOpen && myPetsDetailPet"
+             class="auth_modal settings_edit_modal"
+             data-my-pets-detail-modal
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeMyPetsDetailModal()">
+            <article class="auth_modal__surface settings_edit_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        @click="closeMyPetsDetailModal()"
+                        :aria-label="myPetsStrings.modalCloseAria">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" v-text="myPetsStrings.modalCloseAria"></span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/animal-mammal/1F415.svg}"
+                             src="/assets/media/animal-mammal/1F415.svg"
+                             alt="">
+                    </span>
+                </div>
+
+                <template v-if="!myPetsDetailEditing">
+                    <h2 class="auth_modal__title settings_edit_modal__title" v-text="myPetsDetailPet.name"></h2>
+
+                    <div class="my_pets_detail__layout">
+                        <figure class="my_pets_detail__media">
+                            <img :src="resolveMyPetImagePath(myPetsDetailPet)"
+                                 :alt="myPetsDetailPet.name"
+                                 loading="lazy"
+                                 decoding="async">
+                        </figure>
+
+                        <div class="my_pets_detail__facts">
+                            <dl class="my_pets_detail__fact_grid">
+                                <div>
+                                    <dt v-text="myPetsStrings.labels.species"></dt>
+                                    <dd v-text="resolveMyPetSpeciesLabel(myPetsDetailPet)"></dd>
+                                </div>
+                                <div>
+                                    <dt v-text="myPetsStrings.labels.breed"></dt>
+                                    <dd v-text="myPetsDetailPet.breed"></dd>
+                                </div>
+                                <div>
+                                    <dt v-text="myPetsStrings.labels.age"></dt>
+                                    <dd v-text="myPetsDetailPet.age"></dd>
+                                </div>
+                            </dl>
+                            <p class="my_pets_detail__needs" v-text="myPetsDetailPet.specialNeeds"></p>
+                        </div>
+                    </div>
+
+                    <div class="settings_edit_modal__actions my_pets_detail__actions">
+                        <button class="button"
+                                type="button"
+                                @click="startMyPetsDetailEditing()"
+                                v-text="myPetsStrings.editLabel"></button>
+                        <label class="button button--secondary my_pets_detail__upload_button">
+                            <input class="my_pets_detail__upload_input_hidden"
+                                   type="file"
+                                   accept="image/*"
+                                   @change="handleMyPetQuickImageUpload($event, myPetsDetailPet)">
+                            <span v-text="myPetsStrings.quickUploadLabel"></span>
+                        </label>
+                        <button class="button button--secondary"
+                                type="button"
+                                @click="requestMyPetDeletion(myPetsDetailPet)"
+                                v-text="myPetsStrings.deleteLabel"></button>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <h2 class="auth_modal__title settings_edit_modal__title" v-text="myPetsStrings.formEditTitle"></h2>
+
+                    <form class="auth_modal__form settings_edit_modal__form"
+                          novalidate
+                          @submit.prevent="submitMyPetForm()">
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myPetsStrings.labels.name"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myPetsForm.name"
+                                   :placeholder="myPetsStrings.placeholders.name"
+                                   :aria-label="myPetsStrings.labels.name"
+                                   data-my-pets-form-name>
+                            <span class="corp_field__label" v-text="myPetsStrings.placeholders.name"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myPetsStrings.labels.species"></span>
+                            <select class="auth_input corp_input corp_input--select"
+                                    v-model="myPetsForm.species"
+                                    :aria-label="myPetsStrings.labels.species">
+                                <option v-for="choice in myPetsSpeciesChoices"
+                                        :key="'my-pets-edit-species-' + choice.value"
+                                        :value="choice.value"
+                                        v-text="choice.label"></option>
+                            </select>
+                            <span class="corp_field__label" v-text="myPetsStrings.labels.species"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myPetsStrings.labels.breed"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myPetsForm.breed"
+                                   :placeholder="myPetsStrings.placeholders.breed"
+                                   :aria-label="myPetsStrings.labels.breed">
+                            <span class="corp_field__label" v-text="myPetsStrings.placeholders.breed"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myPetsStrings.labels.age"></span>
+                            <input class="auth_input corp_input"
+                                   type="number"
+                                   min="0"
+                                   step="1"
+                                   inputmode="numeric"
+                                   v-model="myPetsForm.age"
+                                   :placeholder="myPetsStrings.placeholders.age"
+                                   :aria-label="myPetsStrings.labels.age">
+                            <span class="corp_field__label" v-text="myPetsStrings.placeholders.age"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myPetsStrings.labels.specialNeeds"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myPetsForm.specialNeeds"
+                                   :placeholder="myPetsStrings.placeholders.specialNeeds"
+                                   :aria-label="myPetsStrings.labels.specialNeeds">
+                            <span class="corp_field__label" v-text="myPetsStrings.placeholders.specialNeeds"></span>
+                        </label>
+
+                        <div class="settings_edit_modal__actions">
+                            <button class="button auth_modal__submit settings_edit_modal__save"
+                                    type="submit"
+                                    :disabled="myPetsFormSaving"
+                                    v-text="myPetsFormSubmitLabel"></button>
+                            <button class="button button--secondary"
+                                    type="button"
+                                    :disabled="myPetsFormSaving"
+                                    @click="cancelMyPetsDetailEditing()"
+                                    v-text="myPetsStrings.actions.cancel"></button>
+                        </div>
+                    </form>
+                </template>
+            </article>
+        </div>
+    </transition>
+
+    <transition name="auth_modal_presence">
+        <div v-if="myPetsDeleteModalOpen && myPetsDeleteTargetPet"
+             class="auth_modal settings_edit_modal"
+             role="dialog"
+             aria-modal="true"
+             @click.self="closeMyPetsDeleteModal()">
+            <article class="auth_modal__surface settings_edit_modal__surface">
+                <button class="auth_modal__close"
+                        type="button"
+                        :disabled="myPetsDeleteSubmitting"
+                        @click="closeMyPetsDeleteModal()"
+                        :aria-label="myPetsStrings.modalCloseAria">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                    <span class="sr-only" v-text="myPetsStrings.modalCloseAria"></span>
+                </button>
+
+                <div class="auth_modal__brand">
+                    <span class="auth_modal__brand-tile" aria-hidden="true">
+                        <img class="auth_modal__brand-icon"
+                             th:src="@{/assets/media/animal-mammal/1F415.svg}"
+                             src="/assets/media/animal-mammal/1F415.svg"
+                             alt="">
+                    </span>
+                </div>
+                <h2 class="auth_modal__title settings_edit_modal__title" v-text="myPetsStrings.deleteLabel"></h2>
+                <p class="my_pets_dialog__subtitle" v-text="myPetsDeleteConfirmMessage"></p>
+
+                <div class="settings_edit_modal__actions">
+                    <button class="button button--secondary"
+                            type="button"
+                            :disabled="myPetsDeleteSubmitting"
+                            @click="closeMyPetsDeleteModal()"
+                            v-text="myPetsStrings.actions.cancel"></button>
+                    <button class="button auth_modal__submit settings_edit_modal__save"
+                            type="button"
+                            data-my-pets-delete-confirm
+                            :disabled="myPetsDeleteSubmitting"
+                            @click="confirmMyPetDeletion()"
+                            v-text="myPetsStrings.deleteLabel"></button>
+                </div>
+            </article>
+        </div>
+    </transition>
+</th:block>

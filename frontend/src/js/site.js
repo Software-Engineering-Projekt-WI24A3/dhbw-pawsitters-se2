@@ -2065,6 +2065,11 @@ const localizedProfileStrings = {
     routeMissing: profilePageRoot?.dataset.profileRouteMissing || 'Please open a profile URL with a user ID.',
     rolePetOwner: profilePageRoot?.dataset.profileRolePetOwner || 'Pet owner',
     roleHost: profilePageRoot?.dataset.profileRoleHost || 'Host',
+    hostFromTemplate: profilePageRoot?.dataset.profileHostFromTemplate || 'HOST FROM {flag} {city}',
+    petOwnerFromTemplate: profilePageRoot?.dataset.profilePetOwnerFromTemplate || 'PET OWNER FROM {flag} {city}',
+    hostCountryFlagPath: profilePageRoot?.dataset.profileHostCountryFlagPath || '/assets/media/country-flag/1F1E9-1F1EA.svg',
+    hostCountryFlag: profilePageRoot?.dataset.profileHostCountryFlag || '🇩🇪',
+    hostCityFallback: profilePageRoot?.dataset.profileHostCityFallback || 'Unknown',
     ratingHeadingTemplate: profilePageRoot?.dataset.profileRatingHeadingTemplate || 'Reviews for {firstName} ({count})',
     ratingAriaTemplate: profilePageRoot?.dataset.profileRatingAriaTemplate || '{rating} out of 5 stars from {count} ratings',
     ratingFirstNameFallback: profilePageRoot?.dataset.profileRatingFirstNameFallback || 'this profile'
@@ -2834,20 +2839,58 @@ createApp({
             const firstCharacter = sourceText.trim().charAt(0) || 'P';
             return firstCharacter.toUpperCase();
         },
-        profileViewRoleLabel() {
+        profileViewRoleParts() {
             const role = typeof this.profileViewUser?.role === 'string'
                 ? this.profileViewUser.role.trim().toUpperCase()
                 : '';
+            const city = typeof this.profileViewUser?.city === 'string'
+                ? this.profileViewUser.city.trim()
+                : '';
+            const hostCity = city || this.profileStrings.hostCityFallback;
+            const hostCountryFlagPath = typeof this.profileStrings.hostCountryFlagPath === 'string'
+                ? this.profileStrings.hostCountryFlagPath.trim()
+                : '';
+            const cityToken = '__PROFILE_CITY__';
+            let selectedTemplate = '';
 
             if (role === 'HOST') {
-                return this.profileStrings.roleHost;
+                selectedTemplate = this.profileStrings.hostFromTemplate;
+            } else if (role === 'PET_OWNER') {
+                selectedTemplate = this.profileStrings.petOwnerFromTemplate;
+            } else {
+                return {
+                    label: role || '',
+                    prefix: '',
+                    city: '',
+                    suffix: '',
+                    flagPath: '',
+                    showFlaggedCity: false
+                };
             }
 
-            if (role === 'PET_OWNER') {
-                return this.profileStrings.rolePetOwner;
-            }
+            const cityTokenTemplate = formatTemplate(selectedTemplate, {
+                flag: '',
+                city: cityToken
+            }).replace(/\s{2,}/g, ' ').trim();
+            const label = cityTokenTemplate.replace(cityToken, hostCity).replace(/\s{2,}/g, ' ').trim();
 
-            return role || '';
+            const cityTokenIndex = cityTokenTemplate.indexOf(cityToken);
+            const hasCityToken = cityTokenIndex >= 0;
+            const prefix = hasCityToken
+                ? cityTokenTemplate.slice(0, cityTokenIndex).trim()
+                : '';
+            const suffix = hasCityToken
+                ? cityTokenTemplate.slice(cityTokenIndex + cityToken.length).trim()
+                : '';
+
+            return {
+                label,
+                prefix,
+                city: hostCity,
+                suffix,
+                flagPath: hostCountryFlagPath,
+                showFlaggedCity: Boolean(hasCityToken && hostCity && hostCountryFlagPath)
+            };
         },
         profileViewBirthDateLabel() {
             return this.formatProfileDate(this.profileViewUser?.birthDate);

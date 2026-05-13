@@ -309,6 +309,18 @@
         color: rgba(17, 17, 19, 0.56);
     }
 
+    .profile_role_city {
+        @apply inline-flex items-center gap-2;
+    }
+
+    .profile_role_city__flag {
+        @apply h-4 w-5 shrink-0 rounded-[0.22rem] object-cover;
+    }
+
+    .profile_role_city__name {
+        @apply font-semibold;
+    }
+
     .profile_facts {
         @apply mt-6 grid gap-3;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -956,12 +968,13 @@
 
     .my_pets_detail__layout {
         @apply mt-4 grid gap-4;
-        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
-        align-items: start;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .my_pets_detail__media {
         @apply m-0 overflow-hidden rounded-[1.25rem];
+        width: min(100%, 22rem);
+        justify-self: center;
         aspect-ratio: 4 / 5;
         border: 1px solid rgba(17, 17, 19, 0.12);
         background: rgba(17, 17, 19, 0.07);
@@ -973,11 +986,13 @@
 
     .my_pets_detail__facts {
         @apply grid gap-3;
+        width: min(100%, 22rem);
+        justify-self: center;
     }
 
     .my_pets_detail__fact_grid {
-        @apply m-0 grid gap-2;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        @apply m-0 grid gap-3;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .my_pets_detail__fact_grid dt {
@@ -1028,12 +1043,8 @@
             opacity: 0.08;
         }
 
-        .my_pets_detail__layout {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
         .my_pets_detail__media {
-            aspect-ratio: 4 / 3;
+            width: min(100%, 20rem);
         }
     }
 
@@ -1068,8 +1079,9 @@
             display: none;
         }
 
-        .my_pets_detail__fact_grid {
-            grid-template-columns: minmax(0, 1fr);
+        .my_pets_detail__facts,
+        .my_pets_detail__media {
+            width: 100%;
         }
     }
 

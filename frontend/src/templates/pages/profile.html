@@ -12,6 +12,11 @@
                       data-profile-route-missing=#{profile.page.routeMissing},
                       data-profile-role-pet-owner=#{auth.register.rolePetOwner},
                       data-profile-role-host=#{auth.register.roleHost},
+                      data-profile-host-from-template=#{profile.page.role.hostFromTemplate},
+                      data-profile-pet-owner-from-template=#{profile.page.role.petOwnerFromTemplate},
+                      data-profile-host-country-flag-path=#{profile.page.role.hostCountryFlagPath},
+                      data-profile-host-country-flag=#{profile.page.role.hostCountryFlag},
+                      data-profile-host-city-fallback=#{profile.page.role.hostCityFallback},
                       data-profile-rating-heading-template=#{profile.page.rating.headingTemplate},
                       data-profile-rating-aria-template=#{profile.page.rating.ariaTemplate},
                       data-profile-rating-first-name-fallback=#{profile.page.rating.firstNameFallback}">
@@ -59,7 +64,25 @@
 
             <div v-else-if="profileViewUser" class="profile_panel__content">
                 <h2 class="profile_panel__name" v-text="profileViewDisplayName"></h2>
-                <p class="profile_panel__role" v-text="profileViewRoleLabel"></p>
+                <p class="profile_panel__role">
+                    <template v-if="profileViewRoleParts.showFlaggedCity">
+                        <span v-if="profileViewRoleParts.prefix" v-text="profileViewRoleParts.prefix"></span>
+                        <span v-if="profileViewRoleParts.prefix">&nbsp;</span>
+                        <span class="profile_role_city">
+                            <img class="profile_role_city__flag"
+                                 :src="profileViewRoleParts.flagPath"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="profile_role_city__name" v-text="profileViewRoleParts.city"></span>
+                        </span>
+                        <span v-if="profileViewRoleParts.suffix">
+                            &nbsp;<span v-text="profileViewRoleParts.suffix"></span>
+                        </span>
+                    </template>
+                    <template v-else>
+                        <span v-text="profileViewRoleParts.label"></span>
+                    </template>
+                </p>
 
                 <dl class="profile_facts">
                     <div class="profile_facts__item">

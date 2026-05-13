@@ -403,6 +403,13 @@
       "loadFailed": "Profil konnte nicht geladen werden.",
       "routeMissing": "Bitte öffne eine Profil-URL mit Benutzer-ID.",
       "ownProfileButton": "Mein öffentliches Profil",
+      "role": {
+        "hostFromTemplate": "GASTGEBER AUS {flag} {city}",
+        "hostCountryFlagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg",
+        "hostCountryFlag": "🇩🇪",
+        "hostCityFallback": "Unbekannt",
+        "petOwnerFromTemplate": "TIERHALTER AUS {flag} {city}"
+      },
       "labels": {
         "email": "E-Mail",
         "phone": "Telefon",
