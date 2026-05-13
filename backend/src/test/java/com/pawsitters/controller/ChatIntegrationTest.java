@@ -207,6 +207,8 @@ class ChatIntegrationTest {
         payload.put("title", "Live-Chat Testangebot " + UUID.randomUUID());
         payload.put("description", "Betreuung mit Updates, Bildern und persoenlicher Abstimmung.");
         payload.put("pricePerDay", BigDecimal.valueOf(42.50));
+        payload.put("availableFrom", "2026-07-01");
+        payload.put("availableTo", "2026-07-05");
         payload.put("acceptedPetSpecies", List.of("DOG"));
         payload.put("services", List.of("Fuetterung", "Spaziergang"));
         return payload;
