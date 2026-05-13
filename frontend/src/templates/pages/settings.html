@@ -35,6 +35,7 @@
                       data-settings-validation-password-confirmation-required=#{settings.page.validation.passwordConfirmationRequired},
                       data-settings-validation-passwords-mismatch=#{settings.page.validation.passwordsMismatch},
                       data-settings-validation-password-criteria-required=#{settings.page.validation.passwordCriteriaRequired},
+                      data-settings-validation-profile-image=#{settings.page.validation.profileImage},
                       data-settings-password-criteria-min-length=#{auth.register.passwordCriteria.minLength},
                       data-settings-password-criteria-max-bytes=#{auth.register.passwordCriteria.maxBytes},
                       data-settings-password-criteria-lowercase=#{auth.register.passwordCriteria.lowercase},
@@ -46,6 +47,7 @@
                       data-settings-pet-hint=#{settings.page.petHint},
                       data-settings-image-upload-label=#{settings.page.imageUploadLabel},
                       data-settings-image-upload-hint=#{settings.page.imageUploadHint},
+                      data-settings-image-reset-label=#{settings.page.imageResetLabel},
                       data-settings-image-selected-template=#{settings.page.imageSelectedTemplate},
                       data-settings-city-loading=#{auth.register.cityLoading},
                       data-settings-city-no-results=#{auth.register.cityNoResults},
@@ -98,7 +100,8 @@
                     <img v-if="settingsViewUser && settingsViewUser.profilePicture"
                          class="profile_hero__avatar"
                          :src="settingsViewUser.profilePicture"
-                         :alt="settingsViewDisplayName">
+                         :alt="settingsViewDisplayName"
+                         @error="handleSettingsAvatarError">
                     <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="settingsViewInitial"></span>
                     <button class="settings_profile_avatar__edit"
                             type="button"

@@ -253,7 +253,7 @@
                 <form class="auth_modal__form settings_edit_modal__form"
                       novalidate
                       @submit.prevent="submitSettingsEditForm">
-                    <label v-if="settingsEditField !== 'acceptedPetSpecies' && settingsEditField !== 'role' && settingsEditField !== 'password' && settingsEditField !== 'birthDate' && settingsEditField !== 'phone' && settingsEditField !== 'city'"
+                    <label v-if="settingsEditField !== 'acceptedPetSpecies' && settingsEditField !== 'role' && settingsEditField !== 'password' && settingsEditField !== 'birthDate' && settingsEditField !== 'phone' && settingsEditField !== 'city' && settingsEditField !== 'profilePicture'"
                            class="auth_field corp_field settings_edit_modal__field">
                         <span class="sr-only" v-text="settingsEditModalTitle"></span>
                         <input class="auth_input corp_input"
@@ -505,12 +505,20 @@
                         <label class="settings_edit_modal__upload-label" v-text="settingsStrings.imageUploadLabel"></label>
                         <input class="settings_edit_modal__upload-input"
                                type="file"
-                               accept="image/*"
+                               accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/jpeg,image/png,image/gif,image/webp,image/bmp"
+                               data-settings-edit-profile-upload
+                               :aria-label="settingsStrings.imageUploadLabel"
                                @change="handleSettingsProfileImageSelection">
                         <p class="settings_edit_modal__upload-hint" v-text="settingsProfileImageSelectionLabel"></p>
                     </div>
 
                     <div class="settings_edit_modal__actions">
+                        <button v-if="settingsEditField === 'profilePicture' && settingsCanResetProfileImage"
+                                class="button button--secondary settings_edit_modal__reset"
+                                :disabled="settingsEditSaving"
+                                type="button"
+                                @click="submitSettingsProfileImageReset"
+                                v-text="settingsStrings.imageResetLabel"></button>
                         <button class="button auth_modal__submit settings_edit_modal__save"
                                 :disabled="settingsEditSaving"
                                 type="submit"

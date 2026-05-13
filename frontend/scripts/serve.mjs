@@ -13,7 +13,7 @@ const distDir = path.join(rootDir, 'dist');
 const port = Number.parseInt(process.env.PORT ?? '4173', 10);
 const host = process.env.HOST ?? '127.0.0.1';
 const backendOrigin = new URL(process.env.BACKEND_ORIGIN ?? 'http://127.0.0.1:8080');
-const BACKEND_PROXY_PATH_PREFIXES = ['/api/', '/actuator/'];
+const BACKEND_PROXY_PATH_PREFIXES = ['/api/', '/actuator/', '/uploads/'];
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'keep-alive',
@@ -90,13 +90,13 @@ function resolveLocalePrefixedRedirect(requestUrl) {
 
 function resolveDynamicPageFallback(urlPath = '') {
   const normalizedPath = String(urlPath || '').trim().replace(/\/+$/, '') || '/';
-  const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/[^/]+$/i);
+  const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/\d+$/i);
 
   if (localizedProfileMatch?.[1]) {
     return `/${localizedProfileMatch[1].toLowerCase()}/profile`;
   }
 
-  if (/^\/profile\/[^/]+$/i.test(normalizedPath)) {
+  if (/^\/profile\/\d+$/i.test(normalizedPath)) {
     return '/profile';
   }
 
