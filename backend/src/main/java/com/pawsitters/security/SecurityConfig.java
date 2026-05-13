@@ -57,6 +57,8 @@ public class SecurityConfig {
                         // Technischer Health-Check fuer CI/CD und Container-Orchestrierung
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers("/ws", "/ws/**").permitAll()
                         // H2 Konsole Zugang
                         .requestMatchers("/h2-console/**").permitAll()
                         // Alle anderen Requests brauchen Authentifizierung

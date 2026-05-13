@@ -1,0 +1,2 @@
+GET {{baseUrl}}/api/chats/{{chatId}}/messages
+Authorization: Bearer {{token}}
