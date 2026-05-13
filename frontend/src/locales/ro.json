@@ -403,6 +403,13 @@
       "loadFailed": "Profilul nu a putut fi încărcat.",
       "routeMissing": "Te rugăm să deschizi un URL de profil cu un ID de utilizator.",
       "ownProfileButton": "Profilul meu public",
+      "role": {
+        "hostFromTemplate": "GAZDĂ DIN {flag} {city}",
+        "hostCountryFlagPath": "/assets/media/country-flag/1F1E9-1F1EA.svg",
+        "hostCountryFlag": "🇩🇪",
+        "hostCityFallback": "Necunoscut",
+        "petOwnerFromTemplate": "PROPRIETAR DE ANIMALE DIN {flag} {city}"
+      },
       "labels": {
         "email": "E-mail",
         "phone": "Telefon",

@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updated the hole website - implemented a lot, also on the backend 2.0">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="added the feature to add personal pets to your account">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/serve.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/serve.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
@@ -18,8 +13,8 @@
       <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/settings.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -366,7 +361,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778622792612</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="added the feature to add personal pets to your account">
+      <option name="closed" value="true" />
+      <created>1778662101957</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1778662101957</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -397,7 +400,8 @@
     <MESSAGE value="completed login and registration flow" />
     <MESSAGE value="updated things for successfull e2e testings" />
     <MESSAGE value="updated the hole website - implemented a lot, also on the backend 2.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated the hole website - implemented a lot, also on the backend 2.0" />
+    <MESSAGE value="added the feature to add personal pets to your account" />
+    <option name="LAST_COMMIT_MESSAGE" value="added the feature to add personal pets to your account" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
