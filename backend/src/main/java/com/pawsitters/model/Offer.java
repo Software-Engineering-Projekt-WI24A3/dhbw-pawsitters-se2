@@ -15,6 +15,7 @@ import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -53,6 +54,12 @@ public class Offer {
     @Column(name = "service_name", nullable = false)
     private List<String> services = new ArrayList<>();
 
+    @Column(name = "available_from")
+    private LocalDate availableFrom;
+
+    @Column(name = "available_to")
+    private LocalDate availableTo;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OfferStatus status = OfferStatus.DRAFT;
@@ -70,6 +77,10 @@ public class Offer {
     public Set<PetChoice> getAcceptedPetSpecies() { return acceptedPetSpecies; }
 
     public List<String> getServices() { return services; }
+
+    public LocalDate getAvailableFrom() { return availableFrom; }
+
+    public LocalDate getAvailableTo() { return availableTo; }
 
     public OfferStatus getStatus() { return status; }
 
@@ -90,6 +101,10 @@ public class Offer {
     public void setServices(List<String> services) {
         this.services = services == null ? new ArrayList<>() : services;
     }
+
+    public void setAvailableFrom(LocalDate availableFrom) { this.availableFrom = availableFrom; }
+
+    public void setAvailableTo(LocalDate availableTo) { this.availableTo = availableTo; }
 
     public void setStatus(OfferStatus status) { this.status = status; }
 

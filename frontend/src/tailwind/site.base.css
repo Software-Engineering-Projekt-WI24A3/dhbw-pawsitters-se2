@@ -30,6 +30,7 @@
         --corp-modal-overlay: rgba(10, 15, 24, 0.48);
         --corp-modal-overlay-highlight: rgba(130, 186, 255, 0.2);
         --corp-modal-backdrop-blur: 9px;
+        --corp-modal-max-height: 46rem;
         --corp-modal-motion-duration: 460ms;
         --corp-modal-motion-duration-out: 300ms;
         --corp-modal-motion-ease: cubic-bezier(0.2, 0.9, 0.24, 1);

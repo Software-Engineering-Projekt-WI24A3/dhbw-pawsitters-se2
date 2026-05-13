@@ -3,6 +3,7 @@ package com.pawsitters.controller;
 import com.pawsitters.dto.ApiResponse;
 import com.pawsitters.dto.OfferCreateRequest;
 import com.pawsitters.dto.OfferResponse;
+import com.pawsitters.dto.OfferUpdateRequest;
 import com.pawsitters.service.OfferService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -75,7 +76,9 @@ public class OfferController {
                 request.description(),
                 request.pricePerDay(),
                 request.acceptedPetSpecies(),
-                request.services()
+                request.services(),
+                request.availableFrom(),
+                request.availableTo()
         ));
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
@@ -93,6 +96,30 @@ public class OfferController {
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Offer retrieved successfully.",
+                offer,
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<OfferResponse>> updateOffer(@PathVariable Long id,
+                                                                  @Valid @RequestBody OfferUpdateRequest request,
+                                                                  Authentication authentication,
+                                                                  HttpServletRequest servletRequest) {
+        OfferResponse offer = OfferResponse.from(offerService.updateDraftOfferForHostEmail(
+                id,
+                authentication.getName(),
+                request.title(),
+                request.description(),
+                request.pricePerDay(),
+                request.acceptedPetSpecies(),
+                request.services(),
+                request.availableFrom(),
+                request.availableTo()
+        ));
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Offer updated successfully.",
                 offer,
                 servletRequest.getRequestURI()
         ));

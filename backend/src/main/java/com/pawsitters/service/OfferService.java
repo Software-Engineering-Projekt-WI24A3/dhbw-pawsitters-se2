@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,8 +36,11 @@ public class OfferService {
                                          String description,
                                          BigDecimal pricePerDay,
                                          Set<PetChoice> acceptedPetSpecies,
-                                         List<String> services) {
+                                         List<String> services,
+                                         LocalDate availableFrom,
+                                         LocalDate availableTo) {
         User host = getHostByEmail(hostEmail);
+        validateAvailabilityRange(availableFrom, availableTo);
 
         Offer offer = new Offer();
         offer.setHost(host);
@@ -43,7 +48,9 @@ public class OfferService {
         offer.setDescription(description.trim());
         offer.setPricePerDay(pricePerDay);
         offer.setAcceptedPetSpecies(new LinkedHashSet<>(acceptedPetSpecies));
-        offer.setServices(services.stream().map(String::trim).toList());
+        offer.setServices(new ArrayList<>(services.stream().map(String::trim).toList()));
+        offer.setAvailableFrom(availableFrom);
+        offer.setAvailableTo(availableTo);
         offer.setStatus(OfferStatus.DRAFT);
 
         return offerRepository.save(offer);
@@ -53,6 +60,33 @@ public class OfferService {
     public Offer publishOfferForHostEmail(Long offerId, String hostEmail) {
         Offer offer = getOwnedOffer(offerId, hostEmail);
         offer.setStatus(OfferStatus.PUBLISHED);
+        return offerRepository.save(offer);
+    }
+
+    @Transactional
+    public Offer updateDraftOfferForHostEmail(Long offerId,
+                                              String hostEmail,
+                                              String title,
+                                              String description,
+                                              BigDecimal pricePerDay,
+                                              Set<PetChoice> acceptedPetSpecies,
+                                              List<String> services,
+                                              LocalDate availableFrom,
+                                              LocalDate availableTo) {
+        Offer offer = getOwnedOffer(offerId, hostEmail);
+        if (offer.getStatus() != OfferStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nur Entwuerfe koennen bearbeitet werden.");
+        }
+        validateAvailabilityRange(availableFrom, availableTo);
+
+        offer.setTitle(title.trim());
+        offer.setDescription(description.trim());
+        offer.setPricePerDay(pricePerDay);
+        offer.setAcceptedPetSpecies(new LinkedHashSet<>(acceptedPetSpecies));
+        offer.setServices(new ArrayList<>(services.stream().map(String::trim).toList()));
+        offer.setAvailableFrom(availableFrom);
+        offer.setAvailableTo(availableTo);
+
         return offerRepository.save(offer);
     }
 
@@ -104,5 +138,21 @@ public class OfferService {
     private User getUserByEmail(String userEmail) {
         return userRepository.findByEmailIgnoreCase(userEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User nicht gefunden."));
+    }
+
+    private void validateAvailabilityRange(LocalDate availableFrom, LocalDate availableTo) {
+        if (availableFrom == null || availableTo == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Bitte gib einen gueltigen Betreuungszeitraum an."
+            );
+        }
+
+        if (availableTo.isBefore(availableFrom)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Der Zeitraum ist ungueltig: Enddatum liegt vor dem Startdatum."
+            );
+        }
     }
 }

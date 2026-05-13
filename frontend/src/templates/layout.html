@@ -555,79 +555,193 @@
                              alt="">
                     </span>
                 </div>
-                <h2 class="auth_modal__title settings_edit_modal__title" v-text="myOffersStrings.formAddTitle"></h2>
-                <p class="my_offers_form__hint" v-text="myOffersStrings.formAddHint"></p>
+                <h2 class="auth_modal__title settings_edit_modal__title" v-text="myOffersFormModalTitle"></h2>
 
                 <form class="auth_modal__form settings_edit_modal__form"
                       novalidate
                       @submit.prevent="submitMyOfferForm()">
-                    <label class="auth_field corp_field settings_edit_modal__field">
-                        <span class="sr-only" v-text="myOffersStrings.labels.title"></span>
-                        <input class="auth_input corp_input"
-                               type="text"
-                               autocomplete="off"
-                               data-my-offers-form-title
-                               v-model="myOffersForm.title"
-                               :placeholder="myOffersStrings.placeholders.title"
-                               :aria-label="myOffersStrings.labels.title">
-                        <span class="corp_field__label" v-text="myOffersStrings.placeholders.title"></span>
-                    </label>
-
-                    <label class="auth_field corp_field settings_edit_modal__field">
-                        <span class="sr-only" v-text="myOffersStrings.labels.description"></span>
-                        <textarea class="auth_input corp_input corp_input--textarea"
-                                  rows="4"
-                                  v-model="myOffersForm.description"
-                                  :placeholder="myOffersStrings.placeholders.description"
-                                  :aria-label="myOffersStrings.labels.description"></textarea>
-                        <span class="corp_field__label" v-text="myOffersStrings.placeholders.description"></span>
-                    </label>
-
-                    <label class="auth_field corp_field settings_edit_modal__field">
-                        <span class="sr-only" v-text="myOffersStrings.labels.price"></span>
-                        <input class="auth_input corp_input"
-                               type="number"
-                               min="0.01"
-                               step="0.01"
-                               inputmode="decimal"
-                               v-model="myOffersForm.pricePerDay"
-                               :placeholder="myOffersStrings.placeholders.price"
-                               :aria-label="myOffersStrings.labels.price">
-                        <span class="corp_field__label" v-text="myOffersStrings.placeholders.price"></span>
-                    </label>
-
-                    <div class="my_offers_form__species">
-                        <p class="my_offers_form__species_label" v-text="myOffersStrings.labels.species"></p>
-                        <div class="register_pet_grid settings_edit_modal__species-grid">
-                            <button type="button"
-                                    class="register_pet_choice"
-                                    v-for="choice in myOffersSpeciesChoices"
-                                    :key="'my-offers-species-' + choice.value"
-                                    :class="{ 'register_pet_choice--active': isMyOfferSpeciesSelected(choice.value) }"
-                                    @click.prevent="toggleMyOfferSpeciesSelection(choice.value)"
-                                    :aria-pressed="isMyOfferSpeciesSelected(choice.value).toString()">
-                                <img class="register_pet_choice__emoji" :src="choice.emojiPath" alt="" aria-hidden="true">
-                                <span class="register_pet_choice__label" v-text="choice.label"></span>
-                            </button>
-                        </div>
+                    <div class="repository_segmented register_steps my_offers_create_steps"
+                         data-segmented="myOffersCreateStep"
+                         data-active="species"
+                         role="tablist"
+                         :aria-label="myOffersStrings.stepAria">
+                        <button class="repository_segmented__button register_steps__tab"
+                                type="button"
+                                tabindex="-1"
+                                data-segmented-value="species"
+                                disabled
+                                v-text="myOffersStrings.steps.species"></button>
+                        <button class="repository_segmented__button register_steps__tab"
+                                type="button"
+                                tabindex="-1"
+                                data-segmented-value="details"
+                                disabled
+                                v-text="myOffersStrings.steps.details"></button>
+                        <button class="repository_segmented__button register_steps__tab"
+                                type="button"
+                                tabindex="-1"
+                                data-segmented-value="review"
+                                disabled
+                                v-text="myOffersStrings.steps.review"></button>
+                        <span class="repository_segmented__indicator" aria-hidden="true"></span>
                     </div>
 
-                    <label class="auth_field corp_field settings_edit_modal__field">
-                        <span class="sr-only" v-text="myOffersStrings.labels.services"></span>
-                        <input class="auth_input corp_input"
-                               type="text"
-                               autocomplete="off"
-                               v-model="myOffersForm.services"
-                               :placeholder="myOffersStrings.placeholders.services"
-                               :aria-label="myOffersStrings.labels.services">
-                        <span class="corp_field__label" v-text="myOffersStrings.placeholders.services"></span>
-                    </label>
+                    <section class="register_step_panel my_offers_create_step_panel"
+                             v-show="myOffersCreateStep === 'species'"
+                             data-segment-panel="myOffersCreateStep"
+                             data-segment-value="species">
+                        <div class="settings_edit_modal__species my_offers_create_species">
+                            <p class="settings_edit_modal__species-hint" v-text="myOffersStrings.formAddHint"></p>
+                            <p class="settings_edit_modal__species-hint" v-text="myOffersStrings.labels.species"></p>
+                            <div class="register_pet_grid settings_edit_modal__species-grid">
+                                <button type="button"
+                                        class="register_pet_chip"
+                                        v-for="choice in myOffersSpeciesChoices"
+                                        :key="'my-offers-species-' + choice.value"
+                                        :class="{ 'register_pet_chip--active': isMyOfferSpeciesSelected(choice.value) }"
+                                        @click.prevent="toggleMyOfferSpeciesSelection(choice.value)"
+                                        :aria-pressed="isMyOfferSpeciesSelected(choice.value).toString()">
+                                    <img class="register_pet_chip__icon" :src="choice.emojiPath" :alt="choice.label">
+                                    <span class="register_pet_chip__label" v-text="choice.label"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div class="settings_edit_modal__actions">
-                        <button class="button auth_modal__submit settings_edit_modal__save"
+                    <section class="register_step_panel my_offers_create_step_panel"
+                             v-show="myOffersCreateStep === 'details'"
+                             data-segment-panel="myOffersCreateStep"
+                             data-segment-value="details">
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.title"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   data-my-offers-form-title
+                                   v-model="myOffersForm.title"
+                                   :placeholder="myOffersStrings.placeholders.title"
+                                   :aria-label="myOffersStrings.labels.title">
+                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.title"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.price"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   v-model="myOffersForm.pricePerDay"
+                                   @input="sanitizeMyOfferPriceInput"
+                                   :placeholder="myOffersStrings.placeholders.price"
+                                   :aria-label="myOffersStrings.labels.price">
+                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.price"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.flow"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myOffersForm.flow"
+                                   :placeholder="myOffersStrings.placeholders.flow"
+                                   :aria-label="myOffersStrings.labels.flow">
+                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.flow"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.dayStructure"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myOffersForm.dayStructure"
+                                   :placeholder="myOffersStrings.placeholders.dayStructure"
+                                   :aria-label="myOffersStrings.labels.dayStructure">
+                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.dayStructure"></span>
+                        </label>
+
+                        <label class="auth_field corp_field settings_edit_modal__field">
+                            <span class="sr-only" v-text="myOffersStrings.labels.services"></span>
+                            <input class="auth_input corp_input"
+                                   type="text"
+                                   autocomplete="off"
+                                   v-model="myOffersForm.services"
+                                   :placeholder="myOffersStrings.placeholders.services"
+                                   :aria-label="myOffersStrings.labels.services">
+                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.services"></span>
+                        </label>
+                    </section>
+
+                    <section class="register_step_panel my_offers_create_step_panel"
+                             v-show="myOffersCreateStep === 'review'"
+                             data-segment-panel="myOffersCreateStep"
+                             data-segment-value="review">
+                        <div class="my_offers_create_review">
+                            <h3 class="my_offers_create_review__title" v-text="myOffersStrings.reviewTitle"></h3>
+                            <p class="my_offers_create_review__hint" v-text="myOffersStrings.reviewHint"></p>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.species"></span>
+                                <div class="my_offers_create_review__chips" v-if="myOffersSelectedSpeciesPreview.length">
+                                    <span class="my_offers_create_review__chip"
+                                          v-for="species in myOffersSelectedSpeciesPreview"
+                                          :key="'my-offers-review-species-' + species.value">
+                                        <img class="my_offers_create_review__chip-icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                        <span v-text="species.label"></span>
+                                    </span>
+                                </div>
+                                <span v-else class="my_offers_create_review__value">-</span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.title"></span>
+                                <span class="my_offers_create_review__value" v-text="myOffersForm.title || '-'"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.price"></span>
+                                <span class="my_offers_create_review__value" v-text="formatMyOfferPrice(myOffersForm.pricePerDay)"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.flow"></span>
+                                <span class="my_offers_create_review__value" v-text="myOffersForm.flow || '-'"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.dayStructure"></span>
+                                <span class="my_offers_create_review__value" v-text="myOffersForm.dayStructure || '-'"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.services"></span>
+                                <ul class="my_offers_create_review__services" v-if="myOffersServicesPreview.length">
+                                    <li v-for="(service, serviceIndex) in myOffersServicesPreview"
+                                        :key="'my-offers-review-service-' + serviceIndex"
+                                        v-text="service"></li>
+                                </ul>
+                                <span v-else class="my_offers_create_review__value">-</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="settings_edit_modal__actions my_offers_create_actions">
+                        <button v-if="myOffersCanGoToPreviousStep"
+                                class="button button--secondary"
+                                type="button"
+                                :disabled="myOffersFormSaving"
+                                @click="goToPreviousMyOffersCreateStep()"
+                                v-text="myOffersStrings.actions.stepBack"></button>
+                        <button v-if="myOffersCreateStep !== 'review'"
+                                class="button auth_modal__submit settings_edit_modal__save"
                                 type="submit"
                                 :disabled="myOffersFormSaving"
-                                v-text="myOffersStrings.actions.save"></button>
+                                v-text="myOffersStrings.actions.stepNext"></button>
+                        <button v-else
+                                class="button auth_modal__submit settings_edit_modal__save"
+                                type="submit"
+                                data-my-offers-form-confirm
+                                :disabled="myOffersFormSaving"
+                                v-text="myOffersStrings.actions.confirm"></button>
                         <button class="button button--secondary"
                                 type="button"
                                 :disabled="myOffersFormSaving"

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-public record OfferCreateRequest(
+public record OfferUpdateRequest(
         @NotBlank String title,
         @NotBlank @Size(max = 1000) String description,
         @NotNull @DecimalMin(value = "0.01") BigDecimal pricePerDay,

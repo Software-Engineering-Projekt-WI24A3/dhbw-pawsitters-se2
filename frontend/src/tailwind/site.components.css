@@ -370,6 +370,17 @@
         color: rgba(17, 17, 19, 0.48);
     }
 
+    .profile_facts__label {
+        @apply inline-flex items-center gap-2;
+    }
+
+    .profile_facts__label_icon {
+        width: 0.95rem;
+        height: 0.95rem;
+        flex: 0 0 0.95rem;
+        object-fit: contain;
+    }
+
     .profile_facts__item dd {
         @apply mt-2 text-sm font-semibold;
         margin-inline-start: 0;
@@ -520,8 +531,18 @@
 
     .settings_fact__label {
         @apply text-[0.68rem] font-semibold uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         letter-spacing: 0.14em;
         color: rgba(17, 17, 19, 0.52);
+    }
+
+    .settings_fact__label_icon {
+        width: 0.95rem;
+        height: 0.95rem;
+        flex: 0 0 0.95rem;
+        object-fit: contain;
     }
 
     .settings_fact__edit {
@@ -599,7 +620,7 @@
 
     .settings_edit_modal__surface {
         @apply w-full max-w-[34rem];
-        max-height: calc(100dvh - 2rem);
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         overflow-x: visible;
         overflow-y: auto;
     }
@@ -657,6 +678,85 @@
         overflow-y: auto;
         overscroll-behavior: contain;
         padding-right: 0.15rem;
+    }
+
+    .my_offers_create_steps {
+        @apply mt-2 mb-1;
+    }
+
+    .my_offers_create_step_panel {
+        @apply mt-1;
+    }
+
+    .my_offers_create_species {
+        @apply mt-0;
+    }
+
+    .my_offers_create_review {
+        @apply grid gap-3 rounded-[1rem] border border-black/10 p-3;
+        background: rgba(250, 252, 255, 0.8);
+    }
+
+    .my_offers_create_review__title {
+        @apply m-0 text-base font-semibold tracking-[-0.02em];
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .my_offers_create_review__hint {
+        @apply m-0 text-[0.76rem];
+        color: rgba(17, 17, 19, 0.62);
+    }
+
+    .my_offers_create_review__row {
+        @apply grid gap-2;
+    }
+
+    .my_offers_create_review__label {
+        @apply text-[0.72rem] font-semibold uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(17, 17, 19, 0.56);
+    }
+
+    .my_offers_create_review__value {
+        @apply text-sm;
+        color: rgba(17, 17, 19, 0.84);
+        line-height: 1.5;
+    }
+
+    .my_offers_create_review__chips {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .my_offers_create_review__chip {
+        @apply inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.7rem] font-semibold;
+        color: rgba(17, 17, 19, 0.82);
+        border: 1px solid rgba(17, 17, 19, 0.14);
+        background: rgba(255, 255, 255, 0.86);
+    }
+
+    .my_offers_create_review__chip-icon {
+        width: 0.95rem;
+        height: 0.95rem;
+        object-fit: contain;
+        flex: 0 0 0.95rem;
+    }
+
+    .my_offers_create_review__services {
+        @apply m-0 flex list-none flex-wrap gap-2 p-0;
+    }
+
+    .my_offers_create_review__services li {
+        @apply inline-flex rounded-full px-2 py-1 text-[0.68rem] font-semibold;
+        color: rgba(17, 17, 19, 0.76);
+        background: rgba(17, 17, 19, 0.08);
+    }
+
+    .my_offers_create_actions {
+        @apply mt-3;
+    }
+
+    .my_offers_create_actions .auth_modal__submit {
+        @apply mt-0;
     }
 
     .settings_edit_modal__upload {
@@ -1373,8 +1473,23 @@
         @apply mt-2 flex flex-wrap gap-2;
     }
 
+    .my_offers_card__actions--draft {
+        justify-content: space-between;
+        align-items: center;
+    }
+
     .my_offers_card__actions .button {
         min-width: 9rem;
+    }
+
+    .my_offers_card__actions--draft .button {
+        min-width: 0;
+    }
+
+    .my_offers_card__edit {
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-left: auto;
     }
 
     .my_offers_dots {
@@ -1414,22 +1529,6 @@
         @apply mt-2 mb-0 text-sm;
         color: rgba(17, 17, 19, 0.68);
         max-width: 34ch;
-    }
-
-    .my_offers_form__hint {
-        @apply mt-3 mb-1 text-sm;
-        color: rgba(17, 17, 19, 0.7);
-        line-height: 1.55;
-    }
-
-    .my_offers_form__species {
-        @apply grid gap-2;
-    }
-
-    .my_offers_form__species_label {
-        @apply m-0 text-[0.7rem] font-semibold uppercase;
-        letter-spacing: 0.12em;
-        color: rgba(17, 17, 19, 0.56);
     }
 
     @media (max-width: 980px) {
@@ -5071,7 +5170,7 @@
 
     .repo_modal__surface {
         @apply relative grid w-full max-w-[58rem] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
-        max-height: calc(100dvh - 2rem);
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         z-index: 1;
         box-shadow:
             0 42px 76px rgba(15, 15, 17, 0.26),
@@ -5300,6 +5399,10 @@
         @apply mt-8 mb-2;
     }
 
+    .register_steps .repository_segmented__indicator {
+        background: var(--brand-corporate-green);
+    }
+
     .register_steps__tab:disabled {
         cursor: default;
         opacity: 1;
@@ -5453,7 +5556,7 @@
     }
 
     .phone_compound {
-        @apply grid gap-3 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.45fr)] sm:items-start;
+        @apply grid gap-3 sm:grid-cols-[minmax(0,1.28fr)_minmax(0,1.22fr)] sm:items-start;
     }
 
     .phone_compound__country .corp_input,
@@ -5469,7 +5572,7 @@
     }
 
     .phone_country_menu[open] {
-        z-index: 25;
+        z-index: 3200;
     }
 
     .phone_country_menu[data-dropdown-disabled='true'] .phone_country_menu__summary {
@@ -5495,13 +5598,17 @@
     }
 
     .phone_country_menu__panel {
-        @apply absolute left-0 right-0 top-[calc(100%+0.4rem)] grid max-h-56 gap-1 overflow-y-auto rounded-[1rem] border border-black/10 bg-white p-1;
+        @apply absolute left-0 right-0 top-[calc(100%+0.45rem)] grid max-h-72 gap-1 overflow-y-auto rounded-[1rem] border border-black/10 bg-white p-1;
+        min-width: 16.5rem;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         box-shadow: 0 18px 34px rgba(17, 17, 19, 0.16);
     }
 
     .phone_country_menu--overlay .phone_country_menu__panel {
         position: fixed;
-        z-index: 1100;
+        z-index: 5000;
+        pointer-events: auto;
     }
 
     .phone_country_menu__option {
@@ -5536,12 +5643,13 @@
 
     .phone_country_menu__option-dial {
         @apply text-sm font-semibold;
-        min-width: 2.8rem;
+        min-width: 3.2rem;
         color: rgba(17, 17, 19, 0.92);
     }
 
     .phone_country_menu__option-name {
-        @apply text-[0.82rem];
+        @apply text-[0.9rem];
+        line-height: 1.35;
         color: rgba(17, 17, 19, 0.66);
     }
 
@@ -5688,7 +5796,7 @@
     .auth_modal__surface {
         @apply relative w-full max-w-[23.5rem] rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
         z-index: 1;
-        max-height: calc(100dvh - 2rem);
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         overflow-y: auto;
         overscroll-behavior: contain;
         box-shadow:
@@ -5777,7 +5885,7 @@
 
     .user_search_modal__surface {
         @apply w-full max-w-[30.5rem];
-        max-height: calc(100dvh - 2rem);
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         display: grid;
         grid-template-rows: auto auto minmax(0, 1fr);
         overflow: hidden;

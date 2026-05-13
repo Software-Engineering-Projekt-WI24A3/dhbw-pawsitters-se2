@@ -51,6 +51,7 @@ const BACKEND_STATUS_ENDPOINT = '/api/auth/session';
 const BACKEND_STATUS_POLL_INTERVAL_MS = 30000;
 const LOADING_INDICATOR_DELAY_MS = 320;
 const REGISTER_STEPS = ['account', 'profile', 'pets'];
+const MY_OFFERS_CREATE_STEPS = ['species', 'details', 'review'];
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
@@ -2139,6 +2140,8 @@ const localizedMyOffersStrings = {
     createLinkLabel: myOffersPageRoot?.dataset.myOffersCreateLinkLabel || 'Create offer',
     createSuccessTitle: myOffersPageRoot?.dataset.myOffersCreateSuccessTitle || 'Offer saved',
     createSuccessTemplate: myOffersPageRoot?.dataset.myOffersCreateSuccessTemplate || '{name} was saved as a draft.',
+    updateSuccessTitle: myOffersPageRoot?.dataset.myOffersUpdateSuccessTitle || 'Offer updated',
+    updateSuccessTemplate: myOffersPageRoot?.dataset.myOffersUpdateSuccessTemplate || '{name} was updated successfully.',
     publishSuccessTitle: myOffersPageRoot?.dataset.myOffersPublishSuccessTitle || 'Offer published',
     publishSuccessTemplate: myOffersPageRoot?.dataset.myOffersPublishSuccessTemplate || '{name} is now published.',
     withdrawSuccessTitle: myOffersPageRoot?.dataset.myOffersWithdrawSuccessTitle || 'Offer withdrawn',
@@ -2150,19 +2153,34 @@ const localizedMyOffersStrings = {
     validationSpecies: myOffersPageRoot?.dataset.myOffersValidationSpecies || 'Please select at least one species.',
     validationServices: myOffersPageRoot?.dataset.myOffersValidationServices || 'Please enter at least one service.',
     formAddTitle: myOffersPageRoot?.dataset.myOffersFormAddTitle || 'Create a new care package',
+    formEditTitle: myOffersPageRoot?.dataset.myOffersFormEditTitle || 'Edit care package',
     formAddHint: myOffersPageRoot?.dataset.myOffersFormAddHint || 'Save your offer as a draft first.',
+    stepAria: myOffersPageRoot?.dataset.myOffersStepAria || 'Offer creation steps',
+    reviewTitle: myOffersPageRoot?.dataset.myOffersReviewTitle || 'Review your details',
+    reviewHint: myOffersPageRoot?.dataset.myOffersReviewHint || 'Please check everything before confirming.',
     openDetailsTemplate: myOffersPageRoot?.dataset.myOffersOpenDetailsTemplate || 'Open offer {name}',
     modalCloseAria: myOffersPageRoot?.dataset.myOffersModalCloseAria || 'Close offer dialog',
     actions: {
         previous: myOffersPageRoot?.dataset.myOffersActionPrevious || 'Previous offer',
         next: myOffersPageRoot?.dataset.myOffersActionNext || 'Next offer',
         save: myOffersPageRoot?.dataset.myOffersActionSave || 'Save as draft',
+        confirm: myOffersPageRoot?.dataset.myOffersActionConfirm || 'Confirm and save as draft',
+        stepBack: myOffersPageRoot?.dataset.myOffersActionStepBack || 'Back',
+        stepNext: myOffersPageRoot?.dataset.myOffersActionStepNext || 'Next',
+        edit: myOffersPageRoot?.dataset.myOffersActionEdit || 'Edit',
         cancel: myOffersPageRoot?.dataset.myOffersActionCancel || 'Cancel',
         publish: myOffersPageRoot?.dataset.myOffersActionPublish || 'Publish',
         withdraw: myOffersPageRoot?.dataset.myOffersActionWithdraw || 'Withdraw'
     },
+    steps: {
+        species: myOffersPageRoot?.dataset.myOffersStepSpecies || 'Pets',
+        details: myOffersPageRoot?.dataset.myOffersStepDetails || 'Offer',
+        review: myOffersPageRoot?.dataset.myOffersStepReview || 'Review'
+    },
     labels: {
         title: myOffersPageRoot?.dataset.myOffersLabelTitle || 'Title',
+        flow: myOffersPageRoot?.dataset.myOffersLabelFlow || 'Schedule',
+        dayStructure: myOffersPageRoot?.dataset.myOffersLabelDayStructure || 'Day structure',
         description: myOffersPageRoot?.dataset.myOffersLabelDescription || 'Description',
         price: myOffersPageRoot?.dataset.myOffersLabelPrice || 'Price per day',
         species: myOffersPageRoot?.dataset.myOffersLabelSpecies || 'Species',
@@ -2173,6 +2191,8 @@ const localizedMyOffersStrings = {
     },
     placeholders: {
         title: myOffersPageRoot?.dataset.myOffersPlaceholderTitle || 'Offer title',
+        flow: myOffersPageRoot?.dataset.myOffersPlaceholderFlow || 'Describe the schedule',
+        dayStructure: myOffersPageRoot?.dataset.myOffersPlaceholderDayStructure || 'Describe the day structure',
         description: myOffersPageRoot?.dataset.myOffersPlaceholderDescription || 'Describe your package',
         price: myOffersPageRoot?.dataset.myOffersPlaceholderPrice || 'e.g. 39.90',
         services: myOffersPageRoot?.dataset.myOffersPlaceholderServices || 'Services separated by commas'
@@ -2378,9 +2398,12 @@ createApp({
             myOffersCarouselIndex: 0,
             myOffersActionPendingId: null,
             myOffersCreateModalOpen: false,
+            myOffersCreateStep: MY_OFFERS_CREATE_STEPS[0],
+            myOffersFormEditingId: null,
             myOffersForm: {
                 title: '',
-                description: '',
+                flow: '',
+                dayStructure: '',
                 pricePerDay: '',
                 acceptedPetSpecies: [],
                 services: ''
@@ -3262,6 +3285,32 @@ createApp({
                 label: formatPetChoiceLabel(value, locale),
                 emojiPath: resolvePetChoiceEmojiPath(value)
             }));
+        },
+        myOffersCreateStepIndex() {
+            const index = MY_OFFERS_CREATE_STEPS.indexOf(this.myOffersCreateStep);
+            return index >= 0 ? index : 0;
+        },
+        myOffersCanGoToPreviousStep() {
+            return this.myOffersCreateStepIndex > 0;
+        },
+        myOffersFormModalTitle() {
+            const editingId = this.normalizeProfileUserId(this.myOffersFormEditingId);
+            if (Number.isInteger(editingId) && editingId > 0) {
+                return this.myOffersStrings.formEditTitle || this.myOffersStrings.formAddTitle;
+            }
+
+            return this.myOffersStrings.formAddTitle;
+        },
+        myOffersSelectedSpeciesPreview() {
+            const selectedSpecies = Array.isArray(this.myOffersForm?.acceptedPetSpecies)
+                ? this.myOffersForm.acceptedPetSpecies
+                : [];
+            return this.resolveMyOfferSpecies({
+                acceptedPetSpecies: selectedSpecies
+            });
+        },
+        myOffersServicesPreview() {
+            return this.parseMyOfferServices(this.myOffersForm?.services || '');
         },
         myOffersActiveOffer() {
             if (!Array.isArray(this.myOffersOffers) || !this.myOffersOffers.length) {
@@ -5874,11 +5923,188 @@ createApp({
         resetMyOffersForm() {
             this.myOffersForm = {
                 title: '',
-                description: '',
+                flow: '',
+                dayStructure: '',
                 pricePerDay: '',
                 acceptedPetSpecies: [],
                 services: ''
             };
+            this.myOffersCreateStep = MY_OFFERS_CREATE_STEPS[0];
+            this.myOffersFormEditingId = null;
+        },
+        sanitizeMyOfferPriceInput(event = null) {
+            const rawValue = event?.target?.value ?? this.myOffersForm?.pricePerDay ?? '';
+            const digitsOnly = String(rawValue).replace(/\D/g, '');
+            this.myOffersForm.pricePerDay = digitsOnly;
+            if (event?.target && event.target.value !== digitsOnly) {
+                event.target.value = digitsOnly;
+            }
+        },
+        parseMyOfferDescriptionParts(rawDescription = '') {
+            const description = typeof rawDescription === 'string' ? rawDescription.trim() : '';
+            if (!description) {
+                return {
+                    flow: '',
+                    dayStructure: ''
+                };
+            }
+
+            const lines = description
+                .split(/\r?\n+/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+            if (!lines.length) {
+                return {
+                    flow: '',
+                    dayStructure: ''
+                };
+            }
+
+            const flowPrefix = `${String(this.myOffersStrings?.labels?.flow || '').trim()}:`.toLowerCase();
+            const dayStructurePrefix = `${String(this.myOffersStrings?.labels?.dayStructure || '').trim()}:`.toLowerCase();
+            let flow = '';
+            let dayStructure = '';
+            const remainder = [];
+
+            lines.forEach((line) => {
+                const lowered = line.toLowerCase();
+                if (flowPrefix && lowered.startsWith(flowPrefix)) {
+                    flow = line.slice(flowPrefix.length).trim();
+                    return;
+                }
+                if (dayStructurePrefix && lowered.startsWith(dayStructurePrefix)) {
+                    dayStructure = line.slice(dayStructurePrefix.length).trim();
+                    return;
+                }
+                remainder.push(line);
+            });
+
+            if (!flow && !dayStructure && remainder.length) {
+                flow = remainder.join(' ');
+            } else {
+                if (!flow && remainder.length) {
+                    flow = remainder.shift() || '';
+                }
+                if (!dayStructure && remainder.length) {
+                    dayStructure = remainder.join(' ');
+                }
+            }
+
+            return {
+                flow,
+                dayStructure
+            };
+        },
+        openMyOffersEditModal(offer = null) {
+            if (!myOffersPageRoot) {
+                return;
+            }
+
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                return;
+            }
+
+            const descriptionParts = this.parseMyOfferDescriptionParts(normalizedOffer.description);
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.myOffersForm = {
+                title: normalizedOffer.title,
+                flow: descriptionParts.flow,
+                dayStructure: descriptionParts.dayStructure,
+                pricePerDay: Number.isFinite(normalizedOffer.pricePerDay) && normalizedOffer.pricePerDay > 0
+                    ? String(Math.max(1, Math.round(normalizedOffer.pricePerDay)))
+                    : '',
+                acceptedPetSpecies: Array.isArray(normalizedOffer.acceptedPetSpecies)
+                    ? [...normalizedOffer.acceptedPetSpecies]
+                    : [],
+                services: Array.isArray(normalizedOffer.services)
+                    ? normalizedOffer.services.join(', ')
+                    : ''
+            };
+            this.myOffersFormEditingId = normalizedOffer.id;
+            this.myOffersFormSaving = false;
+            this.myOffersCreateModalOpen = true;
+            this.myOffersCreateStep = 'details';
+            this.syncModalBodyLock();
+
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+                this.focusMyOffersCreateStepField();
+            });
+        },
+        focusMyOffersCreateStepField() {
+            if (!this.myOffersCreateModalOpen) {
+                return;
+            }
+
+            if (this.myOffersCreateStep === 'species') {
+                document.querySelector('[data-my-offers-create-modal] .register_pet_chip')?.focus();
+                return;
+            }
+
+            if (this.myOffersCreateStep === 'details') {
+                document.querySelector('[data-my-offers-create-modal] [data-my-offers-form-title]')?.focus();
+                return;
+            }
+
+            document.querySelector('[data-my-offers-create-modal] [data-my-offers-form-confirm]')?.focus();
+        },
+        setMyOffersCreateStep(step = MY_OFFERS_CREATE_STEPS[0]) {
+            if (!MY_OFFERS_CREATE_STEPS.includes(step) || this.myOffersCreateStep === step) {
+                return;
+            }
+
+            this.myOffersCreateStep = step;
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+                this.focusMyOffersCreateStepField();
+            });
+        },
+        goToNextMyOffersCreateStep() {
+            const currentStep = MY_OFFERS_CREATE_STEPS.includes(this.myOffersCreateStep)
+                ? this.myOffersCreateStep
+                : MY_OFFERS_CREATE_STEPS[0];
+            const validation = this.validateMyOfferForm({
+                step: currentStep,
+                persist: true
+            });
+            if (!validation.valid) {
+                this.pushNotification({
+                    title: this.myOffersStrings.actionErrorTitle,
+                    message: validation.message || this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+                return false;
+            }
+
+            const currentIndex = MY_OFFERS_CREATE_STEPS.indexOf(currentStep);
+            const nextStep = MY_OFFERS_CREATE_STEPS[currentIndex + 1];
+            if (!nextStep) {
+                return false;
+            }
+
+            this.setMyOffersCreateStep(nextStep);
+            return true;
+        },
+        goToPreviousMyOffersCreateStep() {
+            const currentIndex = MY_OFFERS_CREATE_STEPS.indexOf(this.myOffersCreateStep);
+            if (currentIndex <= 0) {
+                return;
+            }
+
+            this.setMyOffersCreateStep(MY_OFFERS_CREATE_STEPS[currentIndex - 1]);
+        },
+        buildMyOfferDescription(flow = '', dayStructure = '') {
+            const rows = [];
+            if (flow) {
+                rows.push(`${this.myOffersStrings.labels.flow}: ${flow}`);
+            }
+            if (dayStructure) {
+                rows.push(`${this.myOffersStrings.labels.dayStructure}: ${dayStructure}`);
+            }
+            return rows.join('\n');
         },
         openMyOffersCreateModal() {
             if (!myOffersPageRoot) {
@@ -5893,7 +6119,8 @@ createApp({
             this.syncModalBodyLock();
 
             nextTick(() => {
-                document.querySelector('[data-my-offers-view] .settings_edit_modal__field input')?.focus();
+                this.updateSegmentedIndicators();
+                this.focusMyOffersCreateStepField();
             });
         },
         closeMyOffersCreateModal() {
@@ -5918,12 +6145,15 @@ createApp({
                     .filter(Boolean)
             )];
         },
-        validateMyOfferForm() {
+        getNormalizedMyOfferFormData() {
             const normalizedTitle = typeof this.myOffersForm?.title === 'string'
                 ? this.myOffersForm.title.trim()
                 : '';
-            const normalizedDescription = typeof this.myOffersForm?.description === 'string'
-                ? this.myOffersForm.description.trim()
+            const normalizedFlow = typeof this.myOffersForm?.flow === 'string'
+                ? this.myOffersForm.flow.trim()
+                : '';
+            const normalizedDayStructure = typeof this.myOffersForm?.dayStructure === 'string'
+                ? this.myOffersForm.dayStructure.trim()
                 : '';
             const normalizedPriceInput = typeof this.myOffersForm?.pricePerDay === 'string' || typeof this.myOffersForm?.pricePerDay === 'number'
                 ? String(this.myOffersForm.pricePerDay).trim().replace(',', '.')
@@ -5937,54 +6167,100 @@ createApp({
                 )]
                 : [];
             const normalizedServices = this.parseMyOfferServices(this.myOffersForm?.services || '');
+            const normalizedDescription = this.buildMyOfferDescription(normalizedFlow, normalizedDayStructure);
+
+            return {
+                normalizedTitle,
+                normalizedFlow,
+                normalizedDayStructure,
+                normalizedDescription,
+                normalizedPriceInput,
+                normalizedPrice,
+                normalizedSpecies,
+                normalizedServices
+            };
+        },
+        validateMyOfferForm(options = {}) {
+            const step = typeof options?.step === 'string' ? options.step : 'review';
+            const persist = options?.persist !== false;
+            const normalizedData = this.getNormalizedMyOfferFormData();
+            const {
+                normalizedTitle,
+                normalizedFlow,
+                normalizedDayStructure,
+                normalizedDescription,
+                normalizedPriceInput,
+                normalizedPrice,
+                normalizedSpecies,
+                normalizedServices
+            } = normalizedData;
 
             const requiredMessageFor = (fieldLabel) => formatTemplate(this.myOffersStrings.validationRequiredTemplate, {
                 field: fieldLabel
             });
 
-            if (!normalizedTitle) {
-                return {
-                    valid: false,
-                    message: requiredMessageFor(this.myOffersStrings.labels.title)
-                };
-            }
+            const needsSpeciesValidation = step === 'species' || step === 'review';
+            const needsDetailsValidation = step === 'details' || step === 'review';
 
-            if (!normalizedDescription) {
-                return {
-                    valid: false,
-                    message: requiredMessageFor(this.myOffersStrings.labels.description)
-                };
-            }
-
-            if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
-                return {
-                    valid: false,
-                    message: this.myOffersStrings.validationPrice
-                };
-            }
-
-            if (!normalizedSpecies.length) {
+            if (needsSpeciesValidation && !normalizedSpecies.length) {
                 return {
                     valid: false,
                     message: this.myOffersStrings.validationSpecies
                 };
             }
 
-            if (!normalizedServices.length) {
+            if (needsDetailsValidation && !normalizedTitle) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myOffersStrings.labels.title)
+                };
+            }
+
+            if (needsDetailsValidation && !normalizedFlow) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myOffersStrings.labels.flow)
+                };
+            }
+
+            if (needsDetailsValidation && !normalizedDayStructure) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myOffersStrings.labels.dayStructure)
+                };
+            }
+
+            if (needsDetailsValidation && (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0)) {
+                return {
+                    valid: false,
+                    message: this.myOffersStrings.validationPrice
+                };
+            }
+
+            if (needsDetailsValidation && !normalizedServices.length) {
                 return {
                     valid: false,
                     message: this.myOffersStrings.validationServices
                 };
             }
 
-            this.myOffersForm = {
-                ...this.myOffersForm,
-                title: normalizedTitle,
-                description: normalizedDescription,
-                pricePerDay: normalizedPriceInput,
-                acceptedPetSpecies: normalizedSpecies,
-                services: normalizedServices.join(', ')
-            };
+            if (persist) {
+                this.myOffersForm = {
+                    ...this.myOffersForm,
+                    title: normalizedTitle,
+                    flow: normalizedFlow,
+                    dayStructure: normalizedDayStructure,
+                    pricePerDay: normalizedPriceInput,
+                    acceptedPetSpecies: normalizedSpecies,
+                    services: normalizedServices.join(', ')
+                };
+            }
+
+            if (step !== 'review') {
+                return {
+                    valid: true
+                };
+            }
 
             return {
                 valid: true,
@@ -6027,7 +6303,16 @@ createApp({
                 return;
             }
 
-            const validation = this.validateMyOfferForm();
+            const isFinalStep = this.myOffersCreateStep === MY_OFFERS_CREATE_STEPS[MY_OFFERS_CREATE_STEPS.length - 1];
+            if (!isFinalStep) {
+                this.goToNextMyOffersCreateStep();
+                return;
+            }
+
+            const validation = this.validateMyOfferForm({
+                step: 'review',
+                persist: true
+            });
             if (!validation.valid) {
                 this.pushNotification({
                     title: this.myOffersStrings.actionErrorTitle,
@@ -6038,10 +6323,14 @@ createApp({
             }
 
             this.myOffersFormSaving = true;
+            const editingOfferId = this.normalizeProfileUserId(this.myOffersFormEditingId);
+            const isEditing = Number.isInteger(editingOfferId) && editingOfferId > 0;
+            const endpoint = isEditing ? `/api/offers/${editingOfferId}` : '/api/offers';
+            const requestMethod = isEditing ? 'PATCH' : 'POST';
 
             try {
-                const response = await apiFetch('/api/offers', {
-                    method: 'POST',
+                const response = await apiFetch(endpoint, {
+                    method: requestMethod,
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json'
@@ -6074,10 +6363,15 @@ createApp({
 
                 this.closeMyOffersCreateModal();
                 this.pushNotification({
-                    title: this.myOffersStrings.createSuccessTitle,
-                    message: formatTemplate(this.myOffersStrings.createSuccessTemplate, {
+                    title: isEditing
+                        ? this.myOffersStrings.updateSuccessTitle
+                        : this.myOffersStrings.createSuccessTitle,
+                    message: formatTemplate(
+                        isEditing ? this.myOffersStrings.updateSuccessTemplate : this.myOffersStrings.createSuccessTemplate,
+                        {
                         name: normalizedOffer.title || this.myOffersStrings.labels.title
-                    }),
+                        }
+                    ),
                     tone: 'success'
                 });
             } catch {
@@ -9532,18 +9826,35 @@ createApp({
             }
 
             const viewportPadding = 12;
-            const panelGap = 6;
-            const minimumPanelHeight = 120;
+            const panelGap = 8;
+            const minimumPanelHeight = 180;
+            const minimumPanelWidth = 264;
             const summaryRect = summary.getBoundingClientRect();
-            const maxPanelWidth = Math.max(160, window.innerWidth - (viewportPadding * 2));
-            const panelWidth = Math.min(Math.max(summaryRect.width, 160), maxPanelWidth);
+            const maxPanelWidth = Math.max(minimumPanelWidth, window.innerWidth - (viewportPadding * 2));
+            const panelWidth = Math.min(
+                Math.max(summaryRect.width + 38, minimumPanelWidth),
+                maxPanelWidth
+            );
+            const summaryCenter = summaryRect.left + (summaryRect.width / 2);
+            const unclampedLeft = summaryCenter - (panelWidth / 2);
             const maxPanelLeft = window.innerWidth - panelWidth - viewportPadding;
-            const clampedLeft = Math.min(Math.max(summaryRect.left, viewportPadding), Math.max(viewportPadding, maxPanelLeft));
+            const clampedLeft = Math.min(
+                Math.max(unclampedLeft, viewportPadding),
+                Math.max(viewportPadding, maxPanelLeft)
+            );
             const availableBelow = window.innerHeight - summaryRect.bottom - viewportPadding - panelGap;
             const availableAbove = summaryRect.top - viewportPadding - panelGap;
             const shouldOpenUpwards = availableBelow < minimumPanelHeight && availableAbove > availableBelow;
             const availableHeight = shouldOpenUpwards ? availableAbove : availableBelow;
-            const maxHeight = Math.max(96, Math.floor(Math.max(availableHeight, 96)));
+            const maxHeight = Math.floor(
+                Math.max(
+                    96,
+                    Math.min(
+                        availableHeight,
+                        window.innerHeight - (viewportPadding * 2)
+                    )
+                )
+            );
             const top = shouldOpenUpwards
                 ? Math.round(summaryRect.top - panelGap)
                 : Math.round(summaryRect.bottom + panelGap);
@@ -9554,6 +9865,8 @@ createApp({
             panel.style.top = `${top}px`;
             panel.style.width = `${Math.round(panelWidth)}px`;
             panel.style.maxHeight = `${maxHeight}px`;
+            panel.style.zIndex = '5000';
+            panel.style.transformOrigin = shouldOpenUpwards ? 'bottom center' : 'top center';
             panel.style.transform = shouldOpenUpwards ? 'translateY(-100%)' : 'translateY(0)';
         },
         resetPhoneCountryDropdownPanel(details) {
@@ -9572,6 +9885,8 @@ createApp({
             panel.style.top = '';
             panel.style.width = '';
             panel.style.maxHeight = '';
+            panel.style.zIndex = '';
+            panel.style.transformOrigin = '';
             panel.style.transform = '';
         },
         initializeDropdowns() {

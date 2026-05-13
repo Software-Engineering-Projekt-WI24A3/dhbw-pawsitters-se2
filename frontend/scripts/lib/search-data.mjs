@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const PET_CHOICE_ENUM_PATTERN = /public\s+enum\s+PetChoice\s*\{([\s\S]*?)\}/m;
 const PET_CHOICES_FALLBACK_RELATIVE_PATH = path.join('assets', 'data', 'pet-choices.json');
+const PHONE_COUNTRY_PREFIXES_SOURCE_RELATIVE_PATH = path.join('src', 'data', 'country-phone-prefixes.json');
 const REGIONAL_INDICATOR_A = 0x1F1E6;
 const REGIONAL_INDICATOR_Z = 0x1F1FF;
 const PHONE_COUNTRY_PREFIX_ENTRIES = [
@@ -319,15 +320,44 @@ export async function loadPhoneCountryPrefixEntries(frontendRootDir) {
     availableFlags.map((country) => [country.code, country.flagPath])
   );
 
-  return PHONE_COUNTRY_PREFIX_ENTRIES.map((entry) => {
-    const normalizedCode = toUpperAlphaCountryCode(entry.code);
-    const fallbackFlagPath = `/assets/media/country-flag/${countryCodeToFlagFileName(normalizedCode)}`;
+  const normalizeEntries = (entries = []) => entries
+    .map((entry) => {
+      const normalizedCode = toUpperAlphaCountryCode(entry?.code);
+      const dialCodeDigits = String(entry?.dialCode ?? '')
+        .replace(/\D/g, '')
+        .trim();
 
-    return {
-      code: normalizedCode,
-      dialCode: String(entry.dialCode).trim(),
-      name: String(entry.name || '').trim(),
-      flagPath: flagPathByCountryCode.get(normalizedCode) || fallbackFlagPath
-    };
-  }).filter((entry) => entry.code && entry.dialCode);
+      if (!normalizedCode || !dialCodeDigits) {
+        return null;
+      }
+
+      const fallbackFlagPath = `/assets/media/country-flag/${countryCodeToFlagFileName(normalizedCode)}`;
+      return {
+        code: normalizedCode,
+        dialCode: `+${dialCodeDigits}`,
+        name: String(entry?.name || '').trim(),
+        flagPath: flagPathByCountryCode.get(normalizedCode) || fallbackFlagPath
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.code.localeCompare(right.code));
+
+  try {
+    const sourcePath = path.join(frontendRootDir, PHONE_COUNTRY_PREFIXES_SOURCE_RELATIVE_PATH);
+    const source = await fs.readFile(sourcePath, 'utf8');
+    const payload = JSON.parse(source);
+    const sourceEntries = Array.isArray(payload?.countries) ? payload.countries : [];
+    const normalized = normalizeEntries(sourceEntries);
+    if (normalized.length) {
+      return normalized;
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      console.warn(
+        `[search-data] Failed to load ${PHONE_COUNTRY_PREFIXES_SOURCE_RELATIVE_PATH}; falling back to minimal phone prefix list.`
+      );
+    }
+  }
+
+  return normalizeEntries(PHONE_COUNTRY_PREFIX_ENTRIES);
 }

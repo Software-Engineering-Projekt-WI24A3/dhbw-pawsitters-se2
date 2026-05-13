@@ -516,9 +516,22 @@
       "openDetailsTemplate": "Open offer {name}",
       "modalCloseAria": "Close offer dialog",
       "formAddTitle": "Create a new care package",
+      "formEditTitle": "Edit care package",
       "formAddHint": "Save your offer as a draft first. You can publish it right after.",
+      "steps": {
+        "aria": "Steps to create a care package",
+        "species": "Pets",
+        "details": "Offer",
+        "review": "Review"
+      },
+      "review": {
+        "title": "Review and confirm details",
+        "hint": "Please check all details before saving."
+      },
       "labels": {
         "title": "Title",
+        "flow": "Schedule",
+        "dayStructure": "Day structure",
         "description": "Description",
         "price": "Price per day",
         "species": "Accepted pet species",
@@ -529,14 +542,20 @@
       },
       "placeholders": {
         "title": "Short offer title",
+        "flow": "Describe the schedule",
+        "dayStructure": "Describe the day structure",
         "description": "Describe routine, structure, and strengths",
-        "price": "e.g. 39.90",
+        "price": "Price in €",
         "services": "Services, separated by commas"
       },
       "actions": {
         "previous": "Previous offer",
         "next": "Next offer",
         "save": "Save as draft",
+        "confirm": "Confirm and save as draft",
+        "stepBack": "Back",
+        "stepNext": "Next",
+        "edit": "Edit",
         "cancel": "Cancel",
         "publish": "Publish",
         "withdraw": "Withdraw"
@@ -550,6 +569,8 @@
       "notifications": {
         "createSuccessTitle": "Offer saved",
         "createSuccessTemplate": "{name} was saved as a draft.",
+        "updateSuccessTitle": "Offer updated",
+        "updateSuccessTemplate": "{name} was updated successfully.",
         "publishSuccessTitle": "Offer published",
         "publishSuccessTemplate": "{name} is now published.",
         "withdrawSuccessTitle": "Offer withdrawn",
