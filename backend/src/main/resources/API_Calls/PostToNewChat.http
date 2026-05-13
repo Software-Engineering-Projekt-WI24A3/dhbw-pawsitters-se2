@@ -1,0 +1,11 @@
+POST {{baseUrl}}/api/chats
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "offerId": 1
+}
+
+> {%
+    client.global.set("chatId", response.body.data.id);
+%}

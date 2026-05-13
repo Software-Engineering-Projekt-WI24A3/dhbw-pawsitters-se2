@@ -33,7 +33,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, passwordEncoder, "uploads-test");
+        userService = new UserService(userRepository, passwordEncoder, "uploads-test", 5 * 1024 * 1024);
     }
 
     // ===== createUser =====

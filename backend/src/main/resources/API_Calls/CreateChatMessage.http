@@ -1,0 +1,11 @@
+POST {{baseUrl}}/api/chats/{{chatId}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Hallo, ich interessiere mich fuer dein Betreuungsangebot."
+}
+
+> {%
+    client.global.set("messageId", response.body.data.id);
+%}
