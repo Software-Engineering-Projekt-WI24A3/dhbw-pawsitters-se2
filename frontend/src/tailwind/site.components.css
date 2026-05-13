@@ -334,7 +334,8 @@
         background: var(--brand-corporate-green);
     }
 
-    .profile_panel__tab_panel--pets {
+    .profile_panel__tab_panel--pets,
+    .profile_panel__tab_panel--offers {
         @apply mt-6;
     }
 

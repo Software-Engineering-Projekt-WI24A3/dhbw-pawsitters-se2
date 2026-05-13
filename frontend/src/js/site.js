@@ -3556,7 +3556,7 @@ createApp({
                 return;
             }
 
-            if (nextValue !== 'information' && nextValue !== 'ownPets') {
+            if (nextValue !== 'information' && nextValue !== 'ownPets' && nextValue !== 'offers') {
                 this.profileViewTab = 'information';
                 return;
             }
@@ -5558,6 +5558,8 @@ createApp({
                 this.profileViewUser = null;
                 this.myPetsPets = [];
                 this.myPetsCarouselIndex = 0;
+                this.myOffersOffers = [];
+                this.myOffersCarouselIndex = 0;
                 this.profileViewLoading = false;
                 return;
             }
@@ -7866,6 +7868,8 @@ createApp({
                 this.profileViewError = this.profileStrings.routeMissing;
                 this.profileViewLoading = false;
                 this.profileViewUser = null;
+                this.myOffersOffers = [];
+                this.myOffersCarouselIndex = 0;
                 return;
             }
 
@@ -7875,6 +7879,8 @@ createApp({
             this.profileViewTab = 'information';
             this.myPetsPets = [];
             this.myPetsCarouselIndex = 0;
+            this.myOffersOffers = [];
+            this.myOffersCarouselIndex = 0;
             this.applyProfileDocumentTitle();
             nextTick(() => {
                 this.updateSegmentedIndicators();
@@ -7904,6 +7910,7 @@ createApp({
                 this.profileViewUser = this.normalizeProfileUser(payload?.data || {});
                 this.myPetsPets = Array.isArray(this.profileViewUser?.pets) ? [...this.profileViewUser.pets] : [];
                 this.myPetsCarouselIndex = 0;
+                await this.loadProfileOffersByUserId(normalizedUserId);
                 this.applyProfileDocumentTitle(this.profileViewUser);
                 nextTick(() => {
                     this.updateSegmentedIndicators();
@@ -7912,6 +7919,42 @@ createApp({
                 this.profileViewError = this.profileStrings.loadFailed;
             } finally {
                 this.profileViewLoading = false;
+            }
+        },
+        async loadProfileOffersByUserId(userId) {
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                this.myOffersOffers = [];
+                this.myOffersCarouselIndex = 0;
+                return;
+            }
+
+            try {
+                const response = await apiFetch(`/api/offers/host/${normalizedUserId}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.myOffersOffers = [];
+                    this.myOffersCarouselIndex = 0;
+                    return;
+                }
+
+                const normalizedOffers = Array.isArray(payload?.data)
+                    ? payload.data
+                        .map((offer) => this.normalizeMyOffer(offer))
+                        .filter((offer) => Number.isInteger(offer.id) && offer.id > 0)
+                    : [];
+                this.myOffersOffers = normalizedOffers;
+                this.myOffersCarouselIndex = 0;
+            } catch {
+                this.myOffersOffers = [];
+                this.myOffersCarouselIndex = 0;
             }
         },
         rememberRegisterEmail(email) {

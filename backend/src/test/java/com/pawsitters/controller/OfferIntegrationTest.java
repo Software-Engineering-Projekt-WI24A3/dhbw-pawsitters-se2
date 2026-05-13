@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,6 +20,8 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -111,6 +114,48 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
     }
 
+    @Test
+    void profileOffersEndpointShowsDraftOnlyToOwnerAndPublishedToOthers() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String viewerToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String title = "Profilangebot " + UUID.randomUUID();
+
+        MvcResult createResult = mockMvc.perform(post("/api/offers")
+                        .header("Authorization", "Bearer " + hostToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(title))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"))
+                .andReturn();
+
+        JsonNode createdOffer = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("data");
+        Long offerId = createdOffer.get("id").asLong();
+        Long hostId = createdOffer.get("hostId").asLong();
+
+        JsonNode ownProfileOffers = getProfileOffers(hostToken, hostId);
+        assertTrue(hasOfferTitle(ownProfileOffers, title), "Owner should see own draft offer in profile offers.");
+
+        JsonNode otherProfileOffers = getProfileOffers(viewerToken, hostId);
+        assertFalse(hasOfferTitle(otherProfileOffers, title), "Other users must not see draft offers in profile offers.");
+
+        JsonNode anonymousProfileOffers = getProfileOffers(null, hostId);
+        assertFalse(hasOfferTitle(anonymousProfileOffers, title), "Anonymous users must not see draft offers in profile offers.");
+
+        mockMvc.perform(patch("/api/offers/{id}/publish", offerId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("PUBLISHED"));
+
+        JsonNode publishedForOtherUsers = getProfileOffers(viewerToken, hostId);
+        assertTrue(hasOfferTitle(publishedForOtherUsers, title), "Published offers should be visible in profile offers.");
+
+        JsonNode publishedForAnonymousUsers = getProfileOffers(null, hostId);
+        assertTrue(hasOfferTitle(publishedForAnonymousUsers, title), "Published offers should be visible anonymously.");
+    }
+
     private void assertMarketplaceDoesNotContain(String token, String title) throws Exception {
         MvcResult result = mockMvc.perform(get("/api/marketplace/offers")
                         .header("Authorization", "Bearer " + token))
@@ -142,6 +187,32 @@ class OfferIntegrationTest {
         }
 
         fail("Offer " + offerId + " was not returned by GET /api/offers");
+    }
+
+    private JsonNode getProfileOffers(String token, Long hostId) throws Exception {
+        MockHttpServletRequestBuilder request = get("/api/offers/host/{hostId}", hostId);
+        if (token != null && !token.isBlank()) {
+            request.header("Authorization", "Bearer " + token);
+        }
+
+        MvcResult result = mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("data");
+    }
+
+    private boolean hasOfferTitle(JsonNode offers, String title) {
+        if (offers == null || !offers.isArray()) {
+            return false;
+        }
+
+        for (JsonNode offer : offers) {
+            if (title.equals(offer.path("title").asText())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Map<String, Object> buildOfferPayload(String title) {

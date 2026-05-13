@@ -410,7 +410,8 @@
       "ownProfileButton": "Mein öffentliches Profil",
       "tabs": {
         "information": "Informationen",
-        "ownPets": "Eigene Haustiere"
+        "ownPets": "Eigene Haustiere",
+        "offers": "Betreuungsangebote"
       },
       "role": {
         "hostFromTemplate": "GASTGEBER AUS {flag} {city}",
@@ -444,7 +445,7 @@
       "authRequired": "Bitte logge dich ein, um deine Haustiere zu verwalten.",
       "loadFailed": "Haustiere konnten nicht geladen werden.",
       "emptyTitle": "Noch keine Haustiere",
-      "emptyText": "Lege dein erstes Haustier an und lade direkt ein Foto hoch.",
+      "emptyText": "Noch keine Haustiere",
       "introDescription": "Speichere hier deine eigenen Haustiere, damit du sie bei einer Vermittlungsanfrage sofort auswählen kannst.",
       "countTemplateSingular": "{count} Haustier in deinem Profil",
       "countTemplatePlural": "{count} Haustiere in deinem Profil",
@@ -505,8 +506,8 @@
       "loading": "Angebote werden geladen.",
       "authRequired": "Bitte logge dich ein, um deine Angebote zu verwalten.",
       "loadFailed": "Angebote konnten nicht geladen werden.",
-      "emptyTitle": "Noch keine Angebote",
-      "emptyText": "Erstelle dein erstes Betreuungspaket und speichere es als Entwurf oder veroeffentliche es direkt.",
+      "emptyTitle": "Noch keine Betreuungsangebote",
+      "emptyText": "Noch keine Betreuungsangebote",
       "introDescription": "Hier siehst du alle eigenen Betreuungspakete inklusive gespeicherter Entwuerfe.",
       "countTemplateSingular": "{count} Angebot in deinem Profil",
       "countTemplatePlural": "{count} Angebote in deinem Profil",

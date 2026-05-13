@@ -47,6 +47,24 @@ public class OfferController {
         ));
     }
 
+    @GetMapping("/host/{hostId}")
+    public ResponseEntity<ApiResponse<List<OfferResponse>>> getOffersForHost(@PathVariable Long hostId,
+                                                                              Authentication authentication,
+                                                                              HttpServletRequest servletRequest) {
+        String requesterEmail = authentication != null ? authentication.getName() : null;
+        List<OfferResponse> offers = offerService.getProfileOffersForHostId(hostId, requesterEmail)
+                .stream()
+                .map(OfferResponse::from)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Offers retrieved successfully.",
+                offers,
+                servletRequest.getRequestURI(),
+                offers.size()
+        ));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OfferResponse>> createOffer(@Valid @RequestBody OfferCreateRequest request,
                                                                   Authentication authentication,
