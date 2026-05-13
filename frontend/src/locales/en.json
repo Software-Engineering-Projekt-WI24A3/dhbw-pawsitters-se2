@@ -32,6 +32,10 @@
       "title": "Pawsitters | Public Profile",
       "description": "Public profile page with hero banner, avatar, and personal details."
     },
+    "myPets": {
+      "title": "Pawsitters | My Pets",
+      "description": "Protected area to manage your pets with image uploads and a curated carousel."
+    },
     "settings": {
       "title": "Pawsitters | Settings",
       "description": "Protected settings area for editing your profile information."
@@ -72,6 +76,7 @@
     "ariaUserMenu": "User menu",
     "openUserMenu": "Open user menu",
     "profile": "View profile",
+    "myPets": "My pets",
     "settings": "Settings",
     "logout": "Sign out",
     "login": "Sign in",
@@ -414,6 +419,68 @@
       }
     }
   },
+  "myPets": {
+    "page": {
+      "bannerAlt": "Copenhagen banner for pet management",
+      "eyebrow": "My pets",
+      "title": "Manage pets",
+      "loading": "Loading pets.",
+      "authRequired": "Please sign in to manage your pets.",
+      "loadFailed": "Pets could not be loaded.",
+      "emptyTitle": "No pets yet",
+      "emptyText": "Add your first pet and upload a photo right away.",
+      "introDescription": "Save your own pets here so you can quickly select them when creating a placement request.",
+      "countTemplateSingular": "{count} pet in your profile",
+      "countTemplatePlural": "{count} pets in your profile",
+      "carouselAria": "Carousel of your pets",
+      "formHint": "Add new pets or edit existing entries.",
+      "addPetLink": "Add pet",
+      "openDetailsTemplate": "Open details for {name}",
+      "modalCloseAria": "Close pet dialog",
+      "detailsHint": "Open a pet to view, edit, or delete its details.",
+      "formAddTitle": "Add new pet",
+      "formEditTitle": "Edit pet",
+      "quickUploadLabel": "Update photo",
+      "imageSelectedTemplate": "Selected: {name}",
+      "confirmDeleteTemplate": "Do you really want to delete {name}?",
+      "labels": {
+        "name": "Name",
+        "species": "Species",
+        "breed": "Breed",
+        "age": "Age",
+        "specialNeeds": "Special needs",
+        "image": "Image"
+      },
+      "placeholders": {
+        "name": "Pet name",
+        "breed": "Breed",
+        "age": "Age in years",
+        "specialNeeds": "Special needs, routines, or medication"
+      },
+      "actions": {
+        "previous": "Previous pet",
+        "next": "Next pet",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "validation": {
+        "requiredTemplate": "Please fill in {field}.",
+        "age": "Age must be a number starting at 0."
+      },
+      "notifications": {
+        "saveSuccessTitle": "Pet saved",
+        "saveSuccessTemplate": "{name} was saved successfully.",
+        "deleteSuccessTitle": "Pet deleted",
+        "deleteSuccessTemplate": "{name} was removed.",
+        "uploadSuccessTitle": "Image updated",
+        "uploadSuccessTemplate": "{name}'s image was updated.",
+        "actionErrorTitle": "Action failed",
+        "actionErrorMessage": "The action could not be completed."
+      }
+    }
+  },
   "settings": {
     "page": {
       "bannerAlt": "Mountain landscape banner for settings",
@@ -444,6 +511,7 @@
       "petHint": "Choose the pet species you want to care for.",
       "imageUploadLabel": "Upload profile picture (optional)",
       "imageUploadHint": "If you pick a file, it will be uploaded directly.",
+      "imageResetLabel": "Reset to default picture",
       "imageSelectedTemplate": "Selected: {name}",
       "validation": {
         "required": "Please fill out this field.",
@@ -458,7 +526,8 @@
         "passwordConfirmationRequired": "Please repeat your new password.",
         "passwordsMismatch": "Both new passwords must match.",
         "passwordCriteriaRequired": "Please meet all password criteria.",
-        "species": "Please select at least one pet species."
+        "species": "Please select at least one pet species.",
+        "profileImage": "Please choose an image file."
       }
     }
   }

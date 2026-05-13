@@ -53,7 +53,10 @@ const LOADING_INDICATOR_DELAY_MS = 320;
 const REGISTER_STEPS = ['account', 'profile', 'pets'];
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
-const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?settings$/i;
+const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
+const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/settings$/i;
+const DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/pawsitters-scene.svg';
+const LEGACY_DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/favicon.png';
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
     'PPL',
     'PPLA',
@@ -1356,6 +1359,12 @@ function normalizeProfilePicturePath(value) {
         return '';
     }
 
+    // Backend reset returns a fixed placeholder asset path.
+    // For avatar UI we treat this as "no custom image" so the initials fallback is shown.
+    if (trimmed === DEFAULT_PROFILE_PICTURE_PATH || trimmed === LEGACY_DEFAULT_PROFILE_PICTURE_PATH) {
+        return '';
+    }
+
     if (
         /^https?:\/\//i.test(trimmed)
         || trimmed.startsWith('/')
@@ -1365,6 +1374,13 @@ function normalizeProfilePicturePath(value) {
     }
 
     return `/uploads/profiles/${trimmed}`;
+}
+
+function isDefaultProfilePicturePath(value) {
+    const normalizedPath = normalizeProfilePicturePath(value);
+    return !normalizedPath
+        || normalizedPath === DEFAULT_PROFILE_PICTURE_PATH
+        || normalizedPath === LEGACY_DEFAULT_PROFILE_PICTURE_PATH;
 }
 
 function resolveCityPostalCodeFromSource(source) {
@@ -1918,6 +1934,7 @@ const authModalFormRoot = document.querySelector('.auth_modal__form');
 const userSearchModalFormRoot = document.querySelector('.user_search_modal__form');
 const registerFormRoot = document.querySelector('.auth_form');
 const profilePageRoot = document.querySelector('[data-profile-view]');
+const myPetsPageRoot = document.querySelector('[data-my-pets-view]');
 const settingsPageRoot = document.querySelector('[data-settings-view]');
 const defaultPlaywrightStatusLabels = {
     idle: 'Ready',
@@ -2052,6 +2069,57 @@ const localizedProfileStrings = {
     ratingAriaTemplate: profilePageRoot?.dataset.profileRatingAriaTemplate || '{rating} out of 5 stars from {count} ratings',
     ratingFirstNameFallback: profilePageRoot?.dataset.profileRatingFirstNameFallback || 'this profile'
 };
+const localizedMyPetsStrings = {
+    loading: myPetsPageRoot?.dataset.myPetsLoadingLabel || 'Loading pets.',
+    authRequired: myPetsPageRoot?.dataset.myPetsAuthRequired || 'Please sign in to manage your pets.',
+    loadFailed: myPetsPageRoot?.dataset.myPetsLoadFailed || 'Pets could not be loaded.',
+    emptyTitle: myPetsPageRoot?.dataset.myPetsEmptyTitle || 'No pets yet',
+    emptyText: myPetsPageRoot?.dataset.myPetsEmptyText || 'Add your first pet and upload a photo right away.',
+    introDescription: myPetsPageRoot?.dataset.myPetsIntroDescription || 'Save your pets here so they are ready for your next placement request.',
+    countTemplateSingular: myPetsPageRoot?.dataset.myPetsCountTemplateSingular || '{count} pet in your profile',
+    countTemplatePlural: myPetsPageRoot?.dataset.myPetsCountTemplatePlural || '{count} pets in your profile',
+    saveSuccessTitle: myPetsPageRoot?.dataset.myPetsSaveSuccessTitle || 'Pet saved',
+    saveSuccessTemplate: myPetsPageRoot?.dataset.myPetsSaveSuccessTemplate || '{name} was saved successfully.',
+    deleteSuccessTitle: myPetsPageRoot?.dataset.myPetsDeleteSuccessTitle || 'Pet deleted',
+    deleteSuccessTemplate: myPetsPageRoot?.dataset.myPetsDeleteSuccessTemplate || '{name} was removed.',
+    uploadSuccessTitle: myPetsPageRoot?.dataset.myPetsUploadSuccessTitle || 'Image updated',
+    uploadSuccessTemplate: myPetsPageRoot?.dataset.myPetsUploadSuccessTemplate || '{name} image was updated.',
+    actionErrorTitle: myPetsPageRoot?.dataset.myPetsActionErrorTitle || 'Action failed',
+    actionErrorMessage: myPetsPageRoot?.dataset.myPetsActionErrorMessage || 'The action could not be completed.',
+    validationRequiredTemplate: myPetsPageRoot?.dataset.myPetsValidationRequiredTemplate || 'Please fill in {field}.',
+    validationAge: myPetsPageRoot?.dataset.myPetsValidationAge || 'Age must be a number starting at 0.',
+    confirmDeleteTemplate: myPetsPageRoot?.dataset.myPetsConfirmDeleteTemplate || 'Do you really want to delete {name}?',
+    formAddTitle: myPetsPageRoot?.dataset.myPetsFormAddTitle || 'Add new pet',
+    formEditTitle: myPetsPageRoot?.dataset.myPetsFormEditTitle || 'Edit pet',
+    quickUploadLabel: myPetsPageRoot?.dataset.myPetsQuickUploadLabel || 'Update photo',
+    editLabel: myPetsPageRoot?.dataset.myPetsEditLabel || 'Edit',
+    deleteLabel: myPetsPageRoot?.dataset.myPetsDeleteLabel || 'Delete',
+    addPetLink: myPetsPageRoot?.dataset.myPetsAddLinkLabel || 'Add pet',
+    openDetailsTemplate: myPetsPageRoot?.dataset.myPetsOpenDetailsTemplate || 'Open details for {name}',
+    modalCloseAria: myPetsPageRoot?.dataset.myPetsModalCloseAria || 'Close pet dialog',
+    detailsHint: myPetsPageRoot?.dataset.myPetsDetailsHint || 'View, edit, or remove your pet profile.',
+    imageSelectedTemplate: myPetsPageRoot?.dataset.myPetsImageSelectedTemplate || 'Selected: {name}',
+    actions: {
+        previous: myPetsPageRoot?.dataset.myPetsActionPrevious || 'Previous pet',
+        next: myPetsPageRoot?.dataset.myPetsActionNext || 'Next pet',
+        save: myPetsPageRoot?.dataset.myPetsActionSave || 'Save',
+        cancel: myPetsPageRoot?.dataset.myPetsActionCancel || 'Cancel'
+    },
+    labels: {
+        name: myPetsPageRoot?.dataset.myPetsLabelName || 'Name',
+        species: myPetsPageRoot?.dataset.myPetsLabelSpecies || 'Species',
+        breed: myPetsPageRoot?.dataset.myPetsLabelBreed || 'Breed',
+        age: myPetsPageRoot?.dataset.myPetsLabelAge || 'Age',
+        specialNeeds: myPetsPageRoot?.dataset.myPetsLabelSpecialNeeds || 'Special needs',
+        image: myPetsPageRoot?.dataset.myPetsLabelImage || 'Image'
+    },
+    placeholders: {
+        name: myPetsPageRoot?.dataset.myPetsPlaceholderName || 'Pet name',
+        breed: myPetsPageRoot?.dataset.myPetsPlaceholderBreed || 'Breed',
+        age: myPetsPageRoot?.dataset.myPetsPlaceholderAge || 'Age in years',
+        specialNeeds: myPetsPageRoot?.dataset.myPetsPlaceholderSpecialNeeds || 'Special needs'
+    }
+};
 const localizedSettingsStrings = {
     loading: settingsPageRoot?.dataset.settingsLoadingLabel || 'Loading settings.',
     authRequired: settingsPageRoot?.dataset.settingsAuthRequired || 'Please sign in to open settings.',
@@ -2084,9 +2152,11 @@ const localizedSettingsStrings = {
     validationPasswordsMismatch: settingsPageRoot?.dataset.settingsValidationPasswordsMismatch || 'Both new passwords must match.',
     validationPasswordCriteriaRequired: settingsPageRoot?.dataset.settingsValidationPasswordCriteriaRequired || 'Please meet all password criteria.',
     validationSpecies: settingsPageRoot?.dataset.settingsValidationSpecies || 'Please select at least one pet species.',
+    validationProfileImage: settingsPageRoot?.dataset.settingsValidationProfileImage || 'Please choose an image file.',
     petHint: settingsPageRoot?.dataset.settingsPetHint || 'Choose the pet species you want to care for.',
     imageUploadLabel: settingsPageRoot?.dataset.settingsImageUploadLabel || 'Upload profile picture (optional)',
     imageUploadHint: settingsPageRoot?.dataset.settingsImageUploadHint || 'If you pick a file, it will be uploaded directly.',
+    imageResetLabel: settingsPageRoot?.dataset.settingsImageResetLabel || 'Use default profile picture',
     imageSelectedTemplate: settingsPageRoot?.dataset.settingsImageSelectedTemplate || 'Selected: {name}',
     cityLoading: settingsPageRoot?.dataset.settingsCityLoading || localizedRegisterStrings.cityLoading,
     cityNoResults: settingsPageRoot?.dataset.settingsCityNoResults || localizedRegisterStrings.cityNoResults,
@@ -2214,6 +2284,32 @@ createApp({
             profileViewBaseDocumentTitle: typeof document !== 'undefined'
                 ? String(document.title || '').trim()
                 : 'Pawsitters',
+            myPetsViewLoading: false,
+            showMyPetsViewLoadingDots: false,
+            myPetsViewError: '',
+            myPetsViewUser: null,
+            myPetsPets: [],
+            myPetsStrings: localizedMyPetsStrings,
+            myPetsCarouselIndex: 0,
+            myPetsQuickUploadPetId: null,
+            myPetsAddModalOpen: false,
+            myPetsDetailModalOpen: false,
+            myPetsDetailEditing: false,
+            myPetsDetailPetId: null,
+            myPetsDeleteModalOpen: false,
+            myPetsDeletePetId: null,
+            myPetsDeleteSubmitting: false,
+            myPetsForm: {
+                name: '',
+                species: '',
+                breed: '',
+                age: '',
+                specialNeeds: ''
+            },
+            myPetsFormEditingId: null,
+            myPetsFormImageFile: null,
+            myPetsFormImageFileName: '',
+            myPetsFormSaving: false,
             settingsViewLoading: false,
             showSettingsViewLoadingDots: false,
             settingsViewError: '',
@@ -2849,6 +2945,174 @@ createApp({
                 })
                 .filter((species) => Boolean(species?.label));
         },
+        myPetsDisplayName() {
+            if (this.myPetsViewUser) {
+                const firstName = typeof this.myPetsViewUser.firstName === 'string'
+                    ? this.myPetsViewUser.firstName.trim()
+                    : '';
+                const lastName = typeof this.myPetsViewUser.lastName === 'string'
+                    ? this.myPetsViewUser.lastName.trim()
+                    : '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ');
+                if (fullName) {
+                    return fullName;
+                }
+                if (this.myPetsViewUser.email) {
+                    return this.myPetsViewUser.email;
+                }
+            }
+
+            const sessionName = [this.authSessionFirstName, this.authSessionLastName]
+                .map((value) => typeof value === 'string' ? value.trim() : '')
+                .filter(Boolean)
+                .join(' ');
+            if (sessionName) {
+                return sessionName;
+            }
+
+            const normalizedEmail = this.normalizePotentiallyEncodedEmail(this.authSessionEmail);
+            if (normalizedEmail) {
+                return normalizedEmail;
+            }
+
+            return localizedAppStrings.genericUser;
+        },
+        myPetsViewInitial() {
+            const sourceText = this.myPetsDisplayName || 'P';
+            const firstCharacter = sourceText.trim().charAt(0) || 'P';
+            return firstCharacter.toUpperCase();
+        },
+        myPetsCountLabel() {
+            const petCount = Array.isArray(this.myPetsPets) ? this.myPetsPets.length : 0;
+            const template = petCount === 1
+                ? this.myPetsStrings.countTemplateSingular
+                : this.myPetsStrings.countTemplatePlural;
+            return formatTemplate(template, {
+                count: petCount
+            });
+        },
+        myPetsSpeciesChoices() {
+            if (Array.isArray(this.registerPetChoices) && this.registerPetChoices.length) {
+                return this.registerPetChoices;
+            }
+
+            const locale = document.documentElement.lang || 'de';
+            return DEFAULT_PET_CHOICES.map((value) => ({
+                value,
+                label: formatPetChoiceLabel(value, locale),
+                emojiPath: resolvePetChoiceEmojiPath(value)
+            }));
+        },
+        myPetsFormEditing() {
+            return Number.isInteger(this.myPetsFormEditingId) && this.myPetsFormEditingId > 0;
+        },
+        myPetsFormTitle() {
+            return this.myPetsFormEditing ? this.myPetsStrings.formEditTitle : this.myPetsStrings.formAddTitle;
+        },
+        myPetsFormSubmitLabel() {
+            return this.myPetsStrings.actions.save;
+        },
+        myPetsSelectedImageLabel() {
+            const fileName = typeof this.myPetsFormImageFileName === 'string'
+                ? this.myPetsFormImageFileName.trim()
+                : '';
+            if (!fileName) {
+                return this.myPetsStrings.quickUploadLabel;
+            }
+
+            return this.myPetsStrings.imageSelectedTemplate.replace('{name}', fileName);
+        },
+        myPetsActivePet() {
+            if (!Array.isArray(this.myPetsPets) || !this.myPetsPets.length) {
+                return null;
+            }
+
+            const safeIndex = Math.min(
+                Math.max(0, Number.isFinite(this.myPetsCarouselIndex) ? this.myPetsCarouselIndex : 0),
+                this.myPetsPets.length - 1
+            );
+            return this.myPetsPets[safeIndex] || null;
+        },
+        myPetsActivePetSpeciesLabel() {
+            if (!this.myPetsActivePet?.species) {
+                return this.myPetsStrings.labels.species;
+            }
+
+            return formatPetChoiceLabel(this.myPetsActivePet.species, document.documentElement.lang || 'de');
+        },
+        myPetsActivePetSpeciesEmoji() {
+            if (!this.myPetsActivePet?.species) {
+                return PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
+            }
+
+            return resolvePetChoiceEmojiPath(this.myPetsActivePet.species);
+        },
+        myPetsDetailPet() {
+            const normalizedPetId = this.normalizeProfileUserId(this.myPetsDetailPetId);
+            if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0) {
+                return this.myPetsActivePet;
+            }
+
+            return this.myPetsPets.find((pet) => pet.id === normalizedPetId) || this.myPetsActivePet;
+        },
+        myPetsDeleteTargetPet() {
+            const normalizedPetId = this.normalizeProfileUserId(this.myPetsDeletePetId);
+            if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0) {
+                return null;
+            }
+
+            return this.myPetsPets.find((pet) => pet.id === normalizedPetId) || null;
+        },
+        myPetsDeleteConfirmMessage() {
+            const petName = this.myPetsDeleteTargetPet?.name || this.myPetsStrings.labels.name;
+            return formatTemplate(this.myPetsStrings.confirmDeleteTemplate, {
+                name: petName
+            }) || this.myPetsStrings.confirmDeleteTemplate;
+        },
+        myPetsCarouselRenderItems() {
+            const pets = Array.isArray(this.myPetsPets) ? this.myPetsPets : [];
+            if (!pets.length) {
+                return [];
+            }
+
+            const visibleItems = pets
+                .map((pet, index) => {
+                    const relativeOffset = this.getMyPetsCarouselRelativeOffset(index, pets.length);
+                    const absoluteOffset = Math.abs(relativeOffset);
+                    if (absoluteOffset > 2) {
+                        return null;
+                    }
+
+                    let positionClass = 'my_pets_reel__card--center';
+                    if (relativeOffset === -1) {
+                        positionClass = 'my_pets_reel__card--left-1';
+                    } else if (relativeOffset === -2) {
+                        positionClass = 'my_pets_reel__card--left-2';
+                    } else if (relativeOffset === 1) {
+                        positionClass = 'my_pets_reel__card--right-1';
+                    } else if (relativeOffset === 2) {
+                        positionClass = 'my_pets_reel__card--right-2';
+                    }
+
+                    return {
+                        pet,
+                        index,
+                        relativeOffset,
+                        absoluteOffset,
+                        isCenter: relativeOffset === 0,
+                        positionClass
+                    };
+                })
+                .filter(Boolean);
+
+            return visibleItems.sort((left, right) => {
+                if (left.absoluteOffset !== right.absoluteOffset) {
+                    return right.absoluteOffset - left.absoluteOffset;
+                }
+
+                return left.relativeOffset - right.relativeOffset;
+            });
+        },
         settingsViewDisplayName() {
             if (!this.settingsViewUser) {
                 return '';
@@ -3022,10 +3286,6 @@ createApp({
                 return 'tel';
             }
 
-            if (this.settingsEditField === 'profilePicture') {
-                return 'url';
-            }
-
             return 'text';
         },
         settingsPasswordCriteria() {
@@ -3060,6 +3320,9 @@ createApp({
 
             return this.settingsStrings.imageSelectedTemplate.replace('{name}', fileName);
         },
+        settingsCanResetProfileImage() {
+            return !isDefaultProfilePicturePath(this.settingsViewUser?.profilePicture);
+        },
         authSessionGreeting() {
             const sourceFirstName = this.normalizeAuthSessionFirstName(this.authSessionFirstName)
                 || this.deriveFirstNameFromEmail(this.authSessionEmail)
@@ -3090,8 +3353,55 @@ createApp({
         profileViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showProfileViewLoadingDots', 'profileViewLoading', nextValue);
         },
+        myPetsViewLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showMyPetsViewLoadingDots', 'myPetsViewLoading', nextValue);
+        },
         settingsViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showSettingsViewLoadingDots', 'settingsViewLoading', nextValue);
+        },
+        myPetsPets(nextValue) {
+            if (!Array.isArray(nextValue) || !nextValue.length) {
+                this.myPetsCarouselIndex = 0;
+                if (this.myPetsFormEditing) {
+                    this.resetMyPetForm();
+                }
+                this.myPetsDetailPetId = null;
+                this.myPetsDetailEditing = false;
+                this.myPetsDetailModalOpen = false;
+                this.myPetsDeletePetId = null;
+                this.myPetsDeleteModalOpen = false;
+                this.myPetsDeleteSubmitting = false;
+                return;
+            }
+
+            const maxIndex = nextValue.length - 1;
+            if (!Number.isInteger(this.myPetsCarouselIndex) || this.myPetsCarouselIndex < 0) {
+                this.myPetsCarouselIndex = 0;
+                return;
+            }
+
+            if (this.myPetsCarouselIndex > maxIndex) {
+                this.myPetsCarouselIndex = maxIndex;
+            }
+
+            if (this.myPetsDetailModalOpen) {
+                const normalizedDetailPetId = this.normalizeProfileUserId(this.myPetsDetailPetId);
+                if (!Number.isInteger(normalizedDetailPetId) || normalizedDetailPetId <= 0) {
+                    const fallbackPet = nextValue[this.myPetsCarouselIndex] || nextValue[0];
+                    this.myPetsDetailPetId = fallbackPet?.id || null;
+                } else if (!nextValue.some((pet) => pet.id === normalizedDetailPetId)) {
+                    this.closeMyPetsDetailModal();
+                }
+            }
+
+            if (this.myPetsDeleteModalOpen) {
+                const normalizedDeletePetId = this.normalizeProfileUserId(this.myPetsDeletePetId);
+                if (!Number.isInteger(normalizedDeletePetId) || normalizedDeletePetId <= 0) {
+                    this.closeMyPetsDeleteModal();
+                } else if (!nextValue.some((pet) => pet.id === normalizedDeletePetId)) {
+                    this.closeMyPetsDeleteModal();
+                }
+            }
         },
         settingsCityOptionsLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showSettingsCityOptionsLoadingDots', 'settingsCityOptionsLoading', nextValue);
@@ -3168,6 +3478,7 @@ createApp({
         this.consumeRedirectNotification();
         this.initializeRegisterFlow();
         this.initializeProfileView();
+        this.initializeMyPetsView();
         this.initializeSettingsView();
     },
     beforeUnmount() {
@@ -4466,6 +4777,20 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             window.location.assign(profilePath);
         },
+        openCurrentUserPets() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            const myPetsPath = this.buildMyPetsPath();
+            if (!myPetsPath) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign(myPetsPath);
+        },
         openCurrentUserSettings() {
             if (!this.authSessionLoggedIn) {
                 return;
@@ -4983,6 +5308,766 @@ createApp({
 
             await this.loadProfileById(requestedUserId);
         },
+        async initializeMyPetsView() {
+            if (!myPetsPageRoot) {
+                return;
+            }
+
+            this.myPetsViewLoading = true;
+            this.myPetsViewError = '';
+            this.myPetsViewUser = null;
+            this.myPetsPets = [];
+            this.myPetsCarouselIndex = 0;
+            this.myPetsQuickUploadPetId = null;
+            this.myPetsAddModalOpen = false;
+            this.myPetsDetailModalOpen = false;
+            this.myPetsDetailEditing = false;
+            this.myPetsDetailPetId = null;
+            this.myPetsDeleteModalOpen = false;
+            this.myPetsDeletePetId = null;
+            this.myPetsDeleteSubmitting = false;
+            this.resetMyPetForm({ keepSpecies: false });
+            this.syncModalBodyLock();
+
+            if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
+                try {
+                    await this.loadRegisterPetChoices();
+                } catch {
+                    // Optional preload only.
+                }
+            }
+
+            await this.loadMyPetsViewData();
+        },
+        normalizeMyPetImagePath(value = '') {
+            if (typeof value !== 'string') {
+                return '';
+            }
+
+            const trimmed = value.trim();
+            if (!trimmed) {
+                return '';
+            }
+
+            if (
+                /^https?:\/\//i.test(trimmed)
+                || trimmed.startsWith('/')
+                || /^data:/i.test(trimmed)
+            ) {
+                return trimmed;
+            }
+
+            return `/uploads/pets/${trimmed}`;
+        },
+        normalizeMyPet(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const normalizedName = typeof value?.name === 'string' ? value.name.trim() : '';
+            const normalizedSpecies = typeof value?.species === 'string' ? value.species.trim().toUpperCase() : '';
+            const normalizedBreed = typeof value?.breed === 'string' ? value.breed.trim() : '';
+            const normalizedSpecialNeeds = typeof value?.specialNeeds === 'string'
+                ? value.specialNeeds.trim()
+                : '';
+            const rawAge = Number(value?.age);
+            const normalizedAge = Number.isFinite(rawAge) && rawAge >= 0 ? Math.round(rawAge) : 0;
+
+            return {
+                id: normalizedId,
+                name: normalizedName,
+                species: normalizedSpecies,
+                breed: normalizedBreed,
+                age: normalizedAge,
+                specialNeeds: normalizedSpecialNeeds,
+                imagePath: this.normalizeMyPetImagePath(value?.imagePath || ''),
+                defaultImagePath: this.normalizeMyPetImagePath(value?.defaultImagePath || '')
+            };
+        },
+        resolveMyPetImagePath(pet = {}) {
+            const imagePath = this.normalizeMyPetImagePath(pet?.imagePath || '');
+            if (imagePath) {
+                return imagePath;
+            }
+
+            const defaultImagePath = this.normalizeMyPetImagePath(pet?.defaultImagePath || '');
+            if (defaultImagePath) {
+                return defaultImagePath;
+            }
+
+            const species = typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : '';
+            return resolvePetChoiceEmojiPath(species);
+        },
+        resolveMyPetSpeciesLabel(pet = null) {
+            const species = typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : '';
+            if (!species) {
+                return this.myPetsStrings.labels.species;
+            }
+
+            return formatPetChoiceLabel(species, document.documentElement.lang || 'de');
+        },
+        resolveMyPetSpeciesEmoji(pet = null) {
+            const species = typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : '';
+            if (!species) {
+                return PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH;
+            }
+
+            return resolvePetChoiceEmojiPath(species);
+        },
+        buildMyPetsOpenDetailsLabel(pet = null) {
+            const petName = typeof pet?.name === 'string' ? pet.name.trim() : '';
+            return formatTemplate(this.myPetsStrings.openDetailsTemplate, {
+                name: petName || this.myPetsStrings.labels.name
+            });
+        },
+        buildMyPetsActionErrorMessage(payload = {}) {
+            const backendMessage = typeof payload?.message === 'string'
+                ? payload.message.trim()
+                : '';
+            const detailMessage = Array.isArray(payload?.error?.details)
+                ? payload.error.details
+                    .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                    .find(Boolean)
+                : '';
+
+            return detailMessage || backendMessage || this.myPetsStrings.actionErrorMessage;
+        },
+        async loadMyPetsViewData() {
+            if (!myPetsPageRoot) {
+                return;
+            }
+
+            this.myPetsViewLoading = true;
+            this.myPetsViewError = '';
+
+            try {
+                const [profileResponse, petsResponse] = await Promise.all([
+                    apiFetch('/api/users/me', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    }),
+                    apiFetch('/api/pets', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    })
+                ]);
+                const profilePayload = await profileResponse.json().catch(() => ({}));
+                const petsPayload = await petsResponse.json().catch(() => ({}));
+
+                if (
+                    profileResponse.status === 401
+                    || profileResponse.status === 403
+                    || petsResponse.status === 401
+                    || petsResponse.status === 403
+                ) {
+                    this.myPetsViewError = this.myPetsStrings.authRequired;
+                    window.location.assign(this.buildNotFoundPath());
+                    return;
+                }
+
+                if (
+                    !profileResponse.ok
+                    || profilePayload?.success === false
+                    || !petsResponse.ok
+                    || petsPayload?.success === false
+                ) {
+                    this.myPetsViewError = this.myPetsStrings.loadFailed;
+                    return;
+                }
+
+                this.myPetsViewUser = this.normalizeProfileUser(profilePayload?.data || {});
+                const normalizedPets = Array.isArray(petsPayload?.data)
+                    ? petsPayload.data
+                        .map((pet) => this.normalizeMyPet(pet))
+                        .filter((pet) => Number.isInteger(pet.id) && pet.id > 0)
+                    : [];
+                this.myPetsPets = normalizedPets;
+                this.myPetsCarouselIndex = 0;
+                this.resetMyPetForm({ keepSpecies: false });
+            } catch {
+                this.myPetsViewError = this.myPetsStrings.loadFailed;
+            } finally {
+                this.myPetsViewLoading = false;
+            }
+        },
+        getMyPetsCarouselRelativeOffset(index, totalCount = null) {
+            const normalizedIndex = Number(index);
+            const pets = Array.isArray(this.myPetsPets) ? this.myPetsPets : [];
+            const normalizedCount = Number.isFinite(Number(totalCount))
+                ? Math.max(0, Math.round(Number(totalCount)))
+                : pets.length;
+
+            if (!Number.isInteger(normalizedIndex) || normalizedCount <= 0) {
+                return 0;
+            }
+
+            const safeActiveIndex = Number.isInteger(this.myPetsCarouselIndex)
+                ? Math.min(Math.max(0, this.myPetsCarouselIndex), normalizedCount - 1)
+                : 0;
+            let offset = normalizedIndex - safeActiveIndex;
+            const halfRange = normalizedCount / 2;
+
+            if (offset > halfRange) {
+                offset -= normalizedCount;
+            } else if (offset < -halfRange) {
+                offset += normalizedCount;
+            }
+
+            return Math.round(offset);
+        },
+        setMyPetsCarouselIndex(index) {
+            const normalizedIndex = Number(index);
+            if (!Array.isArray(this.myPetsPets) || !this.myPetsPets.length || !Number.isFinite(normalizedIndex)) {
+                this.myPetsCarouselIndex = 0;
+                return;
+            }
+
+            const maxIndex = this.myPetsPets.length - 1;
+            this.myPetsCarouselIndex = Math.min(maxIndex, Math.max(0, Math.round(normalizedIndex)));
+        },
+        navigateMyPetsCarousel(direction = 1) {
+            if (!Array.isArray(this.myPetsPets) || !this.myPetsPets.length) {
+                this.myPetsCarouselIndex = 0;
+                return;
+            }
+
+            const normalizedDirection = Number(direction) < 0 ? -1 : 1;
+            const itemCount = this.myPetsPets.length;
+            const currentIndex = Number.isInteger(this.myPetsCarouselIndex) ? this.myPetsCarouselIndex : 0;
+            const nextIndex = (currentIndex + normalizedDirection + itemCount) % itemCount;
+            this.myPetsCarouselIndex = nextIndex;
+        },
+        openMyPetsAddModal() {
+            if (!myPetsPageRoot) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.closeMyPetsDeleteModal();
+            this.myPetsDetailModalOpen = false;
+            this.myPetsDetailEditing = false;
+            this.myPetsDetailPetId = null;
+            this.resetMyPetForm({ keepSpecies: false });
+            this.myPetsAddModalOpen = true;
+            this.syncModalBodyLock();
+
+            nextTick(() => {
+                document.querySelector('[data-my-pets-add-modal] [data-my-pets-form-name]')?.focus();
+            });
+        },
+        closeMyPetsAddModal() {
+            if (!this.myPetsAddModalOpen) {
+                return;
+            }
+
+            this.myPetsAddModalOpen = false;
+            this.resetMyPetForm({ keepSpecies: false });
+            this.syncModalBodyLock();
+        },
+        openMyPetsDetailModal(pet = null) {
+            const sourcePet = pet && typeof pet === 'object' ? this.normalizeMyPet(pet) : this.myPetsActivePet;
+            if (!sourcePet || !Number.isInteger(sourcePet.id) || sourcePet.id <= 0) {
+                return;
+            }
+
+            const selectedIndex = this.myPetsPets.findIndex((entry) => entry.id === sourcePet.id);
+            if (selectedIndex >= 0) {
+                this.myPetsCarouselIndex = selectedIndex;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.closeMyPetsDeleteModal();
+            this.myPetsAddModalOpen = false;
+            this.myPetsDetailPetId = sourcePet.id;
+            this.myPetsDetailEditing = false;
+            this.resetMyPetForm({ keepSpecies: false });
+            this.myPetsDetailModalOpen = true;
+            this.syncModalBodyLock();
+        },
+        closeMyPetsDetailModal() {
+            if (!this.myPetsDetailModalOpen) {
+                return;
+            }
+
+            this.myPetsDetailModalOpen = false;
+            this.myPetsDetailEditing = false;
+            this.myPetsDetailPetId = null;
+            this.resetMyPetForm({ keepSpecies: false });
+            this.syncModalBodyLock();
+        },
+        startMyPetsDetailEditing() {
+            if (!this.myPetsDetailModalOpen || !this.myPetsDetailPet) {
+                return;
+            }
+
+            this.beginMyPetEdit(this.myPetsDetailPet);
+            this.myPetsDetailPetId = this.myPetsDetailPet.id;
+            this.myPetsDetailEditing = true;
+            this.syncModalBodyLock();
+
+            nextTick(() => {
+                document.querySelector('[data-my-pets-detail-modal] [data-my-pets-form-name]')?.focus();
+            });
+        },
+        cancelMyPetsDetailEditing() {
+            this.myPetsDetailEditing = false;
+            this.resetMyPetForm({ keepSpecies: true });
+        },
+        resetMyPetForm(options = {}) {
+            const keepSpecies = options?.keepSpecies === true;
+            const currentSpecies = keepSpecies && typeof this.myPetsForm?.species === 'string'
+                ? this.myPetsForm.species.trim().toUpperCase()
+                : '';
+            const defaultSpecies = this.myPetsSpeciesChoices?.[0]?.value || '';
+
+            this.myPetsForm = {
+                name: '',
+                species: currentSpecies || defaultSpecies,
+                breed: '',
+                age: '',
+                specialNeeds: ''
+            };
+            this.myPetsFormEditingId = null;
+            this.myPetsFormImageFile = null;
+            this.myPetsFormImageFileName = '';
+        },
+        beginMyPetEdit(pet = null) {
+            if (!pet || typeof pet !== 'object') {
+                return;
+            }
+
+            const normalizedPet = this.normalizeMyPet(pet);
+            if (!Number.isInteger(normalizedPet.id) || normalizedPet.id <= 0) {
+                return;
+            }
+
+            this.myPetsForm = {
+                name: normalizedPet.name,
+                species: normalizedPet.species || this.myPetsSpeciesChoices?.[0]?.value || '',
+                breed: normalizedPet.breed,
+                age: String(normalizedPet.age),
+                specialNeeds: normalizedPet.specialNeeds
+            };
+            this.myPetsFormEditingId = normalizedPet.id;
+            this.myPetsFormImageFile = null;
+            this.myPetsFormImageFileName = '';
+
+            const selectedIndex = this.myPetsPets.findIndex((entry) => entry.id === normalizedPet.id);
+            if (selectedIndex >= 0) {
+                this.myPetsCarouselIndex = selectedIndex;
+            }
+        },
+        handleMyPetFormImageSelection(event) {
+            const file = event?.target?.files?.[0] ?? null;
+            this.myPetsFormImageFile = file instanceof File ? file : null;
+            this.myPetsFormImageFileName = this.myPetsFormImageFile?.name || '';
+        },
+        validateMyPetForm() {
+            const normalizedName = typeof this.myPetsForm?.name === 'string'
+                ? this.myPetsForm.name.trim()
+                : '';
+            const normalizedSpecies = typeof this.myPetsForm?.species === 'string'
+                ? this.myPetsForm.species.trim().toUpperCase()
+                : '';
+            const normalizedBreed = typeof this.myPetsForm?.breed === 'string'
+                ? this.myPetsForm.breed.trim()
+                : '';
+            const normalizedSpecialNeeds = typeof this.myPetsForm?.specialNeeds === 'string'
+                ? this.myPetsForm.specialNeeds.trim()
+                : '';
+            const ageInput = typeof this.myPetsForm?.age === 'string' || typeof this.myPetsForm?.age === 'number'
+                ? String(this.myPetsForm.age).trim()
+                : '';
+            const normalizedAge = Number.parseInt(ageInput, 10);
+
+            const requiredMessageFor = (fieldLabel) => formatTemplate(this.myPetsStrings.validationRequiredTemplate, {
+                field: fieldLabel
+            });
+
+            if (!normalizedName) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myPetsStrings.labels.name)
+                };
+            }
+
+            if (!normalizedSpecies) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myPetsStrings.labels.species)
+                };
+            }
+
+            if (!normalizedBreed) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myPetsStrings.labels.breed)
+                };
+            }
+
+            if (!Number.isInteger(normalizedAge) || normalizedAge < 0) {
+                return {
+                    valid: false,
+                    message: this.myPetsStrings.validationAge
+                };
+            }
+
+            if (!normalizedSpecialNeeds) {
+                return {
+                    valid: false,
+                    message: requiredMessageFor(this.myPetsStrings.labels.specialNeeds)
+                };
+            }
+
+            this.myPetsForm = {
+                ...this.myPetsForm,
+                name: normalizedName,
+                species: normalizedSpecies,
+                breed: normalizedBreed,
+                age: String(normalizedAge),
+                specialNeeds: normalizedSpecialNeeds
+            };
+
+            return {
+                valid: true,
+                payload: {
+                    name: normalizedName,
+                    species: normalizedSpecies,
+                    breed: normalizedBreed,
+                    age: normalizedAge,
+                    specialNeeds: normalizedSpecialNeeds
+                }
+            };
+        },
+        upsertMyPetInCollection(pet = null, options = {}) {
+            const normalizedPet = this.normalizeMyPet(pet || {});
+            if (!Number.isInteger(normalizedPet.id) || normalizedPet.id <= 0) {
+                return null;
+            }
+
+            const selectInsertedPet = options?.selectInsertedPet !== false;
+            const previousPets = Array.isArray(this.myPetsPets) ? [...this.myPetsPets] : [];
+            const existingIndex = previousPets.findIndex((entry) => entry.id === normalizedPet.id);
+
+            if (existingIndex >= 0) {
+                previousPets.splice(existingIndex, 1, normalizedPet);
+            } else {
+                previousPets.unshift(normalizedPet);
+            }
+
+            this.myPetsPets = previousPets;
+
+            if (selectInsertedPet) {
+                const nextIndex = previousPets.findIndex((entry) => entry.id === normalizedPet.id);
+                this.myPetsCarouselIndex = nextIndex >= 0 ? nextIndex : 0;
+            }
+
+            return normalizedPet;
+        },
+        async uploadMyPetImageById(petId, file, options = {}) {
+            const normalizedPetId = this.normalizeProfileUserId(petId);
+            const imageFile = file instanceof File ? file : null;
+            if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0 || !imageFile) {
+                return null;
+            }
+
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            try {
+                const response = await apiFetch(`/api/pets/${normalizedPetId}/image`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: formData
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myPetsStrings.actionErrorTitle,
+                        message: this.buildMyPetsActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return null;
+                }
+
+                const normalizedPet = this.upsertMyPetInCollection(payload?.data || {}, {
+                    selectInsertedPet: options?.selectInsertedPet !== false
+                });
+                if (!normalizedPet) {
+                    return null;
+                }
+
+                if (options?.notifySuccess === true) {
+                    const sourceName = options?.petName || normalizedPet.name || this.myPetsStrings.labels.name;
+                    this.pushNotification({
+                        title: this.myPetsStrings.uploadSuccessTitle,
+                        message: formatTemplate(this.myPetsStrings.uploadSuccessTemplate, { name: sourceName }),
+                        tone: 'success'
+                    });
+                }
+
+                return normalizedPet;
+            } catch {
+                this.pushNotification({
+                    title: this.myPetsStrings.actionErrorTitle,
+                    message: this.myPetsStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+                return null;
+            }
+        },
+        async submitMyPetForm() {
+            if (this.myPetsFormSaving) {
+                return;
+            }
+
+            const submitFromAddModal = this.myPetsAddModalOpen;
+            const submitFromDetailEdit = this.myPetsDetailModalOpen && this.myPetsDetailEditing;
+            const validation = this.validateMyPetForm();
+            if (!validation.valid) {
+                this.pushNotification({
+                    title: this.myPetsStrings.actionErrorTitle,
+                    message: validation.message || this.myPetsStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const isEditing = Number.isInteger(this.myPetsFormEditingId) && this.myPetsFormEditingId > 0;
+            const endpoint = isEditing ? `/api/pets/${this.myPetsFormEditingId}` : '/api/pets';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            this.myPetsFormSaving = true;
+
+            try {
+                const response = await apiFetch(endpoint, {
+                    method,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify(validation.payload)
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myPetsStrings.actionErrorTitle,
+                        message: this.buildMyPetsActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                let normalizedPet = this.upsertMyPetInCollection(payload?.data || {}, {
+                    selectInsertedPet: true
+                });
+                if (!normalizedPet) {
+                    this.pushNotification({
+                        title: this.myPetsStrings.actionErrorTitle,
+                        message: this.myPetsStrings.actionErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                if (this.myPetsFormImageFile) {
+                    const uploadedPet = await this.uploadMyPetImageById(normalizedPet.id, this.myPetsFormImageFile, {
+                        notifySuccess: false,
+                        petName: normalizedPet.name,
+                        selectInsertedPet: true
+                    });
+                    if (uploadedPet) {
+                        normalizedPet = uploadedPet;
+                    } else {
+                        return;
+                    }
+                }
+
+                if (submitFromAddModal) {
+                    this.closeMyPetsAddModal();
+                } else if (submitFromDetailEdit) {
+                    this.myPetsDetailPetId = normalizedPet.id;
+                    this.myPetsDetailEditing = false;
+                    this.resetMyPetForm({ keepSpecies: true });
+                } else {
+                    this.resetMyPetForm({ keepSpecies: true });
+                }
+
+                this.pushNotification({
+                    title: this.myPetsStrings.saveSuccessTitle,
+                    message: formatTemplate(this.myPetsStrings.saveSuccessTemplate, {
+                        name: normalizedPet.name || this.myPetsStrings.labels.name
+                    }),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.myPetsStrings.actionErrorTitle,
+                    message: this.myPetsStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.myPetsFormSaving = false;
+            }
+        },
+        async handleMyPetQuickImageUpload(event, pet = null) {
+            const file = event?.target?.files?.[0] ?? null;
+            if (event?.target) {
+                event.target.value = '';
+            }
+            if (!(file instanceof File)) {
+                return;
+            }
+
+            const normalizedPet = this.normalizeMyPet(pet || {});
+            if (!Number.isInteger(normalizedPet.id) || normalizedPet.id <= 0) {
+                return;
+            }
+
+            this.myPetsQuickUploadPetId = normalizedPet.id;
+            try {
+                await this.uploadMyPetImageById(normalizedPet.id, file, {
+                    notifySuccess: true,
+                    petName: normalizedPet.name,
+                    selectInsertedPet: true
+                });
+            } finally {
+                if (this.myPetsQuickUploadPetId === normalizedPet.id) {
+                    this.myPetsQuickUploadPetId = null;
+                }
+            }
+        },
+        removeMyPetFromCollection(petId) {
+            const normalizedPetId = this.normalizeProfileUserId(petId);
+            if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0) {
+                return;
+            }
+
+            const previousPets = Array.isArray(this.myPetsPets) ? [...this.myPetsPets] : [];
+            const filteredPets = previousPets.filter((pet) => pet.id !== normalizedPetId);
+            this.myPetsPets = filteredPets;
+
+            if (
+                Number.isInteger(this.myPetsFormEditingId)
+                && this.myPetsFormEditingId === normalizedPetId
+            ) {
+                this.resetMyPetForm({ keepSpecies: true });
+            }
+
+            if (
+                this.myPetsDetailModalOpen
+                && this.normalizeProfileUserId(this.myPetsDetailPetId) === normalizedPetId
+            ) {
+                this.closeMyPetsDetailModal();
+            }
+
+            if (!filteredPets.length) {
+                this.myPetsCarouselIndex = 0;
+                return;
+            }
+
+            if (!Number.isInteger(this.myPetsCarouselIndex) || this.myPetsCarouselIndex < 0) {
+                this.myPetsCarouselIndex = 0;
+                return;
+            }
+
+            if (this.myPetsCarouselIndex >= filteredPets.length) {
+                this.myPetsCarouselIndex = filteredPets.length - 1;
+            }
+        },
+        requestMyPetDeletion(pet = null) {
+            const normalizedPet = this.normalizeMyPet(pet || {});
+            if (!Number.isInteger(normalizedPet.id) || normalizedPet.id <= 0) {
+                return;
+            }
+
+            this.myPetsDeletePetId = normalizedPet.id;
+            this.myPetsDeleteSubmitting = false;
+            this.myPetsDeleteModalOpen = true;
+            this.myPetsAddModalOpen = false;
+            this.myPetsDetailModalOpen = false;
+            this.myPetsDetailEditing = false;
+            this.myPetsDetailPetId = normalizedPet.id;
+            this.syncModalBodyLock();
+
+            nextTick(() => {
+                document.querySelector('[data-my-pets-delete-confirm]')?.focus();
+            });
+        },
+        closeMyPetsDeleteModal() {
+            if (!this.myPetsDeleteModalOpen && !this.myPetsDeletePetId) {
+                return;
+            }
+
+            this.myPetsDeleteModalOpen = false;
+            this.myPetsDeletePetId = null;
+            this.myPetsDeleteSubmitting = false;
+            this.syncModalBodyLock();
+        },
+        async confirmMyPetDeletion() {
+            if (this.myPetsDeleteSubmitting) {
+                return;
+            }
+
+            const targetPet = this.myPetsDeleteTargetPet;
+            const normalizedPet = this.normalizeMyPet(targetPet || {});
+            if (!Number.isInteger(normalizedPet.id) || normalizedPet.id <= 0) {
+                this.closeMyPetsDeleteModal();
+                return;
+            }
+
+            const petName = normalizedPet.name || this.myPetsStrings.labels.name;
+            this.myPetsDeleteSubmitting = true;
+
+            try {
+                const response = await apiFetch(`/api/pets/${normalizedPet.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myPetsStrings.actionErrorTitle,
+                        message: this.buildMyPetsActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.removeMyPetFromCollection(normalizedPet.id);
+                this.closeMyPetsDeleteModal();
+                this.pushNotification({
+                    title: this.myPetsStrings.deleteSuccessTitle,
+                    message: formatTemplate(this.myPetsStrings.deleteSuccessTemplate, {
+                        name: petName
+                    }),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.myPetsStrings.actionErrorTitle,
+                    message: this.myPetsStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.myPetsDeleteSubmitting = false;
+            }
+        },
         async initializeSettingsView() {
             if (!settingsPageRoot) {
                 return;
@@ -5100,6 +6185,9 @@ createApp({
 
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
+            this.closeMyPetsAddModal();
+            this.closeMyPetsDetailModal();
+            this.closeMyPetsDeleteModal();
             this.settingsEditField = fieldKey.trim();
             this.settingsEditValue = '';
             this.settingsPhoneCountryCode = '';
@@ -5142,6 +6230,8 @@ createApp({
             } else if (this.settingsEditField === 'acceptedPetSpecies') {
                 const species = this.readSettingsFieldValue('acceptedPetSpecies');
                 this.settingsEditSpecies = Array.isArray(species) ? species : [];
+            } else if (this.settingsEditField === 'profilePicture') {
+                this.settingsEditValue = '';
             } else {
                 this.settingsEditValue = this.readSettingsFieldValue(this.settingsEditField);
             }
@@ -5196,6 +6286,11 @@ createApp({
 
                 if (this.settingsEditField === 'city') {
                     document.querySelector('[data-settings-edit-city-input]')?.focus();
+                    return;
+                }
+
+                if (this.settingsEditField === 'profilePicture') {
+                    document.querySelector('[data-settings-edit-profile-upload]')?.focus();
                     return;
                 }
 
@@ -5439,11 +6534,27 @@ createApp({
                 };
             }
 
+            if (fieldKey === 'profilePicture') {
+                if (!(this.settingsEditProfileFile instanceof File)) {
+                    return {
+                        valid: false,
+                        message: this.settingsStrings.validationProfileImage,
+                        payloadValue: ''
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    payloadValue: ''
+                };
+            }
+
             const normalizedValue = typeof this.settingsEditValue === 'string'
                 ? this.settingsEditValue.trim()
                 : '';
 
-            if (!normalizedValue && !(fieldKey === 'profilePicture' && this.settingsEditProfileFile)) {
+            if (!normalizedValue) {
                 return {
                     valid: false,
                     message: this.settingsStrings.validationRequired,
@@ -5556,6 +6667,17 @@ createApp({
                 return null;
             }
         },
+        resolveSettingsApiErrorMessage(payload = {}) {
+            const backendMessage = typeof payload?.message === 'string'
+                ? payload.message.trim()
+                : '';
+            const detailMessage = Array.isArray(payload?.error?.details)
+                ? payload.error.details
+                    .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                    .find(Boolean)
+                : '';
+            return detailMessage || backendMessage || this.settingsStrings.saveErrorMessage;
+        },
         applyUpdatedSettingsUser(userData = {}, options = {}) {
             const { preferredCityOption = null } = options;
             const normalizedUser = this.normalizeProfileUser(userData || {});
@@ -5585,6 +6707,55 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             window.location.assign('/');
         },
+        async submitSettingsProfileImageReset() {
+            if (this.settingsEditSaving || !this.settingsViewUser) {
+                return;
+            }
+
+            const normalizedUserId = this.normalizeProfileUserId(this.settingsViewUser.id);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return;
+            }
+
+            const fieldLabel = this.getSettingsFieldLabel('profilePicture');
+            this.settingsEditSaving = true;
+
+            try {
+                const response = await apiFetch(`/api/users/${normalizedUserId}/profile-image`, {
+                    method: 'DELETE',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.settingsStrings.saveErrorTitle,
+                        message: this.resolveSettingsApiErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.applyUpdatedSettingsUser(payload?.data || {});
+                this.closeSettingsEditModal();
+                this.pushNotification({
+                    title: this.settingsStrings.saveSuccessTitle,
+                    message: this.settingsStrings.saveSuccessTemplate.replace('{field}', fieldLabel),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.settingsStrings.saveErrorTitle,
+                    message: this.settingsStrings.saveErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.settingsEditSaving = false;
+            }
+        },
         async submitSettingsEditForm() {
             if (this.settingsEditSaving || !this.settingsViewUser) {
                 return;
@@ -5608,7 +6779,17 @@ createApp({
             this.settingsEditSaving = true;
 
             try {
-                if (fieldKey === 'profilePicture' && this.settingsEditProfileFile) {
+                if (fieldKey === 'profilePicture') {
+                    const validation = this.validateSettingsEditField(fieldKey);
+                    if (!validation.valid) {
+                        this.pushNotification({
+                            title: this.settingsStrings.saveErrorTitle,
+                            message: validation.message || this.settingsStrings.saveErrorMessage,
+                            tone: 'warning'
+                        });
+                        return;
+                    }
+
                     const formData = new FormData();
                     formData.append('image', this.settingsEditProfileFile);
 
@@ -5623,17 +6804,9 @@ createApp({
                     const payload = await response.json().catch(() => ({}));
 
                     if (!response.ok || payload?.success === false) {
-                        const backendMessage = typeof payload?.message === 'string'
-                            ? payload.message.trim()
-                            : '';
-                        const detailMessage = Array.isArray(payload?.error?.details)
-                            ? payload.error.details
-                                .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
-                                .find(Boolean)
-                            : '';
                         this.pushNotification({
                             title: this.settingsStrings.saveErrorTitle,
-                            message: detailMessage || backendMessage || this.settingsStrings.saveErrorMessage,
+                            message: this.resolveSettingsApiErrorMessage(payload),
                             tone: 'warning'
                         });
                         return;
@@ -5698,17 +6871,9 @@ createApp({
                 const payload = await response.json().catch(() => ({}));
 
                 if (!response.ok || payload?.success === false) {
-                    const backendMessage = typeof payload?.message === 'string'
-                        ? payload.message.trim()
-                        : '';
-                    const detailMessage = Array.isArray(payload?.error?.details)
-                        ? payload.error.details
-                            .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
-                            .find(Boolean)
-                        : '';
                     this.pushNotification({
                         title: this.settingsStrings.saveErrorTitle,
-                        message: detailMessage || backendMessage || this.settingsStrings.saveErrorMessage,
+                        message: this.resolveSettingsApiErrorMessage(payload),
                         tone: 'warning'
                     });
                     return;
@@ -5849,6 +7014,13 @@ createApp({
             }
 
             this.profileViewUser.profilePicture = '';
+        },
+        handleSettingsAvatarError() {
+            if (!this.settingsViewUser || typeof this.settingsViewUser !== 'object') {
+                return;
+            }
+
+            this.settingsViewUser.profilePicture = '';
         },
         formatProfileDate(value) {
             const normalizedDate = normalizeDateInputValue(value);
@@ -6502,6 +7674,9 @@ createApp({
         isProfileBasePath(pathname) {
             return ROUTE_GUARD_PROFILE_BASE_PATTERN.test(this.normalizeRoutePath(pathname));
         },
+        isMyPetsPath(pathname) {
+            return ROUTE_GUARD_MY_PETS_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
         isSettingsPath(pathname) {
             return ROUTE_GUARD_SETTINGS_PATTERN.test(this.normalizeRoutePath(pathname));
         },
@@ -6518,6 +7693,12 @@ createApp({
                     pathPattern: ROUTE_GUARD_PROFILE_BASE_PATTERN,
                     redirectWhen: 'authenticated',
                     target: 'ownProfile'
+                },
+                {
+                    id: 'my-pets-auth-only',
+                    pathPattern: ROUTE_GUARD_MY_PETS_PATTERN,
+                    redirectWhen: 'unauthenticated',
+                    target: 'notFound'
                 },
                 {
                     id: 'settings-auth-only',
@@ -6775,7 +7956,11 @@ createApp({
         },
         buildSettingsPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
-            return localePrefix ? `${localePrefix}/settings` : '/settings';
+            return localePrefix ? `${localePrefix}/profile/settings` : '/profile/settings';
+        },
+        buildMyPetsPath() {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            return localePrefix ? `${localePrefix}/profile/my-pets` : '/profile/my-pets';
         },
         buildProfilePath(userId = null) {
             const normalizedUserId = this.normalizeProfileUserId(userId);
@@ -6956,6 +8141,9 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             this.activeGitCommitModalHash = '';
             this.activeBoardCardKey = '';
+            this.closeMyPetsAddModal();
+            this.closeMyPetsDetailModal();
+            this.closeMyPetsDeleteModal();
             this.closeSettingsEditModal();
             this.closeUserSearchModal();
             this.resetLoginModalState();
@@ -7212,6 +8400,9 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             this.activeGitCommitModalHash = '';
             this.activeBoardCardKey = '';
+            this.closeMyPetsAddModal();
+            this.closeMyPetsDetailModal();
+            this.closeMyPetsDeleteModal();
             this.closeSettingsEditModal();
             this.closeLoginModal();
             this.userSearchModalOpen = true;
@@ -7277,6 +8468,9 @@ createApp({
                     this.loginModalOpen
                     || this.userSearchModalOpen
                     || this.settingsEditModalOpen
+                    || this.myPetsAddModalOpen
+                    || this.myPetsDetailModalOpen
+                    || this.myPetsDeleteModalOpen
                     || this.activeGitCommitModalHash
                     || this.activeBoardCardKey
                 )
@@ -7732,6 +8926,26 @@ createApp({
 
             if (this.settingsEditModalOpen) {
                 this.closeSettingsEditModal();
+                return;
+            }
+
+            if (this.myPetsDeleteModalOpen) {
+                this.closeMyPetsDeleteModal();
+                return;
+            }
+
+            if (this.myPetsAddModalOpen) {
+                this.closeMyPetsAddModal();
+                return;
+            }
+
+            if (this.myPetsDetailModalOpen) {
+                if (this.myPetsDetailEditing) {
+                    this.cancelMyPetsDetailEditing();
+                    return;
+                }
+
+                this.closeMyPetsDetailModal();
                 return;
             }
 

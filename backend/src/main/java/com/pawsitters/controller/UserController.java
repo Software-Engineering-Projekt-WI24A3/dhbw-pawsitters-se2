@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -202,7 +203,8 @@ public class UserController {
                                                                         Authentication authentication,
                                                                         HttpServletRequest servletRequest) {
         MultipartFile upload = file != null ? file : image;
-        User user = userService.uploadProfileImage(id, authentication.getName(), upload);
+        String authenticatedEmail = requireAuthenticatedEmail(authentication);
+        User user = userService.uploadProfileImage(id, authenticatedEmail, upload);
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Profile image uploaded successfully.",
@@ -215,13 +217,21 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> deleteProfileImage(@PathVariable Long id,
                                                                         Authentication authentication,
                                                                         HttpServletRequest servletRequest) {
-        User user = userService.deleteProfileImage(id, authentication.getName());
+        String authenticatedEmail = requireAuthenticatedEmail(authentication);
+        User user = userService.deleteProfileImage(id, authenticatedEmail);
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Profile image deleted successfully.",
                 UserResponse.from(user),
                 servletRequest.getRequestURI()
         ));
+    }
+
+    private String requireAuthenticatedEmail(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new AuthenticationCredentialsNotFoundException("Authentication required.");
+        }
+        return authentication.getName();
     }
 
     private String sanitizeUploadFilename(String rawFilename) {

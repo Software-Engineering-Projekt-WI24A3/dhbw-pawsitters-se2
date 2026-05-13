@@ -32,6 +32,10 @@
       "title": "Pawsitters | Öffentliches Profil",
       "description": "Öffentliche Profilseite mit Banner, Avatar und persönlichen Daten."
     },
+    "myPets": {
+      "title": "Pawsitters | Meine Haustiere",
+      "description": "Geschützter Bereich zur Verwaltung deiner Haustiere mit Bild-Upload und Karussell."
+    },
     "settings": {
       "title": "Pawsitters | Einstellungen",
       "description": "Geschützter Einstellungsbereich zur Bearbeitung deiner Profildaten."
@@ -72,6 +76,7 @@
     "ariaUserMenu": "Benutzermenü",
     "openUserMenu": "Benutzermenü öffnen",
     "profile": "Profil ansehen",
+    "myPets": "Meine Haustiere",
     "settings": "Einstellungen",
     "logout": "Ausloggen",
     "login": "Einloggen",
@@ -414,6 +419,68 @@
       }
     }
   },
+  "myPets": {
+    "page": {
+      "bannerAlt": "Kopenhagen-Banner für Haustierverwaltung",
+      "eyebrow": "Meine Haustiere",
+      "title": "Haustiere verwalten",
+      "loading": "Haustiere werden geladen.",
+      "authRequired": "Bitte logge dich ein, um deine Haustiere zu verwalten.",
+      "loadFailed": "Haustiere konnten nicht geladen werden.",
+      "emptyTitle": "Noch keine Haustiere",
+      "emptyText": "Lege dein erstes Haustier an und lade direkt ein Foto hoch.",
+      "introDescription": "Speichere hier deine eigenen Haustiere, damit du sie bei einer Vermittlungsanfrage sofort auswählen kannst.",
+      "countTemplateSingular": "{count} Haustier in deinem Profil",
+      "countTemplatePlural": "{count} Haustiere in deinem Profil",
+      "carouselAria": "Karussell deiner Haustiere",
+      "formHint": "Lege neue Haustiere an oder bearbeite bestehende Einträge.",
+      "addPetLink": "Haustier hinzufügen",
+      "openDetailsTemplate": "Details zu {name} öffnen",
+      "modalCloseAria": "Haustier-Dialog schließen",
+      "detailsHint": "Öffne ein Haustier, um Details anzusehen, zu bearbeiten oder zu löschen.",
+      "formAddTitle": "Neues Haustier hinzufügen",
+      "formEditTitle": "Haustier bearbeiten",
+      "quickUploadLabel": "Foto aktualisieren",
+      "imageSelectedTemplate": "Ausgewählt: {name}",
+      "confirmDeleteTemplate": "Möchtest du {name} wirklich löschen?",
+      "labels": {
+        "name": "Name",
+        "species": "Tierart",
+        "breed": "Rasse",
+        "age": "Alter",
+        "specialNeeds": "Besondere Hinweise",
+        "image": "Bild"
+      },
+      "placeholders": {
+        "name": "Name des Haustiers",
+        "breed": "Rasse",
+        "age": "Alter in Jahren",
+        "specialNeeds": "Besondere Bedürfnisse, Routinen oder Medikamente"
+      },
+      "actions": {
+        "previous": "Vorheriges Haustier",
+        "next": "Nächstes Haustier",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      },
+      "validation": {
+        "requiredTemplate": "Bitte fülle {field} aus.",
+        "age": "Das Alter muss eine Zahl ab 0 sein."
+      },
+      "notifications": {
+        "saveSuccessTitle": "Haustier gespeichert",
+        "saveSuccessTemplate": "{name} wurde erfolgreich gespeichert.",
+        "deleteSuccessTitle": "Haustier gelöscht",
+        "deleteSuccessTemplate": "{name} wurde entfernt.",
+        "uploadSuccessTitle": "Bild aktualisiert",
+        "uploadSuccessTemplate": "Das Bild von {name} wurde aktualisiert.",
+        "actionErrorTitle": "Aktion fehlgeschlagen",
+        "actionErrorMessage": "Die Aktion konnte nicht abgeschlossen werden."
+      }
+    }
+  },
   "settings": {
     "page": {
       "bannerAlt": "Berglandschaft als Einstellungen-Banner",
@@ -444,6 +511,7 @@
       "petHint": "Wähle die Tierarten, die du betreuen möchtest.",
       "imageUploadLabel": "Profilbild hochladen (optional)",
       "imageUploadHint": "Wenn du eine Datei auswählst, wird sie direkt hochgeladen.",
+      "imageResetLabel": "Auf Standardbild zurücksetzen",
       "imageSelectedTemplate": "Ausgewählt: {name}",
       "validation": {
         "required": "Bitte fülle dieses Feld aus.",
@@ -458,7 +526,8 @@
         "passwordConfirmationRequired": "Bitte wiederhole dein neues Passwort.",
         "passwordsMismatch": "Die neuen Passwörter sind nicht identisch.",
         "passwordCriteriaRequired": "Bitte erfülle alle Passwortkriterien.",
-        "species": "Bitte wähle mindestens eine Tierart aus."
+        "species": "Bitte wähle mindestens eine Tierart aus.",
+        "profileImage": "Bitte wähle eine Bilddatei aus."
       }
     }
   }

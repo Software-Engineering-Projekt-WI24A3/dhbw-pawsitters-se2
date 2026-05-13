@@ -32,6 +32,10 @@
       "title": "Pawsitters | Profil public",
       "description": "Pagină publică de profil cu banner, avatar și date personale."
     },
+    "myPets": {
+      "title": "Pawsitters | Animalele mele",
+      "description": "Zonă protejată pentru gestionarea animalelor tale, cu upload de imagini și carusel dedicat."
+    },
     "settings": {
       "title": "Pawsitters | Setări",
       "description": "Zonă protejată de setări pentru editarea datelor profilului tău."
@@ -72,6 +76,7 @@
     "ariaUserMenu": "Meniu utilizator",
     "openUserMenu": "Deschide meniul utilizator",
     "profile": "Vezi profilul",
+    "myPets": "Animalele mele",
     "settings": "Setări",
     "logout": "Deconectare",
     "login": "Autentificare",
@@ -414,6 +419,68 @@
       }
     }
   },
+  "myPets": {
+    "page": {
+      "bannerAlt": "Banner Copenhaga pentru gestionarea animalelor",
+      "eyebrow": "Animalele mele",
+      "title": "Gestionează animalele",
+      "loading": "Se încarcă animalele.",
+      "authRequired": "Te rugăm să te autentifici pentru a-ți gestiona animalele.",
+      "loadFailed": "Animalele nu au putut fi încărcate.",
+      "emptyTitle": "Încă nu ai animale",
+      "emptyText": "Adaugă primul animal și încarcă imediat o fotografie.",
+      "introDescription": "Salvează aici animalele tale, ca să le poți selecta rapid la o cerere de plasare.",
+      "countTemplateSingular": "{count} animal în profilul tău",
+      "countTemplatePlural": "{count} animale în profilul tău",
+      "carouselAria": "Caruselul animalelor tale",
+      "formHint": "Adaugă animale noi sau editează înregistrările existente.",
+      "addPetLink": "Adaugă animal",
+      "openDetailsTemplate": "Deschide detaliile pentru {name}",
+      "modalCloseAria": "Închide dialogul animalului",
+      "detailsHint": "Deschide un animal pentru a vedea, edita sau șterge detaliile.",
+      "formAddTitle": "Adaugă animal nou",
+      "formEditTitle": "Editează animalul",
+      "quickUploadLabel": "Actualizează fotografia",
+      "imageSelectedTemplate": "Selectat: {name}",
+      "confirmDeleteTemplate": "Sigur vrei să ștergi {name}?",
+      "labels": {
+        "name": "Nume",
+        "species": "Specie",
+        "breed": "Rasă",
+        "age": "Vârstă",
+        "specialNeeds": "Nevoi speciale",
+        "image": "Imagine"
+      },
+      "placeholders": {
+        "name": "Numele animalului",
+        "breed": "Rasă",
+        "age": "Vârsta în ani",
+        "specialNeeds": "Nevoi speciale, rutine sau medicație"
+      },
+      "actions": {
+        "previous": "Animalul anterior",
+        "next": "Animalul următor",
+        "save": "Salvează",
+        "cancel": "Anulează",
+        "edit": "Editează",
+        "delete": "Șterge"
+      },
+      "validation": {
+        "requiredTemplate": "Te rugăm să completezi {field}.",
+        "age": "Vârsta trebuie să fie un număr de la 0 în sus."
+      },
+      "notifications": {
+        "saveSuccessTitle": "Animal salvat",
+        "saveSuccessTemplate": "{name} a fost salvat cu succes.",
+        "deleteSuccessTitle": "Animal șters",
+        "deleteSuccessTemplate": "{name} a fost eliminat.",
+        "uploadSuccessTitle": "Imagine actualizată",
+        "uploadSuccessTemplate": "Imaginea pentru {name} a fost actualizată.",
+        "actionErrorTitle": "Acțiune eșuată",
+        "actionErrorMessage": "Acțiunea nu a putut fi finalizată."
+      }
+    }
+  },
   "settings": {
     "page": {
       "bannerAlt": "Banner cu peisaj montan pentru setări",
@@ -444,6 +511,7 @@
       "petHint": "Alege speciile de animale pe care vrei să le îngrijești.",
       "imageUploadLabel": "Încarcă poză de profil (opțional)",
       "imageUploadHint": "Dacă alegi un fișier, acesta va fi încărcat direct.",
+      "imageResetLabel": "Resetează la imaginea implicită",
       "imageSelectedTemplate": "Selectat: {name}",
       "validation": {
         "required": "Te rugăm să completezi acest câmp.",
@@ -458,7 +526,8 @@
         "passwordConfirmationRequired": "Te rugăm să repeți noua parolă.",
         "passwordsMismatch": "Cele două parole noi trebuie să coincidă.",
         "passwordCriteriaRequired": "Te rugăm să îndeplinești toate criteriile parolei.",
-        "species": "Te rugăm să selectezi cel puțin o specie."
+        "species": "Te rugăm să selectezi cel puțin o specie.",
+        "profileImage": "Te rugăm să alegi un fișier imagine."
       }
     }
   }

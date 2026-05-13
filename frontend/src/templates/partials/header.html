@@ -347,6 +347,17 @@
                                  aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.profile}">nav.profile</span>
                         </button>
+                        <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openCurrentUserPets()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/animal-mammal/1F415.svg}"
+                                 src="/assets/media/animal-mammal/1F415.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.myPets}">nav.myPets</span>
+                        </button>
                         <button class="repo_menu__item repo_menu__item--button"
                                 type="button"
                                 @click="openCurrentUserSettings()">
