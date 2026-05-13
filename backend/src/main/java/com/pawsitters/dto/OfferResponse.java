@@ -5,6 +5,7 @@ import com.pawsitters.model.OfferStatus;
 import com.pawsitters.model.PetChoice;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +19,8 @@ public record OfferResponse(
         BigDecimal pricePerDay,
         Set<PetChoice> acceptedPetSpecies,
         List<String> services,
+        LocalDate availableFrom,
+        LocalDate availableTo,
         OfferStatus status
 ) {
     public static OfferResponse from(Offer offer) {
@@ -31,6 +34,8 @@ public record OfferResponse(
                 offer.getPricePerDay(),
                 offer.getAcceptedPetSpecies(),
                 offer.getServices(),
+                offer.getAvailableFrom(),
+                offer.getAvailableTo(),
                 offer.getStatus()
         );
     }

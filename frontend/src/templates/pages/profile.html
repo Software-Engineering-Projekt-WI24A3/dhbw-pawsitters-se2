@@ -111,11 +111,25 @@
                          class="profile_panel__tab_panel profile_panel__tab_panel--info">
                     <dl class="profile_facts">
                         <div class="profile_facts__item">
-                            <dt th:text="#{profile.page.labels.email}">profile.page.labels.email</dt>
+                            <dt class="profile_facts__label">
+                                <img class="profile_facts__label_icon"
+                                     th:src="@{/assets/media/1F4E7.svg}"
+                                     src="/assets/media/1F4E7.svg"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span th:text="#{profile.page.labels.email}">profile.page.labels.email</span>
+                            </dt>
                             <dd v-text="profileViewUser.email"></dd>
                         </div>
                         <div class="profile_facts__item">
-                            <dt th:text="#{profile.page.labels.phone}">profile.page.labels.phone</dt>
+                            <dt class="profile_facts__label">
+                                <img class="profile_facts__label_icon"
+                                     th:src="@{/assets/media/260E.svg}"
+                                     src="/assets/media/260E.svg"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span th:text="#{profile.page.labels.phone}">profile.page.labels.phone</span>
+                            </dt>
                             <dd v-text="profileViewPhoneLabel"></dd>
                         </div>
                     </dl>

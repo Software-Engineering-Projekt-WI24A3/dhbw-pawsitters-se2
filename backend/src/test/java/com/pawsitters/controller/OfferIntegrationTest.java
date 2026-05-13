@@ -55,6 +55,8 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Offer created successfully."))
                 .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.availableFrom").value("2026-07-01"))
+                .andExpect(jsonPath("$.data.availableTo").value("2026-07-05"))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"))
                 .andReturn();
 
@@ -99,6 +101,60 @@ class OfferIntegrationTest {
         assertOwnOfferStatus(token, offerId, "DRAFT");
 
         assertMarketplaceDoesNotContain(token, title);
+    }
+
+    @Test
+    void hostCanUpdateDraftOfferButNotPublishedOffer() throws Exception {
+        String token = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String originalTitle = "Entwurf zum Bearbeiten " + UUID.randomUUID();
+        String updatedTitle = "Aktualisierter Entwurf " + UUID.randomUUID();
+
+        MvcResult createResult = mockMvc.perform(post("/api/offers")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(originalTitle))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"))
+                .andReturn();
+
+        Long offerId = objectMapper.readTree(createResult.getResponse().getContentAsString())
+                .get("data")
+                .get("id")
+                .asLong();
+
+        Map<String, Object> updatePayload = buildOfferPayload(updatedTitle);
+        updatePayload.put("description", "Aktualisierter Ablauf mit neuer Tagesstruktur.");
+        updatePayload.put("pricePerDay", BigDecimal.valueOf(55));
+        updatePayload.put("availableFrom", "2026-08-10");
+        updatePayload.put("availableTo", "2026-08-12");
+
+        mockMvc.perform(patch("/api/offers/{id}", offerId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePayload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Offer updated successfully."))
+                .andExpect(jsonPath("$.data.id").value(offerId))
+                .andExpect(jsonPath("$.data.title").value(updatedTitle))
+                .andExpect(jsonPath("$.data.availableFrom").value("2026-08-10"))
+                .andExpect(jsonPath("$.data.availableTo").value("2026-08-12"))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"));
+
+        mockMvc.perform(patch("/api/offers/{id}/publish", offerId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("PUBLISHED"));
+
+        mockMvc.perform(patch("/api/offers/{id}", offerId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePayload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
     }
 
     @Test
@@ -222,6 +278,8 @@ class OfferIntegrationTest {
         payload.put("pricePerDay", BigDecimal.valueOf(39.90));
         payload.put("acceptedPetSpecies", List.of("DOG"));
         payload.put("services", List.of("Spaziergang", "Fuetterung", "Tagesbetreuung"));
+        payload.put("availableFrom", "2026-07-01");
+        payload.put("availableTo", "2026-07-05");
         return payload;
     }
 }

@@ -516,9 +516,22 @@
       "openDetailsTemplate": "Angebot {name} anzeigen",
       "modalCloseAria": "Angebots-Dialog schliessen",
       "formAddTitle": "Neues Betreuungspaket anlegen",
+      "formEditTitle": "Betreuungspaket bearbeiten",
       "formAddHint": "Erstelle ein Angebot als Entwurf. Du kannst es danach direkt veroeffentlichen.",
+      "steps": {
+        "aria": "Schritte zum Erstellen eines Betreuungspakets",
+        "species": "Tiere",
+        "details": "Angebot",
+        "review": "Pruefen"
+      },
+      "review": {
+        "title": "Angaben pruefen und bestaetigen",
+        "hint": "Bitte kontrolliere alle Angaben, bevor du speicherst."
+      },
       "labels": {
         "title": "Titel",
+        "flow": "Ablauf",
+        "dayStructure": "Tagesstruktur",
         "description": "Beschreibung",
         "price": "Preis pro Tag",
         "species": "Betreute Tierarten",
@@ -529,14 +542,20 @@
       },
       "placeholders": {
         "title": "Kurzer Angebotsname",
+        "flow": "Beschreibe den Ablauf",
+        "dayStructure": "Beschreibe die Tagesstruktur",
         "description": "Beschreibe Ablauf, Tagesstruktur und besondere Staerken",
-        "price": "z. B. 39.90",
+        "price": "Preis in €",
         "services": "Leistungen, mit Komma getrennt"
       },
       "actions": {
         "previous": "Vorheriges Angebot",
         "next": "Naechstes Angebot",
         "save": "Als Entwurf speichern",
+        "confirm": "Bestaetigen und als Entwurf speichern",
+        "stepBack": "Zurueck",
+        "stepNext": "Weiter",
+        "edit": "Bearbeiten",
         "cancel": "Abbrechen",
         "publish": "Veroeffentlichen",
         "withdraw": "Zurueckziehen"
@@ -550,6 +569,8 @@
       "notifications": {
         "createSuccessTitle": "Angebot gespeichert",
         "createSuccessTemplate": "{name} wurde als Entwurf gespeichert.",
+        "updateSuccessTitle": "Angebot aktualisiert",
+        "updateSuccessTemplate": "{name} wurde aktualisiert.",
         "publishSuccessTitle": "Angebot veroeffentlicht",
         "publishSuccessTemplate": "{name} ist jetzt veroeffentlicht.",
         "withdrawSuccessTitle": "Angebot zurueckgezogen",

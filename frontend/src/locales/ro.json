@@ -516,9 +516,22 @@
       "openDetailsTemplate": "Deschide oferta {name}",
       "modalCloseAria": "Închide dialogul ofertei",
       "formAddTitle": "Creează un pachet nou de îngrijire",
+      "formEditTitle": "Editeaza pachetul de ingrijire",
       "formAddHint": "Salvează oferta ca draft. O poți publica imediat după.",
+      "steps": {
+        "aria": "Pasi pentru crearea unui pachet de ingrijire",
+        "species": "Animale",
+        "details": "Oferta",
+        "review": "Revizuire"
+      },
+      "review": {
+        "title": "Revizuieste si confirma datele",
+        "hint": "Te rugam sa verifici toate datele inainte de salvare."
+      },
       "labels": {
         "title": "Titlu",
+        "flow": "Desfasurare",
+        "dayStructure": "Structura zilei",
         "description": "Descriere",
         "price": "Preț pe zi",
         "species": "Specii acceptate",
@@ -529,14 +542,20 @@
       },
       "placeholders": {
         "title": "Titlu scurt al ofertei",
+        "flow": "Descrie desfasurarea",
+        "dayStructure": "Descrie structura zilei",
         "description": "Descrie rutina, programul și punctele forte",
-        "price": "ex. 39.90",
+        "price": "Pret in €",
         "services": "Servicii, separate prin virgulă"
       },
       "actions": {
         "previous": "Oferta anterioară",
         "next": "Oferta următoare",
         "save": "Salvează ca draft",
+        "confirm": "Confirma si salveaza ca draft",
+        "stepBack": "Inapoi",
+        "stepNext": "Continua",
+        "edit": "Editeaza",
         "cancel": "Anulează",
         "publish": "Publică",
         "withdraw": "Retrage"
@@ -550,6 +569,8 @@
       "notifications": {
         "createSuccessTitle": "Oferta a fost salvată",
         "createSuccessTemplate": "{name} a fost salvată ca draft.",
+        "updateSuccessTitle": "Oferta a fost actualizata",
+        "updateSuccessTemplate": "{name} a fost actualizata.",
         "publishSuccessTitle": "Oferta a fost publicată",
         "publishSuccessTemplate": "{name} este acum publicată.",
         "withdrawSuccessTitle": "Oferta a fost retrasă",

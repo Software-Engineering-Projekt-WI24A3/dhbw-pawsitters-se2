@@ -1312,6 +1312,8 @@ export async function buildPreview(rootDir) {
     copyAssetIfExists(rootDir, 'src/media/pawsitters-scene.svg', path.join(buildOutputDirectoryName, 'assets', 'media', 'pawsitters-scene.svg')),
     copyAssetIfExists(rootDir, 'src/media/404.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '404.svg')),
     copyAssetIfExists(rootDir, 'src/media/search-lense.svg', path.join(buildOutputDirectoryName, 'assets', 'media', 'search-lense.svg')),
+    copyAssetIfExists(rootDir, 'src/media/1F4E7.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F4E7.svg')),
+    copyAssetIfExists(rootDir, 'src/media/260E.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '260E.svg')),
     copyAssetIfExists(rootDir, 'src/media/1F50D.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F50D.svg')),
     copyAssetIfExists(rootDir, 'src/media/1F4CB.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F4CB.svg')),
     copyAssetIfExists(rootDir, 'src/media/1F9D1.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F9D1.svg')),
