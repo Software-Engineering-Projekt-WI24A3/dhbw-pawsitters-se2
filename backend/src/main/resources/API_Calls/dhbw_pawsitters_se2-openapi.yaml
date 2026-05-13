@@ -18,6 +18,8 @@ tags:
     description: Endpunkte zum Erstellen und Verwalten von Betreuungspaketen.
   - name: Marketplace
     description: Endpunkte zur Gastgeber- und Angebotsuebersicht, Suche und Filteroptionen.
+  - name: Chats
+    description: Endpunkte fuer angebotsbezogene Live-Chats, Nachrichten und Bildanhaenge.
 paths:
   /api/auth/register:
     post:
@@ -246,7 +248,7 @@ paths:
       operationId: uploadUserProfileImage
       tags: [Users]
       summary: Profilbild hochladen
-      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`. Erlaubt sind gueltige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien.
+      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`. Erlaubt sind gueltige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien bis 5 MB.
       parameters:
         - $ref: "#/components/parameters/IdPath"
       requestBody:
@@ -275,6 +277,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
     delete:
       operationId: deleteUserProfileImage
       tags: [Users]
@@ -544,6 +548,124 @@ paths:
                 $ref: "#/components/schemas/MarketplaceFiltersApiResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/chats:
+    get:
+      operationId: getChats
+      tags: [Chats]
+      summary: Eigene Chats abrufen
+      responses:
+        "200":
+          description: Chatuebersicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createChat
+      tags: [Chats]
+      summary: Chat zu einem Angebot erstellen oder bestehenden Chat abrufen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatCreateRequest"
+      responses:
+        "200":
+          description: Chat erstellt oder gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/chats/{id}/messages:
+    get:
+      operationId: getChatMessages
+      tags: [Chats]
+      summary: Nachrichten eines Chats chronologisch abrufen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Nachrichtenliste, chronologisch von alt nach neu sortiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessageListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createChatMessage
+      tags: [Chats]
+      summary: Nachricht in einem Chat senden
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageCreateRequest"
+      responses:
+        "200":
+          description: Nachricht erstellt und per WebSocket veroeffentlicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessageApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/messages/{id}/attachments:
+    post:
+      operationId: uploadMessageAttachment
+      tags: [Chats]
+      summary: Bildanhang zu einer Nachricht hochladen
+      description: Erwartet ein Multipart-Feld `image`; erlaubt sind gueltige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien bis 5 MB. Die Antwort enthaelt eine unter `/uploads/messages/...` abrufbare URL.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Bildanhang gespeichert und per WebSocket veroeffentlicht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageAttachmentApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   parameters:
     IdPath:
@@ -577,6 +699,12 @@ components:
             $ref: "#/components/schemas/ErrorApiResponse"
     NotFound:
       description: Ressource nicht gefunden.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorApiResponse"
+    PayloadTooLarge:
+      description: Upload ist zu gross.
       content:
         application/json:
           schema:
@@ -734,6 +862,45 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/DeleteResponse"
+    ChatApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/ChatResponse"
+    ChatListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChatResponse"
+    ChatMessageApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/ChatMessageResponse"
+    ChatMessageListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChatMessageResponse"
+    MessageAttachmentApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/MessageAttachmentResponse"
     LoginRequest:
       type: object
       required: [email, password]
@@ -869,6 +1036,20 @@ components:
           minItems: 1
           items:
             type: string
+    ChatCreateRequest:
+      type: object
+      required: [offerId]
+      properties:
+        offerId:
+          type: integer
+          format: int64
+    ChatMessageCreateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 2000
+          description: Optionaler Nachrichtentext. Fuer reine Bildnachrichten kann eine leere Nachricht erstellt und anschliessend ein Bild hochgeladen werden.
     AuthResponse:
       type: object
       required: [token, role, passwordChangeRequired]
@@ -1033,6 +1214,91 @@ components:
             type: string
         status:
           $ref: "#/components/schemas/OfferStatus"
+    ChatResponse:
+      type: object
+      required: [id, offerId, offerTitle, hostId, hostFirstName, hostLastName, requesterId, requesterFirstName, requesterLastName, createdAt, lastMessagePreview]
+      properties:
+        id:
+          type: integer
+          format: int64
+        offerId:
+          type: integer
+          format: int64
+        offerTitle:
+          type: string
+        hostId:
+          type: integer
+          format: int64
+        hostFirstName:
+          type: string
+        hostLastName:
+          type: string
+        requesterId:
+          type: integer
+          format: int64
+        requesterFirstName:
+          type: string
+        requesterLastName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastMessagePreview:
+          type: string
+    ChatMessageResponse:
+      type: object
+      required: [id, chatId, senderId, senderFirstName, senderLastName, content, createdAt, attachments]
+      properties:
+        id:
+          type: integer
+          format: int64
+        chatId:
+          type: integer
+          format: int64
+        senderId:
+          type: integer
+          format: int64
+        senderFirstName:
+          type: string
+        senderLastName:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageAttachmentResponse"
+    MessageAttachmentResponse:
+      type: object
+      required: [id, messageId, url, originalFilename, contentType, sizeBytes, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        messageId:
+          type: integer
+          format: int64
+        url:
+          type: string
+          example: /uploads/messages/message-42-3f7a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c.png
+        originalFilename:
+          type: string
+        contentType:
+          type: string
+          example: image/png
+        sizeBytes:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
     PetResponse:
       type: object
       required: [id, name, species, breed, age, specialNeeds, defaultImagePath]

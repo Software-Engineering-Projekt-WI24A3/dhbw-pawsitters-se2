@@ -351,6 +351,24 @@ class UserIntegrationTest {
     }
 
     @Test
+    void profileImageUploadRejectsOversizedFilesWithPayloadTooLargeEnvelope() throws Exception {
+        String email = "user.large-image." + UUID.randomUUID() + "@test.de";
+        String token = registerUser(email, "StrongPhrase123!");
+        Long userId = currentUserId(token);
+
+        byte[] oversizedBytes = new byte[(5 * 1024 * 1024) + 1];
+        MockMultipartFile image = new MockMultipartFile("image", "profile.png", "image/png", oversizedBytes);
+
+        mockMvc.perform(multipart("/api/users/{id}/profile-image", userId)
+                        .file(image)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.status").value(413))
+                .andExpect(jsonPath("$.error.code").value("PAYLOAD_TOO_LARGE"));
+    }
+
+    @Test
     void onlyOwnerCanUploadOrDeleteProfileImage() throws Exception {
         String ownerToken = registerUser("user.owner." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
         Long ownerId = currentUserId(ownerToken);
