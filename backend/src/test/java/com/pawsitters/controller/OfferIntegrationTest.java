@@ -55,6 +55,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Offer created successfully."))
                 .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.location").value("Mannheim"))
                 .andExpect(jsonPath("$.data.availableFrom").value("2026-07-01"))
                 .andExpect(jsonPath("$.data.availableTo").value("2026-07-05"))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"))
@@ -125,6 +126,7 @@ class OfferIntegrationTest {
 
         Map<String, Object> updatePayload = buildOfferPayload(updatedTitle);
         updatePayload.put("description", "Aktualisierter Ablauf mit neuer Tagesstruktur.");
+        updatePayload.put("location", "Heidelberg");
         updatePayload.put("pricePerDay", BigDecimal.valueOf(55));
         updatePayload.put("availableFrom", "2026-08-10");
         updatePayload.put("availableTo", "2026-08-12");
@@ -138,6 +140,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Offer updated successfully."))
                 .andExpect(jsonPath("$.data.id").value(offerId))
                 .andExpect(jsonPath("$.data.title").value(updatedTitle))
+                .andExpect(jsonPath("$.data.location").value("Heidelberg"))
                 .andExpect(jsonPath("$.data.availableFrom").value("2026-08-10"))
                 .andExpect(jsonPath("$.data.availableTo").value("2026-08-12"))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"));
@@ -158,20 +161,28 @@ class OfferIntegrationTest {
     }
 
     @Test
-    void petOwnerCannotCreateOffer() throws Exception {
+    void petOwnerCanCreateOfferAndIsPromotedToHost() throws Exception {
         String token = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String title = "Katzenbetreuung Basis " + UUID.randomUUID();
 
         mockMvc.perform(post("/api/offers")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildOfferPayload("Katzenbetreuung Basis"))))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(title))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"));
+
+        mockMvc.perform(get("/api/users/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.role").value("HOST"));
     }
 
     @Test
-    void profileOffersEndpointShowsDraftOnlyToOwnerAndPublishedToOthers() throws Exception {
+    void profileOffersEndpointShowsOnlyPublishedOffers() throws Exception {
         String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
         String viewerToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
         String title = "Profilangebot " + UUID.randomUUID();
@@ -191,7 +202,7 @@ class OfferIntegrationTest {
         Long hostId = createdOffer.get("hostId").asLong();
 
         JsonNode ownProfileOffers = getProfileOffers(hostToken, hostId);
-        assertTrue(hasOfferTitle(ownProfileOffers, title), "Owner should see own draft offer in profile offers.");
+        assertFalse(hasOfferTitle(ownProfileOffers, title), "Draft offers must not be visible in public profile offers.");
 
         JsonNode otherProfileOffers = getProfileOffers(viewerToken, hostId);
         assertFalse(hasOfferTitle(otherProfileOffers, title), "Other users must not see draft offers in profile offers.");
@@ -274,6 +285,7 @@ class OfferIntegrationTest {
     private Map<String, Object> buildOfferPayload(String title) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("title", title);
+        payload.put("location", "Mannheim");
         payload.put("description", "Tagesbetreuung inklusive Spaziergang, Fuetterung und Ruhezeiten.");
         payload.put("pricePerDay", BigDecimal.valueOf(39.90));
         payload.put("acceptedPetSpecies", List.of("DOG"));

@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": {
-      "title": "Pawsitters",
+      "title": "Pawsitters | Home",
       "description": "Reduced landing page with direct entry points to repository and sign in."
     },
     "repositoryGit": {
@@ -17,31 +17,31 @@
       "description": "Reduced kanban page with color-coded owners and issue details."
     },
     "login": {
-      "title": "Pawsitters | Sign in",
+      "title": "Pawsitters | Account | Sign in",
       "description": "Monochrome sign-in page for the localized Pawsitters frontend."
     },
     "register": {
-      "title": "Pawsitters | Create account",
+      "title": "Pawsitters | Account | Create account",
       "description": "Monochrome registration page for the localized Pawsitters frontend."
     },
     "notFound": {
-      "title": "Pawsitters | Page not found",
+      "title": "Pawsitters | Error | Page not found",
       "description": "404 page for unknown routes."
     },
     "profile": {
-      "title": "Pawsitters | Public Profile",
+      "title": "Pawsitters | Profile",
       "description": "Public profile page with hero banner, avatar, and personal details."
     },
     "myPets": {
-      "title": "Pawsitters | My Pets",
+      "title": "Pawsitters | Profile | My pets",
       "description": "Protected area to manage your pets with image uploads and a curated carousel."
     },
     "myOffers": {
-      "title": "Pawsitters | My Offers",
+      "title": "Pawsitters | Profile | My offers",
       "description": "Protected area to manage your care packages as drafts and published offers."
     },
     "settings": {
-      "title": "Pawsitters | Settings",
+      "title": "Pawsitters | Profile | Settings",
       "description": "Protected settings area for editing your profile information."
     }
   },
@@ -89,7 +89,21 @@
     "close": "Close menu"
   },
   "notifications": {
-    "dismissAria": "Dismiss notification"
+    "dismissAria": "Dismiss notification",
+    "localeSwitch": {
+      "de": {
+        "title": "Sprache gewechselt",
+        "message": "Willkommen im {language}-Bereich."
+      },
+      "en": {
+        "title": "Language switched",
+        "message": "Welcome to the {language} experience."
+      },
+      "ro": {
+        "title": "Limba a fost schimbată",
+        "message": "Bine ai venit în experiența {language}."
+      }
+    }
   },
   "header": {
     "tabs": {
@@ -286,7 +300,7 @@
       "passwordPlaceholder": "Enter password",
       "confirmPassword": "Repeat password",
       "confirmPasswordPlaceholder": "Repeat password",
-      "passwordHint": "Minimum 15 characters, without parts of your email or name.",
+      "passwordHint": "Long passphrases with spaces are welcome. Uppercase letters, numbers, and special characters are optional. We handle character variants consistently and store your password only as a secure hash.",
       "phoneCountry": "Country code",
       "phoneCountryPlaceholder": "Country and code",
       "phoneCountryLoading": "Loading country codes",
@@ -336,11 +350,11 @@
       "passwordCriteria": {
         "minLength": "At least 15 characters",
         "maxBytes": "At most 72 bytes",
-        "lowercase": "At least one lowercase letter",
-        "uppercase": "At least one uppercase letter",
-        "digit": "At least one number",
-        "special": "At least one special character",
-        "match": "Both passwords are identical"
+        "lowercase": "Must not be empty or only whitespace",
+        "uppercase": "Must not contain your email address or email name",
+        "digit": "Must not contain parts of your first or last name",
+        "special": "Must not be a known weak password or a simple variant",
+        "match": "Must not contain obvious Pawsitters-related terms"
       },
       "errorTitle": "Registration failed",
       "errorMessage": "Registration could not be completed.",
@@ -396,12 +410,43 @@
       "title": "Information"
     }
   },
+  "home": {
+    "page": {
+      "loading": "Loading offers.",
+      "loadFailed": "Offers could not be loaded.",
+      "emptyTitle": "No matching offers yet",
+      "emptyText": "There are currently no offers for this pet type.",
+      "headingPrefix": "Discover offers for",
+      "allSpeciesLabel": "All pets",
+      "speciesDropdownAria": "Choose pet type",
+      "carouselAria": "Carousel with published care offers",
+      "untitledOffer": "Care offer",
+      "openDetailsTemplate": "View more details for {name}",
+      "labels": {
+        "date": "Period",
+        "price": "Price",
+        "location": "Care location",
+        "locationFallback": "Unknown"
+      },
+      "actions": {
+        "previous": "Previous offer",
+        "next": "Next offer"
+      },
+      "modal": {
+        "closeAria": "Close offer details",
+        "hostLabel": "Host",
+        "descriptionLabel": "Description",
+        "speciesLabel": "Pet species",
+        "servicesLabel": "Services"
+      }
+    }
+  },
   "profile": {
     "page": {
       "bannerAlt": "Animal shelter thank-you banner",
       "eyebrow": "Public profile",
       "title": "Personal profile view",
-      "documentTitleTemplate": "{brand} | Profile",
+      "documentTitleTemplate": "{brand} | Profile | {name}",
       "loading": "Loading profile.",
       "authRequired": "Please sign in to view this profile.",
       "notFound": "This profile could not be found.",
@@ -518,8 +563,14 @@
       "formAddTitle": "Create a new care package",
       "formEditTitle": "Edit care package",
       "formAddHint": "Save your offer as a draft first. You can publish it right after.",
+      "imageSelectedTemplate": "{name} selected",
+      "imageNoneLabel": "No image selected (optional)",
+      "cityLoading": "Loading cities",
+      "cityNoResults": "No cities found",
+      "cityResultsAria": "City results",
       "steps": {
         "aria": "Steps to create a care package",
+        "setup": "Period",
         "species": "Pets",
         "details": "Offer",
         "review": "Review"
@@ -530,10 +581,15 @@
       },
       "labels": {
         "title": "Title",
+        "availableFrom": "Start date",
+        "availableTo": "End date",
+        "availability": "Care period",
+        "image": "Offer image",
         "flow": "Schedule",
         "dayStructure": "Day structure",
         "description": "Description",
         "price": "Price per day",
+        "city": "Care location",
         "species": "Accepted pet species",
         "services": "Services",
         "status": "Status",
@@ -546,6 +602,7 @@
         "dayStructure": "Describe the day structure",
         "description": "Describe routine, structure, and strengths",
         "price": "Price in €",
+        "city": "Select care location",
         "services": "Services, separated by commas"
       },
       "actions": {
@@ -562,7 +619,10 @@
       },
       "validation": {
         "requiredTemplate": "Please fill in {field}.",
+        "period": "Please choose a valid care period.",
+        "periodOrder": "The end date must be on or after the start date.",
         "price": "Please enter a valid price greater than 0.",
+        "cityRequired": "Please choose a care location from the search results.",
         "species": "Please select at least one species.",
         "services": "Please enter at least one service."
       },

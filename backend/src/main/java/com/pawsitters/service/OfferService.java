@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,18 +33,20 @@ public class OfferService {
     @Transactional
     public Offer createOfferForHostEmail(String hostEmail,
                                          String title,
+                                         String location,
                                          String description,
                                          BigDecimal pricePerDay,
                                          Set<PetChoice> acceptedPetSpecies,
                                          List<String> services,
                                          LocalDate availableFrom,
                                          LocalDate availableTo) {
-        User host = getHostByEmail(hostEmail);
+        User host = ensureHostByEmail(hostEmail);
         validateAvailabilityRange(availableFrom, availableTo);
 
         Offer offer = new Offer();
         offer.setHost(host);
         offer.setTitle(title.trim());
+        offer.setLocation(normalizeBlank(location));
         offer.setDescription(description.trim());
         offer.setPricePerDay(pricePerDay);
         offer.setAcceptedPetSpecies(new LinkedHashSet<>(acceptedPetSpecies));
@@ -67,6 +69,7 @@ public class OfferService {
     public Offer updateDraftOfferForHostEmail(Long offerId,
                                               String hostEmail,
                                               String title,
+                                              String location,
                                               String description,
                                               BigDecimal pricePerDay,
                                               Set<PetChoice> acceptedPetSpecies,
@@ -75,11 +78,12 @@ public class OfferService {
                                               LocalDate availableTo) {
         Offer offer = getOwnedOffer(offerId, hostEmail);
         if (offer.getStatus() != OfferStatus.DRAFT) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nur Entwuerfe koennen bearbeitet werden.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nur Entwürfe können bearbeitet werden.");
         }
         validateAvailabilityRange(availableFrom, availableTo);
 
         offer.setTitle(title.trim());
+        offer.setLocation(normalizeBlank(location));
         offer.setDescription(description.trim());
         offer.setPricePerDay(pricePerDay);
         offer.setAcceptedPetSpecies(new LinkedHashSet<>(acceptedPetSpecies));
@@ -105,12 +109,7 @@ public class OfferService {
     public List<Offer> getProfileOffersForHostId(Long hostId, String requesterEmail) {
         User host = userRepository.findById(hostId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User nicht gefunden."));
-        List<Offer> offers = offerRepository.findByHostIdOrderByIdDesc(host.getId());
-        if (requesterEmail != null && requesterEmail.equalsIgnoreCase(host.getEmail())) {
-            return offers;
-        }
-
-        return offers.stream()
+        return offerRepository.findByHostIdOrderByIdDesc(host.getId()).stream()
                 .filter((offer) -> offer.getStatus() == OfferStatus.PUBLISHED)
                 .toList();
     }
@@ -127,12 +126,16 @@ public class OfferService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Angebot nicht gefunden."));
     }
 
-    private User getHostByEmail(String hostEmail) {
+    private User ensureHostByEmail(String hostEmail) {
         User user = getUserByEmail(hostEmail);
-        if (user.getRole() != UserRole.HOST) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nur Gastgeber koennen Angebote erstellen.");
+        if (user.getRole() == UserRole.HOST) {
+            return user;
         }
-        return user;
+        if (user.getRole() == UserRole.PET_OWNER) {
+            user.setRole(UserRole.HOST);
+            return userRepository.save(user);
+        }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nur Gastgeber können Angebote erstellen.");
     }
 
     private User getUserByEmail(String userEmail) {
@@ -144,15 +147,23 @@ public class OfferService {
         if (availableFrom == null || availableTo == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Bitte gib einen gueltigen Betreuungszeitraum an."
+                    "Bitte gib einen gültigen Betreuungszeitraum an."
             );
         }
 
         if (availableTo.isBefore(availableFrom)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Der Zeitraum ist ungueltig: Enddatum liegt vor dem Startdatum."
+                    "Der Zeitraum ist ungültig: Enddatum liegt vor dem Startdatum."
             );
         }
+    }
+
+    private String normalizeBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

@@ -80,7 +80,7 @@ public class ApiExceptionHandler {
                                                                   HttpServletRequest request) {
         return error(
                 HttpStatus.UNAUTHORIZED,
-                "Ungueltige Credentials.",
+                "Ungültige Credentials.",
                 ApiError.of("AUTH_INVALID_CREDENTIALS"),
                 request
         );

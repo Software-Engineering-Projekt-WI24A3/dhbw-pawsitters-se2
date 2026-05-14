@@ -152,7 +152,38 @@
                                                     <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
                                                 </svg>
                                             </button>
-                                            <p class="header_search_date__month" v-text="dateCalendarMonthLabel"></p>
+                                            <div class="header_search_date__period_controls">
+                                                <label class="header_search_date__period_picker">
+                                                    <span class="sr-only" th:text="#{header.search.date.label}">header.search.date.label</span>
+                                                    <select class="header_search_date__period_select"
+                                                            :value="dateCalendarMonth"
+                                                            @change="selectCalendarMonth('search', $event.target.value)"
+                                                            th:attr="aria-label=#{header.search.date.label}">
+                                                        <option v-for="option in calendarMonthOptions"
+                                                                :key="'search-calendar-month-' + option.value"
+                                                                :value="option.value"
+                                                                v-text="option.label"></option>
+                                                    </select>
+                                                    <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                        <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                                    </svg>
+                                                </label>
+                                                <label class="header_search_date__period_picker header_search_date__period_picker--year">
+                                                    <span class="sr-only" th:text="#{header.search.date.label}">header.search.date.label</span>
+                                                    <select class="header_search_date__period_select"
+                                                            :value="dateCalendarYear"
+                                                            @change="selectCalendarYear('search', $event.target.value)"
+                                                            th:attr="aria-label=#{header.search.date.label}">
+                                                        <option v-for="year in searchCalendarYearOptions"
+                                                                :key="'search-calendar-year-' + year"
+                                                                :value="year"
+                                                                v-text="year"></option>
+                                                    </select>
+                                                    <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                        <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                                    </svg>
+                                                </label>
+                                            </div>
                                             <button class="header_search_date__nav"
                                                     type="button"
                                                     @click="moveDateCalendar(1)"

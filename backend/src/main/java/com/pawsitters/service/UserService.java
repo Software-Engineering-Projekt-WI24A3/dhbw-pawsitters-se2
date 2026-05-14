@@ -277,7 +277,7 @@ public class UserService {
     public void deleteUser(Long id, String email) {
         User user = getUserById(id);
         if (!user.getEmail().equalsIgnoreCase(email)) {
-            throw new ForbiddenException("User kann nur sein eigenes Konto loeschen.");
+            throw new ForbiddenException("User kann nur sein eigenes Konto löschen.");
         }
         userRepository.deleteById(id);
     }
@@ -315,7 +315,7 @@ public class UserService {
         String filename = "user-" + user.getId() + "-" + UUID.randomUUID() + extension;
         Path target = uploadDirectory.resolve(filename).normalize();
         if (!target.startsWith(uploadDirectory)) {
-            throw new IllegalArgumentException("Ungueltiger Dateiname.");
+            throw new IllegalArgumentException("Ungültiger Dateiname.");
         }
 
         try {
@@ -414,10 +414,10 @@ public class UserService {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes)) {
             BufferedImage bufferedImage = ImageIO.read(inputStream);
             if (bufferedImage == null) {
-                throw new IllegalArgumentException("Die Datei ist kein gueltiges Bild.");
+                throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Die Datei ist kein gueltiges Bild.");
+            throw new IllegalArgumentException("Die Datei ist kein gültiges Bild.");
         }
 
         return imageBytes;

@@ -4,28 +4,49 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="added the ability to create own offers and updated the profile page">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updates for the previous merge 4.0">
+      <change afterPath="$PROJECT_DIR$/frontend/src/media/1FA99.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-card-background.e2e.spec.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-create-flow.e2e.spec.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/tests/e2e/segmented-indicator-alignment.e2e.spec.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ApiExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ApiExceptionHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferCreateRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferUpdateRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/AuthenticationRateLimiter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/AuthenticationRateLimiter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/PetService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/PetService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/validation/ValidPasswordRegistration.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/validation/ValidPasswordRegistration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeleteUser.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeleteUser.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/MailExists.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadUserProfileImage.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadUserProfileImage.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/data.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/search-data.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/search-data.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/media/1F391.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/media/1F391.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.base.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.base.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/register.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/settings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/my-pets-modals.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/my-pets-modals.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/auth-flows.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/auth-flows.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/support/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/support/auth.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -411,7 +432,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778667245497</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="updates for the previous merge 3.0">
+      <option name="closed" value="true" />
+      <created>1778682304112</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1778682304112</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -444,7 +473,9 @@
     <MESSAGE value="updated the hole website - implemented a lot, also on the backend 2.0" />
     <MESSAGE value="added the feature to add personal pets to your account" />
     <MESSAGE value="added the ability to create own offers and updated the profile page" />
-    <option name="LAST_COMMIT_MESSAGE" value="added the ability to create own offers and updated the profile page" />
+    <MESSAGE value="updates for the previous merge 3.0" />
+    <MESSAGE value="updates for the previous merge 4.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="updates for the previous merge 4.0" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

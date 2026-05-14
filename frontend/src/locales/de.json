@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": {
-      "title": "Pawsitters",
+      "title": "Pawsitters | Startseite",
       "description": "Reduzierte Startseite mit direktem Einstieg in Repository und Login."
     },
     "repositoryGit": {
@@ -17,31 +17,31 @@
       "description": "Reduzierte Kanban-Unterseite mit farbcodierten Autoren und Issue-Informationen."
     },
     "login": {
-      "title": "Pawsitters | Einloggen",
+      "title": "Pawsitters | Konto | Einloggen",
       "description": "Monochrome Login-Seite für das lokalisierte Pawsitters Frontend."
     },
     "register": {
-      "title": "Pawsitters | Registrieren",
+      "title": "Pawsitters | Konto | Registrieren",
       "description": "Monochrome Registrierungs-Seite für das lokalisierte Pawsitters Frontend."
     },
     "notFound": {
-      "title": "Pawsitters | Seite nicht gefunden",
+      "title": "Pawsitters | Fehler | Seite nicht gefunden",
       "description": "404-Seite für nicht verfügbare Routen."
     },
     "profile": {
-      "title": "Pawsitters | Öffentliches Profil",
+      "title": "Pawsitters | Profil",
       "description": "Öffentliche Profilseite mit Banner, Avatar und persönlichen Daten."
     },
     "myPets": {
-      "title": "Pawsitters | Meine Haustiere",
+      "title": "Pawsitters | Profil | Meine Haustiere",
       "description": "Geschützter Bereich zur Verwaltung deiner Haustiere mit Bild-Upload und Karussell."
     },
     "myOffers": {
-      "title": "Pawsitters | Meine Angebote",
+      "title": "Pawsitters | Profil | Meine Angebote",
       "description": "Geschützter Bereich zum Verwalten deiner Betreuungspakete als Entwurf und Veröffentlichung."
     },
     "settings": {
-      "title": "Pawsitters | Einstellungen",
+      "title": "Pawsitters | Profil | Einstellungen",
       "description": "Geschützter Einstellungsbereich zur Bearbeitung deiner Profildaten."
     }
   },
@@ -89,7 +89,21 @@
     "close": "Menü schließen"
   },
   "notifications": {
-    "dismissAria": "Meldung schließen"
+    "dismissAria": "Meldung schließen",
+    "localeSwitch": {
+      "de": {
+        "title": "Sprache gewechselt",
+        "message": "Willkommen im {language}-Bereich."
+      },
+      "en": {
+        "title": "Language switched",
+        "message": "Welcome to the {language} experience."
+      },
+      "ro": {
+        "title": "Limba a fost schimbată",
+        "message": "Bine ai venit în experiența {language}."
+      }
+    }
   },
   "header": {
     "tabs": {
@@ -286,7 +300,7 @@
       "passwordPlaceholder": "Passwort eingeben",
       "confirmPassword": "Passwort wiederholen",
       "confirmPasswordPlaceholder": "Passwort wiederholen",
-      "passwordHint": "Mindestens 15 Zeichen, ohne Bestandteile von E-Mail oder Namen.",
+      "passwordHint": "Lange Passphrasen mit Leerzeichen sind erlaubt. Es gibt keine Pflicht für Großbuchstaben, Zahlen oder Sonderzeichen. Wir behandeln Zeichenvarianten automatisch gleich und speichern dein Passwort nur verschlüsselt.",
       "phoneCountry": "Ländervorwahl",
       "phoneCountryPlaceholder": "Land",
       "phoneCountryLoading": "Ländervorwahlen werden geladen",
@@ -336,11 +350,11 @@
       "passwordCriteria": {
         "minLength": "Mindestens 15 Zeichen",
         "maxBytes": "Maximal 72 Byte",
-        "lowercase": "Mindestens ein Kleinbuchstabe",
-        "uppercase": "Mindestens ein Großbuchstabe",
-        "digit": "Mindestens eine Zahl",
-        "special": "Mindestens ein Sonderzeichen",
-        "match": "Beide Passwörter sind identisch"
+        "lowercase": "Darf nicht leer sein und nicht nur aus Leerzeichen bestehen",
+        "uppercase": "Darf weder deine E-Mail-Adresse noch den E-Mail-Namen enthalten",
+        "digit": "Darf keine Bestandteile deines Vor- oder Nachnamens enthalten",
+        "special": "Darf kein bekanntes leichtes Passwort oder eine einfache Variante davon sein",
+        "match": "Darf keine naheliegenden Pawsitters-Begriffe enthalten"
       },
       "errorTitle": "Registrierung fehlgeschlagen",
       "errorMessage": "Die Registrierung konnte nicht abgeschlossen werden.",
@@ -396,12 +410,43 @@
       "title": "Informationen"
     }
   },
+  "home": {
+    "page": {
+      "loading": "Angebote werden geladen.",
+      "loadFailed": "Angebote konnten nicht geladen werden.",
+      "emptyTitle": "Noch keine passenden Angebote",
+      "emptyText": "Für diese Tierart sind aktuell keine Angebote verfügbar.",
+      "headingPrefix": "Entdecke Angebote für",
+      "allSpeciesLabel": "Alle Tiere",
+      "speciesDropdownAria": "Tierart auswählen",
+      "carouselAria": "Karussell mit veröffentlichten Betreuungsangeboten",
+      "untitledOffer": "Betreuungsangebot",
+      "openDetailsTemplate": "Mehr Details zu {name} anzeigen",
+      "labels": {
+        "date": "Zeitraum",
+        "price": "Preis",
+        "location": "Betreuungsort",
+        "locationFallback": "Unbekannt"
+      },
+      "actions": {
+        "previous": "Vorheriges Angebot",
+        "next": "Nächstes Angebot"
+      },
+      "modal": {
+        "closeAria": "Angebotsdetails schließen",
+        "hostLabel": "Gastgeber",
+        "descriptionLabel": "Beschreibung",
+        "speciesLabel": "Tierarten",
+        "servicesLabel": "Leistungen"
+      }
+    }
+  },
   "profile": {
     "page": {
       "bannerAlt": "Tierheim-Hunde als Dankesmotiv",
       "eyebrow": "Öffentliches Profil",
       "title": "Persönliche Profilansicht",
-      "documentTitleTemplate": "{brand} | Profil",
+      "documentTitleTemplate": "{brand} | Profil | {name}",
       "loading": "Profil wird geladen.",
       "authRequired": "Bitte logge dich ein, um dieses Profil anzusehen.",
       "notFound": "Dieses Profil wurde nicht gefunden.",
@@ -500,7 +545,7 @@
   },
   "myOffers": {
     "page": {
-      "bannerAlt": "Muenchen-Banner fuer Angebote",
+      "bannerAlt": "München-Banner für Angebote",
       "eyebrow": "Meine Angebote",
       "title": "Betreuungspakete verwalten",
       "loading": "Angebote werden geladen.",
@@ -508,7 +553,7 @@
       "loadFailed": "Angebote konnten nicht geladen werden.",
       "emptyTitle": "Noch keine Betreuungsangebote",
       "emptyText": "Noch keine Betreuungsangebote",
-      "introDescription": "Hier siehst du alle eigenen Betreuungspakete inklusive gespeicherter Entwuerfe.",
+      "introDescription": "Hier siehst du alle eigenen Betreuungspakete inklusive gespeicherter Entwürfe.",
       "countTemplateSingular": "{count} Angebot in deinem Profil",
       "countTemplatePlural": "{count} Angebote in deinem Profil",
       "carouselAria": "Karussell deiner Angebote",
@@ -517,53 +562,68 @@
       "modalCloseAria": "Angebots-Dialog schliessen",
       "formAddTitle": "Neues Betreuungspaket anlegen",
       "formEditTitle": "Betreuungspaket bearbeiten",
-      "formAddHint": "Erstelle ein Angebot als Entwurf. Du kannst es danach direkt veroeffentlichen.",
+      "formAddHint": "Erstelle ein Angebot als Entwurf. Du kannst es danach direkt veröffentlichen.",
+      "imageSelectedTemplate": "{name} ausgewählt",
+      "imageNoneLabel": "Kein Bild ausgewählt (optional)",
+      "cityLoading": "Städte werden geladen",
+      "cityNoResults": "Keine Städte gefunden",
+      "cityResultsAria": "Städte-Ergebnisse",
       "steps": {
         "aria": "Schritte zum Erstellen eines Betreuungspakets",
+        "setup": "Zeitraum",
         "species": "Tiere",
         "details": "Angebot",
-        "review": "Pruefen"
+        "review": "Prüfen"
       },
       "review": {
-        "title": "Angaben pruefen und bestaetigen",
+        "title": "Angaben prüfen und bestätigen",
         "hint": "Bitte kontrolliere alle Angaben, bevor du speicherst."
       },
       "labels": {
         "title": "Titel",
+        "availableFrom": "Startdatum",
+        "availableTo": "Enddatum",
+        "availability": "Betreuungszeitraum",
+        "image": "Angebotsbild",
         "flow": "Ablauf",
         "dayStructure": "Tagesstruktur",
         "description": "Beschreibung",
         "price": "Preis pro Tag",
+        "city": "Betreuungsort",
         "species": "Betreute Tierarten",
         "services": "Leistungen",
         "status": "Status",
         "statusDraft": "Entwurf",
-        "statusPublished": "Veroeffentlicht"
+        "statusPublished": "Veröffentlicht"
       },
       "placeholders": {
         "title": "Kurzer Angebotsname",
         "flow": "Beschreibe den Ablauf",
         "dayStructure": "Beschreibe die Tagesstruktur",
-        "description": "Beschreibe Ablauf, Tagesstruktur und besondere Staerken",
+        "description": "Beschreibe Ablauf, Tagesstruktur und besondere Stärken",
         "price": "Preis in €",
+        "city": "Betreuungsort auswählen",
         "services": "Leistungen, mit Komma getrennt"
       },
       "actions": {
         "previous": "Vorheriges Angebot",
-        "next": "Naechstes Angebot",
+        "next": "Nächstes Angebot",
         "save": "Als Entwurf speichern",
-        "confirm": "Bestaetigen und als Entwurf speichern",
-        "stepBack": "Zurueck",
+        "confirm": "Bestätigen und als Entwurf speichern",
+        "stepBack": "Zurück",
         "stepNext": "Weiter",
         "edit": "Bearbeiten",
         "cancel": "Abbrechen",
-        "publish": "Veroeffentlichen",
-        "withdraw": "Zurueckziehen"
+        "publish": "Veröffentlichen",
+        "withdraw": "Zurückziehen"
       },
       "validation": {
         "requiredTemplate": "Bitte fülle {field} aus.",
-        "price": "Bitte gib einen gueltigen Preis groesser als 0 ein.",
-        "species": "Bitte waehle mindestens eine Tierart aus.",
+        "period": "Bitte wähle einen gültigen Betreuungszeitraum aus.",
+        "periodOrder": "Das Enddatum muss am oder nach dem Startdatum liegen.",
+        "price": "Bitte gib einen gültigen Preis größer als 0 ein.",
+        "cityRequired": "Bitte wähle einen Betreuungsort aus den Suchergebnissen aus.",
+        "species": "Bitte wähle mindestens eine Tierart aus.",
         "services": "Bitte gib mindestens eine Leistung an."
       },
       "notifications": {
@@ -571,9 +631,9 @@
         "createSuccessTemplate": "{name} wurde als Entwurf gespeichert.",
         "updateSuccessTitle": "Angebot aktualisiert",
         "updateSuccessTemplate": "{name} wurde aktualisiert.",
-        "publishSuccessTitle": "Angebot veroeffentlicht",
-        "publishSuccessTemplate": "{name} ist jetzt veroeffentlicht.",
-        "withdrawSuccessTitle": "Angebot zurueckgezogen",
+        "publishSuccessTitle": "Angebot veröffentlicht",
+        "publishSuccessTemplate": "{name} ist jetzt veröffentlicht.",
+        "withdrawSuccessTitle": "Angebot zurückgezogen",
         "withdrawSuccessTemplate": "{name} wurde wieder als Entwurf markiert.",
         "actionErrorTitle": "Aktion fehlgeschlagen",
         "actionErrorMessage": "Die Aktion konnte nicht abgeschlossen werden."

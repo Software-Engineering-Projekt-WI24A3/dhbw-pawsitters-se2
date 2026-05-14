@@ -216,7 +216,7 @@ public class PetService {
             }
             return builder.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 nicht verfuegbar.", e);
+            throw new IllegalStateException("SHA-256 nicht verfügbar.", e);
         }
     }
 

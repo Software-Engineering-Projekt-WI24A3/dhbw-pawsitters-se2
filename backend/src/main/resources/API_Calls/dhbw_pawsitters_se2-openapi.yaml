@@ -17,7 +17,7 @@ tags:
   - name: Offers
     description: Endpunkte zum Erstellen und Verwalten von Betreuungspaketen.
   - name: Marketplace
-    description: Endpunkte zur Gastgeber- und Angebotsuebersicht, Suche und Filteroptionen.
+    description: Endpunkte zur Gastgeber- und Angebotsübersicht, Suche und Filteroptionen.
 paths:
   /api/auth/register:
     post:
@@ -174,12 +174,12 @@ paths:
     delete:
       operationId: deleteUser
       tags: [Users]
-      summary: Benutzer loeschen
+      summary: Benutzer löschen
       parameters:
         - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
-          description: Benutzer geloescht.
+          description: Benutzer gelöscht.
           content:
             application/json:
               schema:
@@ -202,7 +202,7 @@ paths:
     get:
       operationId: mailExists
       tags: [Users]
-      summary: E-Mail pruefen
+      summary: E-Mail prüfen
       parameters:
         - name: mail
           in: query
@@ -212,7 +212,7 @@ paths:
             format: email
       responses:
         "200":
-          description: Ergebnis der Pruefung.
+          description: Ergebnis der Prüfung.
           content:
             application/json:
               schema:
@@ -246,7 +246,7 @@ paths:
       operationId: uploadUserProfileImage
       tags: [Users]
       summary: Profilbild hochladen
-      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitaetsgruenden auch `file`. Erlaubt sind gueltige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien.
+      description: Erwartet ein Multipart-Feld `image`; das Backend akzeptiert aus Kompatibilitätsgründen auch `file`. Erlaubt sind gültige JPEG-, PNG-, GIF-, WebP- und BMP-Bilddateien.
       parameters:
         - $ref: "#/components/parameters/IdPath"
       requestBody:
@@ -278,13 +278,13 @@ paths:
     delete:
       operationId: deleteUserProfileImage
       tags: [Users]
-      summary: Eigenes Profilbild loeschen
-      description: Entfernt ein eigenes Upload-Bild best-effort und setzt `profilePicture` auf das feste Pawsitters-Placeholder-Bild zurueck.
+      summary: Eigenes Profilbild löschen
+      description: Entfernt ein eigenes Upload-Bild best-effort und setzt `profilePicture` auf das feste Pawsitters-Placeholder-Bild zurück.
       parameters:
         - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
-          description: Profilbild geloescht bzw. auf Placeholder zurueckgesetzt.
+          description: Profilbild gelöscht bzw. auf Placeholder zurückgesetzt.
           content:
             application/json:
               schema:
@@ -351,12 +351,12 @@ paths:
     delete:
       operationId: deletePet
       tags: [Pets]
-      summary: Haustier loeschen
+      summary: Haustier löschen
       parameters:
         - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
-          description: Haustier geloescht.
+          description: Haustier gelöscht.
           content:
             application/json:
               schema:
@@ -430,12 +430,12 @@ paths:
     patch:
       operationId: publishOffer
       tags: [Offers]
-      summary: Betreuungspaket veroeffentlichen
+      summary: Betreuungspaket veröffentlichen
       parameters:
         - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
-          description: Angebot veroeffentlicht.
+          description: Angebot veröffentlicht.
           content:
             application/json:
               schema:
@@ -448,12 +448,12 @@ paths:
     patch:
       operationId: withdrawOffer
       tags: [Offers]
-      summary: Betreuungspaket zurueckziehen
+      summary: Betreuungspaket zurückziehen
       parameters:
         - $ref: "#/components/parameters/IdPath"
       responses:
         "200":
-          description: Angebot zurueckgezogen.
+          description: Angebot zurückgezogen.
           content:
             application/json:
               schema:
@@ -480,10 +480,10 @@ paths:
     get:
       operationId: getMarketplaceOffers
       tags: [Marketplace]
-      summary: Veroeffentlichte Betreuungspakete abrufen
+      summary: Veröffentlichte Betreuungspakete abrufen
       responses:
         "200":
-          description: Veroeffentlichte Angebote.
+          description: Veröffentlichte Angebote.
           content:
             application/json:
               schema:
@@ -555,7 +555,7 @@ components:
         format: int64
   responses:
     BadRequest:
-      description: Ungueltige Anfrage.
+      description: Ungültige Anfrage.
       content:
         application/json:
           schema:
@@ -852,6 +852,10 @@ components:
         title:
           type: string
           example: Hundebetreuung Deluxe
+        location:
+          type: string
+          maxLength: 120
+          nullable: true
         description:
           type: string
           maxLength: 1000
@@ -1018,6 +1022,9 @@ components:
           type: string
         title:
           type: string
+        location:
+          type: string
+          nullable: true
         description:
           type: string
         pricePerDay:
@@ -1061,7 +1068,7 @@ components:
       enum: [PET_OWNER, HOST, ADMIN]
     OfferStatus:
       type: string
-      description: DRAFT entspricht Entwurf, PUBLISHED entspricht Veroeffentlicht.
+      description: DRAFT entspricht Entwurf, PUBLISHED entspricht Veröffentlicht.
       enum: [DRAFT, PUBLISHED]
     PetChoice:
       type: string

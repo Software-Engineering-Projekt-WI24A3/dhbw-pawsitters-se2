@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PasswordRegistrationValidator.class)
 public @interface ValidPasswordRegistration {
-    String message() default "Passwort erfuellt die Sicherheitskriterien nicht.";
+    String message() default "Passwort erfüllt die Sicherheitskriterien nicht.";
 
     Class<?>[] groups() default {};
 
