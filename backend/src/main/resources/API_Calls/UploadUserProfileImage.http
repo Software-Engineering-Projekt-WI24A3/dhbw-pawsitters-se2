@@ -12,7 +12,7 @@ Content-Type: image/png
 
 ###
 
-### Profilbild loeschen
+### Profilbild löschen
 DELETE {{baseUrl}}/api/users/1/profile-image
 Authorization: Bearer {{token}}
 

@@ -36,6 +36,9 @@ public class Offer {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 120)
+    private String location;
+
     @Column(nullable = false, length = 1000)
     private String description;
 
@@ -70,6 +73,8 @@ public class Offer {
 
     public String getTitle() { return title; }
 
+    public String getLocation() { return location; }
+
     public String getDescription() { return description; }
 
     public BigDecimal getPricePerDay() { return pricePerDay; }
@@ -89,6 +94,8 @@ public class Offer {
     public void setHost(User host) { this.host = host; }
 
     public void setTitle(String title) { this.title = title; }
+
+    public void setLocation(String location) { this.location = location; }
 
     public void setDescription(String description) { this.description = description; }
 

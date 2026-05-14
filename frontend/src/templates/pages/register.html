@@ -221,18 +221,96 @@
                             <span class="repository_live_loading__text"
                                   th:text="#{auth.register.phoneCountryLoading}">auth.register.phoneCountryLoading</span>
                         </div>
-                        <label class="auth_field corp_field">
-                            <span class="sr-only" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
-                            <input class="auth_input corp_input"
-                                   type="date"
-                                   autocomplete="bday"
+                        <div class="register_birth_date_picker settings_edit_modal__date">
+                            <input type="hidden"
                                    data-auth-register-birth-date
-                                   v-model="registerBirthDate"
-                                   :max="registerBirthDateMax"
-                                   th:attr="aria-label=#{auth.register.birthDate},placeholder=#{auth.register.birthDatePlaceholder}">
-                            <span class="auth_field__label corp_field__label"
-                                  th:text="#{auth.register.birthDatePlaceholder}">auth.register.birthDatePlaceholder</span>
-                        </label>
+                                   v-model="registerBirthDate">
+                            <div class="header_search_date" @click.stop>
+                                <div class="header_search_date__toolbar">
+                                    <button class="header_search_date__nav"
+                                            type="button"
+                                            @click="moveRegisterBirthDateCalendar(-1)"
+                                            th:attr="aria-label=#{header.search.date.previousMonth}">
+                                        <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                            <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                        </svg>
+                                    </button>
+                                    <div class="header_search_date__period_controls">
+                                        <label class="header_search_date__period_picker">
+                                            <span class="sr-only" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
+                                            <select class="header_search_date__period_select"
+                                                    data-auth-register-birth-month
+                                                    :value="registerBirthDateCalendarMonth"
+                                                    @change="selectCalendarMonth('registerBirthDate', $event.target.value)"
+                                                    th:attr="aria-label=#{auth.register.birthDate}">
+                                                <option v-for="option in calendarMonthOptions"
+                                                        :key="'register-calendar-month-' + option.value"
+                                                        :value="option.value"
+                                                        v-text="option.label"></option>
+                                            </select>
+                                            <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                            </svg>
+                                        </label>
+                                        <label class="header_search_date__period_picker header_search_date__period_picker--year">
+                                            <span class="sr-only" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
+                                            <select class="header_search_date__period_select"
+                                                    data-auth-register-birth-year
+                                                    :value="registerBirthDateCalendarYear"
+                                                    @change="selectCalendarYear('registerBirthDate', $event.target.value)"
+                                                    th:attr="aria-label=#{auth.register.birthDate}">
+                                                <option v-for="year in birthDateCalendarYearOptions"
+                                                        :key="'register-calendar-year-' + year"
+                                                        :value="year"
+                                                        v-text="year"></option>
+                                            </select>
+                                            <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                            </svg>
+                                        </label>
+                                    </div>
+                                    <button class="header_search_date__nav"
+                                            type="button"
+                                            @click="moveRegisterBirthDateCalendar(1)"
+                                            th:attr="aria-label=#{header.search.date.nextMonth}">
+                                        <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                            <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="header_search_date__weekdays" aria-hidden="true">
+                                    <span class="header_search_date__weekday"
+                                          v-for="weekday in registerBirthDateCalendarWeekdayLabels"
+                                          :key="'register-birthdate-weekday-' + weekday"
+                                          v-text="weekday"></span>
+                                </div>
+                                <div class="header_search_date__days" role="grid">
+                                    <button class="header_search_date__day"
+                                            type="button"
+                                            v-for="day in registerBirthDateCalendarDays"
+                                            :key="'register-birthdate-day-' + day.iso"
+                                            :class="{
+                                                'header_search_date__day--outside': !day.isCurrentMonth,
+                                                'header_search_date__day--today': day.isToday,
+                                                'header_search_date__day--range': day.isInRange,
+                                                'header_search_date__day--start': day.isSelectedStart,
+                                                'header_search_date__day--end': day.isSelectedEnd,
+                                                'header_search_date__day--single': day.isSingleDaySelection
+                                            }"
+                                            :aria-label="day.ariaLabel"
+                                            :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'"
+                                            @click="selectRegisterBirthDateCalendarDay(day)">
+                                        <span v-text="day.dayNumber"></span>
+                                    </button>
+                                </div>
+                                <div class="header_search_date__selection header_search_date__selection--single">
+                                    <span class="header_search_date__selection-item">
+                                        <span class="header_search_date__selection-label" th:text="#{auth.register.birthDate}">auth.register.birthDate</span>
+                                        <span class="header_search_date__selection-value" v-text="registerBirthDateSelectionLabel"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <label class="auth_field corp_field">
                             <span class="sr-only" th:text="#{auth.register.emergencyContact}">auth.register.emergencyContact</span>
                             <input class="auth_input corp_input"

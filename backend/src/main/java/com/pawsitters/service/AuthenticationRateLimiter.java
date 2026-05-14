@@ -37,7 +37,7 @@ public class AuthenticationRateLimiter {
         if (Instant.now(clock).isBefore(attempt.lockedUntil)) {
             throw new ResponseStatusException(
                     HttpStatus.TOO_MANY_REQUESTS,
-                    "Zu viele fehlgeschlagene Login-Versuche. Bitte spaeter erneut versuchen."
+                    "Zu viele fehlgeschlagene Login-Versuche. Bitte später erneut versuchen."
             );
         }
 

@@ -73,6 +73,7 @@ public class OfferController {
         OfferResponse offer = OfferResponse.from(offerService.createOfferForHostEmail(
                 authentication.getName(),
                 request.title(),
+                request.location(),
                 request.description(),
                 request.pricePerDay(),
                 request.acceptedPetSpecies(),
@@ -110,6 +111,7 @@ public class OfferController {
                 id,
                 authentication.getName(),
                 request.title(),
+                request.location(),
                 request.description(),
                 request.pricePerDay(),
                 request.acceptedPetSpecies(),

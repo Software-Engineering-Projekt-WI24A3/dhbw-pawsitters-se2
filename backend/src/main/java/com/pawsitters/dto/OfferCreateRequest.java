@@ -14,6 +14,7 @@ import java.util.Set;
 
 public record OfferCreateRequest(
         @NotBlank String title,
+        @Size(max = 120) String location,
         @NotBlank @Size(max = 1000) String description,
         @NotNull @DecimalMin(value = "0.01") BigDecimal pricePerDay,
         @NotEmpty Set<@NotNull PetChoice> acceptedPetSpecies,

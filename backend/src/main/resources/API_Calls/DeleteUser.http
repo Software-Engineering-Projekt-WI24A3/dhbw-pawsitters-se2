@@ -1,4 +1,4 @@
-### Benutzer loeschen
+### Benutzer löschen
 DELETE {{baseUrl}}/api/users/4
 Authorization: Bearer {{token}}
 

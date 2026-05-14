@@ -1,7 +1,7 @@
 {
   "meta": {
     "home": {
-      "title": "Pawsitters",
+      "title": "Pawsitters | Acasă",
       "description": "Pagină de start redusă cu acces direct la repozitoriu și autentificare."
     },
     "repositoryGit": {
@@ -17,31 +17,31 @@
       "description": "Pagină Kanban redusă cu responsabili colorați și detalii despre issue-uri."
     },
     "login": {
-      "title": "Pawsitters | Autentificare",
+      "title": "Pawsitters | Cont | Autentificare",
       "description": "Pagină monocromă de autentificare pentru frontendul localizat Pawsitters."
     },
     "register": {
-      "title": "Pawsitters | Creează cont",
+      "title": "Pawsitters | Cont | Creează cont",
       "description": "Pagină monocromă de înregistrare pentru frontendul localizat Pawsitters."
     },
     "notFound": {
-      "title": "Pawsitters | Pagina nu a fost găsită",
+      "title": "Pawsitters | Eroare | Pagina nu a fost găsită",
       "description": "Pagină 404 pentru rute necunoscute."
     },
     "profile": {
-      "title": "Pawsitters | Profil public",
+      "title": "Pawsitters | Profil",
       "description": "Pagină publică de profil cu banner, avatar și date personale."
     },
     "myPets": {
-      "title": "Pawsitters | Animalele mele",
+      "title": "Pawsitters | Profil | Animalele mele",
       "description": "Zonă protejată pentru gestionarea animalelor tale, cu upload de imagini și carusel dedicat."
     },
     "myOffers": {
-      "title": "Pawsitters | Ofertele mele",
+      "title": "Pawsitters | Profil | Ofertele mele",
       "description": "Zonă protejată pentru gestionarea pachetelor tale de îngrijire, ca draft sau publicate."
     },
     "settings": {
-      "title": "Pawsitters | Setări",
+      "title": "Pawsitters | Profil | Setări",
       "description": "Zonă protejată de setări pentru editarea datelor profilului tău."
     }
   },
@@ -89,7 +89,21 @@
     "close": "Închide meniul"
   },
   "notifications": {
-    "dismissAria": "Închide notificarea"
+    "dismissAria": "Închide notificarea",
+    "localeSwitch": {
+      "de": {
+        "title": "Sprache gewechselt",
+        "message": "Willkommen im {language}-Bereich."
+      },
+      "en": {
+        "title": "Language switched",
+        "message": "Welcome to the {language} experience."
+      },
+      "ro": {
+        "title": "Limba a fost schimbată",
+        "message": "Bine ai venit în experiența {language}."
+      }
+    }
   },
   "header": {
     "tabs": {
@@ -286,7 +300,7 @@
       "passwordPlaceholder": "Introdu parola",
       "confirmPassword": "Repetă parola",
       "confirmPasswordPlaceholder": "Repetă parola",
-      "passwordHint": "Minimum 15 caractere, fără părți din e-mail sau nume.",
+      "passwordHint": "Parolele lungi de tip frază, cu spații, sunt acceptate. Literele mari, cifrele și caracterele speciale nu sunt obligatorii. Tratăm variantele de caractere în mod consecvent și stocăm parola doar ca hash securizat.",
       "phoneCountry": "Prefix de țară",
       "phoneCountryPlaceholder": "Țară și prefix",
       "phoneCountryLoading": "Se încarcă prefixele de țară",
@@ -336,11 +350,11 @@
       "passwordCriteria": {
         "minLength": "Cel puțin 15 caractere",
         "maxBytes": "Maximum 72 de bytes",
-        "lowercase": "Cel puțin o literă mică",
-        "uppercase": "Cel puțin o literă mare",
-        "digit": "Cel puțin o cifră",
-        "special": "Cel puțin un caracter special",
-        "match": "Ambele parole sunt identice"
+        "lowercase": "Nu poate fi goală și nici doar spații",
+        "uppercase": "Nu poate conține adresa ta de e-mail sau numele din e-mail",
+        "digit": "Nu poate conține părți din prenume sau nume",
+        "special": "Nu poate fi o parolă cunoscută ca slabă sau o variantă simplă",
+        "match": "Nu poate conține termeni evidenți legați de Pawsitters"
       },
       "errorTitle": "Înregistrare eșuată",
       "errorMessage": "Înregistrarea nu a putut fi finalizată.",
@@ -396,12 +410,43 @@
       "title": "Informații"
     }
   },
+  "home": {
+    "page": {
+      "loading": "Se încarcă ofertele.",
+      "loadFailed": "Ofertele nu au putut fi încărcate.",
+      "emptyTitle": "Nu există încă oferte potrivite",
+      "emptyText": "Momentan nu există oferte pentru acest tip de animal.",
+      "headingPrefix": "Descoperă oferte pentru",
+      "allSpeciesLabel": "Toate animalele",
+      "speciesDropdownAria": "Alege tipul de animal",
+      "carouselAria": "Carusel cu oferte de îngrijire publicate",
+      "untitledOffer": "Ofertă de îngrijire",
+      "openDetailsTemplate": "Vezi mai multe detalii pentru {name}",
+      "labels": {
+        "date": "Perioadă",
+        "price": "Preț",
+        "location": "Locația îngrijirii",
+        "locationFallback": "Necunoscut"
+      },
+      "actions": {
+        "previous": "Oferta anterioară",
+        "next": "Oferta următoare"
+      },
+      "modal": {
+        "closeAria": "Închide detaliile ofertei",
+        "hostLabel": "Gazdă",
+        "descriptionLabel": "Descriere",
+        "speciesLabel": "Specii de animale",
+        "servicesLabel": "Servicii"
+      }
+    }
+  },
   "profile": {
     "page": {
       "bannerAlt": "Banner de mulțumire pentru adăpostul de animale",
       "eyebrow": "Profil public",
       "title": "Vizualizare profil personal",
-      "documentTitleTemplate": "{brand} | Profil",
+      "documentTitleTemplate": "{brand} | Profil | {name}",
       "loading": "Se încarcă profilul.",
       "authRequired": "Te rugăm să te autentifici pentru a vedea acest profil.",
       "notFound": "Acest profil nu a fost găsit.",
@@ -518,8 +563,14 @@
       "formAddTitle": "Creează un pachet nou de îngrijire",
       "formEditTitle": "Editeaza pachetul de ingrijire",
       "formAddHint": "Salvează oferta ca draft. O poți publica imediat după.",
+      "imageSelectedTemplate": "{name} selectat",
+      "imageNoneLabel": "Nicio imagine selectata (optional)",
+      "cityLoading": "Se încarcă orașele",
+      "cityNoResults": "Nu s-au găsit orașe",
+      "cityResultsAria": "Rezultate orașe",
       "steps": {
         "aria": "Pasi pentru crearea unui pachet de ingrijire",
+        "setup": "Perioada",
         "species": "Animale",
         "details": "Oferta",
         "review": "Revizuire"
@@ -530,10 +581,15 @@
       },
       "labels": {
         "title": "Titlu",
+        "availableFrom": "Data de inceput",
+        "availableTo": "Data de sfarsit",
+        "availability": "Perioada de ingrijire",
+        "image": "Imagine oferta",
         "flow": "Desfasurare",
         "dayStructure": "Structura zilei",
         "description": "Descriere",
         "price": "Preț pe zi",
+        "city": "Locația îngrijirii",
         "species": "Specii acceptate",
         "services": "Servicii",
         "status": "Status",
@@ -546,6 +602,7 @@
         "dayStructure": "Descrie structura zilei",
         "description": "Descrie rutina, programul și punctele forte",
         "price": "Pret in €",
+        "city": "Selectează locația îngrijirii",
         "services": "Servicii, separate prin virgulă"
       },
       "actions": {
@@ -562,7 +619,10 @@
       },
       "validation": {
         "requiredTemplate": "Te rugăm să completezi {field}.",
+        "period": "Te rugam sa alegi o perioada valida de ingrijire.",
+        "periodOrder": "Data de sfarsit trebuie sa fie egala sau dupa data de inceput.",
         "price": "Te rugăm să introduci un preț valid mai mare decât 0.",
+        "cityRequired": "Te rugăm să selectezi locația îngrijirii din rezultatele căutării.",
         "species": "Te rugăm să selectezi cel puțin o specie.",
         "services": "Te rugăm să introduci cel puțin un serviciu."
       },

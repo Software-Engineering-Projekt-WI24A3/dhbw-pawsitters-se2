@@ -15,7 +15,16 @@
               data-auth-logout-success-title=#{auth.shared.logoutSuccessTitle},
               data-auth-logout-success-template=#{auth.shared.logoutSuccessMessageTemplate},
               data-profile-document-title-template=#{profile.page.documentTitleTemplate},
-              data-notification-dismiss-aria=#{notifications.dismissAria}">
+              data-notification-dismiss-aria=#{notifications.dismissAria},
+              data-locale-label-de=#{locale.de.label},
+              data-locale-label-en=#{locale.en.label},
+              data-locale-label-ro=#{locale.ro.label},
+              data-locale-switch-title-de=#{notifications.localeSwitch.de.title},
+              data-locale-switch-title-en=#{notifications.localeSwitch.en.title},
+              data-locale-switch-title-ro=#{notifications.localeSwitch.ro.title},
+              data-locale-switch-message-de=#{notifications.localeSwitch.de.message},
+              data-locale-switch-message-en=#{notifications.localeSwitch.en.message},
+              data-locale-switch-message-ro=#{notifications.localeSwitch.ro.message}">
     <transition-group name="site_notification_stack"
                       tag="div"
                       class="site_notifications"
@@ -394,7 +403,38 @@
                                         <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
                                     </svg>
                                 </button>
-                                <p class="header_search_date__month" v-text="settingsBirthDateCalendarMonthLabel"></p>
+                                <div class="header_search_date__period_controls">
+                                    <label class="header_search_date__period_picker">
+                                        <span class="sr-only" v-text="settingsStrings.labels.birthDate"></span>
+                                        <select class="header_search_date__period_select"
+                                                :value="settingsBirthDateCalendarMonth"
+                                                @change="selectCalendarMonth('settingsBirthDate', $event.target.value)"
+                                                :aria-label="settingsStrings.labels.birthDate">
+                                            <option v-for="option in calendarMonthOptions"
+                                                    :key="'settings-calendar-month-' + option.value"
+                                                    :value="option.value"
+                                                    v-text="option.label"></option>
+                                        </select>
+                                        <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                            <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                        </svg>
+                                    </label>
+                                    <label class="header_search_date__period_picker header_search_date__period_picker--year">
+                                        <span class="sr-only" v-text="settingsStrings.labels.birthDate"></span>
+                                        <select class="header_search_date__period_select"
+                                                :value="settingsBirthDateCalendarYear"
+                                                @change="selectCalendarYear('settingsBirthDate', $event.target.value)"
+                                                :aria-label="settingsStrings.labels.birthDate">
+                                            <option v-for="year in birthDateCalendarYearOptions"
+                                                    :key="'settings-calendar-year-' + year"
+                                                    :value="year"
+                                                    v-text="year"></option>
+                                        </select>
+                                        <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                            <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                        </svg>
+                                    </label>
+                                </div>
                                 <button class="header_search_date__nav"
                                         type="button"
                                         @click="moveSettingsBirthDateCalendar(1)"
@@ -562,9 +602,15 @@
                       @submit.prevent="submitMyOfferForm()">
                     <div class="repository_segmented register_steps my_offers_create_steps"
                          data-segmented="myOffersCreateStep"
-                         data-active="species"
+                         data-active="setup"
                          role="tablist"
                          :aria-label="myOffersStrings.stepAria">
+                        <button class="repository_segmented__button register_steps__tab"
+                                type="button"
+                                tabindex="-1"
+                                data-segmented-value="setup"
+                                disabled
+                                v-text="myOffersStrings.steps.setup"></button>
                         <button class="repository_segmented__button register_steps__tab"
                                 type="button"
                                 tabindex="-1"
@@ -587,11 +633,138 @@
                     </div>
 
                     <section class="register_step_panel my_offers_create_step_panel"
+                             v-show="myOffersCreateStep === 'setup'"
+                             data-segment-panel="myOffersCreateStep"
+                             data-segment-value="setup">
+                        <div class="settings_edit_modal__species my_offers_create_setup">
+                            <p class="settings_edit_modal__species-hint" v-text="myOffersStrings.formAddHint"></p>
+
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="myOffersStrings.labels.title"></span>
+                                <input class="auth_input corp_input"
+                                       type="text"
+                                       autocomplete="off"
+                                       data-my-offers-form-title
+                                       v-model="myOffersForm.title"
+                                       :placeholder="myOffersStrings.placeholders.title"
+                                       :aria-label="myOffersStrings.labels.title">
+                                <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.title"></span>
+                            </label>
+
+                            <div class="settings_edit_modal__date my_offers_create_setup__calendar">
+                                <div class="header_search_date">
+                                    <div class="header_search_date__toolbar">
+                                        <button class="header_search_date__nav"
+                                                type="button"
+                                                @click="moveMyOffersAvailabilityCalendar(-1)"
+                                                th:attr="aria-label=#{header.search.date.previousMonth}">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                        <div class="header_search_date__period_controls">
+                                            <label class="header_search_date__period_picker">
+                                                <span class="sr-only" v-text="myOffersStrings.labels.availability"></span>
+                                                <select class="header_search_date__period_select"
+                                                        data-my-offers-availability-month
+                                                        :value="myOffersAvailabilityCalendarMonth"
+                                                        @change="selectCalendarMonth('myOffersAvailability', $event.target.value)"
+                                                        :aria-label="myOffersStrings.labels.availability">
+                                                    <option v-for="option in calendarMonthOptions"
+                                                            :key="'my-offers-calendar-month-' + option.value"
+                                                            :value="option.value"
+                                                            v-text="option.label"></option>
+                                                </select>
+                                                <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                    <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                                </svg>
+                                            </label>
+                                            <label class="header_search_date__period_picker header_search_date__period_picker--year">
+                                                <span class="sr-only" v-text="myOffersStrings.labels.availability"></span>
+                                                <select class="header_search_date__period_select"
+                                                        data-my-offers-availability-year
+                                                        :value="myOffersAvailabilityCalendarYear"
+                                                        @change="selectCalendarYear('myOffersAvailability', $event.target.value)"
+                                                        :aria-label="myOffersStrings.labels.availability">
+                                                    <option v-for="year in myOffersAvailabilityYearOptions"
+                                                            :key="'my-offers-calendar-year-' + year"
+                                                            :value="year"
+                                                            v-text="year"></option>
+                                                </select>
+                                                <svg class="header_search_date__period_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                    <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                                </svg>
+                                            </label>
+                                        </div>
+                                        <button class="header_search_date__nav"
+                                                type="button"
+                                                @click="moveMyOffersAvailabilityCalendar(1)"
+                                                th:attr="aria-label=#{header.search.date.nextMonth}">
+                                            <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__weekdays" aria-hidden="true">
+                                        <span class="header_search_date__weekday"
+                                              v-for="weekday in myOffersAvailabilityCalendarWeekdayLabels"
+                                              :key="'my-offers-availability-weekday-' + weekday"
+                                              v-text="weekday"></span>
+                                    </div>
+                                    <div class="header_search_date__days" role="grid">
+                                        <button class="header_search_date__day"
+                                                type="button"
+                                                v-for="day in myOffersAvailabilityCalendarDays"
+                                                :key="'my-offers-availability-day-' + day.iso"
+                                                :class="{
+                                                    'header_search_date__day--outside': !day.isCurrentMonth,
+                                                    'header_search_date__day--today': day.isToday,
+                                                    'header_search_date__day--range': day.isInRange,
+                                                    'header_search_date__day--start': day.isSelectedStart,
+                                                    'header_search_date__day--end': day.isSelectedEnd,
+                                                    'header_search_date__day--single': day.isSingleDaySelection
+                                                }"
+                                                :aria-label="day.ariaLabel"
+                                                :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'"
+                                                @click="selectMyOffersAvailabilityCalendarDay(day)">
+                                            <span v-text="day.dayNumber"></span>
+                                        </button>
+                                    </div>
+                                    <div class="header_search_date__selection">
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label" v-text="myOffersStrings.labels.availableFrom"></span>
+                                            <span class="header_search_date__selection-value" v-text="myOffersAvailabilityStartLabel"></span>
+                                        </span>
+                                        <span class="header_search_date__selection-item">
+                                            <span class="header_search_date__selection-label" v-text="myOffersStrings.labels.availableTo"></span>
+                                            <span class="header_search_date__selection-value" v-text="myOffersAvailabilityEndLabel"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings_edit_modal__upload my_offers_create_setup__upload">
+                                <label class="settings_edit_modal__upload-label" v-text="myOffersStrings.labels.image"></label>
+                                <input class="settings_edit_modal__upload-input"
+                                       type="file"
+                                       accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/jpeg,image/png,image/gif,image/webp,image/bmp"
+                                       data-my-offers-image-upload
+                                       :aria-label="myOffersStrings.labels.image"
+                                       @change="handleMyOfferImageSelection">
+                                <p class="settings_edit_modal__upload-hint" v-text="myOffersImageSelectionLabel"></p>
+                                <img v-if="myOffersFormImagePreviewUrl"
+                                     class="my_offers_create_setup__preview"
+                                     :src="myOffersFormImagePreviewUrl"
+                                     :alt="myOffersForm.title || myOffersStrings.labels.image">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="register_step_panel my_offers_create_step_panel"
                              v-show="myOffersCreateStep === 'species'"
                              data-segment-panel="myOffersCreateStep"
                              data-segment-value="species">
                         <div class="settings_edit_modal__species my_offers_create_species">
-                            <p class="settings_edit_modal__species-hint" v-text="myOffersStrings.formAddHint"></p>
                             <p class="settings_edit_modal__species-hint" v-text="myOffersStrings.labels.species"></p>
                             <div class="register_pet_grid settings_edit_modal__species-grid">
                                 <button type="button"
@@ -613,21 +786,10 @@
                              data-segment-panel="myOffersCreateStep"
                              data-segment-value="details">
                         <label class="auth_field corp_field settings_edit_modal__field">
-                            <span class="sr-only" v-text="myOffersStrings.labels.title"></span>
-                            <input class="auth_input corp_input"
-                                   type="text"
-                                   autocomplete="off"
-                                   data-my-offers-form-title
-                                   v-model="myOffersForm.title"
-                                   :placeholder="myOffersStrings.placeholders.title"
-                                   :aria-label="myOffersStrings.labels.title">
-                            <span class="auth_field__label corp_field__label" v-text="myOffersStrings.placeholders.title"></span>
-                        </label>
-
-                        <label class="auth_field corp_field settings_edit_modal__field">
                             <span class="sr-only" v-text="myOffersStrings.labels.price"></span>
                             <input class="auth_input corp_input"
                                    type="text"
+                                   data-my-offers-form-price
                                    inputmode="numeric"
                                    pattern="[0-9]*"
                                    v-model="myOffersForm.pricePerDay"
@@ -695,6 +857,20 @@
                             <div class="my_offers_create_review__row">
                                 <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.title"></span>
                                 <span class="my_offers_create_review__value" v-text="myOffersForm.title || '-'"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.availability"></span>
+                                <span class="my_offers_create_review__value" v-text="myOffersAvailabilityStartLabel + ' - ' + myOffersAvailabilityEndLabel"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.image"></span>
+                                <img v-if="myOffersFormImagePreviewUrl"
+                                     class="my_offers_create_review__image"
+                                     :src="myOffersFormImagePreviewUrl"
+                                     :alt="myOffersForm.title || myOffersStrings.labels.image">
+                                <span v-else class="my_offers_create_review__value">-</span>
                             </div>
 
                             <div class="my_offers_create_review__row">

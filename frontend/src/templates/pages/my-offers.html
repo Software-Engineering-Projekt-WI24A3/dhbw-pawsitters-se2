@@ -28,20 +28,34 @@
                       data-my-offers-validation-price=#{myOffers.page.validation.price},
                       data-my-offers-validation-species=#{myOffers.page.validation.species},
                       data-my-offers-validation-services=#{myOffers.page.validation.services},
+                      data-my-offers-validation-city-required=#{myOffers.page.validation.cityRequired},
+                      data-my-offers-validation-period=#{myOffers.page.validation.period},
+                      data-my-offers-validation-period-order=#{myOffers.page.validation.periodOrder},
                       data-my-offers-form-add-title=#{myOffers.page.formAddTitle},
                       data-my-offers-form-edit-title=#{myOffers.page.formEditTitle},
                       data-my-offers-form-add-hint=#{myOffers.page.formAddHint},
+                      data-my-offers-image-selected-template=#{myOffers.page.imageSelectedTemplate},
+                      data-my-offers-image-none-label=#{myOffers.page.imageNoneLabel},
+                      data-my-offers-city-loading=#{myOffers.page.cityLoading},
+                      data-my-offers-city-no-results=#{myOffers.page.cityNoResults},
+                      data-my-offers-city-results-aria=#{myOffers.page.cityResultsAria},
                       data-my-offers-step-aria=#{myOffers.page.steps.aria},
+                      data-my-offers-step-setup=#{myOffers.page.steps.setup},
                       data-my-offers-step-species=#{myOffers.page.steps.species},
                       data-my-offers-step-details=#{myOffers.page.steps.details},
                       data-my-offers-step-review=#{myOffers.page.steps.review},
                       data-my-offers-review-title=#{myOffers.page.review.title},
                       data-my-offers-review-hint=#{myOffers.page.review.hint},
                       data-my-offers-label-title=#{myOffers.page.labels.title},
+                      data-my-offers-label-available-from=#{myOffers.page.labels.availableFrom},
+                      data-my-offers-label-available-to=#{myOffers.page.labels.availableTo},
+                      data-my-offers-label-availability=#{myOffers.page.labels.availability},
+                      data-my-offers-label-image=#{myOffers.page.labels.image},
                       data-my-offers-label-flow=#{myOffers.page.labels.flow},
                       data-my-offers-label-day-structure=#{myOffers.page.labels.dayStructure},
                       data-my-offers-label-description=#{myOffers.page.labels.description},
                       data-my-offers-label-price=#{myOffers.page.labels.price},
+                      data-my-offers-label-city=#{myOffers.page.labels.city},
                       data-my-offers-label-species=#{myOffers.page.labels.species},
                       data-my-offers-label-services=#{myOffers.page.labels.services},
                       data-my-offers-label-status=#{myOffers.page.labels.status},
@@ -52,6 +66,7 @@
                       data-my-offers-placeholder-day-structure=#{myOffers.page.placeholders.dayStructure},
                       data-my-offers-placeholder-description=#{myOffers.page.placeholders.description},
                       data-my-offers-placeholder-price=#{myOffers.page.placeholders.price},
+                      data-my-offers-placeholder-city=#{myOffers.page.placeholders.city},
                       data-my-offers-placeholder-services=#{myOffers.page.placeholders.services},
                       data-my-offers-action-previous=#{myOffers.page.actions.previous},
                       data-my-offers-action-next=#{myOffers.page.actions.next},
@@ -112,11 +127,12 @@
                v-text="myOffersViewError"></p>
 
                 <div v-else class="profile_panel__content my_offers_panel__content">
+                    <button class="my_offers_add_link"
+                            type="button"
+                            @click="openMyOffersCreateModal()"
+                            v-text="myOffersStrings.createLinkLabel"></button>
+
                     <div class="my_offers_intro">
-                        <button class="my_offers_intro__create_link"
-                                type="button"
-                                @click="openMyOffersCreateModal()"
-                                v-text="myOffersStrings.createLinkLabel"></button>
                         <h2 class="profile_panel__name" v-text="myOffersDisplayName"></h2>
                         <p class="my_offers_intro__subtitle" v-text="myOffersStrings.introDescription"></p>
                         <p class="my_offers_intro__count" v-text="myOffersCountLabel"></p>
@@ -140,6 +156,8 @@
                                      class="my_offers_carousel__card"
                                      :class="item.positionClass">
                                 <div class="my_offers_card"
+                                     :class="{ 'my_offers_card--with-image': hasMyOfferCardImage(item.offer) }"
+                                     :style="buildMyOfferCardStyle(item.offer)"
                                      role="button"
                                      tabindex="0"
                                      @click="setMyOffersCarouselIndex(item.index)"

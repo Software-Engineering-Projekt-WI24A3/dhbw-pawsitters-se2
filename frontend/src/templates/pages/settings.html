@@ -152,18 +152,6 @@
                          :class="{ 'settings_fact--wide': fact.wide }">
                         <dt class="settings_fact__head">
                             <span class="settings_fact__label">
-                                <img v-if="fact.key === 'email'"
-                                     class="settings_fact__label_icon"
-                                     th:src="@{/assets/media/1F4E7.svg}"
-                                     src="/assets/media/1F4E7.svg"
-                                     alt=""
-                                     aria-hidden="true">
-                                <img v-else-if="fact.key === 'phone'"
-                                     class="settings_fact__label_icon"
-                                     th:src="@{/assets/media/260E.svg}"
-                                     src="/assets/media/260E.svg"
-                                     alt=""
-                                     aria-hidden="true">
                                 <span v-text="fact.label"></span>
                             </span>
                             <button class="settings_fact__edit"
