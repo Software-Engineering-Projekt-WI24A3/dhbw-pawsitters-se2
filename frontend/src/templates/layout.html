@@ -25,30 +25,32 @@
               data-locale-switch-message-de=#{notifications.localeSwitch.de.message},
               data-locale-switch-message-en=#{notifications.localeSwitch.en.message},
               data-locale-switch-message-ro=#{notifications.localeSwitch.ro.message}">
-    <transition-group name="site_notification_stack"
-                      tag="div"
-                      class="site_notifications"
-                      aria-live="polite"
-                      aria-atomic="false">
-        <article v-for="notification in notifications"
-                 :key="notification.id"
-                 class="site_notification"
-                 :class="'site_notification--' + notification.tone"
-                 :role="notification.tone === 'error' ? 'alert' : 'status'">
-            <button type="button"
-                    class="site_notification__dismiss"
-                    :aria-label="notificationDismissAria"
-                    @click="removeNotification(notification.id)">
-                <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
-                    <path d="M5 5 15 15M15 5 5 15"></path>
-                </svg>
-            </button>
-            <p class="site_notification__title" v-text="notification.title"></p>
-            <p v-if="notification.message"
-               class="site_notification__message"
-               v-text="notification.message"></p>
-        </article>
-    </transition-group>
+    <teleport to="body">
+        <transition-group name="site_notification_stack"
+                          tag="div"
+                          class="site_notifications"
+                          aria-live="polite"
+                          aria-atomic="false">
+            <article v-for="notification in notifications"
+                     :key="notification.id"
+                     class="site_notification"
+                     :class="'site_notification--' + notification.tone"
+                     :role="notification.tone === 'error' ? 'alert' : 'status'">
+                <button type="button"
+                        class="site_notification__dismiss"
+                        :aria-label="notificationDismissAria"
+                        @click="removeNotification(notification.id)">
+                    <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                        <path d="M5 5 15 15M15 5 5 15"></path>
+                    </svg>
+                </button>
+                <p class="site_notification__title" v-text="notification.title"></p>
+                <p v-if="notification.message"
+                   class="site_notification__message"
+                   v-text="notification.message"></p>
+            </article>
+        </transition-group>
+    </teleport>
     <div class="site_background" aria-hidden="true">
         <svg class="site_background__threads" data-thread-background viewBox="0 0 1600 2400" preserveAspectRatio="none">
             <g class="site_background__glow"></g>
@@ -852,8 +854,8 @@
                             <input class="auth_input corp_input"
                                    type="text"
                                    data-my-offers-form-price
-                                   inputmode="numeric"
-                                   pattern="[0-9]*"
+                                   inputmode="decimal"
+                                   pattern="[0-9]+([.,][0-9]{0,2})?"
                                    v-model="myOffersForm.pricePerDay"
                                    @input="sanitizeMyOfferPriceInput"
                                    :placeholder="myOffersStrings.placeholders.price"

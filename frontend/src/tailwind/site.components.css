@@ -1,6 +1,17 @@
 @tailwind components;
 
 @layer components {
+    :root {
+        --corp-modal-min-width: 20rem;
+        --corp-modal-max-width-auth: 35rem;
+        --corp-modal-max-width-form: 46rem;
+        --corp-modal-max-width-search: 42rem;
+        --corp-modal-max-width-home-offer: 44rem;
+        --corp-modal-max-width-repo-commit: 56rem;
+        --corp-modal-max-width-repo-board: 62rem;
+        --corp-notification-layer-z: 2147483647;
+    }
+
     [v-cloak] {
         display: none;
     }
@@ -620,7 +631,7 @@
     }
 
     .settings_edit_modal__surface {
-        @apply w-full max-w-[34rem];
+        @apply w-full;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         overflow-x: visible;
         overflow-y: auto;
@@ -821,10 +832,6 @@
 
         .settings_fact--wide {
             grid-column: span 1 / span 1;
-        }
-
-        .settings_edit_modal__surface {
-            max-width: min(100%, 34rem);
         }
     }
 
@@ -1741,7 +1748,8 @@
     }
 
     .site_notifications {
-        @apply pointer-events-none fixed left-1/2 top-4 z-[90] grid w-[min(94vw,34rem)] -translate-x-1/2 gap-2;
+        @apply pointer-events-none fixed left-1/2 top-4 grid w-[min(94vw,34rem)] -translate-x-1/2 gap-2;
+        z-index: var(--corp-notification-layer-z);
     }
 
     .site_notification {
@@ -4472,22 +4480,20 @@
     }
 
     .home_offer_modal__surface {
-        width: min(100%, 34rem);
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
     }
 
     .home_offer_modal__title {
-        margin-bottom: 0.8rem;
+        margin-bottom: 0;
     }
 
     .home_offer_modal__facts {
         @apply m-0 grid;
         gap: 0.58rem;
-        margin-bottom: 1rem;
     }
 
     .home_offer_modal__fact {
-        @apply grid rounded-[0.94rem] border border-black/10 bg-white/80 px-3 py-2;
+        @apply grid;
         gap: 0.22rem;
     }
 
@@ -4502,10 +4508,6 @@
         @apply m-0 text-sm font-semibold;
         color: rgba(17, 17, 19, 0.86);
         letter-spacing: -0.01em;
-    }
-
-    .home_offer_modal__section + .home_offer_modal__section {
-        margin-top: 0.8rem;
     }
 
     .home_offer_modal__section_title {
@@ -5785,7 +5787,11 @@
     }
 
     .repo_modal__surface {
-        @apply relative grid w-full max-w-[58rem] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
+        @apply relative grid w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
+        --corp-repo-modal-max-width: var(--corp-modal-max-width-repo-board);
+        width: min(100%, var(--corp-repo-modal-max-width));
+        max-width: var(--corp-repo-modal-max-width);
+        min-width: min(var(--corp-modal-min-width), 100%);
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         z-index: 1;
         box-shadow:
@@ -5804,11 +5810,11 @@
     }
 
     .repo_modal__surface--commit {
-        max-width: 52rem;
+        --corp-repo-modal-max-width: var(--corp-modal-max-width-repo-commit);
     }
 
     .repo_modal__surface--board {
-        max-width: 58rem;
+        --corp-repo-modal-max-width: var(--corp-modal-max-width-repo-board);
     }
 
     .repo_modal__close {
@@ -6411,7 +6417,11 @@
     }
 
     .auth_modal__surface {
-        @apply relative w-full max-w-[23.5rem] rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
+        @apply relative w-full rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
+        --corp-auth-modal-max-width: var(--corp-modal-max-width-auth);
+        width: min(100%, var(--corp-auth-modal-max-width));
+        max-width: var(--corp-auth-modal-max-width);
+        min-width: min(var(--corp-modal-min-width), 100%);
         z-index: 1;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         overflow-y: auto;
@@ -6423,6 +6433,18 @@
             linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 252, 0.95) 100%),
             radial-gradient(circle at 82% 14%, rgba(47, 90, 168, 0.11) 0%, rgba(47, 90, 168, 0) 50%),
             radial-gradient(circle at 20% 90%, rgba(162, 212, 255, 0.24) 0%, rgba(162, 212, 255, 0) 52%);
+    }
+
+    .auth_modal__surface.settings_edit_modal__surface {
+        --corp-auth-modal-max-width: var(--corp-modal-max-width-form);
+    }
+
+    .auth_modal__surface.user_search_modal__surface {
+        --corp-auth-modal-max-width: var(--corp-modal-max-width-search);
+    }
+
+    .auth_modal__surface.home_offer_modal__surface {
+        --corp-auth-modal-max-width: var(--corp-modal-max-width-home-offer);
     }
 
     .auth_modal__close {
@@ -6501,7 +6523,7 @@
     }
 
     .user_search_modal__surface {
-        @apply w-full max-w-[30.5rem];
+        @apply w-full;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         display: grid;
         grid-template-rows: auto auto minmax(0, 1fr);

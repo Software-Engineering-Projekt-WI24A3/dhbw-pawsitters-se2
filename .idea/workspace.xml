@@ -5,14 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="prompt update">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateChatMessage.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SendChatMessage.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateOffer.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateOffer.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChatMessages.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChatMessages.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/http-client.env.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/http-client.env.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/MarketplaceIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/MarketplaceIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-create-flow.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-create-flow.e2e.spec.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,12 +89,12 @@
     &quot;assignee&quot;: &quot;xJvstvs&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git",
-    "accountId": "74660bd1-6a97-45d8-be70-0e7c1701c587"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2.git&quot;,
+    &quot;accountId&quot;: &quot;74660bd1-6a97-45d8-be70-0e7c1701c587&quot;
   }
-}]]></component>
+}</component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
@@ -168,7 +176,7 @@
     "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
     "Shell Script.Projektstart.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "j__feature__chatting",
+    "git-widget-placeholder": "n__feature__some-bug-fixes",
     "javascript.preferred.runtime.type.id": "node",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -185,23 +193,6 @@
       <recent name="$PROJECT_DIR$/frontend/src/media" />
       <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="configurationStatuses">
-      <map>
-        <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <map>
-              <entry key="AuthLogin2ndCredentials | #1" value="STOPPED" />
-              <entry key="GetChatMessages | #1" value="STOPPED" />
-              <entry key="GetChats | #1" value="STOPPED" />
-              <entry key="PostToNewChat | #1" value="STOPPED" />
-              <entry key="SendChatMessage | #1" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
   <component name="RunManager" selected="HTTP Request.GetChatMessages | #1">
     <configuration name="AuthLogin2ndCredentials | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" executionIdentifier="#1" runType="Run single request">

@@ -466,6 +466,39 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /api/offers/{id}/image:
+    post:
+      operationId: uploadOfferImage
+      tags: [Offers]
+      summary: Angebotsbild hochladen oder ersetzen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Angebotsbild gespeichert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
   /api/marketplace/hosts:
     get:
       operationId: getMarketplaceHosts
@@ -1208,6 +1241,9 @@ components:
           nullable: true
         description:
           type: string
+        imagePath:
+          type: string
+          nullable: true
         pricePerDay:
           type: number
           format: double
