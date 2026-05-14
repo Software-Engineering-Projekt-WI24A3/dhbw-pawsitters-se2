@@ -9,10 +9,12 @@ import com.pawsitters.repository.UserRepository;
 import com.pawsitters.validation.PasswordPolicy;
 import com.pawsitters.validation.PasswordNormalizer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -41,15 +43,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Path uploadRoot;
+    private final long maxProfileImageSizeBytes;
 
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       @Value("${app.upload.dir:uploads}") String uploadDir) {
+                       @Value("${app.upload.dir:uploads}") String uploadDir,
+                       @Value("${app.profile-image.max-size-bytes:5242880}") long maxProfileImageSizeBytes) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.uploadRoot = Paths.get(uploadDir == null || uploadDir.isBlank() ? "uploads" : uploadDir)
                 .toAbsolutePath()
                 .normalize();
+        this.maxProfileImageSizeBytes = Math.max(1, maxProfileImageSizeBytes);
     }
 
     public User createUser(
@@ -398,6 +403,9 @@ public class UserService {
     private byte[] validateAndReadProfileImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             throw new IllegalArgumentException("Bitte ein Bild hochladen.");
+        }
+        if (image.getSize() > maxProfileImageSizeBytes) {
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Bild darf hoechstens 5 MB gross sein.");
         }
         String contentType = image.getContentType();
         if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {

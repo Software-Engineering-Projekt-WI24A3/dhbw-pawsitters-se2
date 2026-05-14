@@ -17,6 +17,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -75,6 +77,28 @@ public class ApiExceptionHandler {
         );
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex,
+                                                                 HttpServletRequest request) {
+        return error(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "Bild darf hoechstens 5 MB gross sein.",
+                ApiError.of("PAYLOAD_TOO_LARGE"),
+                request
+        );
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMultipart(MultipartException ex,
+                                                             HttpServletRequest request) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "Upload konnte nicht verarbeitet werden.",
+                ApiError.of("BAD_REQUEST"),
+                request
+        );
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex,
                                                                   HttpServletRequest request) {
@@ -127,7 +151,7 @@ public class ApiExceptionHandler {
         String message = ex.getReason() == null || ex.getReason().isBlank()
                 ? status.getReasonPhrase()
                 : ex.getReason();
-        return error(status, message, ApiError.of(status.name()), request);
+        return error(status, message, ApiError.of(errorCodeForStatus(status)), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -157,5 +181,12 @@ public class ApiExceptionHandler {
                 apiError,
                 request.getRequestURI()
         ));
+    }
+
+    private String errorCodeForStatus(HttpStatus status) {
+        if (status.value() == HttpStatus.PAYLOAD_TOO_LARGE.value()) {
+            return "PAYLOAD_TOO_LARGE";
+        }
+        return status.name();
     }
 }
