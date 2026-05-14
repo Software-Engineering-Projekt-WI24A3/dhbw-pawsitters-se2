@@ -8,7 +8,9 @@ Content-Type: application/json
   "description": "Tagesbetreuung inklusive Spaziergang, Fuetterung und Ruhezeiten.",
   "pricePerDay": 39.90,
   "acceptedPetSpecies": ["DOG"],
-  "services": ["Spaziergang", "Fuetterung", "Tagesbetreuung"]
+  "services": ["Spaziergang", "Fuetterung", "Tagesbetreuung"],
+  "availableFrom": "2005-08-12",
+  "availableTo": "2005-08-13"
 }
 
 > {%
