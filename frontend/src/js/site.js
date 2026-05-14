@@ -1963,6 +1963,7 @@ const profilePageRoot = document.querySelector('[data-profile-view]');
 const myPetsPageRoot = document.querySelector('[data-my-pets-view]');
 const myOffersPageRoot = document.querySelector('[data-my-offers-view]');
 const settingsPageRoot = document.querySelector('[data-settings-view]');
+let myOffersPendingUploadFile = null;
 const LOCALE_NATIVE_LABELS = {
     de: appRoot?.dataset.localeLabelDe || '',
     en: appRoot?.dataset.localeLabelEn || '',
@@ -3899,6 +3900,15 @@ createApp({
             return this.homeFilteredOffers.find((offer) => offer.id === detailOfferId)
                 || this.homeActiveOffer
                 || null;
+        },
+        homeOfferDetailPrimarySpecies() {
+            const detailOffer = this.homeOfferDetailOffer;
+            if (!detailOffer) {
+                return null;
+            }
+
+            const speciesList = this.resolveMyOfferSpecies(detailOffer);
+            return speciesList.length ? speciesList[0] : null;
         },
         settingsViewDisplayName() {
             if (!this.settingsViewUser) {
@@ -7214,6 +7224,7 @@ createApp({
             this.myOffersFormImageFile = null;
             this.myOffersFormImageFileName = '';
             this.myOffersFormImagePreviewUrl = nextPreviewUrl;
+            myOffersPendingUploadFile = null;
         },
         clearMyOffersCitySearchRuntime() {
             if (typeof this.myOffersCitySearchDebounceHandle === 'number') {
@@ -7350,7 +7361,9 @@ createApp({
         handleMyOfferImageSelection(event) {
             const file = event?.target?.files?.[0];
             if (!(file instanceof File)) {
-                this.clearMyOffersFormImageSelection();
+                if (!this.myOffersFormImagePreviewUrl) {
+                    this.clearMyOffersFormImageSelection();
+                }
                 return;
             }
 
@@ -7374,6 +7387,7 @@ createApp({
             this.clearMyOffersFormImageSelection({ previewUrl });
             this.myOffersFormImageFile = file;
             this.myOffersFormImageFileName = file.name || '';
+            myOffersPendingUploadFile = file;
         },
         resetMyOffersForm() {
             this.myOffersForm = {
@@ -7397,10 +7411,22 @@ createApp({
         },
         sanitizeMyOfferPriceInput(event = null) {
             const rawValue = event?.target?.value ?? this.myOffersForm?.pricePerDay ?? '';
-            const digitsOnly = String(rawValue).replace(/\D/g, '');
-            this.myOffersForm.pricePerDay = digitsOnly;
-            if (event?.target && event.target.value !== digitsOnly) {
-                event.target.value = digitsOnly;
+            const normalizedRawValue = String(rawValue)
+                .replace(/[^\d.,]/g, '')
+                .replace(/,/g, '.');
+            const firstDotIndex = normalizedRawValue.indexOf('.');
+            let normalizedPriceValue = normalizedRawValue;
+            if (firstDotIndex >= 0) {
+                const integerPart = normalizedRawValue.slice(0, firstDotIndex).replace(/\./g, '');
+                const fractionalPart = normalizedRawValue.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 2);
+                normalizedPriceValue = fractionalPart.length
+                    ? `${integerPart}.${fractionalPart}`
+                    : `${integerPart}.`;
+            }
+
+            this.myOffersForm.pricePerDay = normalizedPriceValue;
+            if (event?.target && event.target.value !== normalizedPriceValue) {
+                event.target.value = normalizedPriceValue;
             }
         },
         parseMyOfferDescriptionParts(rawDescription = '') {
@@ -7442,6 +7468,23 @@ createApp({
                 remainder.push(line);
             });
 
+            if (!flow && !dayStructure) {
+                const colonSeparatedValues = lines
+                    .map((line) => {
+                        const colonIndex = line.indexOf(':');
+                        if (colonIndex < 0 || colonIndex >= line.length - 1) {
+                            return '';
+                        }
+                        return line.slice(colonIndex + 1).trim();
+                    })
+                    .filter(Boolean);
+
+                if (colonSeparatedValues.length) {
+                    flow = colonSeparatedValues[0] || '';
+                    dayStructure = colonSeparatedValues[1] || '';
+                }
+            }
+
             if (!flow && !dayStructure && remainder.length) {
                 flow = remainder.join(' ');
             } else {
@@ -7477,7 +7520,7 @@ createApp({
                 flow: descriptionParts.flow,
                 dayStructure: descriptionParts.dayStructure,
                 pricePerDay: Number.isFinite(normalizedOffer.pricePerDay) && normalizedOffer.pricePerDay > 0
-                    ? String(Math.max(1, Math.round(normalizedOffer.pricePerDay)))
+                    ? String(normalizedOffer.pricePerDay).replace(',', '.')
                     : '',
                 location: normalizedOffer.location || normalizedOffer.city || normalizedOffer.hostCity || '',
                 acceptedPetSpecies: Array.isArray(normalizedOffer.acceptedPetSpecies)
@@ -7831,6 +7874,97 @@ createApp({
 
             return normalizedOffer;
         },
+        async uploadMyOfferImageById(offerId, file, options = {}) {
+            const normalizedOfferId = this.normalizeProfileUserId(offerId);
+            const imageFile = file && typeof file === 'object' && Number.isFinite(Number(file.size))
+                ? file
+                : null;
+            if (!Number.isInteger(normalizedOfferId) || normalizedOfferId <= 0 || !imageFile) {
+                return null;
+            }
+
+            const formData = new FormData();
+            if (typeof imageFile.name === 'string' && imageFile.name.trim()) {
+                formData.append('image', imageFile, imageFile.name);
+            } else {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                const response = await apiFetch(`/api/offers/${normalizedOfferId}/image`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: formData
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.actionErrorTitle,
+                        message: this.buildMyOffersActionErrorMessage(payload),
+                        tone: 'warning'
+                    });
+                    return null;
+                }
+
+                const normalizedOffer = this.upsertMyOfferInCollection(payload?.data || {}, {
+                    selectInsertedOffer: options?.selectInsertedOffer !== false
+                });
+                if (!normalizedOffer) {
+                    return null;
+                }
+
+                return normalizedOffer;
+            } catch {
+                this.pushNotification({
+                    title: this.myOffersStrings.actionErrorTitle,
+                    message: this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+                return null;
+            }
+        },
+        async resolveMyOfferUploadFile() {
+            const pendingUploadFile = myOffersPendingUploadFile;
+            if (pendingUploadFile && typeof pendingUploadFile === 'object' && Number.isFinite(Number(pendingUploadFile.size))) {
+                return pendingUploadFile;
+            }
+
+            const selectedFile = this.myOffersFormImageFile;
+            if (selectedFile && typeof selectedFile === 'object' && Number.isFinite(Number(selectedFile.size))) {
+                return selectedFile;
+            }
+
+            const previewUrl = typeof this.myOffersFormImagePreviewUrl === 'string'
+                ? this.myOffersFormImagePreviewUrl.trim()
+                : '';
+            if (!previewUrl.startsWith('blob:')) {
+                return null;
+            }
+
+            try {
+                const response = await fetch(previewUrl);
+                if (!response.ok) {
+                    return null;
+                }
+                const blob = await response.blob();
+                const fallbackName = typeof this.myOffersFormImageFileName === 'string' && this.myOffersFormImageFileName.trim()
+                    ? this.myOffersFormImageFileName.trim()
+                    : 'offer-image';
+                const normalizedType = blob.type || 'application/octet-stream';
+
+                try {
+                    return new File([blob], fallbackName, { type: normalizedType });
+                } catch {
+                    return blob;
+                }
+            } catch {
+                return null;
+            }
+        },
         async submitMyOfferForm() {
             if (this.myOffersFormSaving) {
                 return;
@@ -7882,15 +8016,7 @@ createApp({
                     return;
                 }
 
-                const selectedImagePath = this.resolveMyOfferInlineImagePath(this.myOffersFormImagePreviewUrl || '');
-                const responseOfferData = {
-                    ...(payload?.data || {})
-                };
-                if (selectedImagePath) {
-                    responseOfferData.imagePath = selectedImagePath;
-                }
-
-                const normalizedOffer = this.upsertMyOfferInCollection(responseOfferData, {
+                let normalizedOffer = this.upsertMyOfferInCollection(payload?.data || {}, {
                     selectInsertedOffer: true
                 });
                 if (!normalizedOffer) {
@@ -7900,6 +8026,18 @@ createApp({
                         tone: 'warning'
                     });
                     return;
+                }
+
+                const imageUploadFile = await this.resolveMyOfferUploadFile();
+                if (imageUploadFile) {
+                    const uploadedOffer = await this.uploadMyOfferImageById(normalizedOffer.id, imageUploadFile, {
+                        selectInsertedOffer: true
+                    });
+                    if (uploadedOffer) {
+                        normalizedOffer = uploadedOffer;
+                    } else {
+                        return;
+                    }
                 }
 
                 this.rememberMyOfferLocalImagePath(normalizedOffer.id, this.resolveMyOfferImagePath(normalizedOffer));

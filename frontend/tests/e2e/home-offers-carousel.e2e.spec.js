@@ -262,6 +262,8 @@ test.describe('Home offers carousel', () => {
     await page.locator('.home_offers_reel__card--center .home_offer_slide--interactive').click();
     const modal = page.locator('.home_offer_modal');
     await expect(modal).toBeVisible();
+    await expect(modal.locator('.settings_edit_modal__surface')).toBeVisible();
+    await expect(modal.locator('.auth_modal__brand-icon')).toHaveAttribute('src', /1F431\.svg/);
     await expect(modal).toContainText('Katzenlounge Mitte');
     await expect(modal).toContainText('Hamburg');
   });

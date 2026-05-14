@@ -42,6 +42,9 @@ public class Offer {
     @Column(nullable = false, length = 1000)
     private String description;
 
+    @Column(name = "image_path", length = 255)
+    private String imagePath;
+
     @Column(nullable = false)
     private BigDecimal pricePerDay;
 
@@ -77,6 +80,8 @@ public class Offer {
 
     public String getDescription() { return description; }
 
+    public String getImagePath() { return imagePath; }
+
     public BigDecimal getPricePerDay() { return pricePerDay; }
 
     public Set<PetChoice> getAcceptedPetSpecies() { return acceptedPetSpecies; }
@@ -98,6 +103,8 @@ public class Offer {
     public void setLocation(String location) { this.location = location; }
 
     public void setDescription(String description) { this.description = description; }
+
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     public void setPricePerDay(BigDecimal pricePerDay) { this.pricePerDay = pricePerDay; }
 
