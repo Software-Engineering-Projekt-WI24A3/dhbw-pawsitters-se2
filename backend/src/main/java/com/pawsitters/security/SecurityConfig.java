@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers("/api/users/mailExists").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/offers/host/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/hosts/**").permitAll()
                         // Oeffentliche Nutzeransicht/Suche (z. B. Benutzersuche im Frontend)
                         .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                         // Technischer Health-Check fuer CI/CD und Container-Orchestrierung
