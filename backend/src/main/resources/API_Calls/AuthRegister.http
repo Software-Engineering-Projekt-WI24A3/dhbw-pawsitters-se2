@@ -3,8 +3,8 @@ POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "max.mustermann@example.com",
-  "password": "SecurePhrase123!",
+  "email": "justus.krahl@digits.schwarz",
+  "password": "WC7KALHkNBdQswm#",
   "firstName": "Max",
   "lastName": "Mustermann",
   "phone": "+49 123 456789",
@@ -19,6 +19,7 @@ Content-Type: application/json
 
 > {%
     client.global.set("token", response.body.data.token);
+    client.global.set("hostToken", response.body.data.token);
 %}
 
 ###

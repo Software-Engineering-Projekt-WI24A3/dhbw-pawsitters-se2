@@ -11,12 +11,21 @@ import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    @EntityGraph(attributePaths = {"sender", "attachments"})
+    @EntityGraph(attributePaths = {
+            "sender",
+            "attachments",
+            "bookingProposal",
+            "bookingProposal.chat",
+            "bookingProposal.offer",
+            "bookingProposal.sender",
+            "bookingProposal.recipient",
+            "bookingProposal.petSpecies"
+    })
     List<ChatMessage> findByChatIdOrderByCreatedAtAscIdAsc(Long chatId);
 
     Optional<ChatMessage> findFirstByChatIdOrderByCreatedAtDescIdDesc(Long chatId);
 
-    @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "sender", "attachments"})
+    @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "sender", "attachments", "bookingProposal", "bookingProposal.petSpecies"})
     @Query("select message from ChatMessage message where message.id = :id")
     Optional<ChatMessage> findByIdWithDetails(@Param("id") Long id);
 }

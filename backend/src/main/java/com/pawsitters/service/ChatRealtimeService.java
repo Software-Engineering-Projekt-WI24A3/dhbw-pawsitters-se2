@@ -32,6 +32,15 @@ public class ChatRealtimeService {
         publishChatListEvent(chat, hostEmail, requesterEmail);
     }
 
+    public void publishBookingEvent(ChatMessageResponse message,
+                                    ChatResponse chat,
+                                    String eventType,
+                                    String hostEmail,
+                                    String requesterEmail) {
+        publishChatMessageEvent(eventType, message);
+        publishChatListEvent(chat, hostEmail, requesterEmail);
+    }
+
     private void publishChatMessageEvent(String type, ChatMessageResponse message) {
         messagingTemplate.convertAndSend(
                 "/topic/chats/" + message.chatId() + "/messages",

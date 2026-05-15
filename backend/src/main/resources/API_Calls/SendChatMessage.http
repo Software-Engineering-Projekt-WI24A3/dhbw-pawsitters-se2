@@ -1,5 +1,5 @@
-POST {{baseUrl}}/api/chats/1/messages
-Authorization: Bearer {{token}}
+POST {{baseUrl}}/api/chats/{{chatId}}/messages
+Authorization: Bearer {{requesterToken}}
 Content-Type: application/json
 
 {

@@ -1,0 +1,3 @@
+### Withdraw own booking proposal
+PATCH {{baseUrl}}/api/booking-proposals/{{bookingProposalId}}/withdraw
+Authorization: Bearer {{requesterToken}}
