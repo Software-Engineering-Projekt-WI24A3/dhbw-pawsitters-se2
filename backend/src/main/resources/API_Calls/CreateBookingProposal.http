@@ -1,0 +1,17 @@
+### Create booking proposal in chat
+POST {{baseUrl}}/api/chats/{{chatId}}/booking-proposals
+Authorization: Bearer {{requesterToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2005-08-12",
+  "endDate": "2005-08-12",
+  "priceTotal": 120.00,
+  "petSpecies": ["DOG"],
+  "petCount": 1,
+  "note": "Bitte mit taeglichen Updates."
+}
+
+> {%
+    client.global.set("bookingProposalId", response.body.data.id);
+%}

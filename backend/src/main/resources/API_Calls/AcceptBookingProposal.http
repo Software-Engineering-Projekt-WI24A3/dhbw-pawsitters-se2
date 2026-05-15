@@ -1,0 +1,3 @@
+### Accept booking proposal
+PATCH {{baseUrl}}/api/booking-proposals/{{bookingProposalId}}/accept
+Authorization: Bearer {{hostToken}}

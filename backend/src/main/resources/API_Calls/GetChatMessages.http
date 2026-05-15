@@ -1,2 +1,2 @@
-GET {{baseUrl}}/api/chats/1/messages
-Authorization: Bearer {{token}}
+GET {{baseUrl}}/api/chats/{{chatId}}/messages
+Authorization: Bearer {{requesterToken}}
