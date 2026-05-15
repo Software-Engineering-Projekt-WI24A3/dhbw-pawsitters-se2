@@ -1,0 +1,22 @@
+### Gastgeberprofil anlegen oder aktualisieren
+POST {{baseUrl}}/api/hosts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bio": "Liebevolle Betreuung in ruhiger Umgebung.",
+  "experience": "Fuenf Jahre Erfahrung mit Hunden und Katzen.",
+  "experiences": [
+    "Fuenf Jahre Hundebetreuung",
+    "Katzen-Erste-Hilfe-Kurs"
+  ],
+  "accommodationDescription": "Helle Wohnung mit sicherem Balkon und nahegelegenem Park.",
+  "acceptedPetSpecies": ["DOG", "CAT"]
+}
+
+> {%
+    client.global.set("hostId", response.body.data.id);
+    client.global.set("hostProfileId", response.body.data.hostProfileId);
+%}
+
+###
