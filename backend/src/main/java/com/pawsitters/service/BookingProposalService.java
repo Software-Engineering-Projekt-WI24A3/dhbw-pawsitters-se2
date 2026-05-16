@@ -179,10 +179,45 @@ public class BookingProposalService {
 
     @Transactional(readOnly = true)
     public List<BookingProposalResponse> getAcceptedBookingsForUser(String email) {
+        return getActiveBookingsForUser(email);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingProposalResponse> getActiveBookingsForUser(String email) {
         User user = getUserByEmail(email);
         return bookingProposalRepository.findByStatusForParticipant(BookingProposalStatus.ACCEPTED, user.getId()).stream()
                 .map(BookingProposalResponse::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingProposalResponse> getCompletedBookingsForUser(String email) {
+        User user = getUserByEmail(email);
+        return bookingProposalRepository.findByStatusForParticipantOrderByEndDateDesc(BookingProposalStatus.COMPLETED, user.getId()).stream()
+                .map(BookingProposalResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public BookingProposalResponse completeBooking(Long bookingId, String actorEmail) {
+        BookingProposal proposal = getProposalForParticipant(bookingId, actorEmail);
+        if (proposal.getStatus() != BookingProposalStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Nur angenommene Buchungen koennen abgeschlossen werden.");
+        }
+
+        User actor = getUserByEmail(actorEmail);
+        proposal.setStatus(BookingProposalStatus.COMPLETED);
+
+        BookingProposal savedProposal = bookingProposalRepository.save(proposal);
+        ChatMessageResponse message = createBookingMessage(
+                savedProposal.getChat(),
+                actor,
+                savedProposal,
+                ChatMessageType.BOOKING_EVENT,
+                "Buchung abgeschlossen."
+        );
+        publishBookingEvent("booking.completed", message, savedProposal.getChat());
+        return BookingProposalResponse.from(savedProposal);
     }
 
     private void declinePendingProposals(Chat chat, Instant respondedAt) {

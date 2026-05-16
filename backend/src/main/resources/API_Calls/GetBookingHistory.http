@@ -1,0 +1,3 @@
+### Get completed booking history for current user
+GET {{baseUrl}}/api/bookings/history
+Authorization: Bearer {{requesterToken}}

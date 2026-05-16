@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -202,6 +203,63 @@ class ChatIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+    }
+
+    @Test
+    void acceptedBookingCanBeCompletedAndMovesFromActiveToHistory() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String strangerToken = jwtService.generateToken("sara.wagner@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-04",
+                "2026-07-05",
+                "120.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"));
+
+        mockMvc.perform(get("/api/bookings/active")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + strangerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("COMPLETED"));
+
+        mockMvc.perform(get("/api/bookings/active")
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].id", not(hasItem(proposalId.intValue()))));
+
+        mockMvc.perform(get("/api/bookings/history")
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
     }
 
     @Test
