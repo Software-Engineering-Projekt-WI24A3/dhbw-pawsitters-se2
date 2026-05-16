@@ -69,7 +69,7 @@ public class BookingProposal {
     private String note;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32, columnDefinition = "varchar(32)")
     private BookingProposalStatus status = BookingProposalStatus.PENDING;
 
     @Enumerated(EnumType.STRING)

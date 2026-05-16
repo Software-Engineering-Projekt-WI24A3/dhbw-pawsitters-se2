@@ -1,0 +1,3 @@
+### Complete an accepted booking
+PATCH {{baseUrl}}/api/bookings/4/complete
+Authorization: Bearer {{requesterToken}}

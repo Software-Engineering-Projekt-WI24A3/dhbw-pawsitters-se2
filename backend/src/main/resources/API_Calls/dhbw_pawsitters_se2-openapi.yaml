@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Pawsitters API
-  version: 1.2.0
+  version: 1.3.0
   description: OpenAPI-Dokumentation fuer die Pawsitters JSON-API mit einheitlichem Response-Envelope.
   contact:
     name: Pawsitters API Team
@@ -22,6 +22,8 @@ tags:
     description: Endpunkte zur Gastgeber- und Angebotsuebersicht, Suche und Filteroptionen.
   - name: Chats
     description: Endpunkte fuer angebotsbezogene Live-Chats, Nachrichten und Bildanhaenge.
+  - name: Bookings
+    description: Endpunkte fuer aktive und abgeschlossene Betreuungsbuchungen.
 paths:
   /api/auth/register:
     post:
@@ -720,17 +722,70 @@ paths:
     get:
       operationId: getMyBookings
       tags: [Bookings]
-      summary: Eigene angenommenen Buchungen abrufen
-      description: Liefert alle akzeptierten Booking-Proposals, an denen der authentifizierte User als Host oder Pet Owner beteiligt ist.
+      summary: Eigene aktive Buchungen abrufen
+      description: Kompatibilitaets-Endpunkt fuer aktive Buchungen. Liefert akzeptierte Booking-Proposals, an denen der authentifizierte User als Host oder Pet Owner beteiligt ist.
       responses:
         "200":
-          description: Liste angenommener Buchungen.
+          description: Liste aktiver Buchungen.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BookingProposalListApiResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/bookings/active:
+    get:
+      operationId: getMyActiveBookings
+      tags: [Bookings]
+      summary: Eigene aktive Buchungen abrufen
+      description: Liefert alle akzeptierten, noch nicht abgeschlossenen Buchungen des authentifizierten Users.
+      responses:
+        "200":
+          description: Liste aktiver Buchungen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingProposalListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/bookings/history:
+    get:
+      operationId: getMyBookingHistory
+      tags: [Bookings]
+      summary: Eigene Buchungshistorie abrufen
+      description: Liefert alle abgeschlossenen Buchungen des authentifizierten Users.
+      responses:
+        "200":
+          description: Liste abgeschlossener Buchungen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingProposalListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/bookings/{id}/complete:
+    patch:
+      operationId: completeBooking
+      tags: [Bookings]
+      summary: Buchung abschliessen
+      description: Markiert eine eigene angenommene Buchung als abgeschlossen. Nur beteiligte Nutzer duerfen die Buchung abschliessen.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Buchung abgeschlossen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingProposalApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/chats/{id}/messages:
     get:
       operationId: getChatMessages
@@ -1847,7 +1902,7 @@ components:
       enum: [TEXT, BOOKING_PROPOSAL, BOOKING_EVENT]
     BookingProposalStatus:
       type: string
-      enum: [PENDING, ACCEPTED, DECLINED, WITHDRAWN]
+      enum: [PENDING, ACCEPTED, DECLINED, WITHDRAWN, COMPLETED]
     BookingProposalDeclineReason:
       type: string
       enum: [MANUAL, REPLACED_BY_NEW_PROPOSAL]

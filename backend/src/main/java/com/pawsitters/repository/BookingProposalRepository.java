@@ -30,6 +30,16 @@ public interface BookingProposalRepository extends JpaRepository<BookingProposal
     List<BookingProposal> findByStatusForParticipant(@Param("status") BookingProposalStatus status,
                                                      @Param("userId") Long userId);
 
+    @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "offer", "sender", "recipient", "petSpecies"})
+    @Query("""
+            select proposal from BookingProposal proposal
+            where proposal.status = :status
+              and (proposal.chat.host.id = :userId or proposal.chat.requester.id = :userId)
+            order by proposal.endDate desc, proposal.startDate desc, proposal.id desc
+            """)
+    List<BookingProposal> findByStatusForParticipantOrderByEndDateDesc(@Param("status") BookingProposalStatus status,
+                                                                       @Param("userId") Long userId);
+
     boolean existsByOfferIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             Long offerId,
             BookingProposalStatus status,
