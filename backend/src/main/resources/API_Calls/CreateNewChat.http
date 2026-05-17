@@ -3,7 +3,7 @@ Authorization: Bearer {{requesterToken}}
 Content-Type: application/json
 
 {
-  "offerId": 2
+  "offerId": 3
 }
 
 > {%
