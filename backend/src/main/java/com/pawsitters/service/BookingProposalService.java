@@ -42,17 +42,20 @@ public class BookingProposalService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final ChatRealtimeService chatRealtimeService;
+    private final AvailabilityService availabilityService;
 
     public BookingProposalService(BookingProposalRepository bookingProposalRepository,
                                   ChatRepository chatRepository,
                                   ChatMessageRepository chatMessageRepository,
                                   UserRepository userRepository,
-                                  ChatRealtimeService chatRealtimeService) {
+                                  ChatRealtimeService chatRealtimeService,
+                                  AvailabilityService availabilityService) {
         this.bookingProposalRepository = bookingProposalRepository;
         this.chatRepository = chatRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
         this.chatRealtimeService = chatRealtimeService;
+        this.availabilityService = availabilityService;
     }
 
     @Transactional
@@ -70,6 +73,7 @@ public class BookingProposalService {
 
         assertOfferPublished(chat.getOffer());
         validateProposalDetails(chat.getOffer(), startDate, endDate, priceTotal, petSpecies, petCount, note);
+        availabilityService.assertHostAvailableForRange(chat.getOffer().getHost(), startDate, endDate);
         declinePendingProposals(chat, Instant.now());
 
         BookingProposal proposal = new BookingProposal();
@@ -105,15 +109,13 @@ public class BookingProposalService {
         User actor = getUserByEmail(actorEmail);
         assertRecipient(proposal, actor);
         assertOfferPublished(proposal.getOffer());
+        availabilityService.assertHostAvailableForRange(
+                proposal.getOffer().getHost(),
+                proposal.getStartDate(),
+                proposal.getEndDate()
+        );
 
-        if (bookingProposalRepository.existsByOfferIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                proposal.getOffer().getId(),
-                BookingProposalStatus.ACCEPTED,
-                proposal.getEndDate(),
-                proposal.getStartDate()
-        )) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Das Angebot ist fuer diesen Zeitraum bereits gebucht.");
-        }
+        assertOfferNotBooked(proposal.getOffer().getId(), proposal.getStartDate(), proposal.getEndDate());
 
         proposal.setStatus(BookingProposalStatus.ACCEPTED);
         proposal.setDeclineReason(null);
@@ -283,6 +285,17 @@ public class BookingProposalService {
     private void assertOfferPublished(Offer offer) {
         if (offer.getStatus() != OfferStatus.PUBLISHED) {
             throw new IllegalArgumentException("Buchungsangebote sind nur fuer veroeffentlichte Angebote moeglich.");
+        }
+    }
+
+    private void assertOfferNotBooked(Long offerId, LocalDate startDate, LocalDate endDate) {
+        if (bookingProposalRepository.existsByOfferIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                offerId,
+                BookingProposalStatus.ACCEPTED,
+                endDate,
+                startDate
+        )) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Das Angebot ist fuer diesen Zeitraum bereits gebucht.");
         }
     }
 

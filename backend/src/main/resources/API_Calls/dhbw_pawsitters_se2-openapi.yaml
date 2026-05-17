@@ -18,6 +18,8 @@ tags:
     description: Endpunkte zum Erstellen und Verwalten von Betreuungspaketen.
   - name: Hosts
     description: Endpunkte fuer Gastgeberprofile, Unterkunftsgalerien und Review-Statistiken.
+  - name: Availability
+    description: Endpunkte fuer freie Gastgeber-Zeitraeume und wiederkehrende Kalenderfreigaben.
   - name: Marketplace
     description: Endpunkte zur Gastgeber- und Angebotsuebersicht, Suche und Filteroptionen.
   - name: Chats
@@ -490,6 +492,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PetApiResponse"
+  /api/availability:
+    get:
+      operationId: getOwnAvailability
+      tags: [Availability]
+      summary: Eigene Verfuegbarkeiten abrufen
+      responses:
+        "200":
+          description: Kalenderfreigaben des angemeldeten Gastgebers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilityListApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAvailability
+      tags: [Availability]
+      summary: Einzelnen freien Zeitraum eintragen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityCreateRequest"
+      responses:
+        "200":
+          description: Verfuegbarkeit erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilityApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/availability/recurring:
+    post:
+      operationId: createRecurringAvailability
+      tags: [Availability]
+      summary: Wiederkehrenden freien Zeitraum eintragen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurringAvailabilityCreateRequest"
+      responses:
+        "200":
+          description: Wiederkehrende Verfuegbarkeit erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilityApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/availability/{id}:
+    delete:
+      operationId: deleteAvailability
+      tags: [Availability]
+      summary: Verfuegbarkeit loeschen
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Verfuegbarkeit geloescht.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/offers:
     post:
       operationId: createOffer
@@ -1121,6 +1202,13 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/OfferResponse"
+    AvailabilityApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/AvailabilityResponse"
     HostProfileApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -1153,6 +1241,15 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/OfferResponse"
+    AvailabilityListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/AvailabilityResponse"
     HostListApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -1349,6 +1446,31 @@ components:
           minimum: 0
         specialNeeds:
           type: string
+    AvailabilityCreateRequest:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    RecurringAvailabilityCreateRequest:
+      type: object
+      required: [startDate, endDate, daysOfWeek]
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        daysOfWeek:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/DayOfWeek"
     OfferCreateRequest:
       type: object
       required: [title, description, pricePerDay, acceptedPetSpecies, services, availableFrom, availableTo]
@@ -1712,6 +1834,31 @@ components:
           format: date
         status:
           $ref: "#/components/schemas/OfferStatus"
+    AvailabilityResponse:
+      type: object
+      required: [id, hostId, startDate, endDate, recurring, daysOfWeek, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        hostId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        recurring:
+          type: boolean
+        daysOfWeek:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayOfWeek"
+        createdAt:
+          type: string
+          format: date-time
     ChatResponse:
       type: object
       required: [id, offerId, offerTitle, hostId, hostFirstName, hostLastName, requesterId, requesterFirstName, requesterLastName, createdAt, lastMessagePreview]
@@ -1897,6 +2044,9 @@ components:
       type: string
       description: DRAFT entspricht Entwurf, PUBLISHED entspricht Veröffentlicht.
       enum: [DRAFT, PUBLISHED]
+    DayOfWeek:
+      type: string
+      enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
     ChatMessageType:
       type: string
       enum: [TEXT, BOOKING_PROPOSAL, BOOKING_EVENT]

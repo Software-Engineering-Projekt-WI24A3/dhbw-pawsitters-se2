@@ -1,11 +1,11 @@
 ### Create booking proposal in chat
-POST {{baseUrl}}/api/chats/{{chatId}}/booking-proposals
+POST {{baseUrl}}/api/chats/2/booking-proposals
 Authorization: Bearer {{requesterToken}}
 Content-Type: application/json
 
 {
-  "startDate": "2005-08-12",
-  "endDate": "2005-08-12",
+  "startDate": "2026-10-02",
+  "endDate": "2026-10-04",
   "priceTotal": 120.00,
   "petSpecies": ["DOG"],
   "petCount": 1,
