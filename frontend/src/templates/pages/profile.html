@@ -260,7 +260,9 @@
                                          :key="'profile-offers-card-' + item.offer.id"
                                          class="my_offers_carousel__card"
                                          :class="item.positionClass">
-                                    <div class="my_offers_card">
+                                    <div class="my_offers_card"
+                                         :class="{ 'my_offers_card--with-image': hasMyOfferCardImage(item.offer) }"
+                                         :style="buildMyOfferCardStyle(item.offer)">
                                         <div class="my_offers_card__header">
                                             <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
                                         </div>

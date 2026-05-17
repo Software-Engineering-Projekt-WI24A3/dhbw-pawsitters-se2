@@ -3,9 +3,11 @@ package com.pawsitters.controller;
 import com.pawsitters.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -13,17 +15,24 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -42,6 +51,9 @@ class OfferIntegrationTest {
     @Autowired
     private JwtService jwtService;
 
+    @Value("${app.upload.dir}")
+    private String uploadRoot;
+
     @Test
     void offerCanMoveBetweenDraftAndPublishedAndMarketplaceShowsOnlyPublishedOffers() throws Exception {
         String token = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
@@ -55,6 +67,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Offer created successfully."))
                 .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.location").value("Mannheim"))
                 .andExpect(jsonPath("$.data.availableFrom").value("2026-07-01"))
                 .andExpect(jsonPath("$.data.availableTo").value("2026-07-05"))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"))
@@ -125,6 +138,7 @@ class OfferIntegrationTest {
 
         Map<String, Object> updatePayload = buildOfferPayload(updatedTitle);
         updatePayload.put("description", "Aktualisierter Ablauf mit neuer Tagesstruktur.");
+        updatePayload.put("location", "Heidelberg");
         updatePayload.put("pricePerDay", BigDecimal.valueOf(55));
         updatePayload.put("availableFrom", "2026-08-10");
         updatePayload.put("availableTo", "2026-08-12");
@@ -138,6 +152,7 @@ class OfferIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Offer updated successfully."))
                 .andExpect(jsonPath("$.data.id").value(offerId))
                 .andExpect(jsonPath("$.data.title").value(updatedTitle))
+                .andExpect(jsonPath("$.data.location").value("Heidelberg"))
                 .andExpect(jsonPath("$.data.availableFrom").value("2026-08-10"))
                 .andExpect(jsonPath("$.data.availableTo").value("2026-08-12"))
                 .andExpect(jsonPath("$.data.status").value("DRAFT"));
@@ -158,20 +173,28 @@ class OfferIntegrationTest {
     }
 
     @Test
-    void petOwnerCannotCreateOffer() throws Exception {
+    void petOwnerCanCreateOfferAndIsPromotedToHost() throws Exception {
         String token = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String title = "Katzenbetreuung Basis " + UUID.randomUUID();
 
         mockMvc.perform(post("/api/offers")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildOfferPayload("Katzenbetreuung Basis"))))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(title))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.title").value(title))
+                .andExpect(jsonPath("$.data.status").value("DRAFT"));
+
+        mockMvc.perform(get("/api/users/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.role").value("HOST"));
     }
 
     @Test
-    void profileOffersEndpointShowsDraftOnlyToOwnerAndPublishedToOthers() throws Exception {
+    void profileOffersEndpointShowsOnlyPublishedOffers() throws Exception {
         String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
         String viewerToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
         String title = "Profilangebot " + UUID.randomUUID();
@@ -191,7 +214,7 @@ class OfferIntegrationTest {
         Long hostId = createdOffer.get("hostId").asLong();
 
         JsonNode ownProfileOffers = getProfileOffers(hostToken, hostId);
-        assertTrue(hasOfferTitle(ownProfileOffers, title), "Owner should see own draft offer in profile offers.");
+        assertFalse(hasOfferTitle(ownProfileOffers, title), "Draft offers must not be visible in public profile offers.");
 
         JsonNode otherProfileOffers = getProfileOffers(viewerToken, hostId);
         assertFalse(hasOfferTitle(otherProfileOffers, title), "Other users must not see draft offers in profile offers.");
@@ -210,6 +233,39 @@ class OfferIntegrationTest {
 
         JsonNode publishedForAnonymousUsers = getProfileOffers(null, hostId);
         assertTrue(hasOfferTitle(publishedForAnonymousUsers, title), "Published offers should be visible anonymously.");
+    }
+
+    @Test
+    void offerImageCanBeUploadedReplacedAndPersisted() throws Exception {
+        String token = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String title = "Bildangebot " + UUID.randomUUID();
+
+        Long offerId = createOffer(token, title);
+
+        String firstImagePath = uploadOfferImage(token, offerId, "angebot-a.png", "image/png", tinyPngBytes());
+        assertThatUploadedOfferImagePath(offerId, firstImagePath);
+        Path firstUpload = uploadedOfferImagePath(firstImagePath);
+        assertTrue(Files.exists(firstUpload), "first offer image should exist");
+
+        String secondImagePath = uploadOfferImage(token, offerId, "angebot-b.png", "image/png", tinyPngBytes());
+        assertThatUploadedOfferImagePath(offerId, secondImagePath);
+        assertNotEquals(firstImagePath, secondImagePath);
+        assertFalse(Files.exists(firstUpload), "old offer image should be cleaned up");
+
+        Path secondUpload = uploadedOfferImagePath(secondImagePath);
+        assertTrue(Files.exists(secondUpload), "second offer image should exist");
+
+        mockMvc.perform(get("/api/offers/{id}", offerId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.imagePath").value(secondImagePath));
+
+        mockMvc.perform(get("/api/offers")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[?(@.id==%d)].imagePath".formatted(offerId)).value(hasItem(secondImagePath)));
     }
 
     private void assertMarketplaceDoesNotContain(String token, String title) throws Exception {
@@ -274,6 +330,7 @@ class OfferIntegrationTest {
     private Map<String, Object> buildOfferPayload(String title) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("title", title);
+        payload.put("location", "Mannheim");
         payload.put("description", "Tagesbetreuung inklusive Spaziergang, Fuetterung und Ruhezeiten.");
         payload.put("pricePerDay", BigDecimal.valueOf(39.90));
         payload.put("acceptedPetSpecies", List.of("DOG"));
@@ -281,5 +338,47 @@ class OfferIntegrationTest {
         payload.put("availableFrom", "2026-07-01");
         payload.put("availableTo", "2026-07-05");
         return payload;
+    }
+
+    private Long createOffer(String token, String title) throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/offers")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(title))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("data").get("id").asLong();
+    }
+
+    private String uploadOfferImage(String token, Long offerId, String filename, String contentType, byte[] bytes) throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", filename, contentType, bytes);
+        MvcResult result = mockMvc.perform(multipart("/api/offers/{id}/image", offerId)
+                        .file(image)
+                        .with(request -> {
+                            request.setMethod("POST");
+                            return request;
+                        })
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("data").get("imagePath").asText();
+    }
+
+    private Path uploadedOfferImagePath(String publicPath) {
+        String relativePath = publicPath.replaceFirst("^/uploads/", "");
+        return Paths.get(uploadRoot).resolve(relativePath).normalize();
+    }
+
+    private void assertThatUploadedOfferImagePath(Long offerId, String imagePath) {
+        org.hamcrest.MatcherAssert.assertThat(
+                imagePath,
+                startsWith("/uploads/offers/offer-" + offerId + "-")
+        );
+    }
+
+    private byte[] tinyPngBytes() {
+        return Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAJUbP9QAAAAASUVORK5CYII=");
     }
 }

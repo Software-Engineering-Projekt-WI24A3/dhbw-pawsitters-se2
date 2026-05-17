@@ -1,2 +1,2 @@
-### E-Mail pruefen
+### E-Mail prüfen
 GET {{baseUrl}}/api/users/mailExists?mail=sara.wagner@example.com

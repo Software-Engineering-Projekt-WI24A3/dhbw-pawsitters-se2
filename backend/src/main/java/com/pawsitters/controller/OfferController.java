@@ -7,6 +7,7 @@ import com.pawsitters.dto.OfferUpdateRequest;
 import com.pawsitters.service.OfferService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -73,6 +76,7 @@ public class OfferController {
         OfferResponse offer = OfferResponse.from(offerService.createOfferForHostEmail(
                 authentication.getName(),
                 request.title(),
+                request.location(),
                 request.description(),
                 request.pricePerDay(),
                 request.acceptedPetSpecies(),
@@ -110,6 +114,7 @@ public class OfferController {
                 id,
                 authentication.getName(),
                 request.title(),
+                request.location(),
                 request.description(),
                 request.pricePerDay(),
                 request.acceptedPetSpecies(),
@@ -146,6 +151,22 @@ public class OfferController {
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Offer withdrawn successfully.",
+                offer,
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<OfferResponse>> uploadOfferImage(@PathVariable Long id,
+                                                                        @RequestParam(value = "image", required = false) MultipartFile image,
+                                                                        @RequestParam(value = "file", required = false) MultipartFile file,
+                                                                        Authentication authentication,
+                                                                        HttpServletRequest servletRequest) {
+        MultipartFile upload = image != null ? image : file;
+        OfferResponse offer = OfferResponse.from(offerService.uploadOfferImageForHostEmail(id, authentication.getName(), upload));
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Offer image uploaded successfully.",
                 offer,
                 servletRequest.getRequestURI()
         ));

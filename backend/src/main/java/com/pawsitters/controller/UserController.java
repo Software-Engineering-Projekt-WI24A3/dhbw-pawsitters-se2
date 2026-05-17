@@ -172,7 +172,7 @@ public class UserController {
                                                                   Authentication authentication,
                                                                   HttpServletRequest servletRequest) {
         userService.deleteUser(id, authentication.getName());
-        String message = "User wurde erfolgreich geloescht.";
+        String message = "User wurde erfolgreich gelöscht.";
         DeleteResponse deleted = new DeleteResponse(true, id, message);
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,

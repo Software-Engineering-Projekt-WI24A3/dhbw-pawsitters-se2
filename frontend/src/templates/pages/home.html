@@ -3,5 +3,242 @@
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: shell(#{meta.home.title}, #{meta.home.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-home', ~{::content})}">
 <th:block th:fragment="content">
+    <section class="home_offers_view"
+             data-home-view
+             th:attr="data-home-loading-label=#{home.page.loading},
+                      data-home-load-failed=#{home.page.loadFailed},
+                      data-home-empty-title=#{home.page.emptyTitle},
+                      data-home-empty-text=#{home.page.emptyText},
+                      data-home-heading-prefix=#{home.page.headingPrefix},
+                      data-home-all-species-label=#{home.page.allSpeciesLabel},
+                      data-home-species-dropdown-aria=#{home.page.speciesDropdownAria},
+                      data-home-carousel-aria=#{home.page.carouselAria},
+                      data-home-untitled-offer=#{home.page.untitledOffer},
+                      data-home-open-details-template=#{home.page.openDetailsTemplate},
+                      data-home-modal-close-aria=#{home.page.modal.closeAria},
+                      data-home-modal-description-label=#{home.page.modal.descriptionLabel},
+                      data-home-modal-services-label=#{home.page.modal.servicesLabel},
+                      data-home-modal-species-label=#{home.page.modal.speciesLabel},
+                      data-home-modal-host-label=#{home.page.modal.hostLabel},
+                      data-home-label-date=#{home.page.labels.date},
+                      data-home-label-price=#{home.page.labels.price},
+                      data-home-label-location=#{home.page.labels.location},
+                      data-home-label-location-fallback=#{home.page.labels.locationFallback},
+                      data-home-action-previous=#{home.page.actions.previous},
+                      data-home-action-next=#{home.page.actions.next}">
+        <article class="home_offers_shell">
+            <header class="home_offers_header">
+                <h1 class="home_offers_heading">
+                    <span class="home_offers_heading__prefix" v-text="homeStrings.headingPrefix"></span>
+                    <details class="repo_menu home_offers_species_menu">
+                        <summary class="home_offers_species_link my_pets_add_link"
+                                 :aria-label="homeStrings.speciesDropdownAria">
+                            <span class="home_offers_species_link__content">
+                                <img class="home_offers_species_link__emoji"
+                                     :src="homeActiveSpeciesEmojiPath"
+                                     alt=""
+                                     aria-hidden="true">
+                                <span v-text="homeActiveSpeciesLabel"></span>
+                            </span>
+                            <span class="repo_menu__chevron" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                    <path d="m4.6 6 3.4 3.4L11.4 6"></path>
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div class="repo_menu__panel home_offers_species_panel">
+                            <button class="repo_menu__item repo_menu__item--button home_offers_species_option"
+                                    type="button"
+                                    v-for="choice in homeOfferSpeciesChoices"
+                                    :key="'home-offer-species-' + choice.value"
+                                    :class="{ 'home_offers_species_option--active': choice.value === homeOfferSpeciesFilter }"
+                                    @click="selectHomeOfferSpecies(choice.value, $event)">
+                                <img class="repo_menu__item-icon home_offers_species_option__emoji"
+                                     :src="choice.emojiPath"
+                                     :alt="choice.label">
+                                <span class="repo_menu__item-label" v-text="choice.label"></span>
+                            </button>
+                        </div>
+                    </details>
+                </h1>
+            </header>
+
+            <div v-if="homeViewLoading && showHomeViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="homeStrings.loading"></span>
+            </div>
+
+            <p v-else-if="homeViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="homeStrings.loading"></p>
+
+            <p v-else-if="homeViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="homeViewError"></p>
+
+            <section v-else class="home_offers_carousel" :aria-label="homeStrings.carouselAria">
+                <template v-if="homeFilteredOffers.length && homeActiveOffer">
+                    <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                            type="button"
+                            @click="navigateHomeOffersCarousel(-1)"
+                            :aria-label="homeStrings.actions.previous">
+                        <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                            <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                        </svg>
+                    </button>
+
+                    <div class="home_offers_reel__viewport">
+                        <article v-for="item in homeCarouselRenderItems"
+                                 :key="'home-offer-card-' + item.offer.id"
+                                 class="home_offers_reel__card"
+                                 :class="item.positionClass">
+                            <button v-if="item.isCenter"
+                                    class="home_offer_slide home_offer_slide--interactive"
+                                    type="button"
+                                    :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
+                                    :style="buildMyOfferCardStyle(item.offer)"
+                                    @click="openHomeOfferDetailModal(item.offer)"
+                                    :aria-label="buildHomeOfferOpenDetailsLabel(item.offer)">
+                                <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
+                            </button>
+
+                            <div v-else
+                                 class="home_offer_slide"
+                                 :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
+                                 :style="buildMyOfferCardStyle(item.offer)"
+                                 aria-hidden="true">
+                                <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                            type="button"
+                            @click="navigateHomeOffersCarousel(1)"
+                            :aria-label="homeStrings.actions.next">
+                        <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                            <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                        </svg>
+                    </button>
+
+                    <transition name="home_offers_info_fade" mode="out-in">
+                        <div class="home_offers_meta" :key="'home-offer-meta-' + homeActiveOffer.id">
+                            <p class="home_offers_meta__item">
+                                <span class="home_offers_meta__label" v-text="homeStrings.labels.date"></span>
+                                <span class="home_offers_meta__value" v-text="formatHomeOfferDateRange(homeActiveOffer)"></span>
+                            </p>
+                            <p class="home_offers_meta__item">
+                                <span class="home_offers_meta__label" v-text="homeStrings.labels.price"></span>
+                                <span class="home_offers_meta__value" v-text="formatMyOfferPrice(homeActiveOffer.pricePerDay)"></span>
+                            </p>
+                            <p class="home_offers_meta__item">
+                                <span class="home_offers_meta__label" v-text="homeStrings.labels.location"></span>
+                                <span class="home_offers_meta__value" v-text="resolveHomeOfferLocation(homeActiveOffer)"></span>
+                            </p>
+                        </div>
+                    </transition>
+                </template>
+
+                <div v-else class="home_offers_empty">
+                    <h2 class="home_offers_empty__title" v-text="homeStrings.emptyTitle"></h2>
+                    <p class="home_offers_empty__text" v-text="homeStrings.emptyText"></p>
+                </div>
+            </section>
+        </article>
+
+        <teleport to="body">
+            <transition name="auth_modal_presence">
+                <div v-if="homeOfferDetailModalOpen && homeOfferDetailOffer"
+                     class="auth_modal settings_edit_modal home_offer_modal"
+                     role="dialog"
+                     aria-modal="true"
+                     @click.self="closeHomeOfferDetailModal()">
+                    <article class="auth_modal__surface settings_edit_modal__surface home_offer_modal__surface">
+                        <button class="auth_modal__close"
+                                type="button"
+                                @click="closeHomeOfferDetailModal()"
+                                :aria-label="homeStrings.modalCloseAria">
+                            <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                                <path d="M5 5 15 15M15 5 5 15"></path>
+                            </svg>
+                            <span class="sr-only" v-text="homeStrings.modalCloseAria"></span>
+                        </button>
+
+                        <div class="auth_modal__brand" v-if="homeOfferDetailPrimarySpecies">
+                            <span class="auth_modal__brand-tile">
+                                <img class="auth_modal__brand-icon"
+                                     :src="homeOfferDetailPrimarySpecies.emojiPath"
+                                     :alt="homeOfferDetailPrimarySpecies.label">
+                            </span>
+                        </div>
+
+                        <h2 class="auth_modal__title settings_edit_modal__title home_offer_modal__title"
+                            v-text="homeOfferDetailOffer.title || homeStrings.untitledOffer"></h2>
+
+                        <div class="auth_modal__form settings_edit_modal__form home_offer_modal__content">
+                            <dl class="settings_edit_modal__species home_offer_modal__section home_offer_modal__facts">
+                                <div class="home_offer_modal__fact">
+                                    <dt v-text="homeStrings.modalHostLabel"></dt>
+                                    <dd v-text="homeOfferHostDisplayName(homeOfferDetailOffer)"></dd>
+                                </div>
+                                <div class="home_offer_modal__fact">
+                                    <dt v-text="homeStrings.labels.date"></dt>
+                                    <dd v-text="formatHomeOfferDateRange(homeOfferDetailOffer)"></dd>
+                                </div>
+                                <div class="home_offer_modal__fact">
+                                    <dt v-text="homeStrings.labels.price"></dt>
+                                    <dd v-text="formatMyOfferPrice(homeOfferDetailOffer.pricePerDay)"></dd>
+                                </div>
+                                <div class="home_offer_modal__fact">
+                                    <dt v-text="homeStrings.labels.location"></dt>
+                                    <dd v-text="resolveHomeOfferLocation(homeOfferDetailOffer)"></dd>
+                                </div>
+                            </dl>
+
+                            <section class="settings_edit_modal__species home_offer_modal__section"
+                                     v-if="homeOfferDetailOffer.description">
+                                <h3 class="home_offer_modal__section_title" v-text="homeStrings.modalDescriptionLabel"></h3>
+                                <p class="home_offer_modal__section_text" v-text="homeOfferDetailOffer.description"></p>
+                            </section>
+
+                            <section class="settings_edit_modal__species home_offer_modal__section"
+                                     v-if="resolveMyOfferSpecies(homeOfferDetailOffer).length">
+                                <h3 class="home_offer_modal__section_title" v-text="homeStrings.modalSpeciesLabel"></h3>
+                                <div class="my_offers_card__species">
+                                    <span class="my_offers_card__species_chip"
+                                          v-for="species in resolveMyOfferSpecies(homeOfferDetailOffer)"
+                                          :key="'home-offer-modal-species-' + homeOfferDetailOffer.id + '-' + species.value">
+                                        <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                        <span v-text="species.label"></span>
+                                    </span>
+                                </div>
+                            </section>
+
+                            <section class="settings_edit_modal__species home_offer_modal__section"
+                                     v-if="resolveMyOfferServiceList(homeOfferDetailOffer).length">
+                                <h3 class="home_offer_modal__section_title" v-text="homeStrings.modalServicesLabel"></h3>
+                                <ul class="my_offers_card__services">
+                                    <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(homeOfferDetailOffer)"
+                                        :key="'home-offer-modal-service-' + homeOfferDetailOffer.id + '-' + serviceIndex"
+                                        v-text="service"></li>
+                                </ul>
+                            </section>
+                        </div>
+                    </article>
+                </div>
+            </transition>
+        </teleport>
+    </section>
 </th:block>
 </html>

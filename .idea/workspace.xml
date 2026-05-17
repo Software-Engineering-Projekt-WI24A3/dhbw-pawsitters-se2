@@ -4,12 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="prompt update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateNewChat.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateNewChat.http" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/OfferController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/OfferResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Offer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/OfferService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/MarketplaceIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/MarketplaceIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/OfferIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-create-flow.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/my-offers-create-flow.e2e.spec.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

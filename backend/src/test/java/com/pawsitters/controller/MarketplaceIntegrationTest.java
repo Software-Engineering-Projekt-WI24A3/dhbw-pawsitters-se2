@@ -80,6 +80,15 @@ class MarketplaceIntegrationTest {
                 .andExpect(jsonPath("$.data.cities", hasItem("Mannheim")));
     }
 
+    @Test
+    void getOffersIsAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/marketplace/offers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Marketplace offers retrieved successfully."))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
     private String registerUser(String email) throws Exception {
         String response = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

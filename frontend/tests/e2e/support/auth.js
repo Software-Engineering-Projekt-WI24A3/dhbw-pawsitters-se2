@@ -91,7 +91,7 @@ async function assertLoginModalContent(page, locale = 'de') {
     modal.getByRole('textbox', { name: token(locale, 'auth.modal.identifier') })
   ).toBeVisible();
   await expect(modal.locator('input[data-auth-login-identifier]')).toHaveCount(1);
-  await expect(modal.locator('input[type="password"]')).toHaveCount(0);
+  await expect(modal.locator('input[data-auth-login-password]:visible')).toHaveCount(0);
   await expect(modal.locator('.auth_modal__brand-icon')).toBeVisible();
   await expect(
     modal.getByRole('button', { name: token(locale, 'auth.modal.continue'), exact: true })

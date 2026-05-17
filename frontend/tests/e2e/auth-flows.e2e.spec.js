@@ -100,7 +100,14 @@ test.describe('Authentication flows', () => {
     await page.getByRole('button', { name: token('de', 'auth.register.next'), exact: true }).click();
 
     await page.getByRole('textbox', { name: token('de', 'auth.register.phone'), exact: true }).fill('+4915112345678');
-    await page.getByRole('textbox', { name: token('de', 'auth.register.birthDate'), exact: true }).fill('1990-01-01');
+    const birthDatePicker = page.locator('.register_birth_date_picker');
+    await birthDatePicker.locator('[data-auth-register-birth-year]').selectOption('1990');
+    await birthDatePicker.locator('[data-auth-register-birth-month]').selectOption('0');
+    await birthDatePicker
+      .locator('.header_search_date__day:not(.header_search_date__day--outside)')
+      .filter({ hasText: /^1$/ })
+      .first()
+      .click();
     await page.getByRole('textbox', { name: token('de', 'auth.register.emergencyContact'), exact: true }).fill('Notfallkontakt');
     await page.getByRole('textbox', { name: token('de', 'auth.register.bio'), exact: true }).fill('Pawsitters account');
     const cityInput = page.getByRole('textbox', { name: token('de', 'auth.register.city'), exact: true });
