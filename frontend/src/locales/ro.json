@@ -115,20 +115,6 @@
     }
   },
   "header": {
-    "tabs": {
-      "aria": "Vizualizări antet",
-      "discover": "Descoperă oferte",
-      "about": "Despre acest proiect"
-    },
-    "about": {
-      "welcome": "Bine ai venit la Pawsitters. Acest proiect conectează proprietarii de animale cu gazdele printr-o interfață clară și modernă, pentru potriviri rapide și de încredere."
-    },
-    "backend": {
-      "checking": "Se verifică conexiunea la backend",
-      "online": "Backend conectat",
-      "offline": "Backend indisponibil",
-      "retry": "Reîncearcă verificarea backend-ului"
-    },
     "search": {
       "destination": {
         "label": "Unde",
@@ -457,6 +443,8 @@
       "labels": {
         "date": "Perioadă",
         "price": "Preț",
+        "pricePerDay": "Preț (€/zi)",
+        "priceTotal": "Preț total",
         "location": "Locația îngrijirii",
         "locationFallback": "Necunoscut"
       },
@@ -487,6 +475,8 @@
         "requestCreateErrorTitle": "Solicitare eșuată",
         "requestCreateErrorMessage": "Solicitarea nu a putut fi creată. Încearcă din nou.",
         "requestOpeningIntro": "solicită oferta",
+        "requestOpeningSuffix": "ca solicitare neangajantă.",
+        "requestOpeningPetsHeading": "Următoarele animale trebuie îngrijite ({count}):",
         "requestOpeningPetsPrefix": "cu animalele"
       }
     }
@@ -638,7 +628,8 @@
         "flow": "Desfasurare",
         "dayStructure": "Structura zilei",
         "description": "Descriere",
-        "price": "Preț pe zi",
+        "price": "Preț (€/zi)",
+        "priceTotal": "Preț total",
         "city": "Locația îngrijirii",
         "species": "Specii acceptate",
         "services": "Servicii",
@@ -651,7 +642,7 @@
         "flow": "Descrie desfasurarea",
         "dayStructure": "Descrie structura zilei",
         "description": "Descrie rutina, programul și punctele forte",
-        "price": "Pret in €",
+        "price": "Preț în €/zi",
         "city": "Selectează locația îngrijirii",
         "services": "Servicii, separate prin virgulă"
       },
@@ -741,7 +732,7 @@
       "openOfferAction": "Deschide oferta",
       "proposalAction": "Propunere de rezervare",
       "proposalModalTitle": "Creează propunere de rezervare",
-      "proposalModalHint": "Setează perioada, prețul și speciile pentru propunerea negociabilă.",
+      "proposalModalHint": "Introdu prețul în €/zi. Prețul total se calculează automat pentru întreaga perioadă a ofertei.",
       "proposalModalCloseAria": "Închide dialogul de propunere",
       "proposalModalSubmit": "Trimite propunerea",
       "proposalModalCancel": "Anulează",
@@ -760,7 +751,10 @@
       "proposalLabels": {
         "startDate": "Start",
         "endDate": "Final",
+        "pricePerDay": "Preț (€/zi)",
         "priceTotal": "Preț total",
+        "offerExpectationPerDay": "Prețul dorit (€/zi)",
+        "offerExpectationTotal": "Prețul dorit total",
         "petSpecies": "Specii",
         "petCount": "Animale",
         "note": "Notă"
@@ -780,12 +774,19 @@
         "closeSuccessTitle": "Chat închis",
         "closeSuccessMessage": "Chatul a fost închis cu succes.",
         "closeErrorTitle": "Chatul nu a putut fi închis",
-        "closeErrorMessage": "Chatul nu a putut fi închis."
+        "closeErrorMessage": "Chatul nu a putut fi închis.",
+        "reopenSuccessTitle": "Chat redeschis",
+        "reopenSuccessMessage": "Chatul a fost redeschis.",
+        "reopenErrorTitle": "Chatul nu a putut fi redeschis",
+        "reopenErrorMessage": "Chatul nu a putut fi redeschis."
       },
       "closeChatAction": "Închide chatul",
+      "reopenChatAction": "Redeschide chatul",
       "closeChatConfirm": "Sigur vrei să închizi acest chat?",
       "chatClosedLabel": "Închis",
       "chatClosedNotice": "Acest chat a fost închis.",
+      "chatAutoDeleteCountdownTemplate": "Ștergere automată în {countdown}.",
+      "chatAutoDeleteExpired": "Acest chat este șters automat acum.",
       "chatClosedComposer": "Acest chat este închis. Nu mai poți trimite mesaje sau propuneri de rezervare."
     }
   },

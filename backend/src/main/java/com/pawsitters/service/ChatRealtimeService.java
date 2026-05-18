@@ -49,6 +49,20 @@ public class ChatRealtimeService {
         publishChatListEvent(chat, hostEmail, requesterEmail);
     }
 
+    public void publishChatReopened(ChatMessageResponse message,
+                                    ChatResponse chat,
+                                    String hostEmail,
+                                    String requesterEmail) {
+        publishChatMessageEvent("chat.reopened", message);
+        publishChatListEvent(chat, hostEmail, requesterEmail);
+    }
+
+    public void publishChatDeleted(ChatResponse chat,
+                                   String hostEmail,
+                                   String requesterEmail) {
+        publishChatListEvent("chat.deleted", chat, hostEmail, requesterEmail);
+    }
+
     private void publishChatMessageEvent(String type, ChatMessageResponse message) {
         messagingTemplate.convertAndSend(
                 "/topic/chats/" + message.chatId() + "/messages",
@@ -57,7 +71,11 @@ public class ChatRealtimeService {
     }
 
     private void publishChatListEvent(ChatResponse chat, String hostEmail, String requesterEmail) {
-        ChatListEventResponse event = ChatListEventResponse.of("chat.updated", chat);
+        publishChatListEvent("chat.updated", chat, hostEmail, requesterEmail);
+    }
+
+    private void publishChatListEvent(String type, ChatResponse chat, String hostEmail, String requesterEmail) {
+        ChatListEventResponse event = ChatListEventResponse.of(type, chat);
         messagingTemplate.convertAndSendToUser(hostEmail, "/queue/chats", event);
         messagingTemplate.convertAndSendToUser(requesterEmail, "/queue/chats", event);
     }

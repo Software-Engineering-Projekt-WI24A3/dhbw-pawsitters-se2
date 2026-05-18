@@ -1,6 +1,7 @@
 package com.pawsitters.repository;
 
 import com.pawsitters.model.ChatMessage;
+import com.pawsitters.model.ChatMessageType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findByChatIdOrderByCreatedAtAscIdAsc(Long chatId);
 
     Optional<ChatMessage> findFirstByChatIdOrderByCreatedAtDescIdDesc(Long chatId);
+    Optional<ChatMessage> findFirstByBookingProposalIdAndTypeOrderByCreatedAtAscIdAsc(Long bookingProposalId, ChatMessageType type);
 
     @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "sender", "attachments", "bookingProposal", "bookingProposal.petSpecies"})
     @Query("select message from ChatMessage message where message.id = :id")

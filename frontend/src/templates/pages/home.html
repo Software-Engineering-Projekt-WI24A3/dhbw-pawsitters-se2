@@ -22,6 +22,8 @@
                       data-home-modal-host-label=#{home.page.modal.hostLabel},
                       data-home-label-date=#{home.page.labels.date},
                       data-home-label-price=#{home.page.labels.price},
+                      data-home-label-price-per-day=#{home.page.labels.pricePerDay},
+                      data-home-label-price-total=#{home.page.labels.priceTotal},
                       data-home-label-location=#{home.page.labels.location},
                       data-home-label-location-fallback=#{home.page.labels.locationFallback},
                       data-home-latest-heading=#{home.page.latest.heading},
@@ -104,62 +106,64 @@
 
             <section v-else class="home_offers_carousel" :aria-label="homeStrings.carouselAria">
                 <template v-if="homeFilteredOffers.length && homeActiveOffer">
-                    <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
-                            type="button"
-                            @click="navigateHomeOffersCarousel(-1)"
-                            :aria-label="homeStrings.actions.previous">
-                        <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
-                            <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
-                        </svg>
-                    </button>
+                    <div class="home_offers_reel">
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                type="button"
+                                @click="navigateHomeOffersCarousel(-1)"
+                                :aria-label="homeStrings.actions.previous">
+                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                            </svg>
+                        </button>
 
-                    <div class="home_offers_reel__viewport">
-                        <article v-for="item in homeCarouselRenderItems"
-                                 :key="'home-offer-card-' + item.offer.id"
-                                 class="home_offers_reel__card"
-                                 :class="item.positionClass">
-                            <button v-if="item.isCenter"
-                                    class="home_offer_slide home_offer_slide--interactive"
-                                    type="button"
-                                    :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
-                                    :style="buildMyOfferCardStyle(item.offer)"
-                                    @click="openHomeOfferDetailModal(item.offer)"
-                                    :aria-label="buildHomeOfferOpenDetailsLabel(item.offer)">
-                                <div class="home_offer_slide__species" aria-hidden="true">
-                                    <img class="home_offer_slide__species_icon"
-                                         v-for="species in resolveMyOfferSpecies(item.offer)"
-                                         :key="'home-offer-card-species-' + item.offer.id + '-' + species.value"
-                                         :src="species.emojiPath"
-                                         :alt="species.label">
-                                </div>
-                                <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
-                            </button>
+                        <div class="home_offers_reel__viewport">
+                            <article v-for="item in homeCarouselRenderItems"
+                                     :key="'home-offer-card-' + item.offer.id"
+                                     class="home_offers_reel__card"
+                                     :class="item.positionClass">
+                                <button v-if="item.isCenter"
+                                        class="home_offer_slide home_offer_slide--interactive"
+                                        type="button"
+                                        :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
+                                        :style="buildMyOfferCardStyle(item.offer)"
+                                        @click="openHomeOfferDetailModal(item.offer)"
+                                        :aria-label="buildHomeOfferOpenDetailsLabel(item.offer)">
+                                    <div class="home_offer_slide__species" aria-hidden="true">
+                                        <img class="home_offer_slide__species_icon"
+                                             v-for="species in resolveMyOfferSpecies(item.offer)"
+                                             :key="'home-offer-card-species-' + item.offer.id + '-' + species.value"
+                                             :src="species.emojiPath"
+                                             :alt="species.label">
+                                    </div>
+                                    <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
+                                </button>
 
-                            <div v-else
-                                 class="home_offer_slide"
-                                 :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
-                                 :style="buildMyOfferCardStyle(item.offer)"
-                                 aria-hidden="true">
-                                <div class="home_offer_slide__species" aria-hidden="true">
-                                    <img class="home_offer_slide__species_icon"
-                                         v-for="species in resolveMyOfferSpecies(item.offer)"
-                                         :key="'home-offer-card-species-' + item.offer.id + '-' + species.value"
-                                         :src="species.emojiPath"
-                                         :alt="species.label">
+                                <div v-else
+                                     class="home_offer_slide"
+                                     :class="{ 'home_offer_slide--with-image': hasMyOfferCardImage(item.offer) }"
+                                     :style="buildMyOfferCardStyle(item.offer)"
+                                     aria-hidden="true">
+                                    <div class="home_offer_slide__species" aria-hidden="true">
+                                        <img class="home_offer_slide__species_icon"
+                                             v-for="species in resolveMyOfferSpecies(item.offer)"
+                                             :key="'home-offer-card-species-' + item.offer.id + '-' + species.value"
+                                             :src="species.emojiPath"
+                                             :alt="species.label">
+                                    </div>
+                                    <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
                                 </div>
-                                <span class="home_offer_slide__title" v-text="item.offer.title || homeStrings.untitledOffer"></span>
-                            </div>
-                        </article>
+                            </article>
+                        </div>
+
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                type="button"
+                                @click="navigateHomeOffersCarousel(1)"
+                                :aria-label="homeStrings.actions.next">
+                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                            </svg>
+                        </button>
                     </div>
-
-                    <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
-                            type="button"
-                            @click="navigateHomeOffersCarousel(1)"
-                            :aria-label="homeStrings.actions.next">
-                        <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
-                            <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
-                        </svg>
-                    </button>
 
                     <transition name="home_offers_info_fade" mode="out-in">
                         <div class="home_offers_meta" :key="'home-offer-meta-' + homeActiveOffer.id">
@@ -194,14 +198,15 @@
 
                 <template v-if="homeLatestFilteredOffers.length">
                     <div class="home_latest_offers__carousel"
+                         :style="{ '--home-latest-visible-count': String(homeLatestEdgeVisibleCount || 1) }"
                          :class="{
                              'home_latest_offers__carousel--has-left': homeLatestHasLeftPeek,
                              'home_latest_offers__carousel--has-right': homeLatestHasRightPeek,
                              'home_latest_offers__carousel--forward': homeLatestCarouselDirection >= 0,
                              'home_latest_offers__carousel--backward': homeLatestCarouselDirection < 0
                          }">
-                        <button v-if="homeLatestHasLeftPeek"
-                                class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                v-if="homeLatestHasLeftPeek"
                                 type="button"
                                 @click="navigateHomeLatestOffersCarousel(-1)"
                                 :aria-label="homeStrings.actions.previous">
@@ -256,8 +261,8 @@
                             </transition-group>
                         </div>
 
-                        <button v-if="homeLatestHasRightPeek"
-                                class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                        <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                v-if="homeLatestHasRightPeek"
                                 type="button"
                                 @click="navigateHomeLatestOffersCarousel(1)"
                                 :aria-label="homeStrings.actions.next">

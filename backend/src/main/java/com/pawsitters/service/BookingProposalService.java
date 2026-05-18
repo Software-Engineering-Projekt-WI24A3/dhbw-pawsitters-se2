@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -73,21 +74,34 @@ public class BookingProposalService {
         User recipient = resolveRecipient(chat, sender);
 
         assertOfferPublished(chat.getOffer());
-        validateProposalDetails(chat.getOffer(), startDate, endDate, priceTotal, petSpecies, petCount, note);
-        availabilityService.assertHostAvailableForRange(chat.getOffer().getHost(), startDate, endDate);
+        Offer offer = chat.getOffer();
+        LocalDate resolvedStartDate = startDate != null ? startDate : offer.getAvailableFrom();
+        LocalDate resolvedEndDate = endDate != null ? endDate : offer.getAvailableTo();
+        Set<PetChoice> offerSpecies = offer.getAcceptedPetSpecies() == null
+                ? Set.of()
+                : offer.getAcceptedPetSpecies();
+        Set<PetChoice> resolvedPetSpecies = (petSpecies == null || petSpecies.isEmpty())
+                ? new LinkedHashSet<>(offerSpecies)
+                : petSpecies;
+        Integer resolvedPetCount = petCount != null
+                ? petCount
+                : Math.max(1, resolvedPetSpecies.size());
+
+        validateProposalDetails(offer, resolvedStartDate, resolvedEndDate, priceTotal, resolvedPetSpecies, resolvedPetCount, note);
+        availabilityService.assertHostAvailableForRange(offer.getHost(), resolvedStartDate, resolvedEndDate);
         declinePendingProposals(chat, Instant.now());
 
         BookingProposal proposal = new BookingProposal();
         proposal.setChat(chat);
-        proposal.setOffer(chat.getOffer());
+        proposal.setOffer(offer);
         proposal.setSender(sender);
         proposal.setRecipient(recipient);
-        proposal.setStartDate(startDate);
-        proposal.setEndDate(endDate);
+        proposal.setStartDate(resolvedStartDate);
+        proposal.setEndDate(resolvedEndDate);
         proposal.setPriceTotal(priceTotal);
         proposal.setCurrency(DEFAULT_CURRENCY);
-        proposal.setPetSpecies(petSpecies);
-        proposal.setPetCount(petCount);
+        proposal.setPetSpecies(resolvedPetSpecies);
+        proposal.setPetCount(resolvedPetCount);
         proposal.setNote(normalizeNote(note));
         proposal.setStatus(BookingProposalStatus.PENDING);
 
@@ -119,19 +133,26 @@ public class BookingProposalService {
 
         assertOfferNotBooked(proposal.getOffer().getId(), proposal.getStartDate(), proposal.getEndDate());
 
+        Instant acceptedAt = Instant.now();
         proposal.setStatus(BookingProposalStatus.ACCEPTED);
         proposal.setDeclineReason(null);
-        proposal.setRespondedAt(Instant.now());
+        proposal.setRespondedAt(acceptedAt);
+
+        Chat chat = proposal.getChat();
+        if (!chat.isClosed()) {
+            chat.setClosedAt(acceptedAt);
+            chat.setClosedByUser(actor);
+        }
 
         BookingProposal savedProposal = bookingProposalRepository.save(proposal);
         ChatMessageResponse message = createBookingMessage(
-                savedProposal.getChat(),
+                chat,
                 actor,
                 savedProposal,
                 ChatMessageType.BOOKING_EVENT,
                 "Buchungsangebot angenommen."
         );
-        publishBookingEvent("booking.proposal_accepted", message, savedProposal.getChat());
+        publishBookingEvent("booking.proposal_accepted", message, chat);
         return BookingProposalResponse.from(savedProposal);
     }
 
@@ -172,14 +193,8 @@ public class BookingProposalService {
         proposal.setRespondedAt(Instant.now());
 
         BookingProposal savedProposal = bookingProposalRepository.save(proposal);
-        ChatMessageResponse message = createBookingMessage(
-                savedProposal.getChat(),
-                actor,
-                savedProposal,
-                ChatMessageType.BOOKING_EVENT,
-                "Buchungsangebot zurueckgezogen."
-        );
-        publishBookingEvent("booking.proposal_withdrawn", message, savedProposal.getChat());
+        ChatMessageResponse message = resolveProposalTimelineMessage(savedProposal, actor, "Buchungsangebot zurueckgezogen.");
+        publishBookingEvent("booking.proposal_withdrawn", message, savedProposal.getChat(), "Buchungsangebot zurueckgezogen.");
         return BookingProposalResponse.from(savedProposal);
     }
 
@@ -254,8 +269,29 @@ public class BookingProposalService {
     }
 
     private void publishBookingEvent(String eventType, ChatMessageResponse message, Chat chat) {
-        ChatResponse chatResponse = ChatResponse.from(chat, message.content());
+        publishBookingEvent(eventType, message, chat, message.content());
+    }
+
+    private void publishBookingEvent(String eventType, ChatMessageResponse message, Chat chat, String previewContent) {
+        ChatResponse chatResponse = ChatResponse.from(chat, previewContent);
         chatRealtimeService.publishBookingEvent(message, chatResponse, eventType, chat.getHost().getEmail(), chat.getRequester().getEmail());
+    }
+
+    private ChatMessageResponse resolveProposalTimelineMessage(BookingProposal proposal,
+                                                               User actor,
+                                                               String fallbackContent) {
+        return chatMessageRepository.findFirstByBookingProposalIdAndTypeOrderByCreatedAtAscIdAsc(
+                        proposal.getId(),
+                        ChatMessageType.BOOKING_PROPOSAL
+                )
+                .map(ChatMessageResponse::from)
+                .orElseGet(() -> createBookingMessage(
+                        proposal.getChat(),
+                        actor,
+                        proposal,
+                        ChatMessageType.BOOKING_EVENT,
+                        fallbackContent
+                ));
     }
 
     private BookingProposal getProposalForParticipant(Long proposalId, String email) {

@@ -1,6 +1,7 @@
 package com.pawsitters.controller;
 
 import com.pawsitters.security.JwtService;
+import com.pawsitters.service.ChatService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,10 +17,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.pawsitters.model.Chat;
+import com.pawsitters.repository.ChatRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -47,6 +53,12 @@ class ChatIntegrationTest {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private ChatRepository chatRepository;
+
+    @Autowired
+    private ChatService chatService;
 
     @Test
     void messagesAreReturnedChronologicallyAndOnlyParticipantsCanReadThem() throws Exception {
@@ -416,6 +428,38 @@ class ChatIntegrationTest {
     }
 
     @Test
+    void withdrawingProposalUpdatesExistingProposalCardWithoutCreatingExtraChatMessage() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "75.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/withdraw", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("WITHDRAWN"));
+
+        mockMvc.perform(get("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meta.total").value(1))
+                .andExpect(jsonPath("$.data[0].type").value("BOOKING_PROPOSAL"))
+                .andExpect(jsonPath("$.data[0].bookingProposal.id").value(proposalId))
+                .andExpect(jsonPath("$.data[0].bookingProposal.status").value("WITHDRAWN"));
+    }
+
+    @Test
     void bookingProposalRequiresPetCountAtLeastPetSpeciesCount() throws Exception {
         String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
         String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
@@ -457,6 +501,11 @@ class ChatIntegrationTest {
         mockMvc.perform(patch("/api/booking-proposals/{id}/accept", acceptedProposalId)
                         .header("Authorization", "Bearer " + hostToken))
                 .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/chats/{id}/reopen", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.closedAt").isEmpty());
 
         Long conflictingProposalId = createBookingProposal(
                 requesterToken,
@@ -552,6 +601,110 @@ class ChatIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void acceptedProposalClosesChatAndParticipantsCanReopenIt() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "120.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"));
+
+        mockMvc.perform(post("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("content", "Nachricht nach Annahme"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+
+        mockMvc.perform(patch("/api/chats/{id}/reopen", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(chatId))
+                .andExpect(jsonPath("$.data.closedAt").isEmpty())
+                .andExpect(jsonPath("$.data.closedByUserId").isEmpty());
+
+        mockMvc.perform(post("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("content", "Nachricht nach Wiedereroeffnung"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void expiredClosedChatIsDeletedByCleanup() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        createMessage(requesterToken, chatId, "Vor dem Schließen");
+
+        mockMvc.perform(patch("/api/chats/{id}/close", chatId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk());
+
+        Chat chat = chatRepository.findById(chatId).orElseThrow();
+        chat.setClosedAt(Instant.now().minus(Duration.ofHours(25)));
+        chatRepository.save(chat);
+
+        assertEquals(1, chatService.cleanupExpiredClosedChats());
+
+        mockMvc.perform(get("/api/chats")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].id", not(hasItem(chatId.intValue()))));
+
+        mockMvc.perform(get("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
+    }
+
+    @Test
+    void reopenedThenClosedAgainChatUsesFreshDeleteWindow() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(patch("/api/chats/{id}/close", chatId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/chats/{id}/reopen", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.closedAt").isEmpty());
+
+        mockMvc.perform(patch("/api/chats/{id}/close", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk());
+
+        assertEquals(0, chatService.cleanupExpiredClosedChats());
+
+        mockMvc.perform(get("/api/chats")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].id", hasItem(chatId.intValue())));
     }
 
     @Test

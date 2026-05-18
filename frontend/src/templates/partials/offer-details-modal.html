@@ -48,8 +48,12 @@
                                 <dd v-text="formatHomeOfferDateRange(homeOfferDetailOffer)"></dd>
                             </div>
                             <div class="home_offer_modal__fact">
-                                <dt v-text="offerDetailStrings.labels.price"></dt>
+                                <dt v-text="offerDetailStrings.labels.pricePerDay"></dt>
                                 <dd v-text="formatMyOfferPrice(homeOfferDetailOffer.pricePerDay)"></dd>
+                            </div>
+                            <div class="home_offer_modal__fact">
+                                <dt v-text="offerDetailStrings.labels.priceTotal"></dt>
+                                <dd v-text="formatHomeOfferTotalPrice(homeOfferDetailOffer)"></dd>
                             </div>
                             <div class="home_offer_modal__fact">
                                 <dt v-text="offerDetailStrings.labels.location"></dt>

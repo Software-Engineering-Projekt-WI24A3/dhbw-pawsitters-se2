@@ -122,7 +122,7 @@
              role="dialog"
              aria-modal="true"
              @click.self="closeMyPetsDetailModal()">
-            <article class="auth_modal__surface settings_edit_modal__surface">
+            <article class="auth_modal__surface settings_edit_modal__surface my_pets_detail_modal__surface">
                 <button class="auth_modal__close"
                         type="button"
                         @click="closeMyPetsDetailModal()"
@@ -172,7 +172,7 @@
                         </div>
                     </div>
 
-                    <div class="settings_edit_modal__actions my_pets_detail__actions">
+                    <div v-if="!myPetsDetailReadOnly" class="settings_edit_modal__actions my_pets_detail__actions">
                         <button class="button button--secondary"
                                 type="button"
                                 @click="startMyPetsDetailEditing()"

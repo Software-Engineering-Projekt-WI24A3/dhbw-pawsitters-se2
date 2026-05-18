@@ -258,6 +258,7 @@ const PET_CHOICE_EMOJI_FALLBACK_ASSET_PATH = '/assets/media/animal-mammal/1F43E.
 const HEADER_SCROLL_PROGRESS_RANGE_PX = 84;
 const HEADER_SCROLL_COMPACT_ENTER_PX = 22;
 const HEADER_SCROLL_COMPACT_EXIT_PX = 8;
+const HOME_LATEST_CAROUSEL_VISIBLE_COUNT = 6;
 const HEADER_SCROLL_PROGRESS_EPSILON = 0.0015;
 const HEADER_SCROLL_PROGRESS_PRECISION = 360;
 const HEADER_SCROLL_PROGRESS_LOW_PERF_PRECISION = 90;
@@ -1123,6 +1124,31 @@ function normalizeDateInputValue(value) {
     return toDateInputValue(date);
 }
 
+function toUtcStartOfDayTimestamp(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+        return Number.NaN;
+    }
+
+    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function calculateInclusiveDateRangeDays(startValue = '', endValue = '') {
+    const startDate = parseDateInputValue(startValue);
+    const endDate = parseDateInputValue(endValue);
+    if (!startDate || !endDate) {
+        return 0;
+    }
+
+    const startTimestamp = toUtcStartOfDayTimestamp(startDate);
+    const endTimestamp = toUtcStartOfDayTimestamp(endDate);
+    if (!Number.isFinite(startTimestamp) || !Number.isFinite(endTimestamp) || endTimestamp < startTimestamp) {
+        return 0;
+    }
+
+    const DAY_IN_MS = 24 * 60 * 60 * 1000;
+    return Math.floor((endTimestamp - startTimestamp) / DAY_IN_MS) + 1;
+}
+
 function getHeaderSearchDateMinInputValue(referenceDate = new Date()) {
     const normalizedReference = referenceDate instanceof Date && !Number.isNaN(referenceDate.getTime())
         ? new Date(referenceDate)
@@ -1506,14 +1532,64 @@ function resolveCityPostalCodeFromSource(source) {
     return '';
 }
 
+function normalizeCitySearchIdentityPart(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+        return '';
+    }
+
+    return String(value)
+        .trim()
+        .toLocaleLowerCase('de')
+        .replace(/\s+/g, ' ');
+}
+
+function buildCitySearchDedupeKey(cityName = '', countryCode = '', countryName = '') {
+    const normalizedCityName = normalizeCitySearchIdentityPart(cityName);
+    const normalizedCountry = normalizeCitySearchIdentityPart(countryCode || countryName);
+    if (!normalizedCityName || !normalizedCountry) {
+        return '';
+    }
+
+    return `${normalizedCityName}|${normalizedCountry}`;
+}
+
+function resolveCitySearchResultQuality(source = {}, hasCoordinates = false, postalCode = '') {
+    const featureCode = typeof source.feature_code === 'string'
+        ? source.feature_code.trim().toUpperCase()
+        : '';
+
+    let featureRank = 0;
+    if (featureCode === 'PPLC') {
+        featureRank = 7;
+    } else if (featureCode === 'PPLA') {
+        featureRank = 6;
+    } else if (featureCode === 'PPLA2') {
+        featureRank = 5;
+    } else if (featureCode === 'PPLA3') {
+        featureRank = 4;
+    } else if (featureCode === 'PPLA4') {
+        featureRank = 3;
+    } else if (featureCode.startsWith('PPL')) {
+        featureRank = 2;
+    }
+
+    const population = Number(source.population);
+    const normalizedPopulation = Number.isFinite(population) && population > 0 ? population : 0;
+    const populationRank = normalizedPopulation > 0 ? Math.log10(normalizedPopulation + 1) : 0;
+
+    return (featureRank * 100)
+        + populationRank
+        + (postalCode ? 1 : 0)
+        + (hasCoordinates ? 0.5 : 0);
+}
+
 function normalizeCitySearchResults(payload = {}, locale = document.documentElement.lang || 'de') {
     const sourceResults = Array.isArray(payload?.results) ? payload.results : [];
     if (!sourceResults.length) {
         return [];
     }
 
-    const normalized = [];
-    const seen = new Set();
+    const dedupedByCityAndCountry = new Map();
 
     sourceResults.forEach((entry) => {
         const source = entry && typeof entry === 'object' ? entry : {};
@@ -1542,8 +1618,9 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             hasCoordinates ? latitude.toFixed(3) : '',
             hasCoordinates ? longitude.toFixed(3) : ''
         ].join('|');
+        const dedupeKey = buildCitySearchDedupeKey(cityName, countryCode, countryName);
 
-        if (!locationId || seen.has(locationId)) {
+        if (!locationId || !dedupeKey) {
             return;
         }
 
@@ -1560,7 +1637,7 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             .join(' ')
             .toLowerCase();
 
-        normalized.push({
+        const nextEntry = {
             id: locationId,
             cityName,
             countryName: countryName || countryCode,
@@ -1572,11 +1649,21 @@ function normalizeCitySearchResults(payload = {}, locale = document.documentElem
             searchName,
             latitude: hasCoordinates ? latitude : null,
             longitude: hasCoordinates ? longitude : null
-        });
-        seen.add(locationId);
+        };
+        const nextQuality = resolveCitySearchResultQuality(source, hasCoordinates, postalCode);
+        const existing = dedupedByCityAndCountry.get(dedupeKey);
+
+        if (!existing || nextQuality > existing.quality) {
+            dedupedByCityAndCountry.set(dedupeKey, {
+                option: nextEntry,
+                quality: nextQuality
+            });
+        }
     });
 
-    return normalized.slice(0, 60);
+    return Array.from(dedupedByCityAndCountry.values())
+        .map(({ option }) => option)
+        .slice(0, 60);
 }
 
 function normalizeCitySearchOption(value, locale = document.documentElement.lang || 'de') {
@@ -2436,6 +2523,7 @@ const localizedMyOffersStrings = {
         dayStructure: myOffersPageRoot?.dataset.myOffersLabelDayStructure || '',
         description: myOffersPageRoot?.dataset.myOffersLabelDescription || '',
         price: myOffersPageRoot?.dataset.myOffersLabelPrice || '',
+        priceTotal: myOffersPageRoot?.dataset.myOffersLabelPriceTotal || '',
         city: myOffersPageRoot?.dataset.myOffersLabelCity || localizedRegisterStrings.city,
         species: myOffersPageRoot?.dataset.myOffersLabelSpecies || '',
         services: myOffersPageRoot?.dataset.myOffersLabelServices || '',
@@ -2472,6 +2560,8 @@ const localizedHomeStrings = {
     labels: {
         date: homeDataRoot?.dataset.homeLabelDate || '',
         price: homeDataRoot?.dataset.homeLabelPrice || '',
+        pricePerDay: homeDataRoot?.dataset.homeLabelPricePerDay || homeDataRoot?.dataset.homeLabelPrice || '',
+        priceTotal: homeDataRoot?.dataset.homeLabelPriceTotal || '',
         location: homeDataRoot?.dataset.homeLabelLocation || '',
         locationFallback: homeDataRoot?.dataset.homeLabelLocationFallback || ''
     },
@@ -2519,6 +2609,8 @@ const localizedOfferDetailStrings = {
     requestSubmit: appRoot?.dataset.offerRequestSubmit || '',
     requestCancel: appRoot?.dataset.offerRequestCancel || '',
     requestOpeningIntro: appRoot?.dataset.offerRequestOpeningIntro || '',
+    requestOpeningSuffix: appRoot?.dataset.offerRequestOpeningSuffix || '',
+    requestOpeningPetsHeading: appRoot?.dataset.offerRequestOpeningPetsHeading || '',
     requestOpeningPetsPrefix: appRoot?.dataset.offerRequestOpeningPetsPrefix || '',
     requestNotifications: {
         successTitle: appRoot?.dataset.offerRequestSuccessTitle || '',
@@ -2533,6 +2625,8 @@ const localizedOfferDetailStrings = {
     labels: {
         date: appRoot?.dataset.offerDetailLabelDate || localizedHomeStrings.labels.date || '',
         price: appRoot?.dataset.offerDetailLabelPrice || localizedHomeStrings.labels.price || '',
+        pricePerDay: appRoot?.dataset.offerDetailLabelPricePerDay || localizedHomeStrings.labels.pricePerDay || localizedHomeStrings.labels.price || '',
+        priceTotal: appRoot?.dataset.offerDetailLabelPriceTotal || localizedHomeStrings.labels.priceTotal || '',
         location: appRoot?.dataset.offerDetailLabelLocation || localizedHomeStrings.labels.location || '',
         locationFallback: appRoot?.dataset.offerDetailLabelLocationFallback || localizedHomeStrings.labels.locationFallback || ''
     }
@@ -2569,9 +2663,12 @@ const localizedMessagesStrings = {
     proposalDeclineAction: messagesPageRoot?.dataset.messagesProposalDeclineAction || '',
     proposalWithdrawAction: messagesPageRoot?.dataset.messagesProposalWithdrawAction || '',
     closeChatAction: messagesPageRoot?.dataset.messagesCloseChatAction || '',
+    reopenChatAction: messagesPageRoot?.dataset.messagesReopenChatAction || '',
     closeChatConfirm: messagesPageRoot?.dataset.messagesCloseChatConfirm || '',
     chatClosedLabel: messagesPageRoot?.dataset.messagesChatClosedLabel || '',
     chatClosedNotice: messagesPageRoot?.dataset.messagesChatClosedNotice || '',
+    chatAutoDeleteCountdownTemplate: messagesPageRoot?.dataset.messagesChatAutoDeleteCountdownTemplate || '',
+    chatAutoDeleteExpired: messagesPageRoot?.dataset.messagesChatAutoDeleteExpired || '',
     chatClosedComposer: messagesPageRoot?.dataset.messagesChatClosedComposer || '',
     defaultOfferTitle: messagesPageRoot?.dataset.messagesDefaultOfferTitle || localizedOfferDetailStrings.untitledOffer || '',
     participantUnknown: messagesPageRoot?.dataset.messagesParticipantUnknown || '',
@@ -2580,7 +2677,10 @@ const localizedMessagesStrings = {
     proposalLabels: {
         startDate: messagesPageRoot?.dataset.messagesProposalLabelStartDate || '',
         endDate: messagesPageRoot?.dataset.messagesProposalLabelEndDate || '',
+        pricePerDay: messagesPageRoot?.dataset.messagesProposalLabelPricePerDay || '',
         priceTotal: messagesPageRoot?.dataset.messagesProposalLabelPriceTotal || '',
+        offerExpectationPerDay: messagesPageRoot?.dataset.messagesProposalLabelOfferExpectationPerDay || '',
+        offerExpectationTotal: messagesPageRoot?.dataset.messagesProposalLabelOfferExpectationTotal || '',
         petSpecies: messagesPageRoot?.dataset.messagesProposalLabelPetSpecies || '',
         petCount: messagesPageRoot?.dataset.messagesProposalLabelPetCount || '',
         note: messagesPageRoot?.dataset.messagesProposalLabelNote || ''
@@ -2596,7 +2696,11 @@ const localizedMessagesStrings = {
         closeSuccessTitle: messagesPageRoot?.dataset.messagesNotificationCloseSuccessTitle || '',
         closeSuccessMessage: messagesPageRoot?.dataset.messagesNotificationCloseSuccessMessage || '',
         closeErrorTitle: messagesPageRoot?.dataset.messagesNotificationCloseErrorTitle || '',
-        closeErrorMessage: messagesPageRoot?.dataset.messagesNotificationCloseErrorMessage || ''
+        closeErrorMessage: messagesPageRoot?.dataset.messagesNotificationCloseErrorMessage || '',
+        reopenSuccessTitle: messagesPageRoot?.dataset.messagesNotificationReopenSuccessTitle || '',
+        reopenSuccessMessage: messagesPageRoot?.dataset.messagesNotificationReopenSuccessMessage || '',
+        reopenErrorTitle: messagesPageRoot?.dataset.messagesNotificationReopenErrorTitle || '',
+        reopenErrorMessage: messagesPageRoot?.dataset.messagesNotificationReopenErrorMessage || ''
     }
 };
 const localizedSettingsStrings = {
@@ -2906,6 +3010,8 @@ createApp({
             myPetsAddModalOpen: false,
             myPetsDetailModalOpen: false,
             myPetsDetailEditing: false,
+            myPetsDetailReadOnly: false,
+            myPetsDetailReadOnlyPet: null,
             myPetsDetailPetId: null,
             myPetsDeleteModalOpen: false,
             myPetsDeletePetId: null,
@@ -3021,14 +3127,18 @@ createApp({
             messagesComposerText: '',
             messagesComposerAttachments: [],
             messagesComposerSending: false,
+            messagesImageModalOpen: false,
+            messagesImageModalUrl: '',
+            messagesImageModalAlt: '',
             messagesClosingChat: false,
+            messagesReopeningChat: false,
             messagesProposalModalOpen: false,
             messagesProposalSubmitting: false,
             messagesProposalActionPendingId: null,
             messagesProposalForm: {
                 startDate: '',
                 endDate: '',
-                priceTotal: '',
+                pricePerDay: '',
                 petCount: '',
                 note: '',
                 petSpecies: []
@@ -3043,6 +3153,10 @@ createApp({
             messagesWebSocketSubscriptionIdCounter: 0,
             messagesWebSocketSubscriptionIdByDestination: {},
             messagesFallbackRefreshHandle: null,
+            messagesClosedCountdownNowMs: Date.now(),
+            messagesClosedCountdownHandle: null,
+            messagesExpiredClosedChatRefreshInFlight: false,
+            messagesExpiredClosedChatRefreshLastAt: 0,
             settingsViewLoading: false,
             showSettingsViewLoadingDots: false,
             settingsViewError: '',
@@ -3892,6 +4006,10 @@ createApp({
             return resolvePetChoiceEmojiPath(this.myPetsActivePet.species);
         },
         myPetsDetailPet() {
+            if (this.myPetsDetailReadOnly && this.myPetsDetailReadOnlyPet) {
+                return this.myPetsDetailReadOnlyPet;
+            }
+
             const normalizedPetId = this.normalizeProfileUserId(this.myPetsDetailPetId);
             if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0) {
                 return this.myPetsActivePet;
@@ -4131,6 +4249,25 @@ createApp({
             const locale = document.documentElement.lang || 'de';
             return formatSearchDate(this.myOffersForm?.availableTo || '', locale) || '--';
         },
+        myOffersFormDayCount() {
+            return calculateInclusiveDateRangeDays(
+                this.myOffersForm?.availableFrom || '',
+                this.myOffersForm?.availableTo || ''
+            );
+        },
+        myOffersFormTotalPrice() {
+            const pricePerDay = Number.parseFloat(String(this.myOffersForm?.pricePerDay ?? '').replace(',', '.'));
+            if (!Number.isFinite(pricePerDay) || pricePerDay <= 0) {
+                return Number.NaN;
+            }
+
+            const dayCount = this.myOffersFormDayCount;
+            if (!Number.isFinite(dayCount) || dayCount <= 0) {
+                return Number.NaN;
+            }
+
+            return Number((pricePerDay * dayCount).toFixed(2));
+        },
         myOffersActiveOffer() {
             if (!Array.isArray(this.myOffersOffers) || !this.myOffersOffers.length) {
                 return null;
@@ -4323,22 +4460,7 @@ createApp({
                 return 0;
             }
 
-            const viewportWidth = Number.isFinite(this.homeLatestViewportWidth)
-                ? this.homeLatestViewportWidth
-                : 1280;
-
-            let preferredCount = 1;
-            if (viewportWidth >= 1220) {
-                preferredCount = 5;
-            } else if (viewportWidth >= 980) {
-                preferredCount = 4;
-            } else if (viewportWidth >= 760) {
-                preferredCount = 3;
-            } else if (viewportWidth >= 560) {
-                preferredCount = 2;
-            }
-
-            return Math.max(1, Math.min(preferredCount, offerCount));
+            return Math.max(1, Math.min(HOME_LATEST_CAROUSEL_VISIBLE_COUNT, offerCount));
         },
         homeLatestMaxOffset() {
             const offerCount = Array.isArray(this.homeLatestFilteredOffers)
@@ -4378,46 +4500,15 @@ createApp({
                 return [];
             }
 
-            const hasLeftPeek = this.homeLatestHasLeftPeek;
-            const hasRightPeek = this.homeLatestHasRightPeek;
-            const fullCardCount = hasLeftPeek && hasRightPeek
-                ? Math.max(1, edgeVisibleCount - 1)
-                : edgeVisibleCount;
-            const offset = this.homeLatestSafeOffset;
-            const maxOffset = this.homeLatestMaxOffset;
-            let fullStart = offset;
-
-            if (hasRightPeek) {
-                const maxStartForRightPeek = Math.max(0, offers.length - (fullCardCount + 1));
-                fullStart = Math.min(fullStart, Math.max(maxStartForRightPeek, 0));
-            } else if (offset === maxOffset) {
-                fullStart = Math.max(0, offers.length - fullCardCount);
-            }
-
-            const fullEnd = Math.min(offers.length, fullStart + fullCardCount);
+            const fullStart = this.homeLatestSafeOffset;
+            const fullEnd = Math.min(offers.length, fullStart + edgeVisibleCount);
             const renderItems = [];
-
-            if (hasLeftPeek && fullStart - 1 >= 0) {
-                renderItems.push({
-                    offer: offers[fullStart - 1],
-                    role: 'peek-left',
-                    className: 'home_latest_offers__item--peek-left'
-                });
-            }
 
             for (let index = fullStart; index < fullEnd; index += 1) {
                 renderItems.push({
                     offer: offers[index],
                     role: 'full',
                     className: 'home_latest_offers__item--full'
-                });
-            }
-
-            if (hasRightPeek && fullEnd < offers.length) {
-                renderItems.push({
-                    offer: offers[fullEnd],
-                    role: 'peek-right',
-                    className: 'home_latest_offers__item--peek-right'
                 });
             }
 
@@ -4551,6 +4642,60 @@ createApp({
                 label: formatPetChoiceLabel(value, locale),
                 emojiPath: resolvePetChoiceEmojiPath(value)
             }));
+        },
+        messagesActiveChatOfferPricePerDay() {
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat) {
+                return Number.NaN;
+            }
+
+            const chatOfferPrice = Number.parseFloat(String(activeChat.offerPricePerDay ?? '').replace(',', '.'));
+            if (Number.isFinite(chatOfferPrice) && chatOfferPrice > 0) {
+                return chatOfferPrice;
+            }
+
+            const matchedOffer = this.findHomeOfferById(activeChat.offerId);
+            const offerPrice = Number.parseFloat(String(matchedOffer?.pricePerDay ?? '').replace(',', '.'));
+            return Number.isFinite(offerPrice) && offerPrice > 0 ? offerPrice : Number.NaN;
+        },
+        messagesActiveChatOfferDayCount() {
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat) {
+                return 0;
+            }
+
+            const startDate = activeChat.offerAvailableFrom || '';
+            const endDate = activeChat.offerAvailableTo || '';
+            if (startDate && endDate) {
+                return calculateInclusiveDateRangeDays(startDate, endDate);
+            }
+
+            const matchedOffer = this.findHomeOfferById(activeChat.offerId);
+            return calculateInclusiveDateRangeDays(
+                matchedOffer?.availableFrom || '',
+                matchedOffer?.availableTo || ''
+            );
+        },
+        messagesActiveChatOfferExpectedTotal() {
+            const pricePerDay = this.messagesActiveChatOfferPricePerDay;
+            const dayCount = this.messagesActiveChatOfferDayCount;
+            if (!Number.isFinite(pricePerDay) || pricePerDay <= 0 || !Number.isFinite(dayCount) || dayCount <= 0) {
+                return Number.NaN;
+            }
+
+            return Number((pricePerDay * dayCount).toFixed(2));
+        },
+        messagesProposalPricePerDayValue() {
+            return this.normalizeMessagesDecimal(this.messagesProposalForm?.pricePerDay || '');
+        },
+        messagesProposalComputedTotal() {
+            const pricePerDay = this.messagesProposalPricePerDayValue;
+            const dayCount = this.messagesActiveChatOfferDayCount;
+            if (!Number.isFinite(pricePerDay) || pricePerDay <= 0 || !Number.isFinite(dayCount) || dayCount <= 0) {
+                return Number.NaN;
+            }
+
+            return Number((pricePerDay * dayCount).toFixed(2));
         },
         settingsViewDisplayName() {
             if (!this.settingsViewUser) {
@@ -4852,9 +4997,13 @@ createApp({
                 if (this.myPetsFormEditing) {
                     this.resetMyPetForm();
                 }
-                this.myPetsDetailPetId = null;
-                this.myPetsDetailEditing = false;
-                this.myPetsDetailModalOpen = false;
+                if (!this.myPetsDetailReadOnly) {
+                    this.myPetsDetailPetId = null;
+                    this.myPetsDetailEditing = false;
+                    this.myPetsDetailReadOnly = false;
+                    this.myPetsDetailReadOnlyPet = null;
+                    this.myPetsDetailModalOpen = false;
+                }
                 this.myPetsDeletePetId = null;
                 this.myPetsDeleteModalOpen = false;
                 this.myPetsDeleteSubmitting = false;
@@ -4871,7 +5020,7 @@ createApp({
                 this.myPetsCarouselIndex = maxIndex;
             }
 
-            if (this.myPetsDetailModalOpen) {
+            if (this.myPetsDetailModalOpen && !this.myPetsDetailReadOnly) {
                 const normalizedDetailPetId = this.normalizeProfileUserId(this.myPetsDetailPetId);
                 if (!Number.isInteger(normalizedDetailPetId) || normalizedDetailPetId <= 0) {
                     const fallbackPet = nextValue[this.myPetsCarouselIndex] || nextValue[0];
@@ -4926,6 +5075,7 @@ createApp({
                 this.messagesMessagesLoadingByChatId = {};
                 this.messagesComposerText = '';
                 this.messagesClosingChat = false;
+                this.messagesReopeningChat = false;
                 this.messagesProposalModalOpen = false;
                 return;
             }
@@ -4945,6 +5095,7 @@ createApp({
             this.messagesComposerText = '';
             this.clearMessagesComposerAttachments();
             this.messagesClosingChat = false;
+            this.messagesReopeningChat = false;
             this.messagesProposalModalOpen = false;
 
             if (Number.isInteger(nextChatId) && nextChatId > 0) {
@@ -5172,6 +5323,7 @@ createApp({
         this.clearSettingsCitySearchRuntime();
         this.clearSettingsCityLookupRuntime();
         this.closeMessagesProposalModal();
+        this.closeMessagesImageModal();
         this.clearMessagesComposerAttachments();
         this.closeOfferRequestModal();
         this.disconnectMessagesSocket();
@@ -7838,7 +7990,7 @@ createApp({
             this.homeLatestCarouselOffset = nextOffset;
             this.prefetchHomeLatestVisibleHostCities();
         },
-        buildOfferPeekCarouselState(offers = [], offset = 0, viewportWidth = 1280) {
+        buildOfferPeekCarouselState(offers = [], offset = 0) {
             const normalizedOffers = Array.isArray(offers)
                 ? offers.filter((offer) => Number.isInteger(offer?.id) && offer.id > 0)
                 : [];
@@ -7854,62 +8006,21 @@ createApp({
                 };
             }
 
-            const safeViewportWidth = Number.isFinite(Number(viewportWidth))
-                ? Number(viewportWidth)
-                : 1280;
-            let preferredCount = 1;
-            if (safeViewportWidth >= 1220) {
-                preferredCount = 5;
-            } else if (safeViewportWidth >= 980) {
-                preferredCount = 4;
-            } else if (safeViewportWidth >= 760) {
-                preferredCount = 3;
-            } else if (safeViewportWidth >= 560) {
-                preferredCount = 2;
-            }
-
-            const edgeVisibleCount = Math.max(1, Math.min(preferredCount, offerCount));
+            const edgeVisibleCount = Math.max(1, Math.min(HOME_LATEST_CAROUSEL_VISIBLE_COUNT, offerCount));
             const maxOffset = Math.max(0, offerCount - edgeVisibleCount);
             const normalizedOffset = Number.isFinite(Number(offset)) ? Math.round(Number(offset)) : 0;
             const safeOffset = Math.min(maxOffset, Math.max(0, normalizedOffset));
             const hasLeftPeek = safeOffset > 0;
             const hasRightPeek = safeOffset < maxOffset;
-            const fullCardCount = hasLeftPeek && hasRightPeek
-                ? Math.max(1, edgeVisibleCount - 1)
-                : edgeVisibleCount;
-
-            let fullStart = safeOffset;
-            if (hasRightPeek) {
-                const maxStartForRightPeek = Math.max(0, offerCount - (fullCardCount + 1));
-                fullStart = Math.min(fullStart, maxStartForRightPeek);
-            } else if (safeOffset === maxOffset) {
-                fullStart = Math.max(0, offerCount - fullCardCount);
-            }
-
-            const fullEnd = Math.min(offerCount, fullStart + fullCardCount);
+            const fullStart = safeOffset;
+            const fullEnd = Math.min(offerCount, fullStart + edgeVisibleCount);
             const renderItems = [];
-
-            if (hasLeftPeek && fullStart - 1 >= 0) {
-                renderItems.push({
-                    offer: normalizedOffers[fullStart - 1],
-                    role: 'peek-left',
-                    className: 'home_latest_offers__item--peek-left'
-                });
-            }
 
             for (let index = fullStart; index < fullEnd; index += 1) {
                 renderItems.push({
                     offer: normalizedOffers[index],
                     role: 'full',
                     className: 'home_latest_offers__item--full'
-                });
-            }
-
-            if (hasRightPeek && fullEnd < offerCount) {
-                renderItems.push({
-                    offer: normalizedOffers[fullEnd],
-                    role: 'peek-right',
-                    className: 'home_latest_offers__item--peek-right'
                 });
             }
 
@@ -8325,6 +8436,8 @@ createApp({
             this.myPetsAddModalOpen = false;
             this.myPetsDetailModalOpen = false;
             this.myPetsDetailEditing = false;
+            this.myPetsDetailReadOnly = false;
+            this.myPetsDetailReadOnlyPet = null;
             this.myPetsDetailPetId = null;
             this.myPetsDeleteModalOpen = false;
             this.myPetsDeletePetId = null;
@@ -8993,6 +9106,66 @@ createApp({
             } catch {
                 return `${numericValue.toFixed(2)} €`;
             }
+        },
+        calculatePriceTotalForDateRange(pricePerDay = null, startDate = '', endDate = '') {
+            const normalizedPrice = Number.parseFloat(String(pricePerDay ?? '').replace(',', '.'));
+            if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
+                return Number.NaN;
+            }
+
+            const dayCount = calculateInclusiveDateRangeDays(startDate, endDate);
+            if (!Number.isFinite(dayCount) || dayCount <= 0) {
+                return Number.NaN;
+            }
+
+            return Number((normalizedPrice * dayCount).toFixed(2));
+        },
+        formatHomeOfferTotalPrice(offer = null) {
+            const totalPrice = this.calculatePriceTotalForDateRange(
+                offer?.pricePerDay,
+                offer?.availableFrom || '',
+                offer?.availableTo || ''
+            );
+            return this.formatMyOfferPrice(totalPrice);
+        },
+        resolveMessagesProposalPricePerDay(proposal = null) {
+            const normalizedProposal = this.normalizeMessagesProposal(proposal || {});
+            const dayCount = calculateInclusiveDateRangeDays(
+                normalizedProposal.startDate || '',
+                normalizedProposal.endDate || ''
+            );
+            if (!Number.isFinite(dayCount) || dayCount <= 0) {
+                return Number.NaN;
+            }
+
+            const priceTotal = Number.parseFloat(String(normalizedProposal.priceTotal ?? '').replace(',', '.'));
+            if (!Number.isFinite(priceTotal) || priceTotal <= 0) {
+                return Number.NaN;
+            }
+
+            return Number((priceTotal / dayCount).toFixed(2));
+        },
+        resolveMessagesProposalOfferExpectationPerDay(proposal = null) {
+            const activeChat = this.messagesActiveChat;
+            const proposalOfferId = this.normalizeProfileUserId(proposal?.offerId);
+            if (!activeChat || this.normalizeProfileUserId(activeChat.offerId) !== proposalOfferId) {
+                return Number.NaN;
+            }
+
+            return this.messagesActiveChatOfferPricePerDay;
+        },
+        resolveMessagesProposalOfferExpectationTotal(proposal = null) {
+            const expectationPerDay = this.resolveMessagesProposalOfferExpectationPerDay(proposal);
+            const normalizedProposal = this.normalizeMessagesProposal(proposal || {});
+            if (!Number.isFinite(expectationPerDay) || expectationPerDay <= 0) {
+                return Number.NaN;
+            }
+
+            return this.calculatePriceTotalForDateRange(
+                expectationPerDay,
+                normalizedProposal.startDate || '',
+                normalizedProposal.endDate || ''
+            );
         },
         isMyOfferSpeciesSelected(value = '') {
             const normalizedValue = typeof value === 'string' ? value.trim().toUpperCase() : '';
@@ -10025,6 +10198,19 @@ createApp({
                 defaultImagePath: this.normalizeMyPetImagePath(value?.defaultImagePath || '')
             };
         },
+        normalizeMyPetDetailModalPet(value = {}) {
+            const normalizedPet = this.normalizeMyPet(value);
+            const hasAgeProperty = Object.prototype.hasOwnProperty.call(value || {}, 'age');
+            const rawAge = Number(value?.age);
+            const normalizedAge = hasAgeProperty && Number.isFinite(rawAge) && rawAge >= 0
+                ? Math.round(rawAge)
+                : null;
+
+            return {
+                ...normalizedPet,
+                age: normalizedAge
+            };
+        },
         resolveMyPetImagePath(pet = {}) {
             const imagePath = this.normalizeMyPetImagePath(pet?.imagePath || '');
             if (imagePath) {
@@ -10194,6 +10380,8 @@ createApp({
             this.closeMyPetsDeleteModal();
             this.myPetsDetailModalOpen = false;
             this.myPetsDetailEditing = false;
+            this.myPetsDetailReadOnly = false;
+            this.myPetsDetailReadOnlyPet = null;
             this.myPetsDetailPetId = null;
             this.resetMyPetForm({ keepSpecies: false });
             this.myPetsAddModalOpen = true;
@@ -10212,14 +10400,23 @@ createApp({
             this.resetMyPetForm({ keepSpecies: false });
             this.syncModalBodyLock();
         },
-        openMyPetsDetailModal(pet = null) {
-            const sourcePet = pet && typeof pet === 'object' ? this.normalizeMyPet(pet) : this.myPetsActivePet;
-            if (!sourcePet || !Number.isInteger(sourcePet.id) || sourcePet.id <= 0) {
+        openMyPetsDetailModal(pet = null, options = {}) {
+            const readOnly = options?.readOnly === true;
+            const sourcePet = pet && typeof pet === 'object'
+                ? (readOnly ? this.normalizeMyPetDetailModalPet(pet) : this.normalizeMyPet(pet))
+                : this.myPetsActivePet;
+            if (!sourcePet || typeof sourcePet !== 'object') {
+                return;
+            }
+            const normalizedPetId = this.normalizeProfileUserId(sourcePet.id);
+            if (!readOnly && (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0)) {
                 return;
             }
 
-            const selectedIndex = this.myPetsPets.findIndex((entry) => entry.id === sourcePet.id);
-            if (selectedIndex >= 0) {
+            const selectedIndex = Number.isInteger(normalizedPetId)
+                ? this.myPetsPets.findIndex((entry) => entry.id === normalizedPetId)
+                : -1;
+            if (!readOnly && selectedIndex >= 0) {
                 this.myPetsCarouselIndex = selectedIndex;
             }
 
@@ -10227,11 +10424,20 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             this.closeMyPetsDeleteModal();
             this.myPetsAddModalOpen = false;
-            this.myPetsDetailPetId = sourcePet.id;
+            this.myPetsDetailReadOnly = readOnly;
+            this.myPetsDetailReadOnlyPet = readOnly ? sourcePet : null;
+            this.myPetsDetailPetId = Number.isInteger(normalizedPetId) ? normalizedPetId : null;
             this.myPetsDetailEditing = false;
             this.resetMyPetForm({ keepSpecies: false });
             this.myPetsDetailModalOpen = true;
             this.syncModalBodyLock();
+        },
+        openReadOnlyPetDetailModal(pet = null) {
+            if (!pet || typeof pet !== 'object') {
+                return;
+            }
+
+            this.openMyPetsDetailModal(pet, { readOnly: true });
         },
         closeMyPetsDetailModal() {
             if (!this.myPetsDetailModalOpen) {
@@ -10240,12 +10446,17 @@ createApp({
 
             this.myPetsDetailModalOpen = false;
             this.myPetsDetailEditing = false;
+            this.myPetsDetailReadOnly = false;
+            this.myPetsDetailReadOnlyPet = null;
             this.myPetsDetailPetId = null;
             this.resetMyPetForm({ keepSpecies: false });
             this.syncModalBodyLock();
         },
         startMyPetsDetailEditing() {
             if (!this.myPetsDetailModalOpen || !this.myPetsDetailPet) {
+                return;
+            }
+            if (this.myPetsDetailReadOnly) {
                 return;
             }
 
@@ -10642,6 +10853,8 @@ createApp({
             this.myPetsAddModalOpen = false;
             this.myPetsDetailModalOpen = false;
             this.myPetsDetailEditing = false;
+            this.myPetsDetailReadOnly = false;
+            this.myPetsDetailReadOnlyPet = null;
             this.myPetsDetailPetId = normalizedPet.id;
             this.syncModalBodyLock();
 
@@ -10749,13 +10962,19 @@ createApp({
             this.messagesPartnerProfileLoadingById = {};
             this.messagesComposerText = '';
             this.clearMessagesComposerAttachments();
+            this.closeMessagesImageModal();
             this.messagesClosingChat = false;
+            this.messagesReopeningChat = false;
             this.messagesProposalModalOpen = false;
             this.messagesProposalSubmitting = false;
             this.messagesProposalActionPendingId = null;
             this.resetMessagesProposalForm();
             this.stopMessagesFallbackRefresh();
             this.disconnectMessagesSocket();
+            this.stopMessagesClosedCountdownTicker();
+            this.messagesClosedCountdownNowMs = Date.now();
+            this.messagesExpiredClosedChatRefreshInFlight = false;
+            this.messagesExpiredClosedChatRefreshLastAt = 0;
 
             if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
                 try {
@@ -10765,6 +10984,7 @@ createApp({
                 }
             }
 
+            this.startMessagesClosedCountdownTicker();
             await this.loadMessagesViewData({
                 preserveSelection: false,
                 showLoadingState: true
@@ -10801,6 +11021,9 @@ createApp({
         normalizeMessagesChat(value = {}) {
             const normalizedId = this.normalizeProfileUserId(value?.id);
             const offerId = this.normalizeProfileUserId(value?.offerId);
+            const offerPricePerDayValue = Number.parseFloat(String(value?.offerPricePerDay ?? '').replace(',', '.'));
+            const offerAvailableFrom = normalizeDateInputValue(value?.offerAvailableFrom);
+            const offerAvailableTo = normalizeDateInputValue(value?.offerAvailableTo);
             const hostId = this.normalizeProfileUserId(value?.hostId);
             const requesterId = this.normalizeProfileUserId(value?.requesterId);
             const closedByUserId = this.normalizeProfileUserId(value?.closedByUserId);
@@ -10818,6 +11041,9 @@ createApp({
                 id: normalizedId,
                 offerId,
                 offerTitle: offerTitle || this.messagesStrings.defaultOfferTitle,
+                offerPricePerDay: Number.isFinite(offerPricePerDayValue) ? offerPricePerDayValue : 0,
+                offerAvailableFrom,
+                offerAvailableTo,
                 hostId,
                 hostFirstName,
                 hostLastName,
@@ -10845,6 +11071,138 @@ createApp({
         isMessagesChatClosed(chat = null) {
             const closedAt = typeof chat?.closedAt === 'string' ? chat.closedAt.trim() : '';
             return Boolean(closedAt);
+        },
+        messagesResolveChatAutoDeleteDeadline(chat = null) {
+            if (!this.isMessagesChatClosed(chat)) {
+                return null;
+            }
+
+            const closedAt = Date.parse(chat?.closedAt || '');
+            if (!Number.isFinite(closedAt)) {
+                return null;
+            }
+
+            return closedAt + (24 * 60 * 60 * 1000);
+        },
+        messagesResolveChatAutoDeleteRemainingMs(chat = null) {
+            const deadline = this.messagesResolveChatAutoDeleteDeadline(chat);
+            if (!Number.isFinite(deadline)) {
+                return null;
+            }
+
+            const nowMs = Number.isFinite(this.messagesClosedCountdownNowMs)
+                ? this.messagesClosedCountdownNowMs
+                : Date.now();
+            return Math.max(0, deadline - nowMs);
+        },
+        formatMessagesAutoDeleteCountdown(remainingMs = null) {
+            const normalizedMs = Number(remainingMs);
+            if (!Number.isFinite(normalizedMs) || normalizedMs < 0) {
+                return '00:00:00';
+            }
+
+            const totalSeconds = Math.max(0, Math.floor(normalizedMs / 1000));
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const timePart = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            if (days <= 0) {
+                return timePart;
+            }
+            return `${days}d ${timePart}`;
+        },
+        buildMessagesClosedChatCountdownText(chat = null) {
+            const remainingMs = this.messagesResolveChatAutoDeleteRemainingMs(chat);
+            if (remainingMs === null) {
+                return this.messagesStrings.chatAutoDeleteExpired || '';
+            }
+
+            if (remainingMs <= 0) {
+                return this.messagesStrings.chatAutoDeleteExpired || '';
+            }
+
+            const countdownValue = this.formatMessagesAutoDeleteCountdown(remainingMs);
+            return formatTemplate(this.messagesStrings.chatAutoDeleteCountdownTemplate, {
+                countdown: countdownValue
+            }) || countdownValue;
+        },
+        startMessagesClosedCountdownTicker() {
+            if (typeof window === 'undefined') {
+                return;
+            }
+
+            this.messagesClosedCountdownNowMs = Date.now();
+            if (typeof this.messagesClosedCountdownHandle === 'number') {
+                return;
+            }
+
+            this.messagesClosedCountdownHandle = window.setInterval(() => {
+                this.messagesClosedCountdownNowMs = Date.now();
+                this.refreshExpiredClosedChatStateIfNeeded();
+            }, 1000);
+        },
+        stopMessagesClosedCountdownTicker() {
+            if (typeof this.messagesClosedCountdownHandle === 'number') {
+                window.clearInterval(this.messagesClosedCountdownHandle);
+            }
+            this.messagesClosedCountdownHandle = null;
+        },
+        async refreshExpiredClosedChatStateIfNeeded() {
+            const activeChat = this.messagesActiveChat;
+            if (!this.isMessagesChatClosed(activeChat)) {
+                return;
+            }
+
+            const remainingMs = this.messagesResolveChatAutoDeleteRemainingMs(activeChat);
+            if (remainingMs === null || remainingMs > 0) {
+                return;
+            }
+
+            const nowMs = Date.now();
+            if (this.messagesExpiredClosedChatRefreshInFlight) {
+                return;
+            }
+            if ((nowMs - this.messagesExpiredClosedChatRefreshLastAt) < 5000) {
+                return;
+            }
+
+            this.messagesExpiredClosedChatRefreshInFlight = true;
+            this.messagesExpiredClosedChatRefreshLastAt = nowMs;
+            const activeChatId = this.normalizeProfileUserId(activeChat?.id);
+            try {
+                await this.refreshMessagesChatsSilently();
+                if (
+                    Number.isInteger(activeChatId)
+                    && activeChatId > 0
+                    && !this.messagesChats.some((chat) => chat.id === activeChatId)
+                ) {
+                    this.removeMessagesChat(activeChatId);
+                }
+            } catch {
+                // Countdown-triggered refresh remains silent.
+            } finally {
+                this.messagesExpiredClosedChatRefreshInFlight = false;
+            }
+        },
+        removeMessagesChat(chatId) {
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+
+            const existingChats = Array.isArray(this.messagesChats) ? this.messagesChats : [];
+            this.messagesChats = existingChats.filter((chat) => chat.id !== normalizedChatId);
+
+            const nextMessagesByChatId = { ...(this.messagesByChatId || {}) };
+            const nextMessagesLoadedByChatId = { ...(this.messagesMessagesLoadedByChatId || {}) };
+            const nextMessagesLoadingByChatId = { ...(this.messagesMessagesLoadingByChatId || {}) };
+            delete nextMessagesByChatId[normalizedChatId];
+            delete nextMessagesLoadedByChatId[normalizedChatId];
+            delete nextMessagesLoadingByChatId[normalizedChatId];
+            this.messagesByChatId = nextMessagesByChatId;
+            this.messagesMessagesLoadedByChatId = nextMessagesLoadedByChatId;
+            this.messagesMessagesLoadingByChatId = nextMessagesLoadingByChatId;
         },
         upsertMessagesChat(chatValue = {}) {
             const normalizedChat = this.normalizeMessagesChat(chatValue);
@@ -11177,6 +11535,13 @@ createApp({
 
             if (normalizedDestination.endsWith('/queue/chats')) {
                 const chat = payload?.chat || null;
+                const eventType = typeof payload?.type === 'string'
+                    ? payload.type.trim().toLowerCase()
+                    : '';
+                if (eventType === 'chat.deleted') {
+                    this.removeMessagesChat(chat?.id);
+                    return;
+                }
                 if (chat) {
                     this.upsertMessagesChat(chat);
                 }
@@ -11445,22 +11810,66 @@ createApp({
             const petNames = Array.isArray(parsedPayload?.petNames)
                 ? parsedPayload.petNames
                     .map((petName) => (typeof petName === 'string' ? petName.trim() : ''))
-                    .filter(Boolean)
                 : [];
-            const species = Array.isArray(parsedPayload?.petSpecies)
+            const petSpecies = Array.isArray(parsedPayload?.petSpecies)
                 ? parsedPayload.petSpecies
                     .map((value) => (typeof value === 'string' ? value.trim().toUpperCase() : ''))
+                : [];
+            const locale = document.documentElement.lang || 'de';
+            const toOfferRequestPet = (petValue = {}) => {
+                const normalizedPet = this.normalizeMyPetDetailModalPet(petValue || {});
+                const petName = typeof normalizedPet?.name === 'string' ? normalizedPet.name.trim() : '';
+                const species = typeof normalizedPet?.species === 'string' ? normalizedPet.species.trim().toUpperCase() : '';
+                if (!petName && !species) {
+                    return null;
+                }
+
+                const speciesLabel = species ? formatPetChoiceLabel(species, locale) : '';
+                return {
+                    id: this.normalizeProfileUserId(normalizedPet?.id),
+                    name: petName || speciesLabel,
+                    species,
+                    speciesLabel,
+                    iconPath: resolvePetChoiceEmojiPath(species),
+                    breed: typeof normalizedPet?.breed === 'string' ? normalizedPet.breed.trim() : '',
+                    age: Number.isFinite(Number(petValue?.age)) ? Math.max(0, Math.round(Number(petValue.age))) : null,
+                    specialNeeds: typeof normalizedPet?.specialNeeds === 'string' ? normalizedPet.specialNeeds.trim() : '',
+                    imagePath: this.normalizeMyPetImagePath(normalizedPet?.imagePath || ''),
+                    defaultImagePath: this.normalizeMyPetImagePath(normalizedPet?.defaultImagePath || '')
+                };
+            };
+
+            const parsedPets = Array.isArray(parsedPayload?.pets)
+                ? parsedPayload.pets
+                    .map((petValue) => toOfferRequestPet(petValue))
                     .filter(Boolean)
                 : [];
 
-            const petsLabel = petNames.length
-                ? petNames.join(', ')
-                : (species.length
-                    ? species.map((value) => formatPetChoiceLabel(value, document.documentElement.lang || 'de')).join(', ')
-                    : '');
-            const petsText = petsLabel
+            const pets = parsedPets.length
+                ? parsedPets
+                : Array.from(
+                    { length: Math.max(petNames.length, petSpecies.length) },
+                    (_, index) => toOfferRequestPet({
+                        name: petNames[index] || '',
+                        species: petSpecies[index] || ''
+                    })
+                ).filter(Boolean);
+
+            const rawPayloadPetCount = Number(parsedPayload?.petCount);
+            const payloadPetCount = Number.isFinite(rawPayloadPetCount)
+                ? Math.max(0, Math.round(rawPayloadPetCount))
+                : 0;
+            const petsCount = Math.max(payloadPetCount, pets.length);
+            const petsLabel = pets
+                .map((pet) => (typeof pet?.name === 'string' ? pet.name.trim() : ''))
+                .filter(Boolean)
+                .join(', ');
+            const petsFallbackText = petsLabel
                 ? `${this.offerDetailStrings.requestOpeningPetsPrefix} ${petsLabel}`.trim()
                 : this.offerDetailStrings.requestOpeningPetsPrefix;
+            const petsHeadingText = this.offerDetailStrings.requestOpeningPetsHeading
+                ? formatTemplate(this.offerDetailStrings.requestOpeningPetsHeading, { count: petsCount })
+                : '';
 
             return {
                 requesterId,
@@ -11468,8 +11877,37 @@ createApp({
                 offerId,
                 offerTitle: offerTitle || this.messagesStrings.defaultOfferTitle,
                 introText: this.offerDetailStrings.requestOpeningIntro,
-                petsText: petsText || ''
+                introSuffix: this.offerDetailStrings.requestOpeningSuffix || '',
+                petsHeadingText: petsHeadingText || '',
+                petsCount,
+                pets,
+                petsFallbackText: petsFallbackText || ''
             };
+        },
+        buildOfferRequestPreviewText(offerRequest = null) {
+            if (!offerRequest || typeof offerRequest !== 'object') {
+                return '';
+            }
+
+            const normalizedOfferTitle = typeof offerRequest.offerTitle === 'string'
+                ? offerRequest.offerTitle.trim()
+                : '';
+            const headlineParts = [
+                offerRequest.requesterName,
+                offerRequest.introText,
+                normalizedOfferTitle ? `"${normalizedOfferTitle}"` : '',
+                offerRequest.introSuffix
+            ].filter(Boolean);
+            const headline = headlineParts.join(' ').replace(/\s+/g, ' ').trim();
+            const petsCount = Number.isFinite(Number(offerRequest.petsCount))
+                ? Math.max(0, Math.round(Number(offerRequest.petsCount)))
+                : 0;
+
+            if (!petsCount) {
+                return headline;
+            }
+
+            return [headline, `(${petsCount})`].filter(Boolean).join(' ').trim();
         },
         resolveMessagesPreviewText(rawPreview = '') {
             const preview = typeof rawPreview === 'string' ? rawPreview.trim() : '';
@@ -11479,13 +11917,7 @@ createApp({
 
             const parsedOfferRequest = this.parseOfferRequestToken(preview);
             if (parsedOfferRequest) {
-                const parts = [
-                    parsedOfferRequest.requesterName,
-                    parsedOfferRequest.introText,
-                    parsedOfferRequest.offerTitle,
-                    parsedOfferRequest.petsText
-                ].filter(Boolean);
-                return parts.join(' ');
+                return this.buildOfferRequestPreviewText(parsedOfferRequest) || preview;
             }
 
             return preview;
@@ -11522,19 +11954,71 @@ createApp({
                 offerRequest: parsedOfferRequest
             };
         },
+        normalizeMessagesTimeline(messages = []) {
+            const timelineSource = Array.isArray(messages) ? [...messages] : [];
+            timelineSource.sort((left, right) => {
+                const leftStamp = Date.parse(left?.createdAt || '') || 0;
+                const rightStamp = Date.parse(right?.createdAt || '') || 0;
+                if (leftStamp !== rightStamp) {
+                    return leftStamp - rightStamp;
+                }
+                return (left?.id || 0) - (right?.id || 0);
+            });
+
+            const timeline = [];
+            const proposalMessageIndexById = new Map();
+
+            timelineSource.forEach((messageValue) => {
+                const normalizedMessage = this.normalizeMessagesMessage(messageValue || {});
+                if (!Number.isInteger(normalizedMessage.id) || normalizedMessage.id <= 0) {
+                    return;
+                }
+
+                const proposalId = this.normalizeProfileUserId(normalizedMessage?.bookingProposal?.id);
+                const isWithdrawEvent = normalizedMessage.type === 'BOOKING_EVENT'
+                    && Number.isInteger(proposalId)
+                    && proposalId > 0
+                    && this.messagesIsWithdrawnProposal(normalizedMessage.bookingProposal);
+
+                if (isWithdrawEvent) {
+                    const existingProposalIndex = proposalMessageIndexById.get(proposalId);
+                    if (
+                        Number.isInteger(existingProposalIndex)
+                        && existingProposalIndex >= 0
+                        && existingProposalIndex < timeline.length
+                    ) {
+                        const existingProposalMessage = timeline[existingProposalIndex];
+                        timeline[existingProposalIndex] = {
+                            ...existingProposalMessage,
+                            bookingProposal: {
+                                ...(existingProposalMessage.bookingProposal || {}),
+                                ...(normalizedMessage.bookingProposal || {})
+                            }
+                        };
+                        return;
+                    }
+                }
+
+                timeline.push(normalizedMessage);
+                if (
+                    normalizedMessage.type === 'BOOKING_PROPOSAL'
+                    && Number.isInteger(proposalId)
+                    && proposalId > 0
+                    && !proposalMessageIndexById.has(proposalId)
+                ) {
+                    proposalMessageIndexById.set(proposalId, timeline.length - 1);
+                }
+            });
+
+            return timeline;
+        },
         buildMessagesMessagePreview(message = null) {
             if (!message || typeof message !== 'object') {
                 return '';
             }
 
             if (message.offerRequest) {
-                const parts = [
-                    message.offerRequest.requesterName,
-                    message.offerRequest.introText,
-                    message.offerRequest.offerTitle,
-                    message.offerRequest.petsText
-                ].filter(Boolean);
-                return parts.join(' ').trim();
+                return this.buildOfferRequestPreviewText(message.offerRequest);
             }
 
             const content = typeof message.content === 'string' ? message.content.trim() : '';
@@ -11571,25 +12055,18 @@ createApp({
                 previousMessages.push(normalizedMessage);
             }
 
-            previousMessages.sort((left, right) => {
-                const leftStamp = Date.parse(left?.createdAt || '') || 0;
-                const rightStamp = Date.parse(right?.createdAt || '') || 0;
-                if (leftStamp !== rightStamp) {
-                    return leftStamp - rightStamp;
-                }
-                return (left?.id || 0) - (right?.id || 0);
-            });
+            const timelineMessages = this.normalizeMessagesTimeline(previousMessages);
 
             this.messagesByChatId = {
                 ...(this.messagesByChatId || {}),
-                [normalizedChatId]: previousMessages
+                [normalizedChatId]: timelineMessages
             };
             this.messagesMessagesLoadedByChatId = {
                 ...(this.messagesMessagesLoadedByChatId || {}),
                 [normalizedChatId]: true
             };
 
-            const lastMessage = previousMessages.length ? previousMessages[previousMessages.length - 1] : null;
+            const lastMessage = timelineMessages.length ? timelineMessages[timelineMessages.length - 1] : null;
             if (lastMessage) {
                 this.upsertMessagesChat({
                     ...(this.messagesChats.find((chat) => chat.id === normalizedChatId) || {}),
@@ -11653,16 +12130,17 @@ createApp({
                         .map((message) => this.normalizeMessagesMessage(message))
                         .filter((message) => Number.isInteger(message.id) && message.id > 0)
                     : [];
+                const timelineMessages = this.normalizeMessagesTimeline(normalizedMessages);
                 this.messagesByChatId = {
                     ...(this.messagesByChatId || {}),
-                    [normalizedChatId]: normalizedMessages
+                    [normalizedChatId]: timelineMessages
                 };
                 this.messagesMessagesLoadedByChatId = {
                     ...(this.messagesMessagesLoadedByChatId || {}),
                     [normalizedChatId]: true
                 };
 
-                const lastMessage = normalizedMessages.length ? normalizedMessages[normalizedMessages.length - 1] : null;
+                const lastMessage = timelineMessages.length ? timelineMessages[timelineMessages.length - 1] : null;
                 if (lastMessage) {
                     this.upsertMessagesChat({
                         ...(this.messagesChats.find((chat) => chat.id === normalizedChatId) || {}),
@@ -11696,6 +12174,18 @@ createApp({
                 return;
             }
             this.messagesActiveChatId = normalizedChatId;
+        },
+        dismissMessagesActiveChat() {
+            this.closeAllDropdowns({ immediate: true });
+            this.messagesActiveChatId = null;
+        },
+        openMessagesProposalModalFromMenu() {
+            this.closeAllDropdowns({ immediate: true });
+            this.openMessagesProposalModal();
+        },
+        async closeMessagesActiveChatFromMenu() {
+            this.closeAllDropdowns({ immediate: true });
+            await this.closeMessagesActiveChat();
         },
         async closeMessagesActiveChat() {
             const activeChat = this.messagesActiveChat;
@@ -11750,6 +12240,52 @@ createApp({
                 this.messagesClosingChat = false;
             }
         },
+        async reopenMessagesActiveChat() {
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat || this.messagesReopeningChat || !this.isMessagesChatClosed(activeChat)) {
+                return;
+            }
+
+            this.messagesReopeningChat = true;
+            try {
+                const response = await apiFetch(`/api/chats/${activeChat.id}/reopen`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.reopenErrorTitle || this.messagesStrings.notifications.loadErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.notifications.reopenErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.upsertMessagesChat(payload?.data || {});
+                await this.loadMessagesForChat(activeChat.id, {
+                    force: true,
+                    silent: true
+                });
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.reopenSuccessTitle,
+                    message: this.messagesStrings.notifications.reopenSuccessMessage,
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.reopenErrorTitle || this.messagesStrings.notifications.loadErrorTitle,
+                    message: this.messagesStrings.notifications.reopenErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.messagesReopeningChat = false;
+            }
+        },
         formatMessagesChatListTime(value = '') {
             const parsed = value ? new Date(value) : null;
             if (!(parsed instanceof Date) || Number.isNaN(parsed.getTime())) {
@@ -11778,6 +12314,18 @@ createApp({
             } catch {
                 return '';
             }
+        },
+        formatMessagesThreadOfferTitle(value = '') {
+            const normalizedValue = typeof value === 'string' ? value.trim() : '';
+            if (!normalizedValue) {
+                return '';
+            }
+
+            if (normalizedValue.length <= 20) {
+                return normalizedValue;
+            }
+
+            return `${normalizedValue.slice(0, 20)}...`;
         },
         formatMessagesTimestamp(value = '') {
             const parsed = value ? new Date(value) : null;
@@ -11861,6 +12409,12 @@ createApp({
 
             return this.messagesStrings.proposalStatusPending;
         },
+        messagesIsWithdrawnProposal(proposal = null) {
+            const normalizedStatus = typeof proposal?.status === 'string'
+                ? proposal.status.trim().toUpperCase()
+                : '';
+            return normalizedStatus === 'WITHDRAWN';
+        },
         messagesCanRespondToProposal(proposal = null) {
             const normalizedProposal = this.normalizeMessagesProposal(proposal || {});
             const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
@@ -11911,11 +12465,40 @@ createApp({
             this.resetMessagesProposalForm();
             this.syncModalBodyLock();
         },
+        openMessagesImageModal(url = '', alt = '') {
+            const normalizedUrl = typeof url === 'string' ? url.trim() : '';
+            if (!normalizedUrl) {
+                return;
+            }
+
+            this.messagesImageModalUrl = normalizedUrl;
+            this.messagesImageModalAlt = typeof alt === 'string' ? alt.trim() : '';
+            this.messagesImageModalOpen = true;
+            this.syncModalBodyLock();
+        },
+        closeMessagesImageModal() {
+            if (!this.messagesImageModalOpen && !this.messagesImageModalUrl) {
+                return;
+            }
+
+            this.messagesImageModalOpen = false;
+            this.messagesImageModalUrl = '';
+            this.messagesImageModalAlt = '';
+            this.syncModalBodyLock();
+        },
         resetMessagesProposalForm() {
+            const activeChat = this.messagesActiveChat;
+            const defaultStartDate = normalizeDateInputValue(activeChat?.offerAvailableFrom || '');
+            const defaultEndDate = normalizeDateInputValue(activeChat?.offerAvailableTo || '');
+            const defaultPricePerDay = Number.isFinite(this.messagesActiveChatOfferPricePerDay)
+                && this.messagesActiveChatOfferPricePerDay > 0
+                ? this.messagesActiveChatOfferPricePerDay.toFixed(2)
+                : '';
+
             this.messagesProposalForm = {
-                startDate: '',
-                endDate: '',
-                priceTotal: '',
+                startDate: defaultStartDate,
+                endDate: defaultEndDate,
+                pricePerDay: defaultPricePerDay,
                 petCount: '',
                 note: '',
                 petSpecies: []
@@ -11966,31 +12549,10 @@ createApp({
                 return;
             }
 
-            const species = Array.isArray(this.messagesProposalForm?.petSpecies)
-                ? this.messagesProposalForm.petSpecies
-                : [];
-            if (!species.length) {
-                this.pushNotification({
-                    title: this.messagesStrings.notifications.proposalErrorTitle,
-                    message: this.messagesStrings.proposalValidationSpecies,
-                    tone: 'warning'
-                });
-                return;
-            }
-
-            const petCount = Number.parseInt(String(this.messagesProposalForm?.petCount ?? '').trim(), 10);
-            if (!Number.isInteger(petCount) || petCount < 1) {
-                this.pushNotification({
-                    title: this.messagesStrings.notifications.proposalErrorTitle,
-                    message: this.messagesStrings.proposalValidationPetCount,
-                    tone: 'warning'
-                });
-                return;
-            }
-
-            const startDate = normalizeDateInputValue(this.messagesProposalForm?.startDate);
-            const endDate = normalizeDateInputValue(this.messagesProposalForm?.endDate);
-            if (!startDate || !endDate || endDate < startDate) {
+            const startDate = normalizeDateInputValue(this.messagesProposalForm?.startDate || activeChat.offerAvailableFrom || '');
+            const endDate = normalizeDateInputValue(this.messagesProposalForm?.endDate || activeChat.offerAvailableTo || '');
+            const offerDayCount = calculateInclusiveDateRangeDays(startDate, endDate);
+            if (!startDate || !endDate || endDate < startDate || offerDayCount <= 0) {
                 this.pushNotification({
                     title: this.messagesStrings.notifications.proposalErrorTitle,
                     message: this.messagesStrings.proposalValidationDates,
@@ -11999,8 +12561,9 @@ createApp({
                 return;
             }
 
-            const priceValue = this.normalizeMessagesDecimal(this.messagesProposalForm?.priceTotal || '');
-            if (!Number.isFinite(priceValue) || priceValue <= 0) {
+            const pricePerDayValue = this.normalizeMessagesDecimal(this.messagesProposalForm?.pricePerDay || '');
+            const priceTotalValue = Number((pricePerDayValue * offerDayCount).toFixed(2));
+            if (!Number.isFinite(pricePerDayValue) || pricePerDayValue <= 0 || !Number.isFinite(priceTotalValue) || priceTotalValue <= 0) {
                 this.pushNotification({
                     title: this.messagesStrings.notifications.proposalErrorTitle,
                     message: this.messagesStrings.proposalValidationPrice,
@@ -12008,6 +12571,17 @@ createApp({
                 });
                 return;
             }
+
+            const species = Array.isArray(this.messagesProposalForm?.petSpecies)
+                ? this.messagesProposalForm.petSpecies
+                    .map((entry) => (typeof entry === 'string' ? entry.trim().toUpperCase() : ''))
+                    .filter(Boolean)
+                : [];
+            const petCountRaw = String(this.messagesProposalForm?.petCount ?? '').trim();
+            const parsedPetCount = Number.parseInt(petCountRaw, 10);
+            const petCount = Number.isInteger(parsedPetCount) && parsedPetCount > 0
+                ? parsedPetCount
+                : null;
 
             this.messagesProposalSubmitting = true;
 
@@ -12020,10 +12594,10 @@ createApp({
                     },
                     cache: 'no-store',
                     body: JSON.stringify({
-                        startDate,
-                        endDate,
-                        priceTotal: Number(priceValue.toFixed(2)),
-                        petSpecies: species,
+                        startDate: startDate || null,
+                        endDate: endDate || null,
+                        priceTotal: priceTotalValue,
+                        petSpecies: species.length ? species : null,
                         petCount,
                         note: typeof this.messagesProposalForm?.note === 'string' && this.messagesProposalForm.note.trim()
                             ? this.messagesProposalForm.note.trim()
@@ -12502,15 +13076,38 @@ createApp({
 
             const requesterName = this.messagesViewDisplayName || localizedAppStrings.genericUser;
             const selectedPets = Array.isArray(pets) ? pets : [];
+            const normalizedPets = selectedPets
+                .map((pet) => {
+                    const normalizedPet = this.normalizeMyPetDetailModalPet(pet || {});
+                    return {
+                        id: this.normalizeProfileUserId(normalizedPet?.id),
+                        name: typeof normalizedPet?.name === 'string' ? normalizedPet.name.trim() : '',
+                        species: typeof normalizedPet?.species === 'string' ? normalizedPet.species.trim().toUpperCase() : '',
+                        breed: typeof normalizedPet?.breed === 'string' ? normalizedPet.breed.trim() : '',
+                        age: Number.isFinite(Number(normalizedPet?.age)) ? Math.max(0, Math.round(Number(normalizedPet.age))) : null,
+                        specialNeeds: typeof normalizedPet?.specialNeeds === 'string' ? normalizedPet.specialNeeds.trim() : '',
+                        imagePath: this.normalizeMyPetImagePath(normalizedPet?.imagePath || ''),
+                        defaultImagePath: this.normalizeMyPetImagePath(normalizedPet?.defaultImagePath || '')
+                    };
+                })
+                .filter((pet) => pet.name || pet.species);
             const payload = {
                 type: 'offer_request',
                 requesterId,
                 requesterName,
                 offerId: normalizedOfferId,
                 offerTitle: normalizedOffer.title || this.messagesStrings.defaultOfferTitle,
-                petIds: selectedPets.map((pet) => this.normalizeProfileUserId(pet?.id)).filter((id) => Number.isInteger(id) && id > 0),
-                petNames: selectedPets.map((pet) => (typeof pet?.name === 'string' ? pet.name.trim() : '')).filter(Boolean),
-                petSpecies: selectedPets.map((pet) => (typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : '')).filter(Boolean)
+                petCount: normalizedPets.length,
+                pets: normalizedPets,
+                petIds: normalizedPets
+                    .map((pet) => this.normalizeProfileUserId(pet?.id))
+                    .filter((id) => Number.isInteger(id) && id > 0),
+                petNames: normalizedPets
+                    .map((pet) => (typeof pet?.name === 'string' ? pet.name.trim() : ''))
+                    .filter(Boolean),
+                petSpecies: normalizedPets
+                    .map((pet) => (typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : ''))
+                    .filter(Boolean)
             };
             const encodedPayload = encodeUtf8Base64(JSON.stringify(payload));
             if (!encodedPayload) {
@@ -15322,6 +15919,7 @@ createApp({
                     || this.homeOfferDetailModalOpen
                     || this.offerRequestModalOpen
                     || this.messagesProposalModalOpen
+                    || this.messagesImageModalOpen
                     || this.activeGitCommitModalHash
                     || this.activeBoardCardKey
                 )
@@ -16264,6 +16862,11 @@ createApp({
 
             if (this.myOffersCreateModalOpen) {
                 this.closeMyOffersCreateModal();
+                return;
+            }
+
+            if (this.messagesImageModalOpen) {
+                this.closeMessagesImageModal();
                 return;
             }
 

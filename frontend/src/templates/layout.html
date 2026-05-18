@@ -33,6 +33,8 @@
               data-offer-detail-modal-species-label=#{home.page.modal.speciesLabel},
               data-offer-detail-label-date=#{home.page.labels.date},
               data-offer-detail-label-price=#{home.page.labels.price},
+              data-offer-detail-label-price-per-day=#{home.page.labels.pricePerDay},
+              data-offer-detail-label-price-total=#{home.page.labels.priceTotal},
               data-offer-detail-label-location=#{home.page.labels.location},
               data-offer-detail-label-location-fallback=#{home.page.labels.locationFallback},
               data-offer-request-button=#{home.page.modal.requestButton},
@@ -52,6 +54,8 @@
               data-offer-request-create-error-title=#{home.page.modal.requestCreateErrorTitle},
               data-offer-request-create-error-message=#{home.page.modal.requestCreateErrorMessage},
               data-offer-request-opening-intro=#{home.page.modal.requestOpeningIntro},
+              data-offer-request-opening-suffix=#{home.page.modal.requestOpeningSuffix},
+              data-offer-request-opening-pets-heading=#{home.page.modal.requestOpeningPetsHeading},
               data-offer-request-opening-pets-prefix=#{home.page.modal.requestOpeningPetsPrefix}">
     <teleport to="body">
         <transition-group name="site_notification_stack"
@@ -971,6 +975,11 @@
                             <div class="my_offers_create_review__row">
                                 <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.price"></span>
                                 <span class="my_offers_create_review__value" v-text="formatMyOfferPrice(myOffersForm.pricePerDay)"></span>
+                            </div>
+
+                            <div class="my_offers_create_review__row">
+                                <span class="my_offers_create_review__label" v-text="myOffersStrings.labels.priceTotal"></span>
+                                <span class="my_offers_create_review__value" v-text="formatMyOfferPrice(myOffersFormTotalPrice)"></span>
                             </div>
 
                             <div class="my_offers_create_review__row">

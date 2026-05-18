@@ -2,12 +2,17 @@ package com.pawsitters.dto;
 
 import com.pawsitters.model.Chat;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 public record ChatResponse(
         Long id,
         Long offerId,
         String offerTitle,
+        BigDecimal offerPricePerDay,
+        LocalDate offerAvailableFrom,
+        LocalDate offerAvailableTo,
         Long hostId,
         String hostFirstName,
         String hostLastName,
@@ -25,6 +30,9 @@ public record ChatResponse(
                 chat.getId(),
                 chat.getOffer().getId(),
                 chat.getOffer().getTitle(),
+                chat.getOffer().getPricePerDay(),
+                chat.getOffer().getAvailableFrom(),
+                chat.getOffer().getAvailableTo(),
                 chat.getHost().getId(),
                 chat.getHost().getFirstName(),
                 chat.getHost().getLastName(),
