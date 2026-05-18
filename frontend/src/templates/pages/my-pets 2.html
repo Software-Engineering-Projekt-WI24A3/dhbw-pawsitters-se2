@@ -60,13 +60,6 @@
                 <p class="profile_hero__eyebrow" th:text="#{myPets.page.eyebrow}">myPets.page.eyebrow</p>
                 <h1 class="profile_hero__title" th:text="#{myPets.page.title}">myPets.page.title</h1>
             </div>
-            <div class="profile_hero__avatar_ring settings_profile_avatar">
-                <img v-if="myPetsViewUser && myPetsViewUser.profilePicture"
-                     class="profile_hero__avatar"
-                     :src="myPetsViewUser.profilePicture"
-                     :alt="myPetsDisplayName">
-                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="myPetsViewInitial"></span>
-            </div>
         </header>
 
         <article class="profile_panel my_pets_panel">

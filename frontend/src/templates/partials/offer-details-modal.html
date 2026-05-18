@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="offerDetailsModal">
+    <teleport to="body">
+        <transition name="auth_modal_presence">
+            <div v-if="homeOfferDetailModalOpen && homeOfferDetailOffer"
+                 class="auth_modal settings_edit_modal home_offer_modal"
+                 role="dialog"
+                 aria-modal="true"
+                 @click.self="closeHomeOfferDetailModal()">
+                <article class="auth_modal__surface settings_edit_modal__surface home_offer_modal__surface">
+                    <button class="auth_modal__close"
+                            type="button"
+                            @click="closeHomeOfferDetailModal()"
+                            :aria-label="offerDetailStrings.modalCloseAria">
+                        <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                            <path d="M5 5 15 15M15 5 5 15"></path>
+                        </svg>
+                        <span class="sr-only" v-text="offerDetailStrings.modalCloseAria"></span>
+                    </button>
+
+                    <div class="auth_modal__brand" v-if="homeOfferDetailPrimarySpecies">
+                        <span class="auth_modal__brand-tile">
+                            <img class="auth_modal__brand-icon"
+                                 :src="homeOfferDetailPrimarySpecies.emojiPath"
+                                 :alt="homeOfferDetailPrimarySpecies.label">
+                        </span>
+                    </div>
+
+                    <h2 class="auth_modal__title settings_edit_modal__title home_offer_modal__title"
+                        v-text="homeOfferDetailOffer.title || offerDetailStrings.untitledOffer"></h2>
+
+                    <div class="auth_modal__form settings_edit_modal__form home_offer_modal__content">
+                        <dl class="settings_edit_modal__species home_offer_modal__section home_offer_modal__facts">
+                            <div class="home_offer_modal__fact">
+                                <dt v-text="offerDetailStrings.modalHostLabel"></dt>
+                                <dd>
+                                    <a v-if="buildProfilePath(homeOfferDetailOffer.hostId)"
+                                       class="home_offer_modal__host_link"
+                                       :href="buildProfilePath(homeOfferDetailOffer.hostId)"
+                                       v-text="homeOfferHostDisplayName(homeOfferDetailOffer)"></a>
+                                    <span v-else v-text="homeOfferHostDisplayName(homeOfferDetailOffer)"></span>
+                                </dd>
+                            </div>
+                            <div class="home_offer_modal__fact">
+                                <dt v-text="offerDetailStrings.labels.date"></dt>
+                                <dd v-text="formatHomeOfferDateRange(homeOfferDetailOffer)"></dd>
+                            </div>
+                            <div class="home_offer_modal__fact">
+                                <dt v-text="offerDetailStrings.labels.price"></dt>
+                                <dd v-text="formatMyOfferPrice(homeOfferDetailOffer.pricePerDay)"></dd>
+                            </div>
+                            <div class="home_offer_modal__fact">
+                                <dt v-text="offerDetailStrings.labels.location"></dt>
+                                <dd v-text="resolveHomeOfferLocation(homeOfferDetailOffer)"></dd>
+                            </div>
+                        </dl>
+
+                        <section class="settings_edit_modal__species home_offer_modal__section"
+                                 v-if="homeOfferDetailOffer.description">
+                            <h3 class="home_offer_modal__section_title" v-text="offerDetailStrings.modalDescriptionLabel"></h3>
+                            <p class="home_offer_modal__section_text" v-text="homeOfferDetailOffer.description"></p>
+                        </section>
+
+                        <section class="settings_edit_modal__species home_offer_modal__section"
+                                 v-if="resolveMyOfferSpecies(homeOfferDetailOffer).length">
+                            <h3 class="home_offer_modal__section_title" v-text="offerDetailStrings.modalSpeciesLabel"></h3>
+                            <div class="my_offers_card__species">
+                                <span class="my_offers_card__species_chip"
+                                      v-for="species in resolveMyOfferSpecies(homeOfferDetailOffer)"
+                                      :key="'home-offer-modal-species-' + homeOfferDetailOffer.id + '-' + species.value">
+                                    <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                    <span v-text="species.label"></span>
+                                </span>
+                            </div>
+                        </section>
+
+                        <section class="settings_edit_modal__species home_offer_modal__section"
+                                 v-if="resolveMyOfferServiceList(homeOfferDetailOffer).length">
+                            <h3 class="home_offer_modal__section_title" v-text="offerDetailStrings.modalServicesLabel"></h3>
+                            <ul class="my_offers_card__services">
+                                <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(homeOfferDetailOffer)"
+                                    :key="'home-offer-modal-service-' + homeOfferDetailOffer.id + '-' + serviceIndex"
+                                    v-text="service"></li>
+                            </ul>
+                        </section>
+
+                        <div class="home_offer_modal__actions" v-if="showOfferRequestAction">
+                            <button class="button home_offer_modal__request"
+                                    type="button"
+                                    @click="openOfferRequestModalFromOfferDetail()"
+                                    :disabled="offerRequestSubmitting"
+                                    v-text="offerDetailStrings.requestButton"></button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </transition>
+    </teleport>
+
+    <teleport to="body">
+        <transition name="auth_modal_presence">
+            <div v-if="offerRequestModalOpen && offerRequestOffer"
+                 class="auth_modal settings_edit_modal home_offer_request_modal"
+                 role="dialog"
+                 aria-modal="true"
+                 @click.self="closeOfferRequestModal()">
+                <article class="auth_modal__surface settings_edit_modal__surface home_offer_request_modal__surface">
+                    <button class="auth_modal__close"
+                            type="button"
+                            @click="closeOfferRequestModal()"
+                            :aria-label="offerDetailStrings.modalCloseAria">
+                        <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                            <path d="M5 5 15 15M15 5 5 15"></path>
+                        </svg>
+                        <span class="sr-only" v-text="offerDetailStrings.modalCloseAria"></span>
+                    </button>
+
+                    <div class="auth_modal__brand">
+                        <span class="auth_modal__brand-tile">
+                            <img class="auth_modal__brand-icon"
+                                 th:src="@{/assets/media/2709.svg}"
+                                 src="/assets/media/2709.svg"
+                                 alt="">
+                        </span>
+                    </div>
+                    <h2 class="auth_modal__title settings_edit_modal__title" v-text="offerDetailStrings.requestPetsTitle"></h2>
+                    <p class="home_offer_request_modal__hint" v-text="offerDetailStrings.requestPetsHint"></p>
+
+                    <div v-if="offerRequestPetsLoading && showOfferRequestPetsLoadingDots"
+                         class="profile_state profile_state--loading profile_state--loading-dots"
+                         role="status"
+                         aria-live="polite">
+                        <span class="repository_live_loading__dots" aria-hidden="true">
+                            <span class="repository_live_loading__dot"></span>
+                            <span class="repository_live_loading__dot"></span>
+                            <span class="repository_live_loading__dot"></span>
+                        </span>
+                    </div>
+
+                    <p v-else-if="offerRequestPetsLoading"
+                       class="profile_state profile_state--loading"
+                       role="status"
+                       aria-live="polite">...</p>
+
+                    <div v-else-if="offerRequestPets.length" class="home_offer_request_modal__pets">
+                        <button class="home_offer_request_modal__pet"
+                                type="button"
+                                v-for="pet in offerRequestPets"
+                                :key="'offer-request-pet-' + pet.id"
+                                :class="{ 'home_offer_request_modal__pet--active': offerRequestSelectedPetIds.includes(pet.id) }"
+                                @click="toggleOfferRequestPetSelection(pet.id)">
+                            <img class="home_offer_request_modal__pet_image"
+                                 :src="resolveMyPetImagePath(pet)"
+                                 :alt="pet.name">
+                            <span class="home_offer_request_modal__pet_copy">
+                                <strong v-text="pet.name"></strong>
+                                <small v-text="resolveMyPetSpeciesLabel(pet)"></small>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div v-else class="messages_empty_global home_offer_request_modal__empty">
+                        <h3 class="messages_empty_global__title" v-text="offerDetailStrings.requestPetsEmptyTitle"></h3>
+                        <p class="messages_empty_global__text" v-text="offerDetailStrings.requestPetsEmptyMessage"></p>
+                    </div>
+
+                    <div class="settings_edit_modal__actions home_offer_request_modal__actions">
+                        <button class="button auth_modal__submit settings_edit_modal__save"
+                                type="button"
+                                :disabled="offerRequestSubmitting"
+                                @click="submitOfferRequest()"
+                                v-text="offerDetailStrings.requestSubmit"></button>
+                        <button class="button button--secondary"
+                                type="button"
+                                :disabled="offerRequestSubmitting"
+                                @click="closeOfferRequestModal()"
+                                v-text="offerDetailStrings.requestCancel"></button>
+                    </div>
+                </article>
+            </div>
+        </transition>
+    </teleport>
+</th:block>
+</body>
+</html>

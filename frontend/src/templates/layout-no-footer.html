@@ -24,7 +24,17 @@
               data-locale-switch-title-ro=#{notifications.localeSwitch.ro.title},
               data-locale-switch-message-de=#{notifications.localeSwitch.de.message},
               data-locale-switch-message-en=#{notifications.localeSwitch.en.message},
-              data-locale-switch-message-ro=#{notifications.localeSwitch.ro.message}">
+              data-locale-switch-message-ro=#{notifications.localeSwitch.ro.message},
+              data-offer-detail-untitled=#{home.page.untitledOffer},
+              data-offer-detail-modal-close-aria=#{home.page.modal.closeAria},
+              data-offer-detail-modal-host-label=#{home.page.modal.hostLabel},
+              data-offer-detail-modal-description-label=#{home.page.modal.descriptionLabel},
+              data-offer-detail-modal-services-label=#{home.page.modal.servicesLabel},
+              data-offer-detail-modal-species-label=#{home.page.modal.speciesLabel},
+              data-offer-detail-label-date=#{home.page.labels.date},
+              data-offer-detail-label-price=#{home.page.labels.price},
+              data-offer-detail-label-location=#{home.page.labels.location},
+              data-offer-detail-label-location-fallback=#{home.page.labels.locationFallback}">
     <teleport to="body">
         <transition-group name="site_notification_stack"
                           tag="div"
@@ -935,6 +945,7 @@
     </transition>
 
     <th:block th:replace="~{partials/my-pets-modals :: myPetsModals}"></th:block>
+    <th:block th:replace="~{partials/offer-details-modal :: offerDetailsModal}"></th:block>
 
     <main id="main-content" class="main_container site_main">
         <th:block th:replace="${mainContent}"></th:block>

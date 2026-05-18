@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -111,6 +112,19 @@ public class ChatController {
                 HttpStatus.OK,
                 "Booking proposal created successfully.",
                 proposal,
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @PatchMapping("/{id}/close")
+    public ResponseEntity<ApiResponse<ChatResponse>> closeChat(@PathVariable Long id,
+                                                               Authentication authentication,
+                                                               HttpServletRequest servletRequest) {
+        ChatResponse chat = chatService.closeChat(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Chat closed successfully.",
+                chat,
                 servletRequest.getRequestURI()
         ));
     }

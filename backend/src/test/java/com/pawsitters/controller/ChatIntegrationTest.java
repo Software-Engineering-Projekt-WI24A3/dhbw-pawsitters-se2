@@ -515,6 +515,61 @@ class ChatIntegrationTest {
                 .andExpect(jsonPath("$.success").value(false));
     }
 
+    @Test
+    void participantsCanCloseChatAndClosedChatBlocksFurtherMutations() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(patch("/api/chats/{id}/close", chatId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(chatId))
+                .andExpect(jsonPath("$.data.closedAt").isString())
+                .andExpect(jsonPath("$.data.closedByUserId").isNumber());
+
+        mockMvc.perform(post("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + hostToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("content", "Darf nicht mehr gesendet werden"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + hostToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2026-07-01",
+                                "2026-07-02",
+                                "130.00",
+                                1,
+                                "DOG"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void closingChatIsRestrictedToParticipants() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String strangerToken = jwtService.generateToken("sara.wagner@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(patch("/api/chats/{id}/close", chatId)
+                        .header("Authorization", "Bearer " + strangerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+    }
+
     private Long createPublishedOffer(String hostToken) throws Exception {
         return createPublishedOffer(hostToken, List.of("DOG"));
     }

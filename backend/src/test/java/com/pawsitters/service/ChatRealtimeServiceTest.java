@@ -49,6 +49,8 @@ class ChatRealtimeServiceTest {
                 "Meier",
                 Instant.parse("2026-05-13T10:00:00Z"),
                 Instant.parse("2026-05-13T10:15:30Z"),
+                null,
+                null,
                 "Hallo!"
         );
 
@@ -91,6 +93,8 @@ class ChatRealtimeServiceTest {
                 "Wagner",
                 Instant.parse("2026-05-13T10:00:00Z"),
                 Instant.parse("2026-05-13T10:20:30Z"),
+                null,
+                null,
                 ""
         );
 
@@ -127,6 +131,8 @@ class ChatRealtimeServiceTest {
                 "Meier",
                 Instant.parse("2026-05-13T10:00:00Z"),
                 Instant.parse("2026-05-13T10:25:30Z"),
+                null,
+                null,
                 "Buchungsangebot gesendet."
         );
 
@@ -141,6 +147,49 @@ class ChatRealtimeServiceTest {
         ArgumentCaptor<ChatEventResponse> chatEventCaptor = ArgumentCaptor.forClass(ChatEventResponse.class);
         verify(messagingTemplate).convertAndSend(eq("/topic/chats/9/messages"), chatEventCaptor.capture());
         assertEquals("booking.proposal_created", chatEventCaptor.getValue().type());
+        assertEquals(message, chatEventCaptor.getValue().message());
+    }
+
+    @Test
+    void publishesChatClosedEventWithProvidedPayload() {
+        ChatRealtimeService service = new ChatRealtimeService(messagingTemplate);
+        ChatMessageResponse message = new ChatMessageResponse(
+                14L,
+                10L,
+                6L,
+                "Anna",
+                "Meier",
+                "Anna Meier hat den Chat beendet.",
+                Instant.parse("2026-05-13T10:30:30Z"),
+                List.of()
+        );
+        ChatResponse chat = new ChatResponse(
+                10L,
+                22L,
+                "Kleintierbetreuung",
+                4L,
+                "Lukas",
+                "Schmidt",
+                6L,
+                "Anna",
+                "Meier",
+                Instant.parse("2026-05-13T10:00:00Z"),
+                Instant.parse("2026-05-13T10:30:30Z"),
+                Instant.parse("2026-05-13T10:30:30Z"),
+                6L,
+                "Anna Meier hat den Chat beendet."
+        );
+
+        service.publishChatClosed(
+                message,
+                chat,
+                "lukas.schmidt@example.com",
+                "anna.meier@example.com"
+        );
+
+        ArgumentCaptor<ChatEventResponse> chatEventCaptor = ArgumentCaptor.forClass(ChatEventResponse.class);
+        verify(messagingTemplate).convertAndSend(eq("/topic/chats/10/messages"), chatEventCaptor.capture());
+        assertEquals("chat.closed", chatEventCaptor.getValue().type());
         assertEquals(message, chatEventCaptor.getValue().message());
     }
 }

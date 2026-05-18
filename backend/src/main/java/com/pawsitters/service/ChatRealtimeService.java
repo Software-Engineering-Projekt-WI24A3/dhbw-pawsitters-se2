@@ -41,6 +41,14 @@ public class ChatRealtimeService {
         publishChatListEvent(chat, hostEmail, requesterEmail);
     }
 
+    public void publishChatClosed(ChatMessageResponse message,
+                                  ChatResponse chat,
+                                  String hostEmail,
+                                  String requesterEmail) {
+        publishChatMessageEvent("chat.closed", message);
+        publishChatListEvent(chat, hostEmail, requesterEmail);
+    }
+
     private void publishChatMessageEvent(String type, ChatMessageResponse message) {
         messagingTemplate.convertAndSend(
                 "/topic/chats/" + message.chatId() + "/messages",

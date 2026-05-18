@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.messages.title}, #{meta.messages.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-profile page-settings page-messages', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="profile_page settings_page messages_page"
+             data-messages-view
+             th:attr="data-messages-loading-label=#{messages.page.loading},
+                      data-messages-auth-required=#{messages.page.authRequired},
+                      data-messages-load-failed=#{messages.page.loadFailed},
+                      data-messages-empty-title=#{messages.page.noChatsTitle},
+                      data-messages-empty-text=#{messages.page.noChatsText},
+                      data-messages-no-selection-title=#{messages.page.noSelectionTitle},
+                      data-messages-no-selection-text=#{messages.page.noSelectionText},
+                      data-messages-chat-list-aria=#{messages.page.chatListAria},
+                      data-messages-message-input-placeholder=#{messages.page.messageInputPlaceholder},
+                      data-messages-send-action=#{messages.page.sendAction},
+                      data-messages-attach-action=#{messages.page.attachAction},
+                      data-messages-open-offer-action=#{messages.page.openOfferAction},
+                      data-messages-proposal-action=#{messages.page.proposalAction},
+                      data-messages-proposal-modal-title=#{messages.page.proposalModalTitle},
+                      data-messages-proposal-modal-hint=#{messages.page.proposalModalHint},
+                      data-messages-proposal-modal-close-aria=#{messages.page.proposalModalCloseAria},
+                      data-messages-proposal-modal-submit=#{messages.page.proposalModalSubmit},
+                      data-messages-proposal-modal-cancel=#{messages.page.proposalModalCancel},
+                      data-messages-proposal-validation-species=#{messages.page.proposalValidationSpecies},
+                      data-messages-proposal-validation-pet-count=#{messages.page.proposalValidationPetCount},
+                      data-messages-proposal-validation-dates=#{messages.page.proposalValidationDates},
+                      data-messages-proposal-validation-price=#{messages.page.proposalValidationPrice},
+                      data-messages-proposal-status-pending=#{messages.page.proposalStatusPending},
+                      data-messages-proposal-status-accepted=#{messages.page.proposalStatusAccepted},
+                      data-messages-proposal-status-declined=#{messages.page.proposalStatusDeclined},
+                      data-messages-proposal-status-withdrawn=#{messages.page.proposalStatusWithdrawn},
+                      data-messages-proposal-status-completed=#{messages.page.proposalStatusCompleted},
+                      data-messages-proposal-accept-action=#{messages.page.proposalAcceptAction},
+                      data-messages-proposal-decline-action=#{messages.page.proposalDeclineAction},
+                      data-messages-proposal-withdraw-action=#{messages.page.proposalWithdrawAction},
+                      data-messages-close-chat-action=#{messages.page.closeChatAction},
+                      data-messages-close-chat-confirm=#{messages.page.closeChatConfirm},
+                      data-messages-chat-closed-label=#{messages.page.chatClosedLabel},
+                      data-messages-chat-closed-notice=#{messages.page.chatClosedNotice},
+                      data-messages-chat-closed-composer=#{messages.page.chatClosedComposer},
+                      data-messages-proposal-label-start-date=#{messages.page.proposalLabels.startDate},
+                      data-messages-proposal-label-end-date=#{messages.page.proposalLabels.endDate},
+                      data-messages-proposal-label-price-total=#{messages.page.proposalLabels.priceTotal},
+                      data-messages-proposal-label-pet-species=#{messages.page.proposalLabels.petSpecies},
+                      data-messages-proposal-label-pet-count=#{messages.page.proposalLabels.petCount},
+                      data-messages-proposal-label-note=#{messages.page.proposalLabels.note},
+                      data-messages-default-offer-title=#{messages.page.defaultOfferTitle},
+                      data-messages-participant-unknown=#{messages.page.participantUnknown},
+                      data-messages-image-alt=#{messages.page.messageImageAlt},
+                      data-messages-attachment-only-preview=#{messages.page.attachmentOnlyPreview},
+                      data-messages-notification-load-error-title=#{messages.page.notifications.loadErrorTitle},
+                      data-messages-notification-send-error-title=#{messages.page.notifications.sendErrorTitle},
+                      data-messages-notification-send-error-message=#{messages.page.notifications.sendErrorMessage},
+                      data-messages-notification-proposal-success-title=#{messages.page.notifications.proposalSuccessTitle},
+                      data-messages-notification-proposal-success-message=#{messages.page.notifications.proposalSuccessMessage},
+                      data-messages-notification-proposal-error-title=#{messages.page.notifications.proposalErrorTitle},
+                      data-messages-notification-proposal-error-message=#{messages.page.notifications.proposalErrorMessage},
+                      data-messages-notification-close-success-title=#{messages.page.notifications.closeSuccessTitle},
+                      data-messages-notification-close-success-message=#{messages.page.notifications.closeSuccessMessage},
+                      data-messages-notification-close-error-title=#{messages.page.notifications.closeErrorTitle},
+                      data-messages-notification-close-error-message=#{messages.page.notifications.closeErrorMessage}">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner"
+                     src="https://images.trvl-media.com/place/503260/84cb28f7-a6ef-44fa-a64b-3afe6f865a49.jpg"
+                     th:attr="alt=#{messages.page.bannerAlt}"
+                     alt="messages.page.bannerAlt">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__heading">
+                <p class="profile_hero__eyebrow" th:text="#{messages.page.eyebrow}">messages.page.eyebrow</p>
+                <h1 class="profile_hero__title" th:text="#{messages.page.title}">messages.page.title</h1>
+            </div>
+            <div class="profile_hero__avatar_ring messages_profile_avatar">
+                <div class="settings_profile_avatar__media messages_profile_avatar__media">
+                    <img v-if="messagesViewUser && messagesViewUser.profilePicture"
+                         class="profile_hero__avatar"
+                         :src="messagesViewUser.profilePicture"
+                         :alt="messagesViewDisplayName"
+                         @error="handleMessagesAvatarError">
+                    <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="messagesViewInitial"></span>
+                </div>
+            </div>
+        </header>
+
+        <article class="profile_panel messages_panel">
+            <div v-if="messagesViewLoading && showMessagesViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="messagesStrings.loading"></span>
+            </div>
+
+            <p v-else-if="messagesViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="messagesStrings.loading"></p>
+
+            <p v-else-if="messagesViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="messagesViewError"></p>
+
+            <div v-else class="profile_panel__content messages_workspace">
+                <section v-if="!messagesChats.length" class="messages_empty_global">
+                    <h2 class="messages_empty_global__title" v-text="messagesStrings.emptyTitle"></h2>
+                    <p class="messages_empty_global__text" v-text="messagesStrings.emptyText"></p>
+                </section>
+
+                <section v-else class="messages_split">
+                    <aside class="messages_sidebar"
+                           th:attr="aria-label=#{messages.page.chatListAria}">
+                        <button class="messages_chat_item"
+                                type="button"
+                                v-for="chat in messagesChats"
+                                :key="'messages-chat-' + chat.id"
+                                :class="{ 'messages_chat_item--active': messagesActiveChat && messagesActiveChat.id === chat.id }"
+                                @click="selectMessagesChat(chat.id)">
+                            <span class="messages_chat_item__avatar">
+                                <img v-if="messagesResolveChatPartner(chat).profilePicture"
+                                     :src="messagesResolveChatPartner(chat).profilePicture"
+                                     :alt="messagesResolveChatPartner(chat).displayName"
+                                     @error="handleMessagesPartnerAvatarError(messagesResolveChatPartner(chat).id)">
+                                <span v-else v-text="messagesResolveChatPartner(chat).initial"></span>
+                            </span>
+                                <span class="messages_chat_item__copy">
+                                    <span class="messages_chat_item__name" v-text="messagesResolveChatPartner(chat).displayName"></span>
+                                    <span class="messages_chat_item__meta">
+                                        <span class="messages_chat_item__offer" v-text="chat.offerTitle || messagesStrings.defaultOfferTitle"></span>
+                                        <span class="messages_chat_item__time" v-text="formatMessagesChatListTime(chat.lastMessageAt || chat.createdAt)"></span>
+                                        <span v-if="chat.closedAt"
+                                              class="messages_chat_item__closed"
+                                              v-text="messagesStrings.chatClosedLabel"></span>
+                                    </span>
+                                    <span class="messages_chat_item__preview" v-text="chat.lastMessagePreview || messagesStrings.noSelectionText"></span>
+                                </span>
+                        </button>
+                    </aside>
+
+                    <section class="messages_conversation">
+                        <div v-if="!messagesActiveChat" class="messages_empty_selection">
+                            <span class="messages_empty_selection__icon">
+                                <img th:src="@{/assets/media/2709.svg}" src="/assets/media/2709.svg" alt="" aria-hidden="true">
+                            </span>
+                            <h2 class="messages_empty_selection__title" v-text="messagesStrings.noSelectionTitle"></h2>
+                            <p class="messages_empty_selection__text" v-text="messagesStrings.noSelectionText"></p>
+                        </div>
+
+                        <div v-else class="messages_thread">
+                            <header class="messages_thread__header">
+                                <div class="messages_thread__person">
+                                    <span class="messages_chat_item__avatar">
+                                        <img v-if="messagesActiveChatPartner.profilePicture"
+                                             :src="messagesActiveChatPartner.profilePicture"
+                                             :alt="messagesActiveChatPartner.displayName">
+                                        <span v-else v-text="messagesActiveChatPartner.initial"></span>
+                                    </span>
+                                    <div class="messages_thread__person_copy">
+                                        <h2 class="messages_thread__person_name" v-text="messagesActiveChatPartner.displayName"></h2>
+                                        <p class="messages_thread__person_offer">
+                                            <button class="messages_thread__offer_link"
+                                                    type="button"
+                                                    @click="openOfferDetailModalById(messagesActiveChat.offerId)"
+                                                    v-text="messagesActiveChat.offerTitle || messagesStrings.defaultOfferTitle"></button>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="messages_thread__actions">
+                                    <button class="button button--secondary messages_thread__proposal_action"
+                                            type="button"
+                                            @click="openMessagesProposalModal()"
+                                            :disabled="messagesProposalSubmitting || messagesActiveChatClosed"
+                                            v-text="messagesStrings.proposalAction"></button>
+                                    <button class="button button--secondary messages_thread__close_action"
+                                            type="button"
+                                            @click="closeMessagesActiveChat()"
+                                            :disabled="messagesClosingChat || messagesActiveChatClosed"
+                                            v-text="messagesStrings.closeChatAction"></button>
+                                </div>
+                            </header>
+
+                            <div class="messages_thread__scroll"
+                                 data-messages-thread-scroll>
+                                <p v-if="messagesActiveChatClosed"
+                                   class="messages_thread__closed_banner"
+                                   v-text="messagesStrings.chatClosedNotice"></p>
+                                <article class="messages_message"
+                                         v-for="message in messagesActiveMessages"
+                                         :key="'chat-message-' + message.id"
+                                         :class="{ 'messages_message--self': message.senderId === authSessionUserId }">
+                                    <div class="messages_message__bubble">
+                                        <template v-if="message.offerRequest">
+                                            <div class="messages_request_notice">
+                                                <p class="messages_request_notice__text">
+                                                    <a v-if="buildProfilePath(message.offerRequest.requesterId)"
+                                                       class="messages_request_notice__link"
+                                                       :href="buildProfilePath(message.offerRequest.requesterId)"
+                                                       v-text="message.offerRequest.requesterName"></a>
+                                                    <span v-else v-text="message.offerRequest.requesterName"></span>
+                                                    <span> </span>
+                                                    <span v-text="message.offerRequest.introText"></span>
+                                                    <span> </span>
+                                                    <button class="messages_request_notice__offer_button"
+                                                            type="button"
+                                                            @click="openOfferDetailModalById(message.offerRequest.offerId)"
+                                                            v-text="message.offerRequest.offerTitle"></button>
+                                                    <span> </span>
+                                                    <span v-text="message.offerRequest.petsText"></span>
+                                                </p>
+                                            </div>
+                                        </template>
+                                        <p v-else-if="message.content"
+                                           class="messages_message__text"
+                                           v-text="message.content"></p>
+
+                                        <div v-if="message.attachments.length" class="messages_message__attachments">
+                                            <img class="messages_message__image"
+                                                 v-for="attachment in message.attachments"
+                                                 :key="'message-attachment-' + message.id + '-' + attachment.id"
+                                                 :src="attachment.url"
+                                                 :alt="messagesStrings.imageAlt"
+                                                 loading="lazy"
+                                                 decoding="async">
+                                        </div>
+
+                                        <section v-if="message.bookingProposal" class="messages_proposal">
+                                            <header class="messages_proposal__header">
+                                                <strong class="messages_proposal__title" v-text="messagesActiveChat.offerTitle || messagesStrings.defaultOfferTitle"></strong>
+                                                <span class="messages_proposal__status"
+                                                      :class="'messages_proposal__status--' + message.bookingProposal.status.toLowerCase()"
+                                                      v-text="messagesResolveProposalStatusLabel(message.bookingProposal.status)"></span>
+                                            </header>
+                                            <dl class="messages_proposal__facts">
+                                                <div class="messages_proposal__fact">
+                                                    <dt v-text="messagesStrings.proposalLabels.startDate"></dt>
+                                                    <dd v-text="formatMessagesDateOnly(message.bookingProposal.startDate)"></dd>
+                                                </div>
+                                                <div class="messages_proposal__fact">
+                                                    <dt v-text="messagesStrings.proposalLabels.endDate"></dt>
+                                                    <dd v-text="formatMessagesDateOnly(message.bookingProposal.endDate)"></dd>
+                                                </div>
+                                                <div class="messages_proposal__fact">
+                                                    <dt v-text="messagesStrings.proposalLabels.priceTotal"></dt>
+                                                    <dd v-text="formatMessagesProposalPrice(message.bookingProposal.priceTotal, message.bookingProposal.currency)"></dd>
+                                                </div>
+                                                <div class="messages_proposal__fact">
+                                                    <dt v-text="messagesStrings.proposalLabels.petCount"></dt>
+                                                    <dd v-text="String(message.bookingProposal.petCount || 0)"></dd>
+                                                </div>
+                                                <div class="messages_proposal__fact messages_proposal__fact--wide">
+                                                    <dt v-text="messagesStrings.proposalLabels.petSpecies"></dt>
+                                                    <dd v-text="formatMessagesProposalSpecies(message.bookingProposal.petSpecies)"></dd>
+                                                </div>
+                                                <div v-if="message.bookingProposal.note"
+                                                     class="messages_proposal__fact messages_proposal__fact--wide">
+                                                    <dt v-text="messagesStrings.proposalLabels.note"></dt>
+                                                    <dd v-text="message.bookingProposal.note"></dd>
+                                                </div>
+                                            </dl>
+                                            <div v-if="messagesCanRespondToProposal(message.bookingProposal) && !messagesActiveChatClosed"
+                                                 class="messages_proposal__actions">
+                                                <button class="button"
+                                                        type="button"
+                                                        :disabled="messagesProposalActionPendingId === message.bookingProposal.id"
+                                                        @click="acceptBookingProposal(message.bookingProposal.id)"
+                                                        v-text="messagesStrings.proposalAcceptAction"></button>
+                                                <button class="button button--secondary"
+                                                        type="button"
+                                                        :disabled="messagesProposalActionPendingId === message.bookingProposal.id"
+                                                        @click="declineBookingProposal(message.bookingProposal.id)"
+                                                        v-text="messagesStrings.proposalDeclineAction"></button>
+                                            </div>
+                                            <div v-else-if="messagesCanWithdrawProposal(message.bookingProposal) && !messagesActiveChatClosed"
+                                                 class="messages_proposal__actions">
+                                                <button class="button button--secondary"
+                                                        type="button"
+                                                        :disabled="messagesProposalActionPendingId === message.bookingProposal.id"
+                                                        @click="withdrawBookingProposal(message.bookingProposal.id)"
+                                                        v-text="messagesStrings.proposalWithdrawAction"></button>
+                                            </div>
+                                        </section>
+
+                                        <time class="messages_message__time"
+                                              :datetime="message.createdAt || ''"
+                                              v-text="formatMessagesTimestamp(message.createdAt)"></time>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <form v-if="!messagesActiveChatClosed"
+                                  class="messages_composer"
+                                  @submit.prevent="submitMessagesComposer()">
+                                <div v-if="messagesComposerAttachments.length" class="messages_composer__attachments">
+                                    <figure class="messages_composer__attachment"
+                                            v-for="attachment in messagesComposerAttachments"
+                                            :key="'composer-attachment-' + attachment.key">
+                                        <img class="messages_composer__attachment_image"
+                                             :src="attachment.previewUrl"
+                                             :alt="messagesStrings.imageAlt">
+                                        <figcaption class="messages_composer__attachment_name" v-text="attachment.name"></figcaption>
+                                        <button class="messages_composer__attachment_remove"
+                                                type="button"
+                                                @click="removeMessagesComposerAttachment(attachment.key)">×</button>
+                                    </figure>
+                                </div>
+                                <label class="messages_composer__field">
+                                    <span class="sr-only" v-text="messagesStrings.messageInputPlaceholder"></span>
+                                    <textarea class="messages_composer__input"
+                                              rows="2"
+                                              v-model="messagesComposerText"
+                                              :placeholder="messagesStrings.messageInputPlaceholder"></textarea>
+                                </label>
+                                <div class="messages_composer__actions">
+                                    <label class="button button--secondary messages_composer__attach">
+                                        <input class="messages_composer__file"
+                                               type="file"
+                                               accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.bmp"
+                                               multiple
+                                               @change="handleMessagesAttachmentSelection">
+                                        <span v-text="messagesStrings.attachAction"></span>
+                                    </label>
+                                    <button class="button messages_composer__send"
+                                            type="submit"
+                                            :disabled="messagesComposerSending"
+                                            v-text="messagesStrings.sendAction"></button>
+                                </div>
+                            </form>
+
+                            <div v-else class="messages_composer messages_composer--closed" role="status" aria-live="polite">
+                                <p class="messages_composer__closed_text" v-text="messagesStrings.chatClosedComposer"></p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </article>
+
+        <teleport to="body">
+            <transition name="auth_modal_presence">
+                <div v-if="messagesProposalModalOpen && messagesActiveChat"
+                     class="auth_modal settings_edit_modal messages_proposal_modal"
+                     role="dialog"
+                     aria-modal="true"
+                     @click.self="closeMessagesProposalModal()">
+                    <article class="auth_modal__surface settings_edit_modal__surface messages_proposal_modal__surface">
+                        <button class="auth_modal__close"
+                                type="button"
+                                @click="closeMessagesProposalModal()"
+                                :aria-label="messagesStrings.proposalModalCloseAria">
+                            <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+                                <path d="M5 5 15 15M15 5 5 15"></path>
+                            </svg>
+                            <span class="sr-only" v-text="messagesStrings.proposalModalCloseAria"></span>
+                        </button>
+
+                        <div class="auth_modal__brand">
+                            <span class="auth_modal__brand-tile">
+                                <img class="auth_modal__brand-icon"
+                                     th:src="@{/assets/media/2709.svg}"
+                                     src="/assets/media/2709.svg"
+                                     alt="">
+                            </span>
+                        </div>
+                        <h2 class="auth_modal__title settings_edit_modal__title" v-text="messagesStrings.proposalModalTitle"></h2>
+                        <p class="messages_proposal_modal__hint" v-text="messagesStrings.proposalModalHint"></p>
+
+                        <form class="auth_modal__form settings_edit_modal__form"
+                              @submit.prevent="submitMessagesProposal()">
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="messagesStrings.proposalLabels.startDate"></span>
+                                <input class="auth_input corp_input"
+                                       type="date"
+                                       v-model="messagesProposalForm.startDate"
+                                       :aria-label="messagesStrings.proposalLabels.startDate">
+                                <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.startDate"></span>
+                            </label>
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="messagesStrings.proposalLabels.endDate"></span>
+                                <input class="auth_input corp_input"
+                                       type="date"
+                                       v-model="messagesProposalForm.endDate"
+                                       :aria-label="messagesStrings.proposalLabels.endDate">
+                                <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.endDate"></span>
+                            </label>
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="messagesStrings.proposalLabels.priceTotal"></span>
+                                <input class="auth_input corp_input"
+                                       type="text"
+                                       inputmode="decimal"
+                                       v-model="messagesProposalForm.priceTotal"
+                                       :aria-label="messagesStrings.proposalLabels.priceTotal">
+                                <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.priceTotal"></span>
+                            </label>
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="messagesStrings.proposalLabels.petCount"></span>
+                                <input class="auth_input corp_input"
+                                       type="number"
+                                       min="1"
+                                       step="1"
+                                       v-model="messagesProposalForm.petCount"
+                                       :aria-label="messagesStrings.proposalLabels.petCount">
+                                <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.petCount"></span>
+                            </label>
+
+                            <section class="settings_edit_modal__species messages_proposal_modal__species">
+                                <h3 class="messages_proposal_modal__species_title" v-text="messagesStrings.proposalLabels.petSpecies"></h3>
+                                <div class="register_pet_grid settings_edit_modal__species-grid">
+                                    <button class="register_pet_chip"
+                                            type="button"
+                                            v-for="choice in messagesProposalSpeciesChoices"
+                                            :key="'messages-proposal-species-' + choice.value"
+                                            :class="{ 'register_pet_chip--active': messagesProposalForm.petSpecies.includes(choice.value) }"
+                                            @click="toggleMessagesProposalSpecies(choice.value)">
+                                        <img class="register_pet_chip__icon" :src="choice.emojiPath" :alt="choice.label">
+                                        <span class="register_pet_chip__label" v-text="choice.label"></span>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <label class="auth_field corp_field settings_edit_modal__field">
+                                <span class="sr-only" v-text="messagesStrings.proposalLabels.note"></span>
+                                <textarea class="auth_input corp_input corp_input--textarea"
+                                          rows="4"
+                                          v-model="messagesProposalForm.note"
+                                          :aria-label="messagesStrings.proposalLabels.note"></textarea>
+                                <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.note"></span>
+                            </label>
+
+                            <div class="settings_edit_modal__actions">
+                                <button class="button auth_modal__submit settings_edit_modal__save"
+                                        type="submit"
+                                        :disabled="messagesProposalSubmitting"
+                                        v-text="messagesStrings.proposalModalSubmit"></button>
+                                <button class="button button--secondary"
+                                        type="button"
+                                        :disabled="messagesProposalSubmitting"
+                                        @click="closeMessagesProposalModal()"
+                                        v-text="messagesStrings.proposalModalCancel"></button>
+                            </div>
+                        </form>
+                    </article>
+                </div>
+            </transition>
+        </teleport>
+    </section>
+</th:block>
+</html>

@@ -262,7 +262,13 @@
                                          :class="item.positionClass">
                                     <div class="my_offers_card"
                                          :class="{ 'my_offers_card--with-image': hasMyOfferCardImage(item.offer) }"
-                                         :style="buildMyOfferCardStyle(item.offer)">
+                                         :style="buildMyOfferCardStyle(item.offer)"
+                                         role="button"
+                                         tabindex="0"
+                                         @click="openOfferDetailModal(item.offer)"
+                                         @keydown.enter.prevent="openOfferDetailModal(item.offer)"
+                                         @keydown.space.prevent="openOfferDetailModal(item.offer)"
+                                         :aria-label="buildMyOfferOpenDetailsLabel(item.offer)">
                                         <div class="my_offers_card__header">
                                             <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
                                         </div>

@@ -1,0 +1,5 @@
+### Chat beenden
+PATCH {{baseUrl}}/api/chats/{{chatId}}/close
+Authorization: Bearer {{jwt}}
+Accept: application/json
+

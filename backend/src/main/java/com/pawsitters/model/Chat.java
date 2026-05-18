@@ -39,10 +39,16 @@ public class Chat {
     @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
 
+    @ManyToOne
+    @JoinColumn(name = "closed_by_user_id")
+    private User closedByUser;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     private Instant lastMessageAt;
+
+    private Instant closedAt;
 
     @PrePersist
     void prePersist() {
@@ -59,9 +65,13 @@ public class Chat {
 
     public User getRequester() { return requester; }
 
+    public User getClosedByUser() { return closedByUser; }
+
     public Instant getCreatedAt() { return createdAt; }
 
     public Instant getLastMessageAt() { return lastMessageAt; }
+
+    public Instant getClosedAt() { return closedAt; }
 
     public void setId(Long id) { this.id = id; }
 
@@ -71,9 +81,17 @@ public class Chat {
 
     public void setRequester(User requester) { this.requester = requester; }
 
+    public void setClosedByUser(User closedByUser) { this.closedByUser = closedByUser; }
+
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
     public void setLastMessageAt(Instant lastMessageAt) { this.lastMessageAt = lastMessageAt; }
+
+    public void setClosedAt(Instant closedAt) { this.closedAt = closedAt; }
+
+    public boolean isClosed() {
+        return closedAt != null;
+    }
 
     public Chat() {}
 }
