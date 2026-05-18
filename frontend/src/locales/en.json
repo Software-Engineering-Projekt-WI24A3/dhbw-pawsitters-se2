@@ -422,6 +422,13 @@
       "carouselAria": "Carousel with published care offers",
       "untitledOffer": "Care offer",
       "openDetailsTemplate": "View more details for {name}",
+      "latest": {
+        "heading": "The latest care offers",
+        "carouselAria": "Carousel with the latest care offers",
+        "emptyTitle": "No latest offers yet",
+        "emptyText": "There are currently no published offers available.",
+        "openDetailsTemplate": "Open offer {name}"
+      },
       "labels": {
         "date": "Period",
         "price": "Price",

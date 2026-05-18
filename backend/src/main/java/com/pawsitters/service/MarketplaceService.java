@@ -8,6 +8,8 @@ import com.pawsitters.model.OfferStatus;
 import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import com.pawsitters.repository.OfferRepository;
 import com.pawsitters.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,8 @@ import java.util.Objects;
 
 @Service
 public class MarketplaceService {
+    private static final int DEFAULT_LATEST_OFFERS_LIMIT = 10;
+    private static final int MAX_LATEST_OFFERS_LIMIT = 25;
 
     private final UserRepository userRepository;
     private final OfferRepository offerRepository;
@@ -86,6 +90,17 @@ public class MarketplaceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<OfferResponse> getLatestPublishedOffers(Integer limit) {
+        int safeLimit = normalizeLatestOfferLimit(limit);
+        PageRequest pageRequest = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "id"));
+
+        return offerRepository.findByStatus(OfferStatus.PUBLISHED, pageRequest)
+                .stream()
+                .map(OfferResponse::from)
+                .toList();
+    }
+
     private Comparator<User> hostComparator() {
         return Comparator
                 .comparing(User::getRating, Comparator.nullsLast(Comparator.reverseOrder()))
@@ -96,5 +111,13 @@ public class MarketplaceService {
 
     private String normalizeBlank(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private int normalizeLatestOfferLimit(Integer limit) {
+        if (limit == null) {
+            return DEFAULT_LATEST_OFFERS_LIMIT;
+        }
+
+        return Math.max(1, Math.min(MAX_LATEST_OFFERS_LIMIT, limit));
     }
 }

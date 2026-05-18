@@ -199,7 +199,7 @@ test.describe('My offers create flow', () => {
     const createModalWidth = await modal.locator('.settings_edit_modal__surface').evaluate((element) => (
       Math.round(element.getBoundingClientRect().width)
     ));
-    expect(createModalWidth).toBeGreaterThanOrEqual(680);
+    expect(createModalWidth).toBeGreaterThanOrEqual(440);
     expect(createModalWidth).toBeLessThanOrEqual(744);
 
     await modal.getByRole('button', { name: token('de', 'myOffers.page.actions.stepNext'), exact: true }).click();

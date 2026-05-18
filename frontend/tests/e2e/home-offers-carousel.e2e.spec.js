@@ -33,6 +33,21 @@ function buildMarketplacePayload(offers) {
   };
 }
 
+function buildLatestMarketplacePayload(offers) {
+  return {
+    success: true,
+    status: 200,
+    message: 'Latest marketplace offers retrieved successfully.',
+    data: offers,
+    error: null,
+    meta: {
+      path: '/api/marketplace/offers/latest',
+      timestamp: new Date().toISOString(),
+      count: offers.length
+    }
+  };
+}
+
 const marketplaceOffers = [
   {
     id: 1001,
@@ -148,6 +163,38 @@ const marketplaceOffers = [
   }
 ];
 
+const latestMarketplaceOffers = [
+  {
+    id: 1010,
+    hostId: 609,
+    hostFirstName: 'Sina',
+    hostLastName: 'Reiter',
+    title: 'Penthouse Paws',
+    description: 'Ruhige Premium-Betreuung über den Dächern.',
+    pricePerDay: 62,
+    acceptedPetSpecies: ['DOG'],
+    services: ['Spaziergang', 'Training'],
+    availableFrom: '2026-06-13',
+    availableTo: '2026-06-20',
+    status: 'PUBLISHED'
+  },
+  {
+    id: 1009,
+    hostId: 608,
+    hostFirstName: 'Jule',
+    hostLastName: 'Kramer',
+    title: 'Rheinblick Cats',
+    description: 'Katzenbetreuung mit Blick aufs Wasser.',
+    pricePerDay: 46,
+    acceptedPetSpecies: ['CAT'],
+    services: ['Spielzeit', 'Fütterung'],
+    availableFrom: '2026-06-13',
+    availableTo: '2026-06-19',
+    status: 'PUBLISHED'
+  },
+  ...marketplaceOffers.slice().reverse()
+];
+
 const hostCities = {
   501: 'Berlin',
   601: 'Berlin',
@@ -156,11 +203,15 @@ const hostCities = {
   604: 'Leipzig',
   605: 'Köln',
   606: 'Dresden',
-  607: 'Stuttgart'
+  607: 'Stuttgart',
+  608: 'Düsseldorf',
+  609: 'Frankfurt'
 };
 
 test.describe('Home offers carousel', () => {
   test('excludes own published offers when logged in and supports species filter plus center modal', async ({ page }) => {
+    await page.setViewportSize({ width: 1360, height: 920 });
+
     await page.route('**/api/auth/session*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -202,7 +253,15 @@ test.describe('Home offers carousel', () => {
       });
     });
 
-    await page.route('**/api/marketplace/offers*', async (route) => {
+    await page.route('**/api/marketplace/offers/latest*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(buildLatestMarketplacePayload(latestMarketplaceOffers))
+      });
+    });
+
+    await page.route('**/api/marketplace/offers', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json; charset=utf-8',
@@ -266,9 +325,41 @@ test.describe('Home offers carousel', () => {
     await expect(modal.locator('.auth_modal__brand-icon')).toHaveAttribute('src', /1F431\.svg/);
     await expect(modal).toContainText('Katzenlounge Mitte');
     await expect(modal).toContainText('Hamburg');
+    await modal.locator('.auth_modal__close').click();
+    await expect(modal).toBeHidden();
+
+    const latestSection = page.locator('.home_latest_offers');
+    await expect(latestSection.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(0);
+    await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Penthouse Paws');
+    await expect(latestSection.locator('.my_offers_carousel__nav--next')).toBeVisible();
+    await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toHaveCount(0);
+
+    await latestSection.locator('.my_offers_carousel__nav--next').click();
+
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(4);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(1);
+    await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toBeVisible();
+    await expect(latestSection.locator('.my_offers_carousel__nav--next')).toBeVisible();
+
+    for (let step = 0; step < 4; step += 1) {
+      await latestSection.locator('.my_offers_carousel__nav--next').click();
+    }
+
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
+    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
+    await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Papagei Care');
+    await expect(latestSection.locator('.my_offers_carousel__nav--next')).toHaveCount(0);
+    await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toBeVisible();
   });
 
   test('shows all published offers when user is not logged in', async ({ page }) => {
+    await page.setViewportSize({ width: 1360, height: 920 });
+
     await page.route('**/api/auth/session*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -285,7 +376,15 @@ test.describe('Home offers carousel', () => {
       });
     });
 
-    await page.route('**/api/marketplace/offers*', async (route) => {
+    await page.route('**/api/marketplace/offers/latest*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify(buildLatestMarketplacePayload(latestMarketplaceOffers))
+      });
+    });
+
+    await page.route('**/api/marketplace/offers', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json; charset=utf-8',
@@ -331,5 +430,8 @@ test.describe('Home offers carousel', () => {
 
     await expect(page.locator('.home_offers_reel__card--center .home_offer_slide__title')).toHaveText('Eigenes Hundesitting');
     await expect(page.locator('.home_offers_reel__card')).toHaveCount(7);
+    await expect(page.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
   });
 });

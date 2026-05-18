@@ -422,6 +422,13 @@
       "carouselAria": "Carusel cu oferte de îngrijire publicate",
       "untitledOffer": "Ofertă de îngrijire",
       "openDetailsTemplate": "Vezi mai multe detalii pentru {name}",
+      "latest": {
+        "heading": "Cele mai noi oferte de îngrijire",
+        "carouselAria": "Carusel cu cele mai noi oferte de îngrijire",
+        "emptyTitle": "Nu există încă oferte noi",
+        "emptyText": "Momentan nu există oferte publicate disponibile.",
+        "openDetailsTemplate": "Deschide oferta {name}"
+      },
       "labels": {
         "date": "Perioadă",
         "price": "Preț",
