@@ -1,0 +1,9 @@
+### Marketplace-Angebote nach Tierart, Ort und Zeitraum suchen
+GET {{baseUrl}}/api/marketplace/offers/search?species=DOG&city=Mannheim&fromDate=2026-10-01&toDate=2026-10-05&limit=10
+
+###
+
+### Marketplace-Angebote mit PLZ-Alias suchen
+GET {{baseUrl}}/api/marketplace/offers/search?species=CAT&plz=69115
+
+###

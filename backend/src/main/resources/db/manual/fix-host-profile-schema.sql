@@ -54,6 +54,7 @@ CREATE TABLE host_reviews (
     id BIGINT NOT NULL AUTO_INCREMENT,
     host_id BIGINT NOT NULL,
     pet_owner_id BIGINT NULL,
+    booking_id BIGINT NULL,
     rating INT NOT NULL,
     communication_rating INT NOT NULL,
     reliability_rating INT NOT NULL,
@@ -61,12 +62,15 @@ CREATE TABLE host_reviews (
     comment VARCHAR(1000) NULL,
     created_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id),
+    UNIQUE KEY uk_host_reviews_booking (booking_id),
     KEY idx_host_reviews_host (host_id),
     KEY idx_host_reviews_pet_owner (pet_owner_id),
     CONSTRAINT fk_host_reviews_host
         FOREIGN KEY (host_id) REFERENCES users (id),
     CONSTRAINT fk_host_reviews_pet_owner
-        FOREIGN KEY (pet_owner_id) REFERENCES users (id)
+        FOREIGN KEY (pet_owner_id) REFERENCES users (id),
+    CONSTRAINT fk_host_reviews_booking
+        FOREIGN KEY (booking_id) REFERENCES booking_proposals (id)
 );
 
 INSERT INTO host_profiles (host_id, experience, accommodation_description)

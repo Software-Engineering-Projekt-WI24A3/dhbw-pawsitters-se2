@@ -7,6 +7,7 @@ import com.pawsitters.exception.ForbiddenException;
 import com.pawsitters.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -152,6 +153,17 @@ public class ApiExceptionHandler {
                 ? status.getReasonPhrase()
                 : ex.getReason();
         return error(status, message, ApiError.of(errorCodeForStatus(status)), request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex,
+                                                                 HttpServletRequest request) {
+        return error(
+                HttpStatus.CONFLICT,
+                "Die Anfrage steht im Konflikt mit vorhandenen Daten.",
+                ApiError.of("CONFLICT"),
+                request
+        );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
