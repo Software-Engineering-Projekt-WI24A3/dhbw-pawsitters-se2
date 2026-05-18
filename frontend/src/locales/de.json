@@ -4,6 +4,10 @@
       "title": "Pawsitters | Startseite",
       "description": "Reduzierte Startseite mit direktem Einstieg in Repository und Login."
     },
+    "search": {
+      "title": "Pawsitters | Suche",
+      "description": "Ergebnisseite für deine aktiven Angebotsfilter."
+    },
     "repositoryGit": {
       "title": "Pawsitters | Repository | Git",
       "description": "Klare Git-Unterseite mit Merge-Graph, Aktivität und Autoren."
@@ -39,6 +43,10 @@
     "myOffers": {
       "title": "Pawsitters | Profil | Meine Angebote",
       "description": "Geschützter Bereich zum Verwalten deiner Betreuungspakete als Entwurf und Veröffentlichung."
+    },
+    "messages": {
+      "title": "Pawsitters | Profil | Nachrichten",
+      "description": "Zentraler Bereich für Chats, Bilder und Buchungsangebote rund um Betreuungsanfragen."
     },
     "settings": {
       "title": "Pawsitters | Profil | Einstellungen",
@@ -81,7 +89,8 @@
     "openUserMenu": "Benutzermenü öffnen",
     "profile": "Profil ansehen",
     "myPets": "Meine Haustiere",
-    "myOffers": "Meine Angebote",
+    "myOffers": "Buchungen",
+    "messages": "Nachrichten",
     "settings": "Einstellungen",
     "logout": "Ausloggen",
     "login": "Einloggen",
@@ -460,7 +469,25 @@
         "hostLabel": "Gastgeber",
         "descriptionLabel": "Beschreibung",
         "speciesLabel": "Tierarten",
-        "servicesLabel": "Leistungen"
+        "servicesLabel": "Leistungen",
+        "requestButton": "Angebot anfragen",
+        "requestPetsTitle": "Haustiere auswählen",
+        "requestPetsHint": "Wähle mindestens ein Haustier für diese Anfrage aus.",
+        "requestPetsEmptyTitle": "Keine Haustiere gespeichert",
+        "requestPetsEmptyMessage": "Lege zuerst mindestens ein Haustier in deinem Profil an.",
+        "requestPetsValidation": "Bitte wähle mindestens ein Haustier aus.",
+        "requestSubmit": "Anfrage abschicken",
+        "requestCancel": "Abbrechen",
+        "requestSuccessTitle": "Anfrage gesendet",
+        "requestSuccessMessage": "Deine Anfrage wurde gesendet. Der Chat wurde geöffnet.",
+        "requestDuplicateTitle": "Anfrage bereits vorhanden",
+        "requestDuplicateMessage": "Für dieses Angebot hast du bereits eine Anfrage eingereicht.",
+        "requestOwnOfferTitle": "Eigenes Angebot",
+        "requestOwnOfferMessage": "Du kannst keine Anfrage für dein eigenes Angebot stellen.",
+        "requestCreateErrorTitle": "Anfrage fehlgeschlagen",
+        "requestCreateErrorMessage": "Die Anfrage konnte nicht erstellt werden. Bitte versuche es erneut.",
+        "requestOpeningIntro": "fragt für das Angebot",
+        "requestOpeningPetsPrefix": "mit Haustieren"
       }
     }
   },
@@ -569,7 +596,7 @@
   "myOffers": {
     "page": {
       "bannerAlt": "München-Banner für Angebote",
-      "eyebrow": "Meine Angebote",
+      "eyebrow": "Buchungen",
       "title": "Betreuungspakete verwalten",
       "loading": "Angebote werden geladen.",
       "authRequired": "Bitte logge dich ein, um deine Angebote zu verwalten.",
@@ -661,7 +688,105 @@
         "withdrawSuccessTemplate": "{name} wurde wieder als Entwurf markiert.",
         "actionErrorTitle": "Aktion fehlgeschlagen",
         "actionErrorMessage": "Die Aktion konnte nicht abgeschlossen werden."
+      },
+      "tabs": {
+        "offeredPackages": "Angebotene Betreuungspakete",
+        "ownBookings": "Eigene Buchungen"
+      },
+      "bookings": {
+        "loading": "Buchungen werden geladen.",
+        "loadFailed": "Buchungen konnten nicht geladen werden.",
+        "emptyTitle": "Noch keine Buchungen",
+        "emptyText": "Sobald ein Buchungsangebot angenommen wurde, erscheint es hier.",
+        "activeHeading": "Aktive Buchungen",
+        "historyHeading": "Buchungshistorie",
+        "openChatAction": "Zum Chat",
+        "completeAction": "Abschließen",
+        "statusActive": "Aktiv",
+        "statusCompleted": "Abgeschlossen",
+        "labels": {
+          "offer": "Angebot",
+          "partner": "Kontakt",
+          "period": "Zeitraum",
+          "species": "Tierarten",
+          "petCount": "Tiere",
+          "price": "Preis",
+          "status": "Status"
+        },
+        "notifications": {
+          "completeSuccessTitle": "Buchung abgeschlossen",
+          "completeSuccessTemplate": "{name} wurde abgeschlossen.",
+          "completeErrorTitle": "Abschluss fehlgeschlagen",
+          "completeErrorMessage": "Die Buchung konnte nicht abgeschlossen werden."
+        }
       }
+    }
+  },
+  "messages": {
+    "page": {
+      "bannerAlt": "Hafenpanorama als Nachrichten-Banner",
+      "eyebrow": "Nachrichten",
+      "title": "Deine Chats",
+      "loading": "Nachrichten werden geladen.",
+      "authRequired": "Bitte logge dich ein, um deine Nachrichten zu öffnen.",
+      "loadFailed": "Nachrichten konnten nicht geladen werden.",
+      "noChatsTitle": "Noch keine Nachrichten",
+      "noChatsText": "Sobald du ein Angebot anfragst oder jemand dein Angebot anfragt, erscheint der Chat hier.",
+      "noSelectionTitle": "Deine Nachrichten",
+      "noSelectionText": "Sende eine Nachricht, um einen Chat zu beginnen.",
+      "chatListAria": "Chatliste",
+      "messageInputPlaceholder": "Schreibe eine Nachricht...",
+      "sendAction": "Senden",
+      "attachAction": "Bild anhängen",
+      "openOfferAction": "Angebot öffnen",
+      "proposalAction": "Buchungsangebot",
+      "proposalModalTitle": "Buchungsangebot erstellen",
+      "proposalModalHint": "Lege Zeitraum, Preis und Tierarten für dein verhandelbares Angebot fest.",
+      "proposalModalCloseAria": "Buchungsangebot-Dialog schließen",
+      "proposalModalSubmit": "Buchungsangebot senden",
+      "proposalModalCancel": "Abbrechen",
+      "proposalValidationSpecies": "Bitte wähle mindestens eine Tierart aus.",
+      "proposalValidationPetCount": "Die Tieranzahl muss mindestens 1 sein.",
+      "proposalValidationDates": "Bitte gib einen gültigen Zeitraum an.",
+      "proposalValidationPrice": "Bitte gib einen Preis größer als 0 ein.",
+      "proposalStatusPending": "Offen",
+      "proposalStatusAccepted": "Angenommen",
+      "proposalStatusDeclined": "Abgelehnt",
+      "proposalStatusWithdrawn": "Zurückgezogen",
+      "proposalStatusCompleted": "Abgeschlossen",
+      "proposalAcceptAction": "Annehmen",
+      "proposalDeclineAction": "Ablehnen",
+      "proposalWithdrawAction": "Zurückziehen",
+      "proposalLabels": {
+        "startDate": "Start",
+        "endDate": "Ende",
+        "priceTotal": "Gesamtpreis",
+        "petSpecies": "Tierarten",
+        "petCount": "Tiere",
+        "note": "Notiz"
+      },
+      "defaultOfferTitle": "Betreuungsangebot",
+      "participantUnknown": "Unbekannt",
+      "messageImageAlt": "Chat-Bild",
+      "attachmentOnlyPreview": "Bildanhang",
+      "notifications": {
+        "loadErrorTitle": "Nachrichten konnten nicht geladen werden",
+        "sendErrorTitle": "Senden fehlgeschlagen",
+        "sendErrorMessage": "Die Nachricht konnte nicht gesendet werden.",
+        "proposalSuccessTitle": "Buchungsangebot gesendet",
+        "proposalSuccessMessage": "Das Buchungsangebot wurde erfolgreich erstellt.",
+        "proposalErrorTitle": "Buchungsangebot fehlgeschlagen",
+        "proposalErrorMessage": "Das Buchungsangebot konnte nicht erstellt werden.",
+        "closeSuccessTitle": "Chat beendet",
+        "closeSuccessMessage": "Der Chat wurde erfolgreich beendet.",
+        "closeErrorTitle": "Chat konnte nicht beendet werden",
+        "closeErrorMessage": "Der Chat konnte nicht beendet werden."
+      },
+      "closeChatAction": "Chat beenden",
+      "closeChatConfirm": "Möchtest du diesen Chat wirklich beenden?",
+      "chatClosedLabel": "Beendet",
+      "chatClosedNotice": "Dieser Chat wurde beendet.",
+      "chatClosedComposer": "Dieser Chat wurde beendet. Du kannst keine neuen Nachrichten oder Buchungsangebote mehr senden."
     }
   },
   "settings": {

@@ -15,10 +15,12 @@ const localeTokenPattern = /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$/;
 const localizedAttributeNames = new Set(['aria-label', 'placeholder', 'title', 'alt', 'value']);
 const pageDefinitions = [
   { key: 'home', templatePath: 'pages/home.html' },
+  { key: 'search', templatePath: 'pages/search.html' },
   { key: 'register', templatePath: 'pages/register.html' },
   { key: 'profile', templatePath: 'pages/profile.html' },
   { key: 'myPets', templatePath: 'pages/my-pets.html' },
   { key: 'myOffers', templatePath: 'pages/my-offers.html' },
+  { key: 'messages', templatePath: 'pages/messages.html' },
   { key: 'settings', templatePath: 'pages/settings.html' },
   { key: 'repositoryGit', templatePath: 'pages/repository-git.html' },
   { key: 'repositoryPlaywright', templatePath: 'pages/repository-playwright.html' },
@@ -27,10 +29,12 @@ const pageDefinitions = [
 ];
 const routeToPageKey = new Map([
   ['/', 'home'],
+  ['/search', 'search'],
   ['/register', 'register'],
   ['/profile', 'profile'],
   ['/profile/my-pets', 'myPets'],
   ['/profile/my-offers', 'myOffers'],
+  ['/profile/messages', 'messages'],
   ['/profile/settings', 'settings'],
   ['/repository/git', 'repositoryGit'],
   ['/repository/playwright', 'repositoryPlaywright'],
@@ -504,6 +508,8 @@ function resolveRoutePath(pageKey) {
   switch (pageKey) {
     case 'home':
       return '/';
+    case 'search':
+      return '/search';
     case 'register':
       return '/register';
     case 'profile':
@@ -512,6 +518,8 @@ function resolveRoutePath(pageKey) {
       return '/profile/my-pets';
     case 'myOffers':
       return '/profile/my-offers';
+    case 'messages':
+      return '/profile/messages';
     case 'settings':
       return '/profile/settings';
     case 'repositoryGit':
@@ -1236,9 +1244,11 @@ async function cleanupLegacyRootOutputs(rootDir) {
     'profile',
     'profile/my-pets',
     'profile/my-offers',
+    'profile/messages',
     'profile/settings',
     'my-pets',
     'my-offers',
+    'messages',
     'settings',
     'repository',
     'git',
@@ -1319,6 +1329,7 @@ export async function buildPreview(rootDir) {
     copyAssetIfExists(rootDir, 'src/media/1F9D1.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F9D1.svg')),
     copyAssetIfExists(rootDir, 'src/media/1F391.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F391.svg')),
     copyAssetIfExists(rootDir, 'src/media/1F512.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '1F512.svg')),
+    copyAssetIfExists(rootDir, 'src/media/2709.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '2709.svg')),
     copyAssetIfExists(rootDir, 'src/media/2699.svg', path.join(buildOutputDirectoryName, 'assets', 'media', '2699.svg')),
     copyAssetIfExists(rootDir, 'src/media/favicon.png', path.join(buildOutputDirectoryName, 'assets', 'media', 'favicon.png')),
     writeSearchDataAssets(rootDir),
@@ -1374,7 +1385,10 @@ export async function renderLocalizedPage(rootDir, routePath, locale) {
   const normalizedPath = routePath.endsWith('/') && routePath !== '/'
     ? routePath.slice(0, -1)
     : routePath;
-  const pageKey = routeToPageKey.get(normalizedPath);
+  let pageKey = routeToPageKey.get(normalizedPath);
+  if (!pageKey && /^\/search\/[^/]+$/i.test(normalizedPath)) {
+    pageKey = 'search';
+  }
   if (!pageKey) {
     return null;
   }

@@ -79,6 +79,29 @@
                       data-my-offers-action-cancel=#{myOffers.page.actions.cancel},
                       data-my-offers-action-publish=#{myOffers.page.actions.publish},
                       data-my-offers-action-withdraw=#{myOffers.page.actions.withdraw},
+                      data-my-offers-tab-offered-packages-label=#{myOffers.page.tabs.offeredPackages},
+                      data-my-offers-tab-own-bookings-label=#{myOffers.page.tabs.ownBookings},
+                      data-my-offers-bookings-loading=#{myOffers.page.bookings.loading},
+                      data-my-offers-bookings-load-failed=#{myOffers.page.bookings.loadFailed},
+                      data-my-offers-bookings-empty-title=#{myOffers.page.bookings.emptyTitle},
+                      data-my-offers-bookings-empty-text=#{myOffers.page.bookings.emptyText},
+                      data-my-offers-bookings-active-heading=#{myOffers.page.bookings.activeHeading},
+                      data-my-offers-bookings-history-heading=#{myOffers.page.bookings.historyHeading},
+                      data-my-offers-bookings-open-chat-action=#{myOffers.page.bookings.openChatAction},
+                      data-my-offers-bookings-complete-action=#{myOffers.page.bookings.completeAction},
+                      data-my-offers-bookings-status-active=#{myOffers.page.bookings.statusActive},
+                      data-my-offers-bookings-status-completed=#{myOffers.page.bookings.statusCompleted},
+                      data-my-offers-bookings-label-offer=#{myOffers.page.bookings.labels.offer},
+                      data-my-offers-bookings-label-partner=#{myOffers.page.bookings.labels.partner},
+                      data-my-offers-bookings-label-period=#{myOffers.page.bookings.labels.period},
+                      data-my-offers-bookings-label-species=#{myOffers.page.bookings.labels.species},
+                      data-my-offers-bookings-label-pet-count=#{myOffers.page.bookings.labels.petCount},
+                      data-my-offers-bookings-label-price=#{myOffers.page.bookings.labels.price},
+                      data-my-offers-bookings-label-status=#{myOffers.page.bookings.labels.status},
+                      data-my-offers-bookings-notification-complete-success-title=#{myOffers.page.bookings.notifications.completeSuccessTitle},
+                      data-my-offers-bookings-notification-complete-success-template=#{myOffers.page.bookings.notifications.completeSuccessTemplate},
+                      data-my-offers-bookings-notification-complete-error-title=#{myOffers.page.bookings.notifications.completeErrorTitle},
+                      data-my-offers-bookings-notification-complete-error-message=#{myOffers.page.bookings.notifications.completeErrorMessage},
                       data-my-offers-open-details-template=#{myOffers.page.openDetailsTemplate},
                       data-my-offers-carousel-aria=#{myOffers.page.carouselAria},
                       data-my-offers-modal-close-aria=#{myOffers.page.modalCloseAria}">
@@ -93,13 +116,6 @@
             <div class="profile_hero__heading">
                 <p class="profile_hero__eyebrow" th:text="#{myOffers.page.eyebrow}">myOffers.page.eyebrow</p>
                 <h1 class="profile_hero__title" th:text="#{myOffers.page.title}">myOffers.page.title</h1>
-            </div>
-            <div class="profile_hero__avatar_ring settings_profile_avatar">
-                <img v-if="myOffersViewUser && myOffersViewUser.profilePicture"
-                     class="profile_hero__avatar"
-                     :src="myOffersViewUser.profilePicture"
-                     :alt="myOffersDisplayName">
-                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="myOffersViewInitial"></span>
             </div>
         </header>
 
@@ -127,7 +143,31 @@
                role="alert"
                v-text="myOffersViewError"></p>
 
-                <div v-else class="profile_panel__content my_offers_panel__content">
+            <div v-else class="profile_panel__content my_offers_panel__content">
+                <nav class="repository_segmented repository_segmented--profile my_offers_segmented"
+                     data-segmented="myOffersViewTab"
+                     data-active="offeredPackages"
+                     role="toolbar"
+                     th:attr="aria-label=#{myOffers.page.title}">
+                    <button class="repository_segmented__button"
+                            type="button"
+                            data-segmented-value="offeredPackages"
+                            :class="{ 'repository_segmented__button--active': myOffersViewTab === 'offeredPackages' }"
+                            @click="setMyOffersViewTab('offeredPackages')"
+                            v-text="myOffersStrings.tabs.offeredPackages"></button>
+                    <button class="repository_segmented__button"
+                            type="button"
+                            data-segmented-value="ownBookings"
+                            :class="{ 'repository_segmented__button--active': myOffersViewTab === 'ownBookings' }"
+                            @click="setMyOffersViewTab('ownBookings')"
+                            v-text="myOffersStrings.tabs.ownBookings"></button>
+                    <span class="repository_segmented__indicator" aria-hidden="true"></span>
+                </nav>
+
+                <section data-segment-panel="myOffersViewTab"
+                         data-segment-value="offeredPackages"
+                         :hidden="myOffersViewTab !== 'offeredPackages'"
+                         :aria-hidden="String(myOffersViewTab !== 'offeredPackages')">
                     <button class="my_offers_add_link"
                             type="button"
                             @click="openMyOffersCreateModal()"
@@ -139,109 +179,229 @@
                         <p class="my_offers_intro__count" v-text="myOffersCountLabel"></p>
                     </div>
 
-                <section class="my_offers_carousel"
-                         th:attr="aria-label=#{myOffers.page.carouselAria}">
-                    <template v-if="myOffersOffers.length && myOffersActiveOffer">
-                        <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
-                                type="button"
-                                @click="navigateMyOffersCarousel(-1)"
-                                :aria-label="myOffersStrings.actions.previous">
-                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
-                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
-                            </svg>
-                        </button>
+                    <section class="my_offers_carousel"
+                             th:attr="aria-label=#{myOffers.page.carouselAria}">
+                        <template v-if="myOffersOffers.length && myOffersActiveOffer">
+                            <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                    type="button"
+                                    @click="navigateMyOffersCarousel(-1)"
+                                    :aria-label="myOffersStrings.actions.previous">
+                                <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                </svg>
+                            </button>
 
-                        <div class="my_offers_carousel__viewport">
-                            <article v-for="item in myOffersCarouselRenderItems"
-                                     :key="'my-offers-card-' + item.offer.id"
-                                     class="my_offers_carousel__card"
-                                     :class="item.positionClass">
-                                <div class="my_offers_card"
-                                     :class="{ 'my_offers_card--with-image': hasMyOfferCardImage(item.offer) }"
-                                     :style="buildMyOfferCardStyle(item.offer)"
-                                     role="button"
-                                     tabindex="0"
-                                     @click="setMyOffersCarouselIndex(item.index)"
-                                     @keydown.enter.prevent="setMyOffersCarouselIndex(item.index)"
-                                     @keydown.space.prevent="setMyOffersCarouselIndex(item.index)"
-                                     :aria-label="buildMyOfferOpenDetailsLabel(item.offer)">
-                                    <div class="my_offers_card__header">
-                                        <span class="my_offers_card__status_badge"
-                                              :class="'my_offers_card__status_badge--' + item.offer.statusLower"
-                                              v-text="resolveMyOfferStatusLabel(item.offer)"></span>
-                                        <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
-                                    </div>
-                                    <h3 class="my_offers_card__title" v-text="item.offer.title"></h3>
-                                    <p class="my_offers_card__description" v-text="item.offer.description"></p>
+                            <div class="my_offers_carousel__viewport">
+                                <article v-for="item in myOffersCarouselRenderItems"
+                                         :key="'my-offers-card-' + item.offer.id"
+                                         class="my_offers_carousel__card"
+                                         :class="item.positionClass">
+                                    <div class="my_offers_card"
+                                         :class="{ 'my_offers_card--with-image': hasMyOfferCardImage(item.offer) }"
+                                         :style="buildMyOfferCardStyle(item.offer)"
+                                         role="button"
+                                         tabindex="0"
+                                         @click="openOfferDetailModal(item.offer)"
+                                         @keydown.enter.prevent="openOfferDetailModal(item.offer)"
+                                         @keydown.space.prevent="openOfferDetailModal(item.offer)"
+                                         :aria-label="buildMyOfferOpenDetailsLabel(item.offer)">
+                                        <div class="my_offers_card__header">
+                                            <span class="my_offers_card__status_badge"
+                                                  :class="'my_offers_card__status_badge--' + item.offer.statusLower"
+                                                  v-text="resolveMyOfferStatusLabel(item.offer)"></span>
+                                            <span class="my_offers_card__price" v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
+                                        </div>
+                                        <h3 class="my_offers_card__title" v-text="item.offer.title"></h3>
+                                        <p class="my_offers_card__description" v-text="item.offer.description"></p>
 
-                                    <div class="my_offers_card__species" v-if="resolveMyOfferSpecies(item.offer).length">
-                                        <span class="my_offers_card__species_chip"
-                                              v-for="species in resolveMyOfferSpecies(item.offer)"
-                                              :key="'my-offer-species-' + item.offer.id + '-' + species.value">
-                                            <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
-                                            <span v-text="species.label"></span>
-                                        </span>
-                                    </div>
+                                        <div class="my_offers_card__species" v-if="resolveMyOfferSpecies(item.offer).length">
+                                            <span class="my_offers_card__species_chip"
+                                                  v-for="species in resolveMyOfferSpecies(item.offer)"
+                                                  :key="'my-offer-species-' + item.offer.id + '-' + species.value">
+                                                <img class="my_offers_card__species_icon" :src="species.emojiPath" alt="" aria-hidden="true">
+                                                <span v-text="species.label"></span>
+                                            </span>
+                                        </div>
 
-                                    <ul class="my_offers_card__services" v-if="resolveMyOfferServiceList(item.offer).length">
-                                        <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(item.offer)"
-                                            :key="'my-offer-service-' + item.offer.id + '-' + serviceIndex"
-                                            v-text="service"></li>
-                                    </ul>
+                                        <ul class="my_offers_card__services" v-if="resolveMyOfferServiceList(item.offer).length">
+                                            <li v-for="(service, serviceIndex) in resolveMyOfferServiceList(item.offer)"
+                                                :key="'my-offer-service-' + item.offer.id + '-' + serviceIndex"
+                                                v-text="service"></li>
+                                        </ul>
 
-                                    <div class="my_offers_card__actions"
-                                         :class="{ 'my_offers_card__actions--draft': item.offer.status === 'DRAFT' }"
-                                         v-if="item.isCenter">
-                                        <template v-if="item.offer.status === 'DRAFT'">
-                                            <button class="button my_offers_card__publish"
+                                        <div class="my_offers_card__actions"
+                                             :class="{ 'my_offers_card__actions--draft': item.offer.status === 'DRAFT' }"
+                                             v-if="item.isCenter">
+                                            <template v-if="item.offer.status === 'DRAFT'">
+                                                <button class="button my_offers_card__publish"
+                                                        type="button"
+                                                        :disabled="myOffersActionPendingId === item.offer.id"
+                                                        @click.stop="publishMyOffer(item.offer)"
+                                                        v-text="myOffersStrings.actions.publish"></button>
+                                                <button class="settings_fact__edit my_offers_card__edit"
+                                                        type="button"
+                                                        :aria-label="myOffersStrings.actions.edit"
+                                                        @click.stop="openMyOffersEditModal(item.offer)">
+                                                    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                                        <path d="M3 17.75V21h3.25L18.4 8.85l-3.25-3.25L3 17.75z"></path>
+                                                        <path d="M14.75 6.65 18 9.9"></path>
+                                                    </svg>
+                                                    <span class="sr-only" v-text="myOffersStrings.actions.edit"></span>
+                                                </button>
+                                            </template>
+                                            <button v-else
+                                                    class="button button--secondary"
                                                     type="button"
                                                     :disabled="myOffersActionPendingId === item.offer.id"
-                                                    @click.stop="publishMyOffer(item.offer)"
-                                                    v-text="myOffersStrings.actions.publish"></button>
-                                            <button class="settings_fact__edit my_offers_card__edit"
-                                                    type="button"
-                                                    :aria-label="myOffersStrings.actions.edit"
-                                                    @click.stop="openMyOffersEditModal(item.offer)">
-                                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                                                    <path d="M3 17.75V21h3.25L18.4 8.85l-3.25-3.25L3 17.75z"></path>
-                                                    <path d="M14.75 6.65 18 9.9"></path>
-                                                </svg>
-                                                <span class="sr-only" v-text="myOffersStrings.actions.edit"></span>
-                                            </button>
-                                        </template>
-                                        <button v-else
-                                                class="button button--secondary"
-                                                type="button"
-                                                :disabled="myOffersActionPendingId === item.offer.id"
-                                                @click.stop="withdrawMyOffer(item.offer)"
-                                                v-text="myOffersStrings.actions.withdraw"></button>
+                                                    @click.stop="withdrawMyOffer(item.offer)"
+                                                    v-text="myOffersStrings.actions.withdraw"></button>
+                                        </div>
                                     </div>
+                                </article>
+                            </div>
+
+                            <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                    type="button"
+                                    @click="navigateMyOffersCarousel(1)"
+                                    :aria-label="myOffersStrings.actions.next">
+                                <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                    <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                </svg>
+                            </button>
+
+                            <div class="my_offers_dots">
+                                <button class="my_offers_dots__dot"
+                                        type="button"
+                                        v-for="(offer, index) in myOffersOffers"
+                                        :key="'my-offers-dot-' + offer.id"
+                                        :class="{ 'my_offers_dots__dot--active': index === myOffersCarouselIndex }"
+                                        @click="setMyOffersCarouselIndex(index)"
+                                        :aria-label="buildMyOfferOpenDetailsLabel(offer)"></button>
+                            </div>
+                        </template>
+
+                        <div v-else class="my_offers_empty">
+                            <h3 class="my_offers_empty__title" v-text="myOffersStrings.emptyTitle"></h3>
+                        </div>
+                    </section>
+                </section>
+
+                <section class="my_offers_bookings"
+                         data-segment-panel="myOffersViewTab"
+                         data-segment-value="ownBookings"
+                         :hidden="myOffersViewTab !== 'ownBookings'"
+                         :aria-hidden="String(myOffersViewTab !== 'ownBookings')">
+                    <p v-if="myOffersBookingsLoading"
+                       class="profile_state profile_state--loading"
+                       role="status"
+                       aria-live="polite"
+                       v-text="myOffersStrings.bookings.loading"></p>
+
+                    <p v-else-if="myOffersBookingsLoadError"
+                       class="profile_state profile_state--error"
+                       role="alert"
+                       v-text="myOffersBookingsLoadError"></p>
+
+                    <div v-else-if="!myOffersCombinedBookings.length" class="my_offers_empty my_offers_empty--bookings">
+                        <h3 class="my_offers_empty__title" v-text="myOffersStrings.bookings.emptyTitle"></h3>
+                        <p class="my_offers_empty__text" v-text="myOffersStrings.bookings.emptyText"></p>
+                    </div>
+
+                    <div v-else class="my_offers_bookings__content">
+                        <section class="my_offers_bookings__group" v-if="myOffersActiveBookings.length">
+                            <h3 class="my_offers_bookings__heading" v-text="myOffersStrings.bookings.activeHeading"></h3>
+                            <article class="my_offers_booking_card"
+                                     v-for="booking in myOffersActiveBookings"
+                                     :key="'my-offers-active-booking-' + booking.id">
+                                <div class="my_offers_booking_card__header">
+                                    <h4 class="my_offers_booking_card__title" v-text="booking.offerTitle || myOffersStrings.bookings.labels.offer"></h4>
+                                    <span class="my_offers_booking_card__status"
+                                          v-text="myOffersStrings.bookings.statusActive"></span>
+                                </div>
+                                <dl class="my_offers_booking_card__facts">
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.partner"></dt>
+                                        <dd v-text="booking.partnerName"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.period"></dt>
+                                        <dd v-text="formatMyOffersBookingPeriod(booking)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.species"></dt>
+                                        <dd v-text="formatMyOffersBookingSpecies(booking.petSpecies)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.petCount"></dt>
+                                        <dd v-text="String(booking.petCount || 0)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.price"></dt>
+                                        <dd v-text="formatMessagesProposalPrice(booking.priceTotal, booking.currency)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.status"></dt>
+                                        <dd v-text="resolveMyOffersBookingStatusLabel(booking.status)"></dd>
+                                    </div>
+                                </dl>
+                                <div class="my_offers_booking_card__actions">
+                                    <button class="button button--secondary"
+                                            type="button"
+                                            @click="openMyOffersBookingChat(booking)"
+                                            v-text="myOffersStrings.bookings.openChatAction"></button>
+                                    <button class="button"
+                                            type="button"
+                                            :disabled="myOffersBookingCompletePendingId === booking.id"
+                                            @click="completeMyOffersBooking(booking)"
+                                            v-text="myOffersStrings.bookings.completeAction"></button>
                                 </div>
                             </article>
-                        </div>
+                        </section>
 
-                        <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
-                                type="button"
-                                @click="navigateMyOffersCarousel(1)"
-                                :aria-label="myOffersStrings.actions.next">
-                            <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
-                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
-                            </svg>
-                        </button>
-
-                        <div class="my_offers_dots">
-                            <button class="my_offers_dots__dot"
-                                    type="button"
-                                    v-for="(offer, index) in myOffersOffers"
-                                    :key="'my-offers-dot-' + offer.id"
-                                    :class="{ 'my_offers_dots__dot--active': index === myOffersCarouselIndex }"
-                                    @click="setMyOffersCarouselIndex(index)"
-                                    :aria-label="buildMyOfferOpenDetailsLabel(offer)"></button>
-                        </div>
-                    </template>
-
-                    <div v-else class="my_offers_empty">
-                        <h3 class="my_offers_empty__title" v-text="myOffersStrings.emptyTitle"></h3>
+                        <section class="my_offers_bookings__group" v-if="myOffersHistoryBookings.length">
+                            <h3 class="my_offers_bookings__heading" v-text="myOffersStrings.bookings.historyHeading"></h3>
+                            <article class="my_offers_booking_card my_offers_booking_card--history"
+                                     v-for="booking in myOffersHistoryBookings"
+                                     :key="'my-offers-history-booking-' + booking.id">
+                                <div class="my_offers_booking_card__header">
+                                    <h4 class="my_offers_booking_card__title" v-text="booking.offerTitle || myOffersStrings.bookings.labels.offer"></h4>
+                                    <span class="my_offers_booking_card__status my_offers_booking_card__status--completed"
+                                          v-text="myOffersStrings.bookings.statusCompleted"></span>
+                                </div>
+                                <dl class="my_offers_booking_card__facts">
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.partner"></dt>
+                                        <dd v-text="booking.partnerName"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.period"></dt>
+                                        <dd v-text="formatMyOffersBookingPeriod(booking)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.species"></dt>
+                                        <dd v-text="formatMyOffersBookingSpecies(booking.petSpecies)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.petCount"></dt>
+                                        <dd v-text="String(booking.petCount || 0)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.price"></dt>
+                                        <dd v-text="formatMessagesProposalPrice(booking.priceTotal, booking.currency)"></dd>
+                                    </div>
+                                    <div>
+                                        <dt v-text="myOffersStrings.bookings.labels.status"></dt>
+                                        <dd v-text="resolveMyOffersBookingStatusLabel(booking.status)"></dd>
+                                    </div>
+                                </dl>
+                                <div class="my_offers_booking_card__actions">
+                                    <button class="button button--secondary"
+                                            type="button"
+                                            @click="openMyOffersBookingChat(booking)"
+                                            v-text="myOffersStrings.bookings.openChatAction"></button>
+                                </div>
+                            </article>
+                        </section>
                     </div>
                 </section>
             </div>

@@ -4,6 +4,10 @@
       "title": "Pawsitters | Home",
       "description": "Reduced landing page with direct entry points to repository and sign in."
     },
+    "search": {
+      "title": "Pawsitters | Search",
+      "description": "Results page for your active offer filters."
+    },
     "repositoryGit": {
       "title": "Pawsitters | Repository | Git",
       "description": "Clean Git page with merge graph, activity and contributors."
@@ -39,6 +43,10 @@
     "myOffers": {
       "title": "Pawsitters | Profile | My offers",
       "description": "Protected area to manage your care packages as drafts and published offers."
+    },
+    "messages": {
+      "title": "Pawsitters | Profile | Messages",
+      "description": "Central messaging area for chats, images, and booking proposals around care requests."
     },
     "settings": {
       "title": "Pawsitters | Profile | Settings",
@@ -81,7 +89,8 @@
     "openUserMenu": "Open user menu",
     "profile": "View profile",
     "myPets": "My pets",
-    "myOffers": "My offers",
+    "myOffers": "Bookings",
+    "messages": "Messages",
     "settings": "Settings",
     "logout": "Sign out",
     "login": "Sign in",
@@ -460,7 +469,25 @@
         "hostLabel": "Host",
         "descriptionLabel": "Description",
         "speciesLabel": "Pet species",
-        "servicesLabel": "Services"
+        "servicesLabel": "Services",
+        "requestButton": "Request offer",
+        "requestPetsTitle": "Select pets",
+        "requestPetsHint": "Select at least one pet for this request.",
+        "requestPetsEmptyTitle": "No pets saved",
+        "requestPetsEmptyMessage": "Please add at least one pet to your profile first.",
+        "requestPetsValidation": "Please select at least one pet.",
+        "requestSubmit": "Send request",
+        "requestCancel": "Cancel",
+        "requestSuccessTitle": "Request sent",
+        "requestSuccessMessage": "Your request was sent. The chat has been opened.",
+        "requestDuplicateTitle": "Request already exists",
+        "requestDuplicateMessage": "You already submitted a request for this offer.",
+        "requestOwnOfferTitle": "Own offer",
+        "requestOwnOfferMessage": "You cannot request your own offer.",
+        "requestCreateErrorTitle": "Request failed",
+        "requestCreateErrorMessage": "The request could not be created. Please try again.",
+        "requestOpeningIntro": "is requesting the offer",
+        "requestOpeningPetsPrefix": "with pets"
       }
     }
   },
@@ -569,7 +596,7 @@
   "myOffers": {
     "page": {
       "bannerAlt": "Munich banner for offers",
-      "eyebrow": "My offers",
+      "eyebrow": "Bookings",
       "title": "Manage care packages",
       "loading": "Loading offers.",
       "authRequired": "Please sign in to manage your offers.",
@@ -661,7 +688,105 @@
         "withdrawSuccessTemplate": "{name} is now back in draft mode.",
         "actionErrorTitle": "Action failed",
         "actionErrorMessage": "The action could not be completed."
+      },
+      "tabs": {
+        "offeredPackages": "Offered care packages",
+        "ownBookings": "My bookings"
+      },
+      "bookings": {
+        "loading": "Loading bookings.",
+        "loadFailed": "Bookings could not be loaded.",
+        "emptyTitle": "No bookings yet",
+        "emptyText": "Accepted booking proposals will appear here.",
+        "activeHeading": "Active bookings",
+        "historyHeading": "Booking history",
+        "openChatAction": "Open chat",
+        "completeAction": "Complete",
+        "statusActive": "Active",
+        "statusCompleted": "Completed",
+        "labels": {
+          "offer": "Offer",
+          "partner": "Contact",
+          "period": "Period",
+          "species": "Species",
+          "petCount": "Pets",
+          "price": "Price",
+          "status": "Status"
+        },
+        "notifications": {
+          "completeSuccessTitle": "Booking completed",
+          "completeSuccessTemplate": "{name} was completed.",
+          "completeErrorTitle": "Completion failed",
+          "completeErrorMessage": "The booking could not be completed."
+        }
       }
+    }
+  },
+  "messages": {
+    "page": {
+      "bannerAlt": "Harbor panorama as messages banner",
+      "eyebrow": "Messages",
+      "title": "Your chats",
+      "loading": "Loading messages.",
+      "authRequired": "Please sign in to open your messages.",
+      "loadFailed": "Messages could not be loaded.",
+      "noChatsTitle": "No messages yet",
+      "noChatsText": "As soon as you request an offer or someone requests yours, the chat appears here.",
+      "noSelectionTitle": "Your messages",
+      "noSelectionText": "Send a message to start a chat.",
+      "chatListAria": "Chat list",
+      "messageInputPlaceholder": "Write a message...",
+      "sendAction": "Send",
+      "attachAction": "Attach image",
+      "openOfferAction": "Open offer",
+      "proposalAction": "Booking proposal",
+      "proposalModalTitle": "Create booking proposal",
+      "proposalModalHint": "Set period, price, and species for your negotiable proposal.",
+      "proposalModalCloseAria": "Close booking proposal dialog",
+      "proposalModalSubmit": "Send booking proposal",
+      "proposalModalCancel": "Cancel",
+      "proposalValidationSpecies": "Please select at least one species.",
+      "proposalValidationPetCount": "Pet count must be at least 1.",
+      "proposalValidationDates": "Please enter a valid date range.",
+      "proposalValidationPrice": "Please enter a price greater than 0.",
+      "proposalStatusPending": "Pending",
+      "proposalStatusAccepted": "Accepted",
+      "proposalStatusDeclined": "Declined",
+      "proposalStatusWithdrawn": "Withdrawn",
+      "proposalStatusCompleted": "Completed",
+      "proposalAcceptAction": "Accept",
+      "proposalDeclineAction": "Decline",
+      "proposalWithdrawAction": "Withdraw",
+      "proposalLabels": {
+        "startDate": "Start",
+        "endDate": "End",
+        "priceTotal": "Total price",
+        "petSpecies": "Species",
+        "petCount": "Pets",
+        "note": "Note"
+      },
+      "defaultOfferTitle": "Care offer",
+      "participantUnknown": "Unknown",
+      "messageImageAlt": "Chat image",
+      "attachmentOnlyPreview": "Image attachment",
+      "notifications": {
+        "loadErrorTitle": "Messages could not be loaded",
+        "sendErrorTitle": "Send failed",
+        "sendErrorMessage": "The message could not be sent.",
+        "proposalSuccessTitle": "Booking proposal sent",
+        "proposalSuccessMessage": "The booking proposal was created successfully.",
+        "proposalErrorTitle": "Booking proposal failed",
+        "proposalErrorMessage": "The booking proposal could not be created.",
+        "closeSuccessTitle": "Chat closed",
+        "closeSuccessMessage": "The chat was closed successfully.",
+        "closeErrorTitle": "Could not close chat",
+        "closeErrorMessage": "The chat could not be closed."
+      },
+      "closeChatAction": "End chat",
+      "closeChatConfirm": "Do you really want to end this chat?",
+      "chatClosedLabel": "Closed",
+      "chatClosedNotice": "This chat has been closed.",
+      "chatClosedComposer": "This chat is closed. You can no longer send messages or booking proposals."
     }
   },
   "settings": {

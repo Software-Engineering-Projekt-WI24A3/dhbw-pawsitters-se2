@@ -11,12 +11,14 @@ async function main() {
   await buildPreview(rootDir);
   const results = await validatePreview(rootDir);
 
-  assert.equal(results.length, 10);
+  assert.equal(results.length, 12);
   assert.ok(results.find((entry) => entry.locale === defaultLocale && entry.pageKey === 'home'));
+  assert.ok(results.find((entry) => entry.pageKey === 'search'));
   assert.ok(results.find((entry) => entry.pageKey === 'register'));
   assert.ok(results.find((entry) => entry.pageKey === 'profile'));
   assert.ok(results.find((entry) => entry.pageKey === 'myPets'));
   assert.ok(results.find((entry) => entry.pageKey === 'myOffers'));
+  assert.ok(results.find((entry) => entry.pageKey === 'messages'));
   assert.ok(results.find((entry) => entry.pageKey === 'settings'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryGit'));
   assert.ok(results.find((entry) => entry.pageKey === 'repositoryPlaywright'));

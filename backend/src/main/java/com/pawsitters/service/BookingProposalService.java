@@ -68,6 +68,7 @@ public class BookingProposalService {
                                                   Integer petCount,
                                                   String note) {
         Chat chat = getChatForParticipant(chatId, senderEmail);
+        assertChatOpen(chat);
         User sender = getUserByEmail(senderEmail);
         User recipient = resolveRecipient(chat, sender);
 
@@ -105,6 +106,7 @@ public class BookingProposalService {
     @Transactional
     public BookingProposalResponse acceptProposal(Long proposalId, String actorEmail) {
         BookingProposal proposal = getProposalForParticipant(proposalId, actorEmail);
+        assertChatOpen(proposal.getChat());
         assertPending(proposal);
         User actor = getUserByEmail(actorEmail);
         assertRecipient(proposal, actor);
@@ -136,6 +138,7 @@ public class BookingProposalService {
     @Transactional
     public BookingProposalResponse declineProposal(Long proposalId, String actorEmail) {
         BookingProposal proposal = getProposalForParticipant(proposalId, actorEmail);
+        assertChatOpen(proposal.getChat());
         assertPending(proposal);
         User actor = getUserByEmail(actorEmail);
         assertRecipient(proposal, actor);
@@ -159,6 +162,7 @@ public class BookingProposalService {
     @Transactional
     public BookingProposalResponse withdrawProposal(Long proposalId, String actorEmail) {
         BookingProposal proposal = getProposalForParticipant(proposalId, actorEmail);
+        assertChatOpen(proposal.getChat());
         assertPending(proposal);
         User actor = getUserByEmail(actorEmail);
         assertSender(proposal, actor);
@@ -273,6 +277,12 @@ public class BookingProposalService {
         if (!chat.getHost().getEmail().equalsIgnoreCase(normalizedEmail)
                 && !chat.getRequester().getEmail().equalsIgnoreCase(normalizedEmail)) {
             throw new ForbiddenException("Kein Zugriff auf diesen Chat.");
+        }
+    }
+
+    private void assertChatOpen(Chat chat) {
+        if (chat != null && chat.isClosed()) {
+            throw new IllegalArgumentException("Dieser Chat wurde bereits beendet.");
         }
     }
 

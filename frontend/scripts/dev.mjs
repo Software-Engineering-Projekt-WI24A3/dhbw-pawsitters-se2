@@ -676,7 +676,16 @@ function tryResolveFilePath(urlPath) {
 
 function resolveDynamicPageFallback(urlPath = '') {
   const normalizedPath = String(urlPath || '').trim().replace(/\/+$/, '') || '/';
+  const localizedSearchMatch = normalizedPath.match(/^\/(de|en|ro)\/search\/.+$/i);
   const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/\d+$/i);
+
+  if (localizedSearchMatch?.[1]) {
+    return `/${localizedSearchMatch[1].toLowerCase()}/search`;
+  }
+
+  if (/^\/search\/.+$/i.test(normalizedPath)) {
+    return '/search';
+  }
 
   if (localizedProfileMatch?.[1]) {
     return `/${localizedProfileMatch[1].toLowerCase()}/profile`;
@@ -901,7 +910,13 @@ async function main() {
       return;
     }
 
-    const localizedPage = await renderLocalizedPage(rootDir, requestUrl.pathname, locale);
+    const dynamicFallbackPath = resolveDynamicPageFallback(requestUrl.pathname);
+    const localizedPage = await renderLocalizedPage(rootDir, requestUrl.pathname, locale)
+      ?? (
+        dynamicFallbackPath && dynamicFallbackPath !== requestUrl.pathname
+          ? await renderLocalizedPage(rootDir, dynamicFallbackPath, locale)
+          : null
+      );
     if (localizedPage) {
       const isNotFoundRoute = requestUrl.pathname === '/404' || requestUrl.pathname === '/404.html';
       response.writeHead(isNotFoundRoute ? 404 : 200, {

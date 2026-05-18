@@ -1289,6 +1289,10 @@
         justify-items: center;
     }
 
+    .my_offers_segmented {
+        margin-top: 0;
+    }
+
     .my_offers_intro {
         text-align: center;
     }
@@ -1643,6 +1647,82 @@
         max-width: 34ch;
     }
 
+    .my_offers_empty--bookings {
+        min-height: auto;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .my_offers_bookings {
+        width: min(100%, 64rem);
+        margin-top: 0.4rem;
+    }
+
+    .my_offers_bookings__content {
+        display: grid;
+        gap: 1.2rem;
+    }
+
+    .my_offers_bookings__group {
+        display: grid;
+        gap: 0.78rem;
+    }
+
+    .my_offers_bookings__heading {
+        @apply m-0 text-base font-semibold tracking-[-0.02em];
+        color: rgba(17, 17, 19, 0.9);
+    }
+
+    .my_offers_booking_card {
+        @apply rounded-[1.1rem] border border-black/10 px-4 py-3;
+        background: rgba(255, 255, 255, 0.74);
+    }
+
+    .my_offers_booking_card--history {
+        opacity: 0.94;
+    }
+
+    .my_offers_booking_card__header {
+        @apply flex flex-wrap items-center justify-between gap-2;
+    }
+
+    .my_offers_booking_card__title {
+        @apply m-0 text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .my_offers_booking_card__status {
+        @apply inline-flex items-center rounded-full px-2 py-1 text-[0.64rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        background: rgba(34, 197, 94, 0.16);
+        color: rgba(21, 128, 61, 0.92);
+    }
+
+    .my_offers_booking_card__status--completed {
+        background: rgba(59, 130, 246, 0.16);
+        color: rgba(30, 64, 175, 0.92);
+    }
+
+    .my_offers_booking_card__facts {
+        @apply mt-3 grid gap-2;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .my_offers_booking_card__facts dt {
+        @apply m-0 text-[0.62rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        color: rgba(17, 17, 19, 0.52);
+    }
+
+    .my_offers_booking_card__facts dd {
+        @apply mt-1 mb-0 text-[0.82rem] font-semibold;
+        color: rgba(17, 17, 19, 0.84);
+        word-break: break-word;
+    }
+
+    .my_offers_booking_card__actions {
+        @apply mt-3 flex flex-wrap gap-2;
+    }
+
     @media (max-width: 980px) {
         .my_offers_carousel__nav--prev {
             left: 0.15rem;
@@ -1689,6 +1769,10 @@
         .my_offers_card__actions .button {
             min-width: 0;
             width: 100%;
+        }
+
+        .my_offers_booking_card__facts {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 
@@ -4157,6 +4241,29 @@
         padding-bottom: clamp(4rem, 7vw, 6rem);
     }
 
+    .page-search .site_main {
+        display: block;
+        min-height: calc(100svh - 7rem);
+        padding-top: clamp(1.2rem, 2.4vw, 2rem);
+        padding-bottom: clamp(4rem, 7vw, 6rem);
+    }
+
+    .search_results_view {
+        width: min(94rem, calc(100% - 1.2rem));
+        margin: 0 auto;
+    }
+
+    .search_results_shell {
+        display: grid;
+        gap: 0.92rem;
+    }
+
+    .search_results_shell__loading {
+        @apply grid place-items-center text-center;
+        gap: 0.68rem;
+        min-height: clamp(14rem, 28vw, 17.2rem);
+    }
+
     .home_offers_view {
         width: min(94rem, calc(100% - 1.2rem));
         margin: 0 auto;
@@ -4275,13 +4382,13 @@
     }
 
     .home_offers_carousel {
-        --home-offers-shift-step-1: clamp(8rem, 17vw, 13rem);
-        --home-offers-shift-step-2: clamp(14rem, 29vw, 22.8rem);
-        --home-offers-shift-step-3: clamp(19rem, 38vw, 30.6rem);
+        --home-offers-shift-step-1: clamp(10rem, 21vw, 16rem);
+        --home-offers-shift-step-2: clamp(17rem, 34vw, 27rem);
+        --home-offers-shift-step-3: clamp(23rem, 45vw, 36rem);
         position: relative;
         width: min(100%, 88rem);
         margin-inline: auto;
-        min-height: clamp(23rem, 57vw, 33rem);
+        min-height: clamp(20rem, 49vw, 30rem);
         padding-top: 0.2rem;
         isolation: isolate;
     }
@@ -4289,7 +4396,7 @@
     .home_offers_reel__viewport {
         position: relative;
         width: 100%;
-        height: clamp(17.8rem, 42vw, 24rem);
+        height: clamp(14.6rem, 33vw, 20rem);
         perspective: 1500px;
         overflow: hidden;
     }
@@ -4298,7 +4405,7 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: clamp(12.2rem, 22vw, 18.4rem);
+        width: clamp(15rem, 28vw, 22.8rem);
         transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms ease, filter 520ms ease;
         will-change: transform, opacity, filter;
         pointer-events: none;
@@ -4358,7 +4465,7 @@
         position: relative;
         display: grid;
         align-content: end;
-        min-height: clamp(13rem, 29vw, 17rem);
+        min-height: clamp(9.8rem, 19vw, 12.8rem);
         border-radius: 1.35rem;
         overflow: hidden;
         border: 1px solid rgba(17, 17, 19, 0.1);
@@ -4447,7 +4554,7 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         padding: 0.9rem 0.9rem 0.82rem;
-        font-size: clamp(0.9rem, 1.5vw, 1.04rem);
+        font-size: clamp(0.86rem, 1.35vw, 0.98rem);
         line-height: 1.3;
         letter-spacing: -0.02em;
         font-weight: 640;
@@ -4716,9 +4823,6 @@
             linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(224, 232, 243, 0.96) 100%),
             radial-gradient(circle at top right, rgba(96, 122, 151, 0.19) 0%, rgba(96, 122, 151, 0) 60%);
         border: 1px solid rgba(17, 17, 19, 0.1);
-        box-shadow:
-            0 12px 24px rgba(8, 11, 18, 0.14),
-            inset 0 1px 0 rgba(255, 255, 255, 0.84);
     }
 
     .home_latest_offer_card::before,
@@ -4836,15 +4940,12 @@
 
     .home_latest_offer_card--interactive {
         cursor: pointer;
-        transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+        transition: transform 260ms ease, border-color 260ms ease;
     }
 
     .home_latest_offer_card--interactive:hover {
         transform: translateY(-2px);
         border-color: rgba(17, 17, 19, 0.2);
-        box-shadow:
-            0 16px 30px rgba(8, 11, 18, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.84);
     }
 
     .home_latest_offer_card--interactive:focus-visible {
@@ -4944,6 +5045,586 @@
         white-space: pre-line;
     }
 
+    .home_offer_modal__actions {
+        @apply mt-2 flex justify-end;
+    }
+
+    .home_offer_modal__request {
+        min-width: 12.8rem;
+    }
+
+    .home_offer_request_modal__surface {
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
+    }
+
+    .home_offer_request_modal__hint {
+        @apply mx-auto mt-3 mb-0 max-w-[28rem] text-center text-sm;
+        color: rgba(17, 17, 19, 0.68);
+        line-height: 1.52;
+    }
+
+    .home_offer_request_modal__pets {
+        @apply mt-5 grid gap-2;
+        max-height: min(42dvh, 20rem);
+        overflow-y: auto;
+        padding-right: 0.12rem;
+    }
+
+    .home_offer_request_modal__pet {
+        @apply flex items-center gap-3 rounded-[1rem] border border-black/10 px-3 py-2 text-left transition duration-300;
+        background: rgba(255, 255, 255, 0.86);
+    }
+
+    .home_offer_request_modal__pet:hover {
+        transform: translateY(-1px);
+        border-color: rgba(17, 17, 19, 0.28);
+    }
+
+    .home_offer_request_modal__pet--active {
+        border-color: rgba(17, 17, 19, 0.72);
+        background: rgba(17, 17, 19, 0.08);
+    }
+
+    .home_offer_request_modal__pet_image {
+        @apply h-11 w-11 rounded-full border border-black/10 object-cover;
+        flex: 0 0 2.75rem;
+    }
+
+    .home_offer_request_modal__pet_copy {
+        @apply grid min-w-0;
+        gap: 0.1rem;
+    }
+
+    .home_offer_request_modal__pet_copy strong {
+        @apply block truncate text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.9);
+    }
+
+    .home_offer_request_modal__pet_copy small {
+        @apply block truncate text-[0.76rem] font-medium;
+        color: rgba(17, 17, 19, 0.62);
+    }
+
+    .home_offer_request_modal__actions {
+        @apply mt-5;
+    }
+
+    .messages_page .profile_hero__heading {
+        padding-bottom: clamp(1.7rem, 4.6vw, 2.4rem);
+    }
+
+    .messages_profile_avatar {
+        pointer-events: none;
+    }
+
+    .messages_profile_avatar__media {
+        box-shadow:
+            inset 0 0 0 1px rgba(17, 17, 19, 0.08),
+            0 10px 22px rgba(12, 18, 28, 0.14);
+    }
+
+    .messages_panel {
+        width: min(66rem, calc(100% - 1.6rem));
+        min-height: clamp(26rem, 64vh, 46rem);
+    }
+
+    .messages_workspace {
+        @apply h-full;
+        min-height: inherit;
+    }
+
+    .messages_empty_global {
+        @apply grid h-full min-h-[18rem] place-items-center rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-8 text-center;
+        box-shadow: none;
+    }
+
+    .messages_empty_global__title {
+        @apply m-0 text-[clamp(1.14rem,2.8vw,1.44rem)] font-semibold tracking-[-0.02em];
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .messages_empty_global__text {
+        @apply mt-2 mb-0 text-sm;
+        color: rgba(17, 17, 19, 0.66);
+        max-width: 38ch;
+        line-height: 1.55;
+    }
+
+    .messages_split {
+        @apply grid h-full min-h-[24rem] gap-3;
+        grid-template-columns: minmax(13rem, 1fr) minmax(0, 4fr);
+    }
+
+    .messages_sidebar {
+        @apply overflow-y-auto rounded-[1.45rem] border border-black/10 p-2;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+        max-height: min(68dvh, 44rem);
+    }
+
+    .messages_chat_item {
+        @apply flex w-full items-start gap-2 rounded-[1rem] border border-transparent px-2 py-2 text-left transition duration-300;
+        background: transparent;
+    }
+
+    .messages_chat_item + .messages_chat_item {
+        margin-top: 0.12rem;
+    }
+
+    .messages_chat_item:hover {
+        background: rgba(17, 17, 19, 0.05);
+        border-color: rgba(17, 17, 19, 0.1);
+    }
+
+    .messages_chat_item--active {
+        border-color: rgba(17, 17, 19, 0.22);
+        background: rgba(17, 17, 19, 0.1);
+    }
+
+    .messages_chat_item__avatar {
+        @apply inline-flex items-center justify-center overflow-hidden rounded-full border border-black/10;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex: 0 0 2.5rem;
+        color: rgba(17, 17, 19, 0.74);
+        background: rgba(255, 255, 255, 0.92);
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .messages_chat_item__avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .messages_chat_item__copy {
+        @apply grid min-w-0 flex-1;
+        gap: 0.12rem;
+    }
+
+    .messages_chat_item__name {
+        @apply block truncate text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .messages_chat_item__meta {
+        @apply flex min-w-0 items-center gap-2 text-[0.68rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        color: rgba(17, 17, 19, 0.5);
+    }
+
+    .messages_chat_item__offer {
+        @apply truncate;
+    }
+
+    .messages_chat_item__time {
+        @apply shrink-0;
+    }
+
+    .messages_chat_item__preview {
+        @apply block truncate text-[0.76rem];
+        color: rgba(17, 17, 19, 0.64);
+    }
+
+    .messages_chat_item__closed {
+        @apply inline-flex items-center rounded-full px-2 py-1 text-[0.56rem] font-semibold uppercase;
+        letter-spacing: 0.08em;
+        background: rgba(17, 17, 19, 0.12);
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .messages_conversation {
+        @apply min-w-0 rounded-[1.45rem] border border-black/10;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 249, 253, 0.94) 100%),
+            radial-gradient(circle at 6% 2%, rgba(188, 227, 255, 0.18) 0%, rgba(188, 227, 255, 0) 45%);
+        box-shadow:
+            0 16px 34px rgba(12, 18, 28, 0.11),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        overflow: hidden;
+    }
+
+    .messages_empty_selection {
+        @apply grid h-full min-h-[24rem] place-items-center px-4 py-8 text-center;
+    }
+
+    .messages_empty_selection__icon {
+        @apply inline-flex items-center justify-center rounded-full border border-black/10;
+        width: 4.8rem;
+        height: 4.8rem;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow:
+            0 10px 22px rgba(12, 18, 28, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    }
+
+    .messages_empty_selection__icon img {
+        width: 2.2rem;
+        height: 2.2rem;
+        object-fit: contain;
+    }
+
+    .messages_empty_selection__title {
+        @apply mt-4 mb-0 text-[1.36rem] font-semibold tracking-[-0.02em];
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .messages_empty_selection__text {
+        @apply mt-2 mb-0 text-sm;
+        color: rgba(17, 17, 19, 0.64);
+        max-width: 30ch;
+    }
+
+    .messages_thread {
+        @apply grid h-full;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        min-height: min(70dvh, 48rem);
+    }
+
+    .messages_thread__header {
+        @apply flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3;
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(10px);
+    }
+
+    .messages_thread__person {
+        @apply flex min-w-0 items-center gap-2;
+    }
+
+    .messages_thread__person_copy {
+        @apply min-w-0;
+    }
+
+    .messages_thread__person_name {
+        @apply m-0 truncate text-base font-semibold tracking-[-0.02em];
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .messages_thread__person_offer {
+        @apply mt-0.5 mb-0;
+    }
+
+    .messages_thread__offer_link {
+        @apply truncate border-0 bg-transparent p-0 text-left text-[0.76rem] font-semibold uppercase;
+        max-width: min(26rem, 55vw);
+        letter-spacing: 0.07em;
+        color: rgba(17, 17, 19, 0.58);
+        text-decoration: underline;
+        text-underline-offset: 0.24em;
+    }
+
+    .messages_thread__proposal_action {
+        @apply shrink-0;
+        min-width: 9.6rem;
+    }
+
+    .messages_thread__actions {
+        @apply flex shrink-0 flex-wrap items-center justify-end gap-2;
+    }
+
+    .messages_thread__close_action {
+        min-width: 8.2rem;
+    }
+
+    .messages_thread__scroll {
+        @apply min-h-0 overflow-y-auto px-4 py-4;
+        display: flex;
+        flex-direction: column;
+        gap: 0.48rem;
+        scrollbar-width: thin;
+    }
+
+    .messages_thread__closed_banner {
+        @apply m-0 rounded-[0.95rem] border border-black/10 px-3 py-2 text-sm;
+        background: rgba(17, 17, 19, 0.06);
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .messages_message {
+        @apply flex justify-start;
+    }
+
+    .messages_message--self {
+        justify-content: flex-end;
+    }
+
+    .messages_message__bubble {
+        @apply rounded-[1.16rem] border border-black/10 px-3 py-2;
+        max-width: min(76%, 38rem);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 9px 20px rgba(12, 18, 28, 0.08);
+    }
+
+    .messages_message--self .messages_message__bubble {
+        border-color: rgba(15, 118, 110, 0.22);
+        background:
+            linear-gradient(180deg, rgba(211, 250, 237, 0.9) 0%, rgba(203, 246, 232, 0.86) 100%);
+    }
+
+    .messages_message__text {
+        @apply m-0 whitespace-pre-line break-words text-sm;
+        color: rgba(17, 17, 19, 0.86);
+        line-height: 1.54;
+    }
+
+    .messages_message__attachments {
+        @apply mt-2 grid gap-2;
+        grid-template-columns: repeat(auto-fit, minmax(7.8rem, 1fr));
+    }
+
+    .messages_message__image {
+        @apply block w-full rounded-[0.9rem] border border-black/10 object-cover;
+        max-height: 12rem;
+        background: rgba(17, 17, 19, 0.06);
+    }
+
+    .messages_message__time {
+        @apply mt-2 block text-right text-[0.68rem] font-semibold uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(17, 17, 19, 0.48);
+    }
+
+    .messages_request_notice__text {
+        @apply m-0 text-sm;
+        line-height: 1.55;
+        color: rgba(17, 17, 19, 0.86);
+    }
+
+    .messages_request_notice__link,
+    .messages_request_notice__offer_button {
+        @apply border-0 bg-transparent p-0 text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.94);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    .messages_request_notice__offer_button {
+        cursor: pointer;
+    }
+
+    .messages_proposal {
+        @apply mt-2 rounded-[0.95rem] border border-black/10 px-3 py-2;
+        background: rgba(255, 255, 255, 0.84);
+    }
+
+    .messages_proposal__header {
+        @apply flex flex-wrap items-center justify-between gap-2;
+    }
+
+    .messages_proposal__title {
+        @apply text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.88);
+    }
+
+    .messages_proposal__status {
+        @apply inline-flex items-center rounded-full px-2 py-1 text-[0.66rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        background: rgba(17, 17, 19, 0.08);
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .messages_proposal__status--pending {
+        background: rgba(245, 158, 11, 0.14);
+        color: rgba(146, 64, 14, 0.92);
+    }
+
+    .messages_proposal__status--accepted {
+        background: rgba(34, 197, 94, 0.15);
+        color: rgba(21, 128, 61, 0.9);
+    }
+
+    .messages_proposal__status--declined,
+    .messages_proposal__status--withdrawn {
+        background: rgba(239, 68, 68, 0.14);
+        color: rgba(153, 27, 27, 0.92);
+    }
+
+    .messages_proposal__status--completed {
+        background: rgba(59, 130, 246, 0.14);
+        color: rgba(30, 64, 175, 0.92);
+    }
+
+    .messages_proposal__facts {
+        @apply mt-3 grid gap-2;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .messages_proposal__fact {
+        @apply rounded-[0.82rem] border border-black/10 px-2 py-2;
+        background: rgba(255, 255, 255, 0.78);
+    }
+
+    .messages_proposal__fact--wide {
+        grid-column: span 2 / span 2;
+    }
+
+    .messages_proposal__fact dt {
+        @apply m-0 text-[0.62rem] font-semibold uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(17, 17, 19, 0.5);
+    }
+
+    .messages_proposal__fact dd {
+        @apply mt-1 mb-0 text-[0.82rem] font-semibold;
+        color: rgba(17, 17, 19, 0.8);
+        word-break: break-word;
+    }
+
+    .messages_proposal__actions {
+        @apply mt-3 flex flex-wrap gap-2;
+    }
+
+    .messages_composer {
+        @apply border-t border-black/10 px-4 py-3;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(10px);
+    }
+
+    .messages_composer__attachments {
+        @apply mb-2 flex flex-wrap gap-2;
+    }
+
+    .messages_composer__attachment {
+        @apply relative m-0 overflow-hidden rounded-[0.9rem] border border-black/10 bg-white;
+        width: 5.5rem;
+    }
+
+    .messages_composer__attachment_image {
+        @apply block h-14 w-full object-cover;
+    }
+
+    .messages_composer__attachment_name {
+        @apply truncate px-2 py-1 text-[0.62rem] font-semibold;
+        color: rgba(17, 17, 19, 0.72);
+    }
+
+    .messages_composer__attachment_remove {
+        @apply absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-black/10 bg-white text-[0.82rem] font-semibold leading-none text-black/70;
+    }
+
+    .messages_composer__field {
+        @apply block;
+    }
+
+    .messages_composer__input {
+        @apply block w-full resize-y rounded-[0.95rem] border border-black/10 bg-white px-3 py-2 text-sm;
+        min-height: 3rem;
+        max-height: 9rem;
+        line-height: 1.52;
+        color: rgba(17, 17, 19, 0.88);
+    }
+
+    .messages_composer__input:focus {
+        outline: none;
+        border-color: rgba(17, 17, 19, 0.28);
+        box-shadow: 0 0 0 3px rgba(75, 126, 72, 0.16);
+    }
+
+    .messages_composer__actions {
+        @apply mt-2 flex items-center justify-between gap-2;
+    }
+
+    .messages_composer__attach {
+        @apply relative overflow-hidden;
+    }
+
+    .messages_composer__file {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .messages_composer__send {
+        min-width: 8.4rem;
+    }
+
+    .messages_composer--closed {
+        min-height: 4.2rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .messages_composer__closed_text {
+        @apply m-0 text-sm;
+        color: rgba(17, 17, 19, 0.68);
+    }
+
+    .messages_proposal_modal__surface {
+        max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
+    }
+
+    .messages_proposal_modal__hint {
+        @apply mx-auto mt-3 mb-0 max-w-[28rem] text-center text-sm;
+        color: rgba(17, 17, 19, 0.66);
+        line-height: 1.55;
+    }
+
+    .messages_proposal_modal__species {
+        @apply mt-2;
+    }
+
+    .messages_proposal_modal__species_title {
+        @apply m-0 text-[0.72rem] font-semibold uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(17, 17, 19, 0.6);
+    }
+
+    @media (max-width: 960px) {
+        .messages_split {
+            grid-template-columns: minmax(11rem, 1fr) minmax(0, 2.4fr);
+        }
+    }
+
+    @media (max-width: 820px) {
+        .messages_panel {
+            width: min(94vw, 86rem);
+        }
+
+        .messages_split {
+            grid-template-columns: minmax(0, 1fr);
+            min-height: auto;
+        }
+
+        .messages_sidebar {
+            max-height: min(34dvh, 18rem);
+        }
+
+        .messages_conversation {
+            min-height: clamp(19rem, 58vh, 33rem);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .messages_thread__header {
+            @apply flex-wrap;
+        }
+
+        .messages_thread__proposal_action {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .messages_thread__close_action {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .messages_message__bubble {
+            max-width: 92%;
+        }
+
+        .messages_proposal__facts {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .messages_proposal__fact--wide {
+            grid-column: span 1 / span 1;
+        }
+    }
+
     @media (max-width: 980px) {
         .home_offers_carousel .my_offers_carousel__nav--prev {
             left: 0.12rem;
@@ -4964,13 +5645,13 @@
 
     @media (max-width: 820px) {
         .home_offers_carousel {
-            --home-offers-shift-step-1: clamp(7.2rem, 23vw, 10.8rem);
-            --home-offers-shift-step-2: clamp(10rem, 33vw, 15.8rem);
-            --home-offers-shift-step-3: clamp(12.6rem, 42vw, 19.2rem);
+            --home-offers-shift-step-1: clamp(8rem, 25vw, 12.8rem);
+            --home-offers-shift-step-2: clamp(12.8rem, 38vw, 19.8rem);
+            --home-offers-shift-step-3: clamp(17rem, 49vw, 25.8rem);
         }
 
         .home_offers_reel__card {
-            width: clamp(10.8rem, 34vw, 14.8rem);
+            width: clamp(12rem, 44vw, 17rem);
         }
 
         .home_latest_offers__heading {
@@ -4995,15 +5676,15 @@
         }
 
         .home_offers_carousel {
-            min-height: clamp(19.2rem, 86vw, 23rem);
+            min-height: clamp(15.6rem, 70vw, 19.2rem);
         }
 
         .home_offers_reel__viewport {
-            height: clamp(13rem, 62vw, 16.8rem);
+            height: clamp(10.6rem, 49vw, 13.8rem);
         }
 
         .home_offers_reel__card {
-            width: clamp(9rem, 38vw, 11.9rem);
+            width: clamp(10.4rem, 57vw, 14.2rem);
         }
 
         .home_offers_reel__card--left-2,
@@ -5019,6 +5700,10 @@
 
         .home_latest_offers {
             margin-top: 0.8rem;
+        }
+
+        .search_results_view {
+            width: min(100%, calc(100% - 0.96rem));
         }
 
         .home_search_results {
@@ -6266,6 +6951,10 @@
         );
         min-width: min(var(--corp-modal-min-width), calc(100vw - var(--corp-modal-viewport-gutter)));
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
+        transition:
+            width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1),
+            max-width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1),
+            min-width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1);
         z-index: 1;
         box-shadow:
             0 42px 76px rgba(15, 15, 17, 0.26),
@@ -6904,6 +7593,10 @@
         min-width: min(var(--corp-modal-min-width), calc(100vw - var(--corp-modal-viewport-gutter)));
         z-index: 1;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
+        transition:
+            width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1),
+            max-width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1),
+            min-width calc(var(--corp-modal-motion-duration) + 220ms) cubic-bezier(0.2, 0.82, 0.24, 1);
         overflow-y: auto;
         overscroll-behavior: contain;
         box-shadow:
@@ -7160,6 +7853,13 @@
         opacity: 0;
         filter: blur(5px);
         transform: translate3d(0, 18px, 0) scale(0.965);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .auth_modal__surface,
+        .repo_modal__surface {
+            transition: none;
+        }
     }
 
     @keyframes corpModalOverlayIn {

@@ -402,6 +402,17 @@
                                  aria-hidden="true">
                             <span class="repo_menu__item-label" th:text="#{nav.myOffers}">nav.myOffers</span>
                         </button>
+                        <span class="user_menu__divider" role="separator" aria-hidden="true"></span>
+                        <button class="repo_menu__item repo_menu__item--button"
+                                type="button"
+                                @click="openCurrentUserMessages()">
+                            <img class="repo_menu__item-icon"
+                                 th:src="@{/assets/media/2709.svg}"
+                                 src="/assets/media/2709.svg"
+                                 alt=""
+                                 aria-hidden="true">
+                            <span class="repo_menu__item-label" th:text="#{nav.messages}">nav.messages</span>
+                        </button>
                         <button class="repo_menu__item repo_menu__item--button"
                                 type="button"
                                 @click="openCurrentUserSettings()">

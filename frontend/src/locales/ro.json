@@ -4,6 +4,10 @@
       "title": "Pawsitters | Acasă",
       "description": "Pagină de start redusă cu acces direct la repozitoriu și autentificare."
     },
+    "search": {
+      "title": "Pawsitters | Căutare",
+      "description": "Pagină cu rezultate pentru filtrele tale active de oferte."
+    },
     "repositoryGit": {
       "title": "Pawsitters | Repozitoriu | Git",
       "description": "Pagină Git curată cu grafic de merge, activitate și contributori."
@@ -39,6 +43,10 @@
     "myOffers": {
       "title": "Pawsitters | Profil | Ofertele mele",
       "description": "Zonă protejată pentru gestionarea pachetelor tale de îngrijire, ca draft sau publicate."
+    },
+    "messages": {
+      "title": "Pawsitters | Profil | Mesaje",
+      "description": "Zonă centrală pentru chat-uri, imagini și propuneri de rezervare pentru cereri de îngrijire."
     },
     "settings": {
       "title": "Pawsitters | Profil | Setări",
@@ -81,7 +89,8 @@
     "openUserMenu": "Deschide meniul utilizator",
     "profile": "Vezi profilul",
     "myPets": "Animalele mele",
-    "myOffers": "Ofertele mele",
+    "myOffers": "Rezervări",
+    "messages": "Mesaje",
     "settings": "Setări",
     "logout": "Deconectare",
     "login": "Autentificare",
@@ -460,7 +469,25 @@
         "hostLabel": "Gazdă",
         "descriptionLabel": "Descriere",
         "speciesLabel": "Specii de animale",
-        "servicesLabel": "Servicii"
+        "servicesLabel": "Servicii",
+        "requestButton": "Solicită oferta",
+        "requestPetsTitle": "Selectează animalele",
+        "requestPetsHint": "Selectează cel puțin un animal pentru această solicitare.",
+        "requestPetsEmptyTitle": "Nu ai animale salvate",
+        "requestPetsEmptyMessage": "Adaugă mai întâi cel puțin un animal în profilul tău.",
+        "requestPetsValidation": "Te rugăm să selectezi cel puțin un animal.",
+        "requestSubmit": "Trimite solicitarea",
+        "requestCancel": "Anulează",
+        "requestSuccessTitle": "Solicitare trimisă",
+        "requestSuccessMessage": "Solicitarea a fost trimisă. Chat-ul a fost deschis.",
+        "requestDuplicateTitle": "Solicitare existentă",
+        "requestDuplicateMessage": "Ai trimis deja o solicitare pentru această ofertă.",
+        "requestOwnOfferTitle": "Oferta ta",
+        "requestOwnOfferMessage": "Nu poți solicita propria ta ofertă.",
+        "requestCreateErrorTitle": "Solicitare eșuată",
+        "requestCreateErrorMessage": "Solicitarea nu a putut fi creată. Încearcă din nou.",
+        "requestOpeningIntro": "solicită oferta",
+        "requestOpeningPetsPrefix": "cu animalele"
       }
     }
   },
@@ -569,7 +596,7 @@
   "myOffers": {
     "page": {
       "bannerAlt": "Banner din München pentru oferte",
-      "eyebrow": "Ofertele mele",
+      "eyebrow": "Rezervări",
       "title": "Gestionează pachetele de îngrijire",
       "loading": "Se încarcă ofertele.",
       "authRequired": "Te rugăm să te autentifici pentru a-ți gestiona ofertele.",
@@ -661,7 +688,105 @@
         "withdrawSuccessTemplate": "{name} este din nou în draft.",
         "actionErrorTitle": "Acțiune eșuată",
         "actionErrorMessage": "Acțiunea nu a putut fi finalizată."
+      },
+      "tabs": {
+        "offeredPackages": "Pachete oferite",
+        "ownBookings": "Rezervările mele"
+      },
+      "bookings": {
+        "loading": "Se încarcă rezervările.",
+        "loadFailed": "Rezervările nu au putut fi încărcate.",
+        "emptyTitle": "Încă nu ai rezervări",
+        "emptyText": "Rezervările acceptate vor apărea aici.",
+        "activeHeading": "Rezervări active",
+        "historyHeading": "Istoric rezervări",
+        "openChatAction": "Deschide chatul",
+        "completeAction": "Finalizează",
+        "statusActive": "Activă",
+        "statusCompleted": "Finalizată",
+        "labels": {
+          "offer": "Ofertă",
+          "partner": "Contact",
+          "period": "Perioadă",
+          "species": "Specii",
+          "petCount": "Animale",
+          "price": "Preț",
+          "status": "Status"
+        },
+        "notifications": {
+          "completeSuccessTitle": "Rezervare finalizată",
+          "completeSuccessTemplate": "{name} a fost finalizată.",
+          "completeErrorTitle": "Finalizare eșuată",
+          "completeErrorMessage": "Rezervarea nu a putut fi finalizată."
+        }
       }
+    }
+  },
+  "messages": {
+    "page": {
+      "bannerAlt": "Panoramă de port pentru bannerul de mesaje",
+      "eyebrow": "Mesaje",
+      "title": "Chat-urile tale",
+      "loading": "Se încarcă mesajele.",
+      "authRequired": "Te rugăm să te autentifici pentru a deschide mesajele.",
+      "loadFailed": "Mesajele nu au putut fi încărcate.",
+      "noChatsTitle": "Nu ai încă mesaje",
+      "noChatsText": "După ce soliciți o ofertă sau cineva îți solicită oferta, chat-ul va apărea aici.",
+      "noSelectionTitle": "Mesajele tale",
+      "noSelectionText": "Trimite un mesaj pentru a începe un chat.",
+      "chatListAria": "Listă chat-uri",
+      "messageInputPlaceholder": "Scrie un mesaj...",
+      "sendAction": "Trimite",
+      "attachAction": "Atașează imagine",
+      "openOfferAction": "Deschide oferta",
+      "proposalAction": "Propunere de rezervare",
+      "proposalModalTitle": "Creează propunere de rezervare",
+      "proposalModalHint": "Setează perioada, prețul și speciile pentru propunerea negociabilă.",
+      "proposalModalCloseAria": "Închide dialogul de propunere",
+      "proposalModalSubmit": "Trimite propunerea",
+      "proposalModalCancel": "Anulează",
+      "proposalValidationSpecies": "Selectează cel puțin o specie.",
+      "proposalValidationPetCount": "Numărul de animale trebuie să fie cel puțin 1.",
+      "proposalValidationDates": "Introdu un interval valid.",
+      "proposalValidationPrice": "Introdu un preț mai mare ca 0.",
+      "proposalStatusPending": "În așteptare",
+      "proposalStatusAccepted": "Acceptată",
+      "proposalStatusDeclined": "Respinsă",
+      "proposalStatusWithdrawn": "Retrasă",
+      "proposalStatusCompleted": "Finalizată",
+      "proposalAcceptAction": "Acceptă",
+      "proposalDeclineAction": "Respinge",
+      "proposalWithdrawAction": "Retrage",
+      "proposalLabels": {
+        "startDate": "Start",
+        "endDate": "Final",
+        "priceTotal": "Preț total",
+        "petSpecies": "Specii",
+        "petCount": "Animale",
+        "note": "Notă"
+      },
+      "defaultOfferTitle": "Ofertă de îngrijire",
+      "participantUnknown": "Necunoscut",
+      "messageImageAlt": "Imagine chat",
+      "attachmentOnlyPreview": "Atașament imagine",
+      "notifications": {
+        "loadErrorTitle": "Mesajele nu au putut fi încărcate",
+        "sendErrorTitle": "Trimitere eșuată",
+        "sendErrorMessage": "Mesajul nu a putut fi trimis.",
+        "proposalSuccessTitle": "Propunere trimisă",
+        "proposalSuccessMessage": "Propunerea de rezervare a fost creată cu succes.",
+        "proposalErrorTitle": "Propunere eșuată",
+        "proposalErrorMessage": "Propunerea de rezervare nu a putut fi creată.",
+        "closeSuccessTitle": "Chat închis",
+        "closeSuccessMessage": "Chatul a fost închis cu succes.",
+        "closeErrorTitle": "Chatul nu a putut fi închis",
+        "closeErrorMessage": "Chatul nu a putut fi închis."
+      },
+      "closeChatAction": "Închide chatul",
+      "closeChatConfirm": "Sigur vrei să închizi acest chat?",
+      "chatClosedLabel": "Închis",
+      "chatClosedNotice": "Acest chat a fost închis.",
+      "chatClosedComposer": "Acest chat este închis. Nu mai poți trimite mesaje sau propuneri de rezervare."
     }
   },
   "settings": {
