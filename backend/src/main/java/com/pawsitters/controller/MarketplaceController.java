@@ -7,6 +7,8 @@ import com.pawsitters.dto.OfferResponse;
 import com.pawsitters.model.PetChoice;
 import com.pawsitters.service.MarketplaceService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +49,21 @@ public class MarketplaceController {
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Marketplace offers retrieved successfully.",
+                offers,
+                servletRequest.getRequestURI(),
+                offers.size()
+        ));
+    }
+
+    @GetMapping("/offers/latest")
+    public ResponseEntity<ApiResponse<List<OfferResponse>>> getLatestOffers(
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit muss mindestens 1 sein")
+            @Max(value = 25, message = "limit darf maximal 25 sein") Integer limit,
+            HttpServletRequest servletRequest) {
+        List<OfferResponse> offers = marketplaceService.getLatestPublishedOffers(limit);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Latest marketplace offers retrieved successfully.",
                 offers,
                 servletRequest.getRequestURI(),
                 offers.size()

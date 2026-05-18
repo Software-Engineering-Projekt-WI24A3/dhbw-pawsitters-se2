@@ -192,7 +192,7 @@
                                          :class="{ 'my_offers_card__actions--draft': item.offer.status === 'DRAFT' }"
                                          v-if="item.isCenter">
                                         <template v-if="item.offer.status === 'DRAFT'">
-                                            <button class="button"
+                                            <button class="button my_offers_card__publish"
                                                     type="button"
                                                     :disabled="myOffersActionPendingId === item.offer.id"
                                                     @click.stop="publishMyOffer(item.offer)"

@@ -34,7 +34,8 @@ const LOADING_INDICATOR_DELAY_MS = 320;
 const REGISTER_STEPS = ['account', 'profile', 'pets'];
 const MY_OFFERS_CREATE_STEPS = ['setup', 'species', 'details', 'review'];
 const CALENDAR_MIN_YEAR = 1901;
-const CALENDAR_SEARCH_FUTURE_YEAR_OFFSET = 10;
+const CALENDAR_GENERAL_FUTURE_YEAR_OFFSET = 10;
+const CALENDAR_HEADER_SEARCH_FUTURE_YEAR_OFFSET = 100;
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
@@ -1102,6 +1103,56 @@ function normalizeDateInputValue(value) {
     return toDateInputValue(date);
 }
 
+function getHeaderSearchDateMinInputValue(referenceDate = new Date()) {
+    const normalizedReference = referenceDate instanceof Date && !Number.isNaN(referenceDate.getTime())
+        ? new Date(referenceDate)
+        : new Date();
+    normalizedReference.setHours(0, 0, 0, 0);
+    return toDateInputValue(normalizedReference);
+}
+
+function getHeaderSearchDateMaxInputValue(referenceDate = new Date()) {
+    const normalizedReference = referenceDate instanceof Date && !Number.isNaN(referenceDate.getTime())
+        ? new Date(referenceDate)
+        : new Date();
+    const maxDate = new Date(
+        normalizedReference.getFullYear() + CALENDAR_HEADER_SEARCH_FUTURE_YEAR_OFFSET,
+        11,
+        31
+    );
+    maxDate.setHours(0, 0, 0, 0);
+    return toDateInputValue(maxDate);
+}
+
+function isHeaderSearchDateSelectable(value, referenceDate = new Date()) {
+    const normalizedValue = normalizeDateInputValue(value);
+    if (!normalizedValue) {
+        return false;
+    }
+
+    const minSelectableDate = getHeaderSearchDateMinInputValue(referenceDate);
+    const maxSelectableDate = getHeaderSearchDateMaxInputValue(referenceDate);
+    return normalizedValue >= minSelectableDate && normalizedValue <= maxSelectableDate;
+}
+
+function normalizeHeaderSearchDateRange(startValue = '', endValue = '', referenceDate = new Date()) {
+    const normalizedStart = normalizeDateInputValue(startValue);
+    const normalizedEnd = normalizeDateInputValue(endValue);
+    let nextStart = isHeaderSearchDateSelectable(normalizedStart, referenceDate) ? normalizedStart : '';
+    let nextEnd = isHeaderSearchDateSelectable(normalizedEnd, referenceDate) ? normalizedEnd : '';
+
+    if (!nextStart) {
+        nextEnd = '';
+    } else if (nextEnd && nextEnd < nextStart) {
+        nextEnd = nextStart;
+    }
+
+    return {
+        start: nextStart,
+        end: nextEnd
+    };
+}
+
 function getLocaleWeekStart(locale = document.documentElement.lang || 'de') {
     try {
         const localeInfo = new Intl.Locale(locale);
@@ -1175,6 +1226,8 @@ function buildDateCalendarDays({
     month,
     rangeStart = '',
     rangeEnd = '',
+    minSelectableDate = '',
+    maxSelectableDate = '',
     locale = document.documentElement.lang || 'de'
 } = {}) {
     const firstDayOfMonth = new Date(year, month, 1);
@@ -1188,6 +1241,8 @@ function buildDateCalendarDays({
     const todayIso = toDateInputValue(new Date());
     const normalizedStart = normalizeDateInputValue(rangeStart);
     const normalizedEnd = normalizeDateInputValue(rangeEnd);
+    const normalizedMinSelectableDate = normalizeDateInputValue(minSelectableDate);
+    const normalizedMaxSelectableDate = normalizeDateInputValue(maxSelectableDate);
     const hasFullRange = Boolean(normalizedStart && normalizedEnd);
     const rangeMin = hasFullRange
         ? (normalizedStart <= normalizedEnd ? normalizedStart : normalizedEnd)
@@ -1211,6 +1266,10 @@ function buildDateCalendarDays({
         const dayValue = toDateInputValue(dayDate);
         const isSelectedStart = Boolean(normalizedStart && dayValue === normalizedStart);
         const isSelectedEnd = Boolean(normalizedEnd && dayValue === normalizedEnd);
+        const isDisabled = Boolean(
+            (normalizedMinSelectableDate && dayValue < normalizedMinSelectableDate)
+            || (normalizedMaxSelectableDate && dayValue > normalizedMaxSelectableDate)
+        );
         const isSingleDaySelection = Boolean(
             normalizedStart
             && normalizedEnd
@@ -1226,6 +1285,7 @@ function buildDateCalendarDays({
             isToday: dayValue === todayIso,
             isSelectedStart,
             isSelectedEnd,
+            isDisabled,
             isSingleDaySelection,
             isInRange: Boolean(hasFullRange && dayValue > rangeMin && dayValue < rangeMax),
             ariaLabel: dayFormatter.format(dayDate)
@@ -1711,22 +1771,18 @@ function readHeaderSearchSessionState() {
             ? parsedState.locationQuery
             : '';
         const selectedLocation = normalizeHeaderSearchSelectedLocation(parsedState?.selectedLocation);
-        const dateRangeStart = normalizeDateInputValue(parsedState?.dateRangeStart);
-        let dateRangeEnd = normalizeDateInputValue(parsedState?.dateRangeEnd);
+        const normalizedDateRange = normalizeHeaderSearchDateRange(
+            parsedState?.dateRangeStart,
+            parsedState?.dateRangeEnd
+        );
         const petChoiceCounts = normalizeHeaderSearchPetCounts(parsedState?.petChoiceCounts);
-
-        if (!dateRangeStart) {
-            dateRangeEnd = '';
-        } else if (dateRangeEnd && dateRangeEnd < dateRangeStart) {
-            dateRangeEnd = dateRangeStart;
-        }
 
         return {
             headerCenterTab,
             locationQuery,
             selectedLocation,
-            dateRangeStart,
-            dateRangeEnd,
+            dateRangeStart: normalizedDateRange.start,
+            dateRangeEnd: normalizedDateRange.end,
             petChoiceCounts
         };
     } catch {
@@ -1747,20 +1803,19 @@ function writeHeaderSearchSessionState(state = {}) {
         return;
     }
 
+    const normalizedDateRange = normalizeHeaderSearchDateRange(
+        state?.dateRangeStart,
+        state?.dateRangeEnd
+    );
+
     const payload = {
         headerCenterTab: state?.headerCenterTab === 'about' ? 'about' : 'discover',
         locationQuery: typeof state?.locationQuery === 'string' ? state.locationQuery : '',
         selectedLocation: normalizeHeaderSearchSelectedLocation(state?.selectedLocation),
-        dateRangeStart: normalizeDateInputValue(state?.dateRangeStart),
-        dateRangeEnd: normalizeDateInputValue(state?.dateRangeEnd),
+        dateRangeStart: normalizedDateRange.start,
+        dateRangeEnd: normalizedDateRange.end,
         petChoiceCounts: normalizeHeaderSearchPetCounts(state?.petChoiceCounts)
     };
-
-    if (!payload.dateRangeStart) {
-        payload.dateRangeEnd = '';
-    } else if (payload.dateRangeEnd && payload.dateRangeEnd < payload.dateRangeStart) {
-        payload.dateRangeEnd = payload.dateRangeStart;
-    }
 
     try {
         sessionStorage.setItem(HEADER_SEARCH_SESSION_STORAGE_KEY, JSON.stringify(payload));
@@ -2293,6 +2348,13 @@ const localizedHomeStrings = {
     actions: {
         previous: homePageRoot?.dataset.homeActionPrevious || '',
         next: homePageRoot?.dataset.homeActionNext || ''
+    },
+    latest: {
+        heading: homePageRoot?.dataset.homeLatestHeading || '',
+        carouselAria: homePageRoot?.dataset.homeLatestCarouselAria || '',
+        emptyTitle: homePageRoot?.dataset.homeLatestEmptyTitle || '',
+        emptyText: homePageRoot?.dataset.homeLatestEmptyText || '',
+        openDetailsTemplate: homePageRoot?.dataset.homeLatestOpenDetailsTemplate || ''
     }
 };
 const localizedSettingsStrings = {
@@ -2663,6 +2725,12 @@ createApp({
             homeOfferSpeciesFilter: 'ALL',
             homeOffers: [],
             homeOffersCarouselIndex: 0,
+            homeLatestOffers: [],
+            homeLatestOfferLoadRequestId: 0,
+            homeLatestCarouselOffset: 0,
+            homeLatestViewportWidth: typeof window !== 'undefined' && Number.isFinite(window.innerWidth)
+                ? window.innerWidth
+                : 1280,
             homeOfferDetailModalOpen: false,
             homeOfferDetailOfferId: null,
             homeOfferHostCityByHostId: {},
@@ -2877,10 +2945,10 @@ createApp({
         searchCalendarYearOptions() {
             const currentYear = new Date().getFullYear();
             const maxYear = Math.max(
-                currentYear + CALENDAR_SEARCH_FUTURE_YEAR_OFFSET,
+                currentYear + CALENDAR_HEADER_SEARCH_FUTURE_YEAR_OFFSET,
                 this.dateCalendarYear
             );
-            return buildCalendarYearOptions(maxYear);
+            return buildCalendarYearOptions(maxYear, currentYear);
         },
         birthDateCalendarYearOptions() {
             const currentYear = new Date().getFullYear();
@@ -3054,11 +3122,15 @@ createApp({
         },
         dateCalendarDays() {
             const locale = document.documentElement.lang || 'de';
+            const minSelectableDate = getHeaderSearchDateMinInputValue();
+            const maxSelectableDate = getHeaderSearchDateMaxInputValue();
             return buildDateCalendarDays({
                 year: this.dateCalendarYear,
                 month: this.dateCalendarMonth,
                 rangeStart: this.dateRangeStart,
                 rangeEnd: this.dateRangeEnd,
+                minSelectableDate,
+                maxSelectableDate,
                 locale
             });
         },
@@ -3677,7 +3749,7 @@ createApp({
         myOffersAvailabilityYearOptions() {
             const currentYear = new Date().getFullYear();
             const maxYear = Math.max(
-                currentYear + CALENDAR_SEARCH_FUTURE_YEAR_OFFSET,
+                currentYear + CALENDAR_GENERAL_FUTURE_YEAR_OFFSET,
                 this.myOffersAvailabilityCalendarYear
             );
             return buildCalendarYearOptions(maxYear);
@@ -3887,6 +3959,120 @@ createApp({
                 return left.relativeOffset - right.relativeOffset;
             });
         },
+        homeLatestFilteredOffers() {
+            const offers = Array.isArray(this.homeLatestOffers) ? this.homeLatestOffers : [];
+            return offers
+                .filter((offer) => this.normalizeMyOfferStatus(offer?.status) === 'PUBLISHED')
+                .slice(0, 10);
+        },
+        homeLatestEdgeVisibleCount() {
+            const offerCount = Array.isArray(this.homeLatestFilteredOffers)
+                ? this.homeLatestFilteredOffers.length
+                : 0;
+            if (!offerCount) {
+                return 0;
+            }
+
+            const viewportWidth = Number.isFinite(this.homeLatestViewportWidth)
+                ? this.homeLatestViewportWidth
+                : 1280;
+
+            let preferredCount = 1;
+            if (viewportWidth >= 1220) {
+                preferredCount = 5;
+            } else if (viewportWidth >= 980) {
+                preferredCount = 4;
+            } else if (viewportWidth >= 760) {
+                preferredCount = 3;
+            } else if (viewportWidth >= 560) {
+                preferredCount = 2;
+            }
+
+            return Math.max(1, Math.min(preferredCount, offerCount));
+        },
+        homeLatestMaxOffset() {
+            const offerCount = Array.isArray(this.homeLatestFilteredOffers)
+                ? this.homeLatestFilteredOffers.length
+                : 0;
+            const edgeVisibleCount = this.homeLatestEdgeVisibleCount;
+
+            if (!offerCount || !edgeVisibleCount) {
+                return 0;
+            }
+
+            return Math.max(0, offerCount - edgeVisibleCount);
+        },
+        homeLatestSafeOffset() {
+            const maxOffset = Number.isFinite(this.homeLatestMaxOffset)
+                ? Math.max(0, Math.round(this.homeLatestMaxOffset))
+                : 0;
+            const offset = Number.isFinite(this.homeLatestCarouselOffset)
+                ? Math.round(this.homeLatestCarouselOffset)
+                : 0;
+            return Math.min(maxOffset, Math.max(0, offset));
+        },
+        homeLatestHasLeftPeek() {
+            return this.homeLatestSafeOffset > 0;
+        },
+        homeLatestHasRightPeek() {
+            return this.homeLatestSafeOffset < this.homeLatestMaxOffset;
+        },
+        homeLatestCarouselRenderItems() {
+            const offers = Array.isArray(this.homeLatestFilteredOffers) ? this.homeLatestFilteredOffers : [];
+            if (!offers.length) {
+                return [];
+            }
+
+            const edgeVisibleCount = this.homeLatestEdgeVisibleCount;
+            if (!edgeVisibleCount) {
+                return [];
+            }
+
+            const hasLeftPeek = this.homeLatestHasLeftPeek;
+            const hasRightPeek = this.homeLatestHasRightPeek;
+            const fullCardCount = hasLeftPeek && hasRightPeek
+                ? Math.max(1, edgeVisibleCount - 1)
+                : edgeVisibleCount;
+            const offset = this.homeLatestSafeOffset;
+            const maxOffset = this.homeLatestMaxOffset;
+            let fullStart = offset;
+
+            if (hasRightPeek) {
+                const maxStartForRightPeek = Math.max(0, offers.length - (fullCardCount + 1));
+                fullStart = Math.min(fullStart, Math.max(maxStartForRightPeek, 0));
+            } else if (offset === maxOffset) {
+                fullStart = Math.max(0, offers.length - fullCardCount);
+            }
+
+            const fullEnd = Math.min(offers.length, fullStart + fullCardCount);
+            const renderItems = [];
+
+            if (hasLeftPeek && fullStart - 1 >= 0) {
+                renderItems.push({
+                    offer: offers[fullStart - 1],
+                    role: 'peek-left',
+                    className: 'home_latest_offers__item--peek-left'
+                });
+            }
+
+            for (let index = fullStart; index < fullEnd; index += 1) {
+                renderItems.push({
+                    offer: offers[index],
+                    role: 'full',
+                    className: 'home_latest_offers__item--full'
+                });
+            }
+
+            if (hasRightPeek && fullEnd < offers.length) {
+                renderItems.push({
+                    offer: offers[fullEnd],
+                    role: 'peek-right',
+                    className: 'home_latest_offers__item--peek-right'
+                });
+            }
+
+            return renderItems;
+        },
         homeOfferDetailOffer() {
             if (!this.homeOfferDetailModalOpen) {
                 return null;
@@ -3894,11 +4080,12 @@ createApp({
 
             const detailOfferId = this.normalizeProfileUserId(this.homeOfferDetailOfferId);
             if (!Number.isInteger(detailOfferId) || detailOfferId <= 0) {
-                return this.homeActiveOffer;
+                return this.homeActiveOffer || this.homeLatestFilteredOffers[0] || null;
             }
 
-            return this.homeFilteredOffers.find((offer) => offer.id === detailOfferId)
+            return this.findHomeOfferById(detailOfferId)
                 || this.homeActiveOffer
+                || this.homeLatestFilteredOffers[0]
                 || null;
         },
         homeOfferDetailPrimarySpecies() {
@@ -4241,7 +4428,9 @@ createApp({
         homeFilteredOffers(nextValue) {
             if (!Array.isArray(nextValue) || !nextValue.length) {
                 this.homeOffersCarouselIndex = 0;
-                this.closeHomeOfferDetailModal();
+                if (!this.homeLatestFilteredOffers.length) {
+                    this.closeHomeOfferDetailModal();
+                }
                 return;
             }
 
@@ -4257,13 +4446,38 @@ createApp({
                 if (
                     !Number.isInteger(detailOfferId)
                     || detailOfferId <= 0
-                    || !nextValue.some((offer) => offer.id === detailOfferId)
+                    || !this.findHomeOfferById(detailOfferId)
                 ) {
                     this.closeHomeOfferDetailModal();
                 }
             }
 
             this.prefetchHomeOfferHostCity(this.homeActiveOffer);
+        },
+        homeLatestFilteredOffers(nextValue) {
+            if (!Array.isArray(nextValue) || !nextValue.length) {
+                this.homeLatestCarouselOffset = 0;
+                if (!this.homeFilteredOffers.length) {
+                    this.closeHomeOfferDetailModal();
+                }
+                return;
+            }
+
+            const maxOffset = this.homeLatestMaxOffset;
+            if (!Number.isInteger(this.homeLatestCarouselOffset) || this.homeLatestCarouselOffset < 0) {
+                this.homeLatestCarouselOffset = 0;
+            } else if (this.homeLatestCarouselOffset > maxOffset) {
+                this.homeLatestCarouselOffset = maxOffset;
+            }
+
+            if (this.homeOfferDetailModalOpen) {
+                const detailOfferId = this.normalizeProfileUserId(this.homeOfferDetailOfferId);
+                if (!Number.isInteger(detailOfferId) || detailOfferId <= 0 || !this.findHomeOfferById(detailOfferId)) {
+                    this.closeHomeOfferDetailModal();
+                }
+            }
+
+            this.prefetchHomeLatestVisibleHostCities();
         },
         settingsCityOptionsLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showSettingsCityOptionsLoadingDots', 'settingsCityOptionsLoading', nextValue);
@@ -4727,15 +4941,31 @@ createApp({
                 return;
             }
 
-            const currentYear = new Date().getFullYear();
-            const supportsFutureCalendarRange = context === 'search' || context === 'myOffersAvailability';
-            const maxYear = supportsFutureCalendarRange
-                ? Math.max(currentYear + CALENDAR_SEARCH_FUTURE_YEAR_OFFSET, normalizedDate.getFullYear())
-                : currentYear;
-            const clampedYear = Math.min(Math.max(normalizedDate.getFullYear(), CALENDAR_MIN_YEAR), maxYear);
-            const clampedMonth = clampedYear === normalizedDate.getFullYear()
-                ? normalizedDate.getMonth()
-                : (normalizedDate.getFullYear() < CALENDAR_MIN_YEAR ? 0 : 11);
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            let minYear = CALENDAR_MIN_YEAR;
+            let maxYear = currentYear;
+
+            if (context === 'search') {
+                minYear = currentYear;
+                maxYear = currentYear + CALENDAR_HEADER_SEARCH_FUTURE_YEAR_OFFSET;
+            } else if (context === 'myOffersAvailability') {
+                maxYear = Math.max(currentYear + CALENDAR_GENERAL_FUTURE_YEAR_OFFSET, normalizedDate.getFullYear());
+            }
+
+            const clampedYear = Math.min(Math.max(normalizedDate.getFullYear(), minYear), maxYear);
+            let clampedMonth = normalizedDate.getMonth();
+
+            if (clampedYear !== normalizedDate.getFullYear()) {
+                clampedMonth = normalizedDate.getFullYear() < minYear ? 0 : 11;
+            }
+
+            if (context === 'search' && clampedYear === currentYear) {
+                clampedMonth = Math.max(clampedMonth, currentMonth);
+            }
+
+            clampedMonth = Math.min(Math.max(clampedMonth, 0), 11);
 
             if (context === 'settingsBirthDate') {
                 this.settingsBirthDateCalendarYear = clampedYear;
@@ -4803,7 +5033,7 @@ createApp({
         },
         selectDateCalendarDay(day) {
             const selectedDateValue = normalizeDateInputValue(day?.iso);
-            if (!selectedDateValue) {
+            if (!selectedDateValue || !isHeaderSearchDateSelectable(selectedDateValue)) {
                 return;
             }
 
@@ -4829,7 +5059,10 @@ createApp({
             this.syncDateCalendarView(selectedDateValue);
         },
         setDateStart(value) {
-            const normalizedStart = normalizeDateInputValue(value);
+            const normalizedCandidate = normalizeDateInputValue(value);
+            const normalizedStart = isHeaderSearchDateSelectable(normalizedCandidate)
+                ? normalizedCandidate
+                : '';
             this.dateRangeStart = normalizedStart;
 
             if (!normalizedStart) {
@@ -4845,7 +5078,10 @@ createApp({
             this.syncDateCalendarView(normalizedStart);
         },
         setDateEnd(value) {
-            const normalizedEnd = normalizeDateInputValue(value);
+            const normalizedCandidate = normalizeDateInputValue(value);
+            const normalizedEnd = isHeaderSearchDateSelectable(normalizedCandidate)
+                ? normalizedCandidate
+                : '';
             this.dateRangeEnd = normalizedEnd;
 
             if (!normalizedEnd) {
@@ -6423,6 +6659,10 @@ createApp({
             this.homeOffers = [];
             this.homeOfferSpeciesFilter = 'ALL';
             this.homeOffersCarouselIndex = 0;
+            this.homeLatestOffers = [];
+            this.homeLatestOfferLoadRequestId = 0;
+            this.homeLatestCarouselOffset = 0;
+            this.homeLatestViewportWidth = Number.isFinite(window.innerWidth) ? window.innerWidth : 1280;
             this.homeOfferHostCityByHostId = {};
             this.homeOfferHostCityLoadingByHostId = {};
             this.homeOfferDetailModalOpen = false;
@@ -6437,7 +6677,10 @@ createApp({
                 }
             }
 
-            await this.loadHomeOffers();
+            await Promise.allSettled([
+                this.loadHomeOffers(),
+                this.loadHomeLatestOffers()
+            ]);
         },
         async loadHomeOffers() {
             if (!homePageRoot) {
@@ -6490,6 +6733,52 @@ createApp({
                 if (requestId === this.homeOfferLoadRequestId) {
                     this.homeViewLoading = false;
                 }
+            }
+        },
+        async loadHomeLatestOffers() {
+            if (!homePageRoot) {
+                return;
+            }
+
+            const requestId = this.homeLatestOfferLoadRequestId + 1;
+            this.homeLatestOfferLoadRequestId = requestId;
+
+            try {
+                const response = await apiFetch('/api/marketplace/offers/latest?limit=10', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (requestId !== this.homeLatestOfferLoadRequestId) {
+                    return;
+                }
+
+                if (!response.ok || payload?.success === false) {
+                    this.homeLatestOffers = [];
+                    this.homeLatestCarouselOffset = 0;
+                    return;
+                }
+
+                const normalizedOffers = Array.isArray(payload?.data)
+                    ? payload.data
+                        .map((offer) => this.normalizeMyOffer(offer))
+                        .filter((offer) => Number.isInteger(offer.id) && offer.id > 0)
+                    : [];
+
+                this.homeLatestOffers = normalizedOffers.slice(0, 10);
+                this.homeLatestCarouselOffset = 0;
+                this.prefetchHomeLatestVisibleHostCities();
+            } catch {
+                if (requestId !== this.homeLatestOfferLoadRequestId) {
+                    return;
+                }
+
+                this.homeLatestOffers = [];
+                this.homeLatestCarouselOffset = 0;
             }
         },
         selectHomeOfferSpecies(value = 'ALL', event = null) {
@@ -6557,6 +6846,26 @@ createApp({
             this.homeOffersCarouselIndex = nextIndex;
             this.prefetchHomeOfferHostCity(this.homeActiveOffer);
         },
+        navigateHomeLatestOffersCarousel(direction = 1) {
+            const maxOffset = this.homeLatestMaxOffset;
+            if (!Array.isArray(this.homeLatestFilteredOffers) || !this.homeLatestFilteredOffers.length || maxOffset <= 0) {
+                this.homeLatestCarouselOffset = 0;
+                return;
+            }
+
+            const normalizedDirection = Number(direction) < 0 ? -1 : 1;
+            const currentOffset = this.homeLatestSafeOffset;
+            const nextOffset = Math.min(maxOffset, Math.max(0, currentOffset + normalizedDirection));
+            this.homeLatestCarouselOffset = nextOffset;
+            this.prefetchHomeLatestVisibleHostCities();
+        },
+        buildHomeLatestOfferOpenDetailsLabel(offer = null) {
+            const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
+            const template = this.homeStrings.latest.openDetailsTemplate || this.homeStrings.openDetailsTemplate;
+            return formatTemplate(template, {
+                name: offerName || this.homeStrings.untitledOffer
+            });
+        },
         buildHomeOfferOpenDetailsLabel(offer = null) {
             const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
             return formatTemplate(this.homeStrings.openDetailsTemplate, {
@@ -6574,6 +6883,23 @@ createApp({
             }
 
             if (!this.homeActiveOffer || this.homeActiveOffer.id !== normalizedOffer.id) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            this.homeOfferDetailModalOpen = true;
+            this.homeOfferDetailOfferId = normalizedOffer.id;
+            this.prefetchHomeOfferHostCity(normalizedOffer);
+            this.syncModalBodyLock();
+        },
+        openHomeOfferDetailModalFromLatest(offer = null) {
+            if (!homePageRoot) {
+                return;
+            }
+
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
                 return;
             }
 
@@ -6650,6 +6976,25 @@ createApp({
             }
 
             return this.homeStrings.modalHostLabel;
+        },
+        findHomeOfferById(offerId) {
+            const normalizedOfferId = this.normalizeProfileUserId(offerId);
+            if (!Number.isInteger(normalizedOfferId) || normalizedOfferId <= 0) {
+                return null;
+            }
+
+            const offers = [
+                ...(Array.isArray(this.homeOffers) ? this.homeOffers : []),
+                ...(Array.isArray(this.homeLatestOffers) ? this.homeLatestOffers : [])
+            ];
+
+            return offers.find((offer) => this.normalizeProfileUserId(offer?.id) === normalizedOfferId) || null;
+        },
+        prefetchHomeLatestVisibleHostCities() {
+            const renderItems = Array.isArray(this.homeLatestCarouselRenderItems) ? this.homeLatestCarouselRenderItems : [];
+            renderItems.forEach((item) => {
+                this.prefetchHomeOfferHostCity(item?.offer);
+            });
         },
         async prefetchHomeOfferHostCity(offer = null) {
             const hostId = this.normalizeProfileUserId(offer?.hostId);
@@ -13445,9 +13790,18 @@ createApp({
             });
         },
         handleResize() {
+            this.homeLatestViewportWidth = Number.isFinite(window.innerWidth)
+                ? window.innerWidth
+                : this.homeLatestViewportWidth;
+
             if (window.innerWidth >= 1024) {
                 this.menuOpen = false;
             }
+
+            if (this.homeLatestCarouselOffset > this.homeLatestMaxOffset) {
+                this.homeLatestCarouselOffset = this.homeLatestMaxOffset;
+            }
+            this.prefetchHomeLatestVisibleHostCities();
 
             this.closeAllDropdowns({ immediate: true });
             this.updateSegmentedIndicators();

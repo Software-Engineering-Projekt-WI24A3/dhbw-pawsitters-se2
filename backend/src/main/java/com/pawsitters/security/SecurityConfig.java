@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers("/api/users/mailExists").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/marketplace/offers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/marketplace/offers/latest").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/offers/host/**").permitAll()
                         // Oeffentliche Nutzeransicht/Suche (z. B. Benutzersuche im Frontend)
                         .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()

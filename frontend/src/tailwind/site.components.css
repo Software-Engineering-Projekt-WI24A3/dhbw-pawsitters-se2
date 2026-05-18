@@ -1577,6 +1577,10 @@
         min-width: 9rem;
     }
 
+    .my_offers_card__publish {
+        color: #ffffff;
+    }
+
     .my_offers_card__actions--draft .button {
         min-width: 0;
     }
@@ -3002,6 +3006,18 @@
         box-shadow: 0 0 0 2px rgba(75, 126, 72, 0.3);
     }
 
+    .header_search_date__day:disabled,
+    .header_search_date__day--disabled {
+        cursor: not-allowed;
+        color: rgba(17, 17, 19, 0.25);
+    }
+
+    .header_search_date__day:disabled:hover,
+    .header_search_date__day--disabled:hover {
+        transform: none;
+        background: transparent;
+    }
+
     .header_search_date__day--outside {
         color: rgba(17, 17, 19, 0.38);
     }
@@ -4382,6 +4398,34 @@
         transform: scale(1);
     }
 
+    .home_offer_slide__species {
+        position: absolute;
+        top: 0.72rem;
+        left: 0.72rem;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.34rem;
+        max-width: calc(100% - 1.44rem);
+    }
+
+    .home_offer_slide__species:empty {
+        display: none;
+    }
+
+    .home_offer_slide__species_icon {
+        width: 1.32rem;
+        height: 1.32rem;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow:
+            0 4px 11px rgba(8, 11, 18, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
     .home_offer_slide__title {
         @apply m-0;
         display: -webkit-box;
@@ -4479,6 +4523,281 @@
         max-width: 42ch;
     }
 
+    .home_latest_offers {
+        @apply mt-4 grid;
+        gap: 0.88rem;
+    }
+
+    .home_latest_offers__header {
+        display: flex;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .home_latest_offers__heading {
+        @apply m-0;
+        font-size: clamp(1.1rem, 2.2vw, 1.46rem);
+        line-height: 1.24;
+        font-weight: 660;
+        letter-spacing: -0.02em;
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .home_latest_offers__carousel {
+        position: relative;
+        width: min(100%, 88rem);
+        min-height: clamp(12.6rem, 24vw, 14.8rem);
+        margin-inline: auto;
+        padding-inline: clamp(2.4rem, 4vw, 3.4rem);
+        isolation: isolate;
+    }
+
+    .home_latest_offers__viewport {
+        overflow: hidden;
+        width: 100%;
+        padding-block: 0.22rem;
+    }
+
+    .home_latest_offers__track {
+        --home-latest-card-width: clamp(10rem, 18vw, 13.4rem);
+        --home-latest-card-gap: clamp(0.52rem, 1vw, 0.74rem);
+        display: flex;
+        align-items: stretch;
+        gap: var(--home-latest-card-gap);
+        min-height: clamp(11.4rem, 23vw, 13.4rem);
+        width: max-content;
+    }
+
+    .home_latest_offers__item {
+        position: relative;
+        flex: 0 0 var(--home-latest-card-width);
+        width: var(--home-latest-card-width);
+        overflow: hidden;
+    }
+
+    .home_latest_offers__item--full {
+        opacity: 1;
+    }
+
+    .home_latest_offers__item--peek-left,
+    .home_latest_offers__item--peek-right {
+        flex-basis: calc(var(--home-latest-card-width) * 0.5);
+        width: calc(var(--home-latest-card-width) * 0.5);
+        opacity: 0.84;
+        pointer-events: none;
+    }
+
+    .home_latest_offers__item--peek-left .home_latest_offer_card {
+        width: var(--home-latest-card-width);
+        margin-left: calc(var(--home-latest-card-width) * -0.5);
+    }
+
+    .home_latest_offers__item--peek-right .home_latest_offer_card {
+        width: var(--home-latest-card-width);
+    }
+
+    .home_latest_offers__item--peek-left::after,
+    .home_latest_offers__item--peek-right::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+    }
+
+    .home_latest_offers__item--peek-left::after {
+        background: linear-gradient(270deg, rgba(246, 248, 250, 0) 0%, rgba(246, 248, 250, 0.92) 100%);
+    }
+
+    .home_latest_offers__item--peek-right::after {
+        background: linear-gradient(90deg, rgba(246, 248, 250, 0) 0%, rgba(246, 248, 250, 0.92) 100%);
+    }
+
+    .home_latest_offer_card {
+        @apply grid border-0 text-left;
+        position: relative;
+        min-height: clamp(11.4rem, 23vw, 13.4rem);
+        align-content: space-between;
+        gap: 0.54rem;
+        border-radius: 1rem;
+        overflow: hidden;
+        padding: 0.72rem;
+        background:
+            linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(224, 232, 243, 0.96) 100%),
+            radial-gradient(circle at top right, rgba(96, 122, 151, 0.19) 0%, rgba(96, 122, 151, 0) 60%);
+        border: 1px solid rgba(17, 17, 19, 0.1);
+        box-shadow:
+            0 12px 24px rgba(8, 11, 18, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    }
+
+    .home_latest_offer_card::before,
+    .home_latest_offer_card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 260ms ease;
+    }
+
+    .home_latest_offer_card::before {
+        z-index: 0;
+        background-image: var(--my-offer-card-image, none);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .home_latest_offer_card::after {
+        z-index: 1;
+        background:
+            linear-gradient(180deg, rgba(7, 9, 14, 0.3) 0%, rgba(7, 9, 14, 0.46) 46%, rgba(7, 9, 14, 0.76) 100%),
+            radial-gradient(circle at top right, rgba(8, 22, 40, 0.26) 0%, rgba(8, 22, 40, 0) 54%);
+    }
+
+    .home_latest_offer_card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .home_latest_offer_card--with-image::before,
+    .home_latest_offer_card--with-image::after {
+        opacity: 1;
+    }
+
+    .home_latest_offer_card__species {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.24rem;
+        min-height: 1.12rem;
+        max-width: 100%;
+    }
+
+    .home_latest_offer_card__species_icon {
+        width: 1.08rem;
+        height: 1.08rem;
+        object-fit: cover;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.74);
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .home_latest_offer_card__title {
+        @apply m-0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: clamp(0.86rem, 1.2vw, 0.98rem);
+        line-height: 1.28;
+        letter-spacing: -0.01em;
+        font-weight: 640;
+        color: rgba(17, 17, 19, 0.92);
+    }
+
+    .home_latest_offer_card__host {
+        @apply m-0 text-[0.72rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        color: rgba(17, 17, 19, 0.6);
+    }
+
+    .home_latest_offer_card__meta {
+        @apply grid;
+        gap: 0.22rem;
+    }
+
+    .home_latest_offer_card__meta_text {
+        @apply m-0 text-[0.72rem] font-medium;
+        letter-spacing: -0.01em;
+        color: rgba(17, 17, 19, 0.72);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .home_latest_offer_card__price {
+        @apply inline-flex items-center justify-between;
+        gap: 0.48rem;
+    }
+
+    .home_latest_offer_card__price_label {
+        @apply text-[0.62rem] font-semibold uppercase;
+        letter-spacing: 0.09em;
+        color: rgba(17, 17, 19, 0.54);
+    }
+
+    .home_latest_offer_card__price_value {
+        @apply text-sm font-semibold;
+        color: rgba(17, 17, 19, 0.9);
+        letter-spacing: -0.01em;
+    }
+
+    .home_latest_offer_card--with-image .home_latest_offer_card__title,
+    .home_latest_offer_card--with-image .home_latest_offer_card__host,
+    .home_latest_offer_card--with-image .home_latest_offer_card__meta_text,
+    .home_latest_offer_card--with-image .home_latest_offer_card__price_label,
+    .home_latest_offer_card--with-image .home_latest_offer_card__price_value {
+        color: rgba(255, 255, 255, 0.94);
+        text-shadow: 0 2px 12px rgba(7, 9, 14, 0.38);
+    }
+
+    .home_latest_offer_card--interactive {
+        cursor: pointer;
+        transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .home_latest_offer_card--interactive:hover {
+        transform: translateY(-2px);
+        border-color: rgba(17, 17, 19, 0.2);
+        box-shadow:
+            0 16px 30px rgba(8, 11, 18, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    }
+
+    .home_latest_offer_card--interactive:focus-visible {
+        @apply outline-none ring-2 ring-black/20;
+    }
+
+    .home_latest_carousel-enter-active,
+    .home_latest_carousel-leave-active,
+    .home_latest_carousel-move {
+        transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1), opacity 340ms ease;
+    }
+
+    .home_latest_carousel-enter-from,
+    .home_latest_carousel-leave-to {
+        opacity: 0;
+        transform: translateX(1rem) scale(0.97);
+    }
+
+    .home_latest_offers__empty {
+        @apply grid place-items-start text-left;
+        min-height: 5.4rem;
+        padding: 0.4rem 0;
+    }
+
+    .home_latest_offers__empty_title {
+        @apply m-0 text-base font-semibold tracking-[-0.01em];
+        color: rgba(17, 17, 19, 0.9);
+    }
+
+    .home_latest_offers__empty_text {
+        @apply mt-1 mb-0 text-sm;
+        color: rgba(17, 17, 19, 0.66);
+        max-width: 48ch;
+    }
+
+    .home_latest_offers .my_offers_carousel__nav--prev {
+        left: 0;
+    }
+
+    .home_latest_offers .my_offers_carousel__nav--next {
+        right: 0;
+    }
+
     .home_offer_modal__surface {
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
     }
@@ -4510,6 +4829,12 @@
         letter-spacing: -0.01em;
     }
 
+    .home_offer_modal__host_link {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 0.14em;
+    }
+
     .home_offer_modal__section_title {
         @apply mt-0 mb-2 text-sm font-semibold uppercase;
         letter-spacing: 0.09em;
@@ -4520,6 +4845,7 @@
         @apply m-0 text-sm;
         color: rgba(17, 17, 19, 0.78);
         line-height: 1.56;
+        white-space: pre-line;
     }
 
     @media (max-width: 980px) {
@@ -4529,6 +4855,14 @@
 
         .home_offers_carousel .my_offers_carousel__nav--next {
             right: 0.12rem;
+        }
+
+        .home_latest_offers__carousel {
+            padding-inline: clamp(2rem, 5vw, 2.8rem);
+        }
+
+        .home_latest_offers__track {
+            --home-latest-card-width: clamp(9.4rem, 24vw, 12rem);
         }
     }
 
@@ -4541,6 +4875,20 @@
 
         .home_offers_reel__card {
             width: clamp(10.8rem, 34vw, 14.8rem);
+        }
+
+        .home_latest_offers__heading {
+            font-size: clamp(1rem, 4.4vw, 1.2rem);
+        }
+
+        .home_latest_offers__carousel {
+            min-height: clamp(11rem, 42vw, 12.8rem);
+            padding-inline: clamp(1.86rem, 5vw, 2.4rem);
+        }
+
+        .home_latest_offers__track {
+            --home-latest-card-width: clamp(8.7rem, 29vw, 10.9rem);
+            --home-latest-card-gap: clamp(0.42rem, 1.3vw, 0.58rem);
         }
     }
 
@@ -4571,6 +4919,23 @@
         .home_offers_reel__card--right-3 {
             opacity: 0;
             filter: blur(2px);
+        }
+
+        .home_latest_offers {
+            margin-top: 0.8rem;
+        }
+
+        .home_latest_offers__carousel {
+            padding-inline: clamp(1.7rem, 7vw, 2.1rem);
+        }
+
+        .home_latest_offers__track {
+            --home-latest-card-width: clamp(8rem, 42vw, 9.4rem);
+        }
+
+        .home_latest_offers .my_offers_carousel__nav {
+            width: 2.35rem;
+            height: 2.35rem;
         }
     }
 
@@ -5789,8 +6154,10 @@
     .repo_modal__surface {
         @apply relative grid w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2.6rem] border border-black/10 shadow-soft;
         --corp-repo-modal-max-width: var(--corp-modal-max-width-repo-board);
-        width: min(100%, var(--corp-repo-modal-max-width));
-        max-width: var(--corp-repo-modal-max-width);
+        justify-self: center;
+        width: auto;
+        width: fit-content;
+        max-width: min(100%, var(--corp-repo-modal-max-width));
         min-width: min(var(--corp-modal-min-width), 100%);
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         z-index: 1;
@@ -6419,8 +6786,10 @@
     .auth_modal__surface {
         @apply relative w-full rounded-[1.65rem] border border-black/10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6;
         --corp-auth-modal-max-width: var(--corp-modal-max-width-auth);
-        width: min(100%, var(--corp-auth-modal-max-width));
-        max-width: var(--corp-auth-modal-max-width);
+        justify-self: center;
+        width: auto;
+        width: fit-content;
+        max-width: min(100%, var(--corp-auth-modal-max-width));
         min-width: min(var(--corp-modal-min-width), 100%);
         z-index: 1;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
@@ -6523,7 +6892,6 @@
     }
 
     .user_search_modal__surface {
-        @apply w-full;
         max-height: min(calc(100dvh - 2rem), var(--corp-modal-max-height));
         display: grid;
         grid-template-rows: auto auto minmax(0, 1fr);

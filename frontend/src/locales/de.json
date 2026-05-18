@@ -422,6 +422,13 @@
       "carouselAria": "Karussell mit veröffentlichten Betreuungsangeboten",
       "untitledOffer": "Betreuungsangebot",
       "openDetailsTemplate": "Mehr Details zu {name} anzeigen",
+      "latest": {
+        "heading": "Die neuesten Betreuungsangebote",
+        "carouselAria": "Karussell mit den neuesten Betreuungsangeboten",
+        "emptyTitle": "Noch keine neuesten Angebote",
+        "emptyText": "Aktuell sind noch keine veröffentlichten Angebote vorhanden.",
+        "openDetailsTemplate": "Angebot {name} öffnen"
+      },
       "labels": {
         "date": "Zeitraum",
         "price": "Preis",

@@ -3,6 +3,8 @@ package com.pawsitters.repository;
 import com.pawsitters.model.Offer;
 import com.pawsitters.model.OfferStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +28,7 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
 
     @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
     List<Offer> findByStatus(OfferStatus status);
+
+    @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
+    Page<Offer> findByStatus(OfferStatus status, Pageable pageable);
 }
