@@ -1,4 +1,6 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
+# syntax=docker/dockerfile:1
+
+FROM --platform=$BUILDPLATFORM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /workspace
 
@@ -10,10 +12,7 @@ RUN mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:17-jre
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd --system pawsitters \
+RUN groupadd --system pawsitters \
     && useradd --system --gid pawsitters --home-dir /app --shell /usr/sbin/nologin pawsitters
 
 WORKDIR /app

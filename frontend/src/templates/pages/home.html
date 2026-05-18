@@ -29,6 +29,16 @@
                       data-home-latest-empty-title=#{home.page.latest.emptyTitle},
                       data-home-latest-empty-text=#{home.page.latest.emptyText},
                       data-home-latest-open-details-template=#{home.page.latest.openDetailsTemplate},
+                      data-home-search-loading=#{home.page.search.loading},
+                      data-home-search-load-failed=#{home.page.search.loadFailed},
+                      data-home-search-match-heading=#{home.page.search.matching.heading},
+                      data-home-search-match-carousel-aria=#{home.page.search.matching.carouselAria},
+                      data-home-search-match-empty-title=#{home.page.search.matching.emptyTitle},
+                      data-home-search-match-empty-text=#{home.page.search.matching.emptyText},
+                      data-home-search-alt-heading=#{home.page.search.alternative.heading},
+                      data-home-search-alt-carousel-aria=#{home.page.search.alternative.carouselAria},
+                      data-home-search-alt-empty-title=#{home.page.search.alternative.emptyTitle},
+                      data-home-search-alt-empty-text=#{home.page.search.alternative.emptyText},
                       data-home-action-previous=#{home.page.actions.previous},
                       data-home-action-next=#{home.page.actions.next}">
         <article class="home_offers_shell">
@@ -183,7 +193,13 @@
                 </header>
 
                 <template v-if="homeLatestFilteredOffers.length">
-                    <div class="home_latest_offers__carousel">
+                    <div class="home_latest_offers__carousel"
+                         :class="{
+                             'home_latest_offers__carousel--has-left': homeLatestHasLeftPeek,
+                             'home_latest_offers__carousel--has-right': homeLatestHasRightPeek,
+                             'home_latest_offers__carousel--forward': homeLatestCarouselDirection >= 0,
+                             'home_latest_offers__carousel--backward': homeLatestCarouselDirection < 0
+                         }">
                         <button v-if="homeLatestHasLeftPeek"
                                 class="my_offers_carousel__nav my_offers_carousel__nav--prev"
                                 type="button"
@@ -199,8 +215,9 @@
                                               tag="div"
                                               class="home_latest_offers__track">
                                 <article v-for="item in homeLatestCarouselRenderItems"
-                                         :key="'home-latest-offer-' + item.offer.id + '-' + item.role"
+                                         :key="'home-latest-offer-' + item.offer.id"
                                          class="home_latest_offers__item"
+                                         :data-role="item.role"
                                          :class="item.className">
                                     <button class="home_latest_offer_card home_latest_offer_card--interactive"
                                             type="button"
@@ -255,6 +272,213 @@
                     <h3 class="home_latest_offers__empty_title" v-text="homeStrings.latest.emptyTitle"></h3>
                     <p class="home_latest_offers__empty_text" v-text="homeStrings.latest.emptyText"></p>
                 </div>
+            </section>
+
+            <section v-if="homeSearchHasSubmitted"
+                     ref="homeSearchResults"
+                     class="home_search_results"
+                     :class="{ 'home_search_results--loading': homeSearchLoading }"
+                     :aria-busy="String(homeSearchLoading)">
+                <div v-if="homeSearchLoading && showHomeSearchLoadingDots"
+                     class="home_search_results__loading"
+                     role="status"
+                     aria-live="polite">
+                    <span class="repository_live_loading__dots" aria-hidden="true">
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                        <span class="repository_live_loading__dot"></span>
+                    </span>
+                    <span class="repository_live_loading__text" v-text="homeStrings.search.loading"></span>
+                </div>
+
+                <p v-else-if="homeSearchLoading"
+                   class="profile_state profile_state--loading"
+                   role="status"
+                   aria-live="polite"
+                   v-text="homeStrings.search.loading"></p>
+
+                <p v-else-if="homeSearchError"
+                   class="profile_state profile_state--error"
+                   role="alert"
+                   v-text="homeSearchError"></p>
+
+                <template v-else>
+                    <section class="home_latest_offers home_latest_offers--search"
+                             :aria-label="homeStrings.search.matching.carouselAria">
+                        <header class="home_latest_offers__header">
+                            <h2 class="home_latest_offers__heading" v-text="homeStrings.search.matching.heading"></h2>
+                        </header>
+
+                        <template v-if="homeSearchMatchingOffers.length">
+                            <div class="home_latest_offers__carousel"
+                                 :class="{
+                                     'home_latest_offers__carousel--has-left': homeSearchMatchingCarouselState.hasLeftPeek,
+                                     'home_latest_offers__carousel--has-right': homeSearchMatchingCarouselState.hasRightPeek,
+                                     'home_latest_offers__carousel--forward': homeSearchMatchingCarouselDirection >= 0,
+                                     'home_latest_offers__carousel--backward': homeSearchMatchingCarouselDirection < 0
+                                 }">
+                                <button v-if="homeSearchMatchingCarouselState.hasLeftPeek"
+                                        class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                        type="button"
+                                        @click="navigateHomeSearchMatchingCarousel(-1)"
+                                        :aria-label="homeStrings.actions.previous">
+                                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                    </svg>
+                                </button>
+
+                                <div class="home_latest_offers__viewport">
+                                    <transition-group name="home_latest_carousel"
+                                                      tag="div"
+                                                      class="home_latest_offers__track">
+                                        <article v-for="item in homeSearchMatchingCarouselState.renderItems"
+                                                 :key="'home-search-match-offer-' + item.offer.id"
+                                                 class="home_latest_offers__item"
+                                                 :data-role="item.role"
+                                                 :class="item.className">
+                                            <button class="home_latest_offer_card home_latest_offer_card--interactive"
+                                                    type="button"
+                                                    :class="{ 'home_latest_offer_card--with-image': hasMyOfferCardImage(item.offer) }"
+                                                    :style="buildMyOfferCardStyle(item.offer)"
+                                                    @click="openHomeOfferDetailModalFromLatest(item.offer)"
+                                                    :aria-label="buildHomeLatestOfferOpenDetailsLabel(item.offer)">
+                                                <span class="home_latest_offer_card__species" aria-hidden="true">
+                                                    <img class="home_latest_offer_card__species_icon"
+                                                         v-for="species in resolveMyOfferSpecies(item.offer)"
+                                                         :key="'home-search-match-species-' + item.offer.id + '-' + species.value"
+                                                         :src="species.emojiPath"
+                                                         :alt="species.label">
+                                                </span>
+
+                                                <span class="home_latest_offer_card__title"
+                                                      v-text="item.offer.title || homeStrings.untitledOffer"></span>
+
+                                                <span class="home_latest_offer_card__host"
+                                                      v-text="homeOfferHostDisplayName(item.offer)"></span>
+
+                                                <span class="home_latest_offer_card__meta">
+                                                    <span class="home_latest_offer_card__meta_text"
+                                                          v-text="resolveHomeOfferLocation(item.offer)"></span>
+                                                    <span class="home_latest_offer_card__meta_text"
+                                                          v-text="formatHomeOfferDateRange(item.offer)"></span>
+                                                </span>
+
+                                                <span class="home_latest_offer_card__price">
+                                                    <span class="home_latest_offer_card__price_label" v-text="homeStrings.labels.price"></span>
+                                                    <span class="home_latest_offer_card__price_value"
+                                                          v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
+                                                </span>
+                                            </button>
+                                        </article>
+                                    </transition-group>
+                                </div>
+
+                                <button v-if="homeSearchMatchingCarouselState.hasRightPeek"
+                                        class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                        type="button"
+                                        @click="navigateHomeSearchMatchingCarousel(1)"
+                                        :aria-label="homeStrings.actions.next">
+                                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+
+                        <div v-else class="home_latest_offers__empty">
+                            <h3 class="home_latest_offers__empty_title" v-text="homeStrings.search.matching.emptyTitle"></h3>
+                            <p class="home_latest_offers__empty_text" v-text="homeStrings.search.matching.emptyText"></p>
+                        </div>
+                    </section>
+
+                    <section class="home_latest_offers home_latest_offers--search"
+                             :aria-label="homeStrings.search.alternative.carouselAria">
+                        <header class="home_latest_offers__header">
+                            <h2 class="home_latest_offers__heading" v-text="homeStrings.search.alternative.heading"></h2>
+                        </header>
+
+                        <template v-if="homeSearchAlternativeOffers.length">
+                            <div class="home_latest_offers__carousel"
+                                 :class="{
+                                     'home_latest_offers__carousel--has-left': homeSearchAlternativeCarouselState.hasLeftPeek,
+                                     'home_latest_offers__carousel--has-right': homeSearchAlternativeCarouselState.hasRightPeek,
+                                     'home_latest_offers__carousel--forward': homeSearchAlternativeCarouselDirection >= 0,
+                                     'home_latest_offers__carousel--backward': homeSearchAlternativeCarouselDirection < 0
+                                 }">
+                                <button v-if="homeSearchAlternativeCarouselState.hasLeftPeek"
+                                        class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                                        type="button"
+                                        @click="navigateHomeSearchAlternativeCarousel(-1)"
+                                        :aria-label="homeStrings.actions.previous">
+                                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                                    </svg>
+                                </button>
+
+                                <div class="home_latest_offers__viewport">
+                                    <transition-group name="home_latest_carousel"
+                                                      tag="div"
+                                                      class="home_latest_offers__track">
+                                        <article v-for="item in homeSearchAlternativeCarouselState.renderItems"
+                                                 :key="'home-search-alt-offer-' + item.offer.id"
+                                                 class="home_latest_offers__item"
+                                                 :data-role="item.role"
+                                                 :class="item.className">
+                                            <button class="home_latest_offer_card home_latest_offer_card--interactive"
+                                                    type="button"
+                                                    :class="{ 'home_latest_offer_card--with-image': hasMyOfferCardImage(item.offer) }"
+                                                    :style="buildMyOfferCardStyle(item.offer)"
+                                                    @click="openHomeOfferDetailModalFromLatest(item.offer)"
+                                                    :aria-label="buildHomeLatestOfferOpenDetailsLabel(item.offer)">
+                                                <span class="home_latest_offer_card__species" aria-hidden="true">
+                                                    <img class="home_latest_offer_card__species_icon"
+                                                         v-for="species in resolveMyOfferSpecies(item.offer)"
+                                                         :key="'home-search-alt-species-' + item.offer.id + '-' + species.value"
+                                                         :src="species.emojiPath"
+                                                         :alt="species.label">
+                                                </span>
+
+                                                <span class="home_latest_offer_card__title"
+                                                      v-text="item.offer.title || homeStrings.untitledOffer"></span>
+
+                                                <span class="home_latest_offer_card__host"
+                                                      v-text="homeOfferHostDisplayName(item.offer)"></span>
+
+                                                <span class="home_latest_offer_card__meta">
+                                                    <span class="home_latest_offer_card__meta_text"
+                                                          v-text="resolveHomeOfferLocation(item.offer)"></span>
+                                                    <span class="home_latest_offer_card__meta_text"
+                                                          v-text="formatHomeOfferDateRange(item.offer)"></span>
+                                                </span>
+
+                                                <span class="home_latest_offer_card__price">
+                                                    <span class="home_latest_offer_card__price_label" v-text="homeStrings.labels.price"></span>
+                                                    <span class="home_latest_offer_card__price_value"
+                                                          v-text="formatMyOfferPrice(item.offer.pricePerDay)"></span>
+                                                </span>
+                                            </button>
+                                        </article>
+                                    </transition-group>
+                                </div>
+
+                                <button v-if="homeSearchAlternativeCarouselState.hasRightPeek"
+                                        class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                                        type="button"
+                                        @click="navigateHomeSearchAlternativeCarousel(1)"
+                                        :aria-label="homeStrings.actions.next">
+                                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                        <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+
+                        <div v-else class="home_latest_offers__empty">
+                            <h3 class="home_latest_offers__empty_title" v-text="homeStrings.search.alternative.emptyTitle"></h3>
+                            <p class="home_latest_offers__empty_text" v-text="homeStrings.search.alternative.emptyText"></p>
+                        </div>
+                    </section>
+                </template>
             </section>
         </article>
 

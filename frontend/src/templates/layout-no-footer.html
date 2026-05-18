@@ -724,9 +724,12 @@
                                                     'header_search_date__day--range': day.isInRange,
                                                     'header_search_date__day--start': day.isSelectedStart,
                                                     'header_search_date__day--end': day.isSelectedEnd,
-                                                    'header_search_date__day--single': day.isSingleDaySelection
+                                                    'header_search_date__day--single': day.isSingleDaySelection,
+                                                    'header_search_date__day--disabled': day.isDisabled
                                                 }"
                                                 :aria-label="day.ariaLabel"
+                                                :disabled="day.isDisabled"
+                                                :aria-disabled="day.isDisabled ? 'true' : 'false'"
                                                 :aria-pressed="day.isSelectedStart || day.isSelectedEnd ? 'true' : 'false'"
                                                 @click="selectMyOffersAvailabilityCalendarDay(day)">
                                             <span v-text="day.dayNumber"></span>

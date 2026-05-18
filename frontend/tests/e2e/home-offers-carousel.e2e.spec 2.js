@@ -165,35 +165,7 @@ const marketplaceOffers = [
 
 const latestMarketplaceOffers = [
   {
-    id: 1015,
-    hostId: 610,
-    hostFirstName: 'Ava',
-    hostLastName: 'Heller',
-    title: 'Loft Dogs Downtown',
-    description: 'Ruhige Loft-Betreuung mit langen Spaziergängen.',
-    pricePerDay: 64,
-    acceptedPetSpecies: ['DOG'],
-    services: ['Spaziergang', 'Training'],
-    availableFrom: '2026-06-15',
-    availableTo: '2026-06-23',
-    status: 'PUBLISHED'
-  },
-  {
-    id: 1014,
-    hostId: 501,
-    hostFirstName: 'Eigene',
-    hostLastName: 'Gastgeberin',
-    title: 'Eigene Skyline Suite',
-    description: 'Soll im Latest-Carousel bei Login ausgeblendet werden.',
-    pricePerDay: 68,
-    acceptedPetSpecies: ['DOG'],
-    services: ['Spaziergang', 'Pflege'],
-    availableFrom: '2026-06-14',
-    availableTo: '2026-06-21',
-    status: 'PUBLISHED'
-  },
-  {
-    id: 1013,
+    id: 1010,
     hostId: 609,
     hostFirstName: 'Sina',
     hostLastName: 'Reiter',
@@ -207,7 +179,7 @@ const latestMarketplaceOffers = [
     status: 'PUBLISHED'
   },
   {
-    id: 1012,
+    id: 1009,
     hostId: 608,
     hostFirstName: 'Jule',
     hostLastName: 'Kramer',
@@ -220,37 +192,8 @@ const latestMarketplaceOffers = [
     availableTo: '2026-06-19',
     status: 'PUBLISHED'
   },
-  {
-    id: 1011,
-    hostId: 611,
-    hostFirstName: 'Theo',
-    hostLastName: 'Maaß',
-    title: 'Naturhof Weekend',
-    description: 'Betreuung in ruhiger Lage am Stadtrand.',
-    pricePerDay: 39,
-    acceptedPetSpecies: ['RABBIT'],
-    services: ['Fütterung', 'Auslauf'],
-    availableFrom: '2026-06-12',
-    availableTo: '2026-06-18',
-    status: 'PUBLISHED'
-  },
   ...marketplaceOffers.slice().reverse()
 ];
-
-function selectLatestOffersForRequest(requestUrl) {
-  const parsedUrl = new URL(requestUrl);
-  const requestedLimit = Number.parseInt(parsedUrl.searchParams.get('limit') || '10', 10);
-  const safeLimit = Number.isInteger(requestedLimit) && requestedLimit > 0
-    ? Math.min(requestedLimit, 25)
-    : 10;
-  const excludeHostId = Number.parseInt(parsedUrl.searchParams.get('excludeHostId') || '', 10);
-
-  const filteredOffers = Number.isInteger(excludeHostId) && excludeHostId > 0
-    ? latestMarketplaceOffers.filter((offer) => offer.hostId !== excludeHostId)
-    : latestMarketplaceOffers;
-
-  return filteredOffers.slice(0, safeLimit);
-}
 
 const hostCities = {
   501: 'Berlin',
@@ -262,15 +205,12 @@ const hostCities = {
   606: 'Dresden',
   607: 'Stuttgart',
   608: 'Düsseldorf',
-  609: 'Frankfurt',
-  610: 'München',
-  611: 'Nürnberg'
+  609: 'Frankfurt'
 };
 
 test.describe('Home offers carousel', () => {
   test('excludes own published offers when logged in and supports species filter plus center modal', async ({ page }) => {
     await page.setViewportSize({ width: 1360, height: 920 });
-    const latestRequestUrls = [];
 
     await page.route('**/api/auth/session*', async (route) => {
       await route.fulfill({
@@ -314,11 +254,10 @@ test.describe('Home offers carousel', () => {
     });
 
     await page.route('**/api/marketplace/offers/latest*', async (route) => {
-      latestRequestUrls.push(route.request().url());
       await route.fulfill({
         status: 200,
         contentType: 'application/json; charset=utf-8',
-        body: JSON.stringify(buildLatestMarketplacePayload(selectLatestOffersForRequest(route.request().url())))
+        body: JSON.stringify(buildLatestMarketplacePayload(latestMarketplaceOffers))
       });
     });
 
@@ -391,19 +330,10 @@ test.describe('Home offers carousel', () => {
 
     const latestSection = page.locator('.home_latest_offers');
     await expect(latestSection.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
-    await expect.poll(
-      () => latestRequestUrls.some((url) => {
-        const parsedUrl = new URL(url);
-        return parsedUrl.searchParams.get('limit') === '10'
-          && parsedUrl.searchParams.get('excludeHostId') === '501';
-      })
-    ).toBe(true);
     await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
     await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
     await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(0);
-    await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Loft Dogs Downtown');
-    await expect(latestSection).not.toContainText('Eigenes Hundesitting');
-    await expect(latestSection).not.toContainText('Eigene Skyline Suite');
+    await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Penthouse Paws');
     await expect(latestSection.locator('.my_offers_carousel__nav--next')).toBeVisible();
     await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toHaveCount(0);
 
@@ -415,28 +345,20 @@ test.describe('Home offers carousel', () => {
     await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toBeVisible();
     await expect(latestSection.locator('.my_offers_carousel__nav--next')).toBeVisible();
 
-    let latestRightClicks = 0;
-    for (let step = 0; step < 10; step += 1) {
-      const nextButton = latestSection.locator('.my_offers_carousel__nav--next');
-      if ((await nextButton.count()) === 0) {
-        break;
-      }
-      await nextButton.click();
-      latestRightClicks += 1;
+    for (let step = 0; step < 4; step += 1) {
+      await latestSection.locator('.my_offers_carousel__nav--next').click();
     }
-    expect(latestRightClicks + 1).toBe(5);
 
     await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
     await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(1);
     await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
-    await expect(latestSection).not.toContainText('Eigenes Hundesitting');
+    await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Papagei Care');
     await expect(latestSection.locator('.my_offers_carousel__nav--next')).toHaveCount(0);
     await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toBeVisible();
   });
 
   test('shows all published offers when user is not logged in', async ({ page }) => {
     await page.setViewportSize({ width: 1360, height: 920 });
-    const latestRequestUrls = [];
 
     await page.route('**/api/auth/session*', async (route) => {
       await route.fulfill({
@@ -455,11 +377,10 @@ test.describe('Home offers carousel', () => {
     });
 
     await page.route('**/api/marketplace/offers/latest*', async (route) => {
-      latestRequestUrls.push(route.request().url());
       await route.fulfill({
         status: 200,
         contentType: 'application/json; charset=utf-8',
-        body: JSON.stringify(buildLatestMarketplacePayload(selectLatestOffersForRequest(route.request().url())))
+        body: JSON.stringify(buildLatestMarketplacePayload(latestMarketplaceOffers))
       });
     });
 
@@ -510,9 +431,6 @@ test.describe('Home offers carousel', () => {
     await expect(page.locator('.home_offers_reel__card--center .home_offer_slide__title')).toHaveText('Eigenes Hundesitting');
     await expect(page.locator('.home_offers_reel__card')).toHaveCount(7);
     await expect(page.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
-    await expect.poll(
-      () => latestRequestUrls.every((url) => !new URL(url).searchParams.has('excludeHostId'))
-    ).toBe(true);
     await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
     await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
   });

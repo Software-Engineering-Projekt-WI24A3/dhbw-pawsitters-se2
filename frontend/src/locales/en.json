@@ -429,6 +429,22 @@
         "emptyText": "There are currently no published offers available.",
         "openDetailsTemplate": "Open offer {name}"
       },
+      "search": {
+        "loading": "Matching offers to your filters.",
+        "loadFailed": "Search results could not be loaded. Please try again.",
+        "matching": {
+          "heading": "Offers that match your filters",
+          "carouselAria": "Carousel with offers matching the active filters",
+          "emptyTitle": "No direct matches",
+          "emptyText": "No offers were found for this combination of location, dates, and pet species."
+        },
+        "alternative": {
+          "heading": "You might like this offer on other dates",
+          "carouselAria": "Carousel with matching offers on alternative dates",
+          "emptyTitle": "No alternative dates found",
+          "emptyText": "No suitable offers were found for different availability dates."
+        }
+      },
       "labels": {
         "date": "Period",
         "price": "Price",
@@ -627,6 +643,7 @@
       "validation": {
         "requiredTemplate": "Please fill in {field}.",
         "period": "Please choose a valid care period.",
+        "periodPast": "The care period must not be in the past.",
         "periodOrder": "The end date must be on or after the start date.",
         "price": "Please enter a valid price greater than 0.",
         "cityRequired": "Please choose a care location from the search results.",

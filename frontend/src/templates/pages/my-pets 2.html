@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: shell(#{meta.myPets.title}, #{meta.myPets.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-profile page-settings page-my-pets', ~{::content})}">
+<th:block th:fragment="content">
+    <section class="profile_page settings_page my_pets_page"
+             data-my-pets-view
+             th:attr="data-my-pets-loading-label=#{myPets.page.loading},
+                      data-my-pets-auth-required=#{myPets.page.authRequired},
+                      data-my-pets-load-failed=#{myPets.page.loadFailed},
+                      data-my-pets-empty-title=#{myPets.page.emptyTitle},
+                      data-my-pets-empty-text=#{myPets.page.emptyText},
+                      data-my-pets-intro-description=#{myPets.page.introDescription},
+                      data-my-pets-count-template-singular=#{myPets.page.countTemplateSingular},
+                      data-my-pets-count-template-plural=#{myPets.page.countTemplatePlural},
+                      data-my-pets-save-success-title=#{myPets.page.notifications.saveSuccessTitle},
+                      data-my-pets-save-success-template=#{myPets.page.notifications.saveSuccessTemplate},
+                      data-my-pets-delete-success-title=#{myPets.page.notifications.deleteSuccessTitle},
+                      data-my-pets-delete-success-template=#{myPets.page.notifications.deleteSuccessTemplate},
+                      data-my-pets-upload-success-title=#{myPets.page.notifications.uploadSuccessTitle},
+                      data-my-pets-upload-success-template=#{myPets.page.notifications.uploadSuccessTemplate},
+                      data-my-pets-action-error-title=#{myPets.page.notifications.actionErrorTitle},
+                      data-my-pets-action-error-message=#{myPets.page.notifications.actionErrorMessage},
+                      data-my-pets-validation-required-template=#{myPets.page.validation.requiredTemplate},
+                      data-my-pets-validation-age=#{myPets.page.validation.age},
+                      data-my-pets-confirm-delete-template=#{myPets.page.confirmDeleteTemplate},
+                      data-my-pets-label-name=#{myPets.page.labels.name},
+                      data-my-pets-label-species=#{myPets.page.labels.species},
+                      data-my-pets-label-breed=#{myPets.page.labels.breed},
+                      data-my-pets-label-age=#{myPets.page.labels.age},
+                      data-my-pets-label-special-needs=#{myPets.page.labels.specialNeeds},
+                      data-my-pets-label-image=#{myPets.page.labels.image},
+                      data-my-pets-placeholder-name=#{myPets.page.placeholders.name},
+                      data-my-pets-placeholder-breed=#{myPets.page.placeholders.breed},
+                      data-my-pets-placeholder-age=#{myPets.page.placeholders.age},
+                      data-my-pets-placeholder-special-needs=#{myPets.page.placeholders.specialNeeds},
+                      data-my-pets-image-selected-template=#{myPets.page.imageSelectedTemplate},
+                      data-my-pets-form-add-title=#{myPets.page.formAddTitle},
+                      data-my-pets-form-edit-title=#{myPets.page.formEditTitle},
+                      data-my-pets-quick-upload-label=#{myPets.page.quickUploadLabel},
+                      data-my-pets-action-previous=#{myPets.page.actions.previous},
+                      data-my-pets-action-next=#{myPets.page.actions.next},
+                      data-my-pets-action-save=#{myPets.page.actions.save},
+                      data-my-pets-action-cancel=#{myPets.page.actions.cancel},
+                      data-my-pets-edit-label=#{myPets.page.actions.edit},
+                      data-my-pets-delete-label=#{myPets.page.actions.delete},
+                      data-my-pets-add-link-label=#{myPets.page.addPetLink},
+                      data-my-pets-details-hint=#{myPets.page.detailsHint},
+                      data-my-pets-open-details-template=#{myPets.page.openDetailsTemplate},
+                      data-my-pets-modal-close-aria=#{myPets.page.modalCloseAria}">
+        <header class="profile_hero">
+            <div class="profile_hero__media">
+                <img class="profile_hero__banner"
+                     src="https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Helsinki-1.jpg"
+                     th:attr="alt=#{myPets.page.bannerAlt}"
+                     alt="myPets.page.bannerAlt">
+                <div class="profile_hero__scrim" aria-hidden="true"></div>
+            </div>
+            <div class="profile_hero__heading">
+                <p class="profile_hero__eyebrow" th:text="#{myPets.page.eyebrow}">myPets.page.eyebrow</p>
+                <h1 class="profile_hero__title" th:text="#{myPets.page.title}">myPets.page.title</h1>
+            </div>
+            <div class="profile_hero__avatar_ring settings_profile_avatar">
+                <img v-if="myPetsViewUser && myPetsViewUser.profilePicture"
+                     class="profile_hero__avatar"
+                     :src="myPetsViewUser.profilePicture"
+                     :alt="myPetsDisplayName">
+                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="myPetsViewInitial"></span>
+            </div>
+        </header>
+
+        <article class="profile_panel my_pets_panel">
+            <div v-if="myPetsViewLoading && showMyPetsViewLoadingDots"
+                 class="profile_state profile_state--loading profile_state--loading-dots"
+                 role="status"
+                 aria-live="polite">
+                <span class="repository_live_loading__dots" aria-hidden="true">
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                    <span class="repository_live_loading__dot"></span>
+                </span>
+                <span class="repository_live_loading__text" v-text="myPetsStrings.loading"></span>
+            </div>
+
+            <p v-else-if="myPetsViewLoading"
+               class="profile_state profile_state--loading"
+               role="status"
+               aria-live="polite"
+               v-text="myPetsStrings.loading"></p>
+
+            <p v-else-if="myPetsViewError"
+               class="profile_state profile_state--error"
+               role="alert"
+               v-text="myPetsViewError"></p>
+
+            <div v-else class="profile_panel__content my_pets_panel__content">
+                <button class="my_pets_add_link"
+                        type="button"
+                        @click="openMyPetsAddModal()"
+                        v-text="myPetsStrings.addPetLink"></button>
+
+                <div class="my_pets_intro">
+                    <h2 class="profile_panel__name" v-text="myPetsDisplayName"></h2>
+                    <p class="my_pets_intro__subtitle" v-text="myPetsStrings.introDescription"></p>
+                    <p class="my_pets_intro__count" v-text="myPetsCountLabel"></p>
+                </div>
+
+                <section class="my_pets_reel_shell"
+                         th:attr="aria-label=#{myPets.page.carouselAria}">
+                    <template v-if="myPetsPets.length && myPetsActivePet">
+                        <button class="my_pets_reel__nav my_pets_reel__nav--prev"
+                                type="button"
+                                @click="navigateMyPetsCarousel(-1)"
+                                :aria-label="myPetsStrings.actions.previous">
+                            <svg class="my_pets_reel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                            </svg>
+                        </button>
+
+                        <div class="my_pets_reel__viewport">
+                            <article v-for="item in myPetsCarouselRenderItems"
+                                     :key="'my-pets-reel-' + item.pet.id"
+                                     class="my_pets_reel__card"
+                                     :class="item.positionClass">
+                                <button v-if="item.isCenter"
+                                        class="my_pets_reel__card_button"
+                                        type="button"
+                                        @click="openMyPetsDetailModal(item.pet)"
+                                        :aria-label="buildMyPetsOpenDetailsLabel(item.pet)">
+                                    <div class="my_pets_reel__media">
+                                        <img class="my_pets_reel__image"
+                                             :src="resolveMyPetImagePath(item.pet)"
+                                             :alt="item.pet.name"
+                                             loading="lazy"
+                                             decoding="async">
+                                    </div>
+                                    <span class="my_pets_reel__species">
+                                        <img class="my_pets_reel__species_icon"
+                                             :src="resolveMyPetSpeciesEmoji(item.pet)"
+                                             alt=""
+                                             aria-hidden="true">
+                                        <span v-text="resolveMyPetSpeciesLabel(item.pet)"></span>
+                                    </span>
+                                    <span class="my_pets_reel__name" v-text="item.pet.name"></span>
+                                </button>
+
+                                <div v-else class="my_pets_reel__card_static" aria-hidden="true">
+                                    <div class="my_pets_reel__media">
+                                        <img class="my_pets_reel__image"
+                                             :src="resolveMyPetImagePath(item.pet)"
+                                             :alt="item.pet.name"
+                                             loading="lazy"
+                                             decoding="async">
+                                    </div>
+                                </div>
+
+                                <div class="my_pets_reel__reflection" aria-hidden="true">
+                                    <img class="my_pets_reel__reflection_image"
+                                         :src="resolveMyPetImagePath(item.pet)"
+                                         alt="">
+                                </div>
+                            </article>
+                        </div>
+
+                        <button class="my_pets_reel__nav my_pets_reel__nav--next"
+                                type="button"
+                                @click="navigateMyPetsCarousel(1)"
+                                :aria-label="myPetsStrings.actions.next">
+                            <svg class="my_pets_reel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                                <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                            </svg>
+                        </button>
+                    </template>
+
+                    <div v-else class="my_pets_empty">
+                        <h3 class="my_pets_empty__title" v-text="myPetsStrings.emptyTitle"></h3>
+                    </div>
+                </section>
+            </div>
+        </article>
+
+    </section>
+</th:block>
+</html>

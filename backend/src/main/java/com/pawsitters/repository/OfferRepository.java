@@ -31,4 +31,7 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
 
     @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
     Page<Offer> findByStatus(OfferStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"host", "acceptedPetSpecies", "services"})
+    Page<Offer> findByStatusAndHostIdNot(OfferStatus status, Long hostId, Pageable pageable);
 }
