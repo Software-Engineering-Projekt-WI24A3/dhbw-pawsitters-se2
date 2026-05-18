@@ -1,11 +1,19 @@
 package com.pawsitters.repository;
 
 import com.pawsitters.model.HostReview;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface HostReviewRepository extends JpaRepository<HostReview, Long> {
+
+    @EntityGraph(attributePaths = {"host", "petOwner", "booking"})
+    List<HostReview> findByHostIdOrderByCreatedAtDescIdDesc(Long hostId);
+
+    boolean existsByBookingId(Long bookingId);
 
     @Query("""
             select count(review) as reviewCount,

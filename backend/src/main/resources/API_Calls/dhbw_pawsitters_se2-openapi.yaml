@@ -18,6 +18,8 @@ tags:
     description: Endpunkte zum Erstellen und Verwalten von Betreuungspaketen.
   - name: Hosts
     description: Endpunkte fuer Gastgeberprofile, Unterkunftsgalerien und Review-Statistiken.
+  - name: Reviews
+    description: Endpunkte fuer Feedback nach abgeschlossenen Betreuungsbuchungen.
   - name: Availability
     description: Endpunkte fuer freie Gastgeber-Zeitraeume und wiederkehrende Kalenderfreigaben.
   - name: Marketplace
@@ -27,6 +29,35 @@ tags:
   - name: Bookings
     description: Endpunkte fuer aktive und abgeschlossene Betreuungsbuchungen.
 paths:
+  /api/reviews:
+    post:
+      operationId: createReview
+      tags: [Reviews]
+      summary: Bewertung fuer eine abgeschlossene Buchung abgeben
+      description: Erstellt ein Host-Review. Bewertet werden darf nur eine abgeschlossene Buchung durch den Tierhalter der Buchung; pro Buchung ist genau eine Bewertung moeglich.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewCreateRequest"
+      responses:
+        "201":
+          description: Review erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostReviewApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /api/auth/register:
     post:
       operationId: authRegister
@@ -361,6 +392,23 @@ paths:
                 $ref: "#/components/schemas/HostStatsApiResponse"
         "404":
           $ref: "#/components/responses/NotFound"
+  /api/hosts/{id}/reviews:
+    get:
+      operationId: getHostReviews
+      tags: [Reviews]
+      summary: Bewertungen eines Gastgebers abrufen
+      description: Gibt die Bewertungen eines Hosts absteigend nach Erstellungszeitpunkt zurueck.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Reviews des Gastgebers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostReviewListApiResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/hosts/{id}/gallery:
     post:
       operationId: uploadHostGalleryImage
@@ -572,6 +620,20 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
   /api/offers:
+    get:
+      operationId: getOwnOffers
+      tags: [Offers]
+      summary: Eigene Betreuungspakete abrufen
+      description: Liefert alle Angebote des authentifizierten Users, absteigend nach ID sortiert.
+      responses:
+        "200":
+          description: Eigene Angebote.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferListApiResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     post:
       operationId: createOffer
       tags: [Offers]
@@ -593,6 +655,28 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /api/offers/host/{hostId}:
+    get:
+      operationId: getOffersForHost
+      tags: [Offers]
+      summary: Veroeffentlichte Betreuungspakete eines Gastgebers abrufen
+      description: Liefert die veroeffentlichten Angebote, die im Host-Profil angezeigt werden.
+      parameters:
+        - name: hostId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Veroeffentlichte Angebote des Gastgebers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferListApiResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/offers/{id}:
     get:
       operationId: getOffer
@@ -607,6 +691,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OfferApiResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateOffer
+      tags: [Offers]
+      summary: Eigenes Betreuungspaket aktualisieren
+      description: Aktualisiert ein eigenes Angebot, solange es noch ein Entwurf ist.
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferUpdateRequest"
+      responses:
+        "200":
+          description: Angebot aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -708,6 +818,116 @@ paths:
                 $ref: "#/components/schemas/OfferListApiResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/marketplace/offers/latest:
+    get:
+      operationId: getLatestMarketplaceOffers
+      tags: [Marketplace]
+      summary: Neueste veroeffentlichte Betreuungspakete abrufen
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 25
+            default: 10
+        - name: excludeHostId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: Neueste veroeffentlichte Angebote.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferListApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/marketplace/offers/search:
+    get:
+      operationId: searchMarketplaceOffers
+      tags: [Marketplace]
+      summary: Veroeffentlichte Betreuungspakete suchen
+      description: Sucht nach Angeboten anhand von Tierart, Ort, PLZ und optionalem Betreuungszeitraum. `location` ist ein Alias fuer `city`; `zipCode` und `plz` sind Aliase fuer `postalCode`.
+      parameters:
+        - name: species
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PetChoice"
+          style: form
+          explode: true
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: postalCode
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+        - name: zipCode
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+        - name: plz
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{5}$"
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 25
+            default: 10
+        - name: excludeHostId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: Suchergebnis mit passenden Angeboten und optionalen Alternativen ausserhalb des Datumsbereichs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceOfferSearchApiResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
   /api/marketplace/hosts/search:
     get:
       operationId: searchMarketplaceHosts
@@ -1223,6 +1443,22 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/HostStatsResponse"
+    HostReviewApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/HostReviewResponse"
+    HostReviewListApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/HostReviewResponse"
     PetListApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -1266,6 +1502,13 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/MarketplaceFiltersResponse"
+    MarketplaceOfferSearchApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/MarketplaceOfferSearchResponse"
     MailExistsApiResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponseBase"
@@ -1335,6 +1578,39 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/BookingProposalResponse"
+    ReviewCreateRequest:
+      type: object
+      required: [bookingId, rating]
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        communicationRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+          description: Optional; wenn nicht gesetzt, wird `rating` uebernommen.
+        reliabilityRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+          description: Optional; wenn nicht gesetzt, wird `rating` uebernommen.
+        careRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+          description: Optional; wenn nicht gesetzt, wird `rating` uebernommen.
+        comment:
+          type: string
+          maxLength: 1000
+          nullable: true
     LoginRequest:
       type: object
       required: [email, password]
@@ -1505,6 +1781,9 @@ components:
         availableTo:
           type: string
           format: date
+    OfferUpdateRequest:
+      allOf:
+        - $ref: "#/components/schemas/OfferCreateRequest"
     HostCreateRequest:
       type: object
       description: "`experience` oder `experiences` muss mindestens einen nicht-leeren Wert enthalten. `bio` und `acceptedPetSpecies` aktualisieren bei Angabe die bestehenden Host-User-Daten."
@@ -1775,6 +2054,58 @@ components:
         averageCareRating:
           type: number
           format: double
+    HostReviewResponse:
+      type: object
+      required: [id, hostId, petOwnerId, rating, communicationRating, reliabilityRating, careRating, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        bookingId:
+          type: integer
+          format: int64
+          nullable: true
+        hostId:
+          type: integer
+          format: int64
+        hostFirstName:
+          type: string
+          nullable: true
+        hostLastName:
+          type: string
+          nullable: true
+        petOwnerId:
+          type: integer
+          format: int64
+          nullable: true
+        petOwnerFirstName:
+          type: string
+          nullable: true
+        petOwnerLastName:
+          type: string
+          nullable: true
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        communicationRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        reliabilityRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        careRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
     MarketplaceFiltersResponse:
       type: object
       required: [species, postalCodes, cities]
@@ -1791,6 +2122,18 @@ components:
           type: array
           items:
             type: string
+    MarketplaceOfferSearchResponse:
+      type: object
+      required: [matchingOffers, alternativeDateOffers]
+      properties:
+        matchingOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferResponse"
+        alternativeDateOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferResponse"
     OfferResponse:
       type: object
       required: [id, hostId, hostFirstName, hostLastName, title, description, pricePerDay, acceptedPetSpecies, services, availableFrom, availableTo, status]
