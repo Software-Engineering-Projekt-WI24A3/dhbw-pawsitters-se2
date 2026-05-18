@@ -429,6 +429,22 @@
         "emptyText": "Aktuell sind noch keine veröffentlichten Angebote vorhanden.",
         "openDetailsTemplate": "Angebot {name} öffnen"
       },
+      "search": {
+        "loading": "Angebote werden auf deine Filter abgestimmt.",
+        "loadFailed": "Die Suche konnte nicht geladen werden. Bitte versuche es erneut.",
+        "matching": {
+          "heading": "Angebote, die deinen Filtern entsprechen",
+          "carouselAria": "Karussell mit Angeboten, die den aktiven Filtern entsprechen",
+          "emptyTitle": "Keine direkten Treffer",
+          "emptyText": "Für diese Kombination aus Ort, Zeitraum und Tierarten wurden keine Angebote gefunden."
+        },
+        "alternative": {
+          "heading": "Vielleicht interessiert dich das Angebot an anderen Daten",
+          "carouselAria": "Karussell mit passenden Angeboten an anderen Daten",
+          "emptyTitle": "Keine Alternativen an anderen Daten",
+          "emptyText": "Es wurden keine passenden Angebote mit abweichendem Zeitraum gefunden."
+        }
+      },
       "labels": {
         "date": "Zeitraum",
         "price": "Preis",
@@ -627,6 +643,7 @@
       "validation": {
         "requiredTemplate": "Bitte fülle {field} aus.",
         "period": "Bitte wähle einen gültigen Betreuungszeitraum aus.",
+        "periodPast": "Der Betreuungszeitraum darf nicht in der Vergangenheit liegen.",
         "periodOrder": "Das Enddatum muss am oder nach dem Startdatum liegen.",
         "price": "Bitte gib einen gültigen Preis größer als 0 ein.",
         "cityRequired": "Bitte wähle einen Betreuungsort aus den Suchergebnissen aus.",

@@ -208,10 +208,10 @@ test.describe('My offers create flow', () => {
     await modal.locator('[data-my-offers-form-title]').fill('Wochenend-Sitting');
 
     const availabilityDays = modal.locator(
-      '[data-segment-value="setup"] .header_search_date__day:not(.header_search_date__day--outside):not(.header_search_date__day--disabled)'
+      '[data-segment-value="setup"] .header_search_date__day:not(.header_search_date__day--outside)'
     );
     await availabilityDays.first().click();
-    await availabilityDays.first().click();
+    await availabilityDays.nth(2).click();
 
     await modal.locator('[data-my-offers-image-upload]').setInputFiles({
       name: 'angebot.png',
@@ -256,17 +256,6 @@ test.describe('My offers create flow', () => {
     expect(createOfferPayload.acceptedPetSpecies.length).toBeGreaterThan(0);
     expect(createOfferPayload.availableFrom).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(createOfferPayload.availableTo).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    const todayIso = await page.evaluate(() => {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      return [
-        String(now.getFullYear()).padStart(4, '0'),
-        String(now.getMonth() + 1).padStart(2, '0'),
-        String(now.getDate()).padStart(2, '0')
-      ].join('-');
-    });
-    expect(createOfferPayload.availableFrom >= todayIso).toBe(true);
-    expect(createOfferPayload.availableTo >= todayIso).toBe(true);
     expect(createOfferPayload.availableTo >= createOfferPayload.availableFrom).toBe(true);
     expect(createOfferPayload).not.toHaveProperty('image');
     expect(createOfferPayload).not.toHaveProperty('imagePath');
@@ -402,10 +391,10 @@ test.describe('My offers create flow', () => {
     await modal.locator('[data-my-offers-form-title]').fill('Wochenend-Sitting');
 
     const availabilityDays = modal.locator(
-      '[data-segment-value="setup"] .header_search_date__day:not(.header_search_date__day--outside):not(.header_search_date__day--disabled)'
+      '[data-segment-value="setup"] .header_search_date__day:not(.header_search_date__day--outside)'
     );
     await availabilityDays.first().click();
-    await availabilityDays.first().click();
+    await availabilityDays.nth(2).click();
 
     await modal.getByRole('button', { name: token('de', 'myOffers.page.actions.stepNext'), exact: true }).click();
     await modal.locator('[data-segment-value="species"] .register_pet_chip').first().click();

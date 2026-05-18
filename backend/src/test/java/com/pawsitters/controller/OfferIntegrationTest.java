@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -162,6 +163,55 @@ class OfferIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.status").value("PUBLISHED"));
+
+        mockMvc.perform(patch("/api/offers/{id}", offerId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePayload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void hostCannotCreateOfferWithPastAvailabilityDates() throws Exception {
+        String token = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String title = "Vergangenheitsangebot " + UUID.randomUUID();
+
+        Map<String, Object> payload = buildOfferPayload(title);
+        payload.put("availableFrom", LocalDate.now().minusDays(1).toString());
+        payload.put("availableTo", LocalDate.now().plusDays(2).toString());
+
+        mockMvc.perform(post("/api/offers")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void hostCannotUpdateDraftOfferWithPastAvailabilityDates() throws Exception {
+        String token = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String title = "Entwurf ohne Vergangenheit " + UUID.randomUUID();
+
+        MvcResult createResult = mockMvc.perform(post("/api/offers")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(title))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+
+        Long offerId = objectMapper.readTree(createResult.getResponse().getContentAsString())
+                .get("data")
+                .get("id")
+                .asLong();
+
+        Map<String, Object> updatePayload = buildOfferPayload(title + " Update");
+        updatePayload.put("availableFrom", LocalDate.now().minusDays(2).toString());
+        updatePayload.put("availableTo", LocalDate.now().minusDays(1).toString());
 
         mockMvc.perform(patch("/api/offers/{id}", offerId)
                         .header("Authorization", "Bearer " + token)

@@ -212,6 +212,14 @@ public class OfferService {
             );
         }
 
+        LocalDate today = LocalDate.now();
+        if (availableFrom.isBefore(today) || availableTo.isBefore(today)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Der Betreuungszeitraum darf nicht in der Vergangenheit liegen."
+            );
+        }
+
         if (availableTo.isBefore(availableFrom)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,

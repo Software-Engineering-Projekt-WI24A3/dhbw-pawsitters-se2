@@ -429,6 +429,22 @@
         "emptyText": "Momentan nu există oferte publicate disponibile.",
         "openDetailsTemplate": "Deschide oferta {name}"
       },
+      "search": {
+        "loading": "Ofertele sunt potrivite cu filtrele tale.",
+        "loadFailed": "Rezultatele căutării nu au putut fi încărcate. Te rugăm să încerci din nou.",
+        "matching": {
+          "heading": "Oferte care corespund filtrelor tale",
+          "carouselAria": "Carusel cu oferte care corespund filtrelor active",
+          "emptyTitle": "Nu există potriviri directe",
+          "emptyText": "Nu au fost găsite oferte pentru această combinație de locație, perioadă și specii."
+        },
+        "alternative": {
+          "heading": "Poate te interesează oferta în alte date",
+          "carouselAria": "Carusel cu oferte potrivite pentru alte date",
+          "emptyTitle": "Nu există alternative pentru alte date",
+          "emptyText": "Nu au fost găsite oferte potrivite pentru perioade alternative."
+        }
+      },
       "labels": {
         "date": "Perioadă",
         "price": "Preț",
@@ -627,6 +643,7 @@
       "validation": {
         "requiredTemplate": "Te rugăm să completezi {field}.",
         "period": "Te rugam sa alegi o perioada valida de ingrijire.",
+        "periodPast": "Perioada de îngrijire nu poate fi în trecut.",
         "periodOrder": "Data de sfarsit trebuie sa fie egala sau dupa data de inceput.",
         "price": "Te rugăm să introduci un preț valid mai mare decât 0.",
         "cityRequired": "Te rugăm să selectezi locația îngrijirii din rezultatele căutării.",

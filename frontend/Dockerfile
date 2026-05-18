@@ -1,4 +1,6 @@
-FROM node:22-bookworm-slim AS build
+# syntax=docker/dockerfile:1
+
+FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS build
 
 ARG GITHUB_REF_NAME=develop
 ARG GITHUB_REPOSITORY=Software-Engineering-Projekt-WI24A3/dhbw-pawsitters-se2
@@ -20,6 +22,13 @@ COPY README.md ../README.md
 
 RUN npm run build
 
+FROM node:22-bookworm-slim AS runtime-deps
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --omit=dev
+
 FROM node:22-bookworm-slim
 
 WORKDIR /app/frontend
@@ -28,7 +37,12 @@ ENV PORT=80
 ENV HOST=0.0.0.0
 ENV BACKEND_ORIGIN=http://backend:8080
 
-COPY --from=build /workspace/frontend /app/frontend
+COPY --from=build /workspace/frontend/dist /app/frontend/dist
+COPY --from=build /workspace/frontend/scripts /app/frontend/scripts
+COPY --from=build /workspace/frontend/src /app/frontend/src
+COPY --from=build /workspace/frontend/tailwind.config.js /app/frontend/tailwind.config.js
+COPY --from=build /workspace/frontend/package.json /app/frontend/package.json
+COPY --from=runtime-deps /app/frontend/node_modules /app/frontend/node_modules
 
 EXPOSE 80
 

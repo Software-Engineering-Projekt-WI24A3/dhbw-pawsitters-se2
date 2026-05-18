@@ -3,6 +3,7 @@ package com.pawsitters.controller;
 import com.pawsitters.dto.ApiResponse;
 import com.pawsitters.dto.HostResponse;
 import com.pawsitters.dto.MarketplaceFiltersResponse;
+import com.pawsitters.dto.MarketplaceOfferSearchResponse;
 import com.pawsitters.dto.OfferResponse;
 import com.pawsitters.model.PetChoice;
 import com.pawsitters.service.MarketplaceService;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @Validated
@@ -59,14 +62,51 @@ public class MarketplaceController {
     public ResponseEntity<ApiResponse<List<OfferResponse>>> getLatestOffers(
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit muss mindestens 1 sein")
             @Max(value = 25, message = "limit darf maximal 25 sein") Integer limit,
+            @RequestParam(required = false) @Min(value = 1, message = "excludeHostId muss mindestens 1 sein") Long excludeHostId,
             HttpServletRequest servletRequest) {
-        List<OfferResponse> offers = marketplaceService.getLatestPublishedOffers(limit);
+        List<OfferResponse> offers = marketplaceService.getLatestPublishedOffers(limit, excludeHostId);
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK,
                 "Latest marketplace offers retrieved successfully.",
                 offers,
                 servletRequest.getRequestURI(),
                 offers.size()
+        ));
+    }
+
+    @GetMapping("/offers/search")
+    public ResponseEntity<ApiResponse<MarketplaceOfferSearchResponse>> searchOffers(
+            @RequestParam(required = false) List<PetChoice> species,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) @Pattern(regexp = "\\d{5}", message = "postalCode muss aus 5 Ziffern bestehen") String postalCode,
+            @RequestParam(required = false) @Pattern(regexp = "\\d{5}", message = "zipCode muss aus 5 Ziffern bestehen") String zipCode,
+            @RequestParam(required = false) @Pattern(regexp = "\\d{5}", message = "plz muss aus 5 Ziffern bestehen") String plz,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit muss mindestens 1 sein")
+            @Max(value = 25, message = "limit darf maximal 25 sein") Integer limit,
+            @RequestParam(required = false) @Min(value = 1, message = "excludeHostId muss mindestens 1 sein") Long excludeHostId,
+            HttpServletRequest servletRequest) {
+        String resolvedPostalCode = firstNonBlank(postalCode, zipCode, plz);
+        String resolvedCity = firstNonBlank(city, location);
+        MarketplaceOfferSearchResponse searchResponse = marketplaceService.searchPublishedOffers(
+                species,
+                resolvedCity,
+                resolvedPostalCode,
+                fromDate,
+                toDate,
+                limit,
+                excludeHostId
+        );
+
+        int totalCount = searchResponse.matchingOffers().size() + searchResponse.alternativeDateOffers().size();
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Marketplace offers searched successfully.",
+                searchResponse,
+                servletRequest.getRequestURI(),
+                totalCount
         ));
     }
 
