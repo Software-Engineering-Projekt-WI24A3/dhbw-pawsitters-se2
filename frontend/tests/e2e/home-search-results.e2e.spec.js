@@ -159,7 +159,7 @@ const alternativeDateOffers = [
   }
 ];
 
-test('shows white loading screen and renders search carousels with matching and alternative offers', async ({ page }) => {
+test('redirects to /search/{parameter} and renders matching plus alternative carousels on the search page', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 920 });
 
   await page.route('**/api/auth/session*', async (route) => {
@@ -247,9 +247,15 @@ test('shows white loading screen and renders search carousels with matching and 
 
   await page.goto('/?locale=de');
 
-  await page.getByRole('button', { name: token('de', 'header.search.submitAria'), exact: true }).click();
+  await Promise.all([
+    page.waitForURL(/\/search\/[^/?#]+/),
+    page.getByRole('button', { name: token('de', 'header.search.submitAria'), exact: true }).click()
+  ]);
 
-  const searchResultsSection = page.locator('.home_search_results');
+  await expect(page).toHaveURL(/\/search\/[^/?#]+/);
+  await expect(page.locator('.home_search_results')).toHaveCount(0);
+
+  const searchResultsSection = page.locator('.search_results_shell');
   await expect(searchResultsSection).toBeVisible();
   await expect(searchResultsSection.locator('.repository_live_loading__dots')).toBeVisible();
 

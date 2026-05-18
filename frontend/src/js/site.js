@@ -4,6 +4,7 @@ let gitgraphLoader = null;
 const DROPDOWN_SELECTOR = 'details.repo_menu, details.locale_menu, details.header_search_field, details.phone_country_menu';
 const dropdownTimers = new WeakMap();
 const dropdownFrames = new WeakMap();
+const phoneCountryDropdownPortals = new WeakMap();
 const DROPDOWN_CLOSE_DELAY_MS = 90;
 let dropdownIdSequence = 0;
 const GIT_GRAPH_COLORS = ['#111114', '#2F5AA8', '#8A5A20', '#0F766E', '#8B3D60', '#5B6B2D'];
@@ -21,8 +22,7 @@ const HEADER_SEARCH_CITY_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/sea
 const HEADER_SEARCH_PET_ENDPOINTS = ['/api/pets/choices', '/api/pets/choices.json', '/assets/data/pet-choices.json'];
 const PHONE_COUNTRY_PREFIX_ENDPOINTS = ['/assets/data/country-phone-prefixes.json'];
 const HEADER_SEARCH_SESSION_STORAGE_KEY = 'pawsitters.header-search-state';
-const HEADER_SEARCH_HOME_QUERY_PARAM = 'search';
-const HEADER_SEARCH_HOME_QUERY_VALUE = 'offers';
+const HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT = 'all';
 const REDIRECT_NOTIFICATION_STORAGE_KEY = 'pawsitters.redirect-notification';
 const REDIRECT_REGISTER_EMAIL_STORAGE_KEY = 'pawsitters.redirect-register-email';
 const PHONE_COUNTRY_DEFAULT_BY_LOCALE = {
@@ -32,6 +32,14 @@ const PHONE_COUNTRY_DEFAULT_BY_LOCALE = {
 };
 const BACKEND_STATUS_ENDPOINT = '/api/auth/session';
 const BACKEND_STATUS_POLL_INTERVAL_MS = 30000;
+const MESSAGES_WEBSOCKET_ENDPOINT = '/ws';
+const MESSAGES_STOMP_ACCEPT_VERSION = '1.2,1.1,1.0';
+const MESSAGES_SOCKET_RECONNECT_BASE_DELAY_MS = 900;
+const MESSAGES_SOCKET_RECONNECT_MAX_DELAY_MS = 12000;
+const MESSAGES_SOCKET_FALLBACK_REFRESH_INTERVAL_MS = 24000;
+const MESSAGES_ATTACHMENT_MAX_COUNT = 8;
+const MESSAGES_OFFER_REQUEST_TOKEN_PREFIX = '[PAWSITTERS_OFFER_REQUEST:';
+const MESSAGES_OFFER_REQUEST_TOKEN_SUFFIX = ']';
 const LOADING_INDICATOR_DELAY_MS = 320;
 const REGISTER_STEPS = ['account', 'profile', 'pets'];
 const MY_OFFERS_CREATE_STEPS = ['setup', 'species', 'details', 'review'];
@@ -41,6 +49,7 @@ const CALENDAR_HEADER_SEARCH_FUTURE_YEAR_OFFSET = 100;
 const MODAL_SURFACE_SELECTOR = '.auth_modal__surface, .repo_modal__surface';
 const MODAL_CONTAINER_SELECTOR = '.auth_modal, .repo_modal';
 const MODAL_WIDTH_TARGET_PROPERTY = '--corp-modal-width-target';
+const MODAL_WIDTH_INLINE_PROPERTY = 'width';
 const MODAL_WIDTH_BUCKET_PX = 8;
 const MODAL_SIMPLE_CONTENT_MAX_WIDTH_PX = 464;
 const MODAL_FORM_MIN_WIDTH_PX = 512;
@@ -49,7 +58,9 @@ const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
 const ROUTE_GUARD_MY_OFFERS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-offers$/i;
+const ROUTE_GUARD_MESSAGES_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/messages$/i;
 const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/settings$/i;
+const ROUTE_GUARD_SEARCH_PATTERN = /^\/(?:(?:de|en|ro)\/)?search(?:\/[^/?#]+)?$/i;
 const DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/pawsitters-scene.svg';
 const LEGACY_DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/favicon.png';
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
@@ -1846,6 +1857,46 @@ function normalizeUiLocaleCode(locale = document.documentElement.lang || 'de') {
     return normalized;
 }
 
+function decodeRouteSegment(value = '') {
+    const rawValue = typeof value === 'string' ? value.trim() : '';
+    if (!rawValue) {
+        return '';
+    }
+
+    try {
+        return decodeURIComponent(rawValue).trim();
+    } catch {
+        return rawValue;
+    }
+}
+
+function normalizeSearchRouteSegment(value = '') {
+    const decodedValue = decodeRouteSegment(value);
+    if (!decodedValue) {
+        return HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT;
+    }
+
+    const withoutDiacritics = decodedValue.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+    const compactValue = withoutDiacritics
+        .replace(/[^A-Za-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase();
+
+    return compactValue || HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT;
+}
+
+function parseSearchRouteSegment(pathname = '') {
+    const normalizedPath = typeof pathname === 'string'
+        ? pathname.trim().replace(/\/+$/, '') || '/'
+        : '/';
+    const match = normalizedPath.match(/^\/(?:(?:de|en|ro)\/)?search\/([^/?#]+)$/i);
+    if (!match?.[1]) {
+        return '';
+    }
+
+    return decodeRouteSegment(match[1]);
+}
+
 function formatTemplate(template, values = {}) {
     const safeTemplate = typeof template === 'string' ? template : '';
     if (!safeTemplate) {
@@ -2012,6 +2063,41 @@ async function fetchCitySearchResults(query, locale = document.documentElement.l
     return response.json();
 }
 
+function encodeUtf8Base64(value = '') {
+    const text = typeof value === 'string' ? value : String(value ?? '');
+    try {
+        if (typeof TextEncoder !== 'undefined') {
+            const bytes = new TextEncoder().encode(text);
+            let binary = '';
+            bytes.forEach((byte) => {
+                binary += String.fromCharCode(byte);
+            });
+            return btoa(binary);
+        }
+        return btoa(unescape(encodeURIComponent(text)));
+    } catch {
+        return '';
+    }
+}
+
+function decodeUtf8Base64(value = '') {
+    const source = typeof value === 'string' ? value.trim() : '';
+    if (!source) {
+        return '';
+    }
+
+    try {
+        const binary = atob(source);
+        if (typeof TextDecoder !== 'undefined') {
+            const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+            return new TextDecoder().decode(bytes);
+        }
+        return decodeURIComponent(escape(binary));
+    } catch {
+        return '';
+    }
+}
+
 const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
@@ -2023,9 +2109,12 @@ const authModalFormRoot = document.querySelector('.auth_modal__form');
 const userSearchModalFormRoot = document.querySelector('.user_search_modal__form');
 const registerFormRoot = document.querySelector('.auth_form');
 const homePageRoot = document.querySelector('[data-home-view]');
+const searchPageRoot = document.querySelector('[data-search-view]');
+const homeDataRoot = homePageRoot || searchPageRoot;
 const profilePageRoot = document.querySelector('[data-profile-view]');
 const myPetsPageRoot = document.querySelector('[data-my-pets-view]');
 const myOffersPageRoot = document.querySelector('[data-my-offers-view]');
+const messagesPageRoot = document.querySelector('[data-messages-view]');
 const settingsPageRoot = document.querySelector('[data-settings-view]');
 let myOffersPendingUploadFile = null;
 const LOCALE_NATIVE_LABELS = {
@@ -2288,6 +2377,37 @@ const localizedMyOffersStrings = {
     reviewHint: myOffersPageRoot?.dataset.myOffersReviewHint || '',
     openDetailsTemplate: myOffersPageRoot?.dataset.myOffersOpenDetailsTemplate || '',
     modalCloseAria: myOffersPageRoot?.dataset.myOffersModalCloseAria || '',
+    tabs: {
+        offeredPackages: myOffersPageRoot?.dataset.myOffersTabOfferedPackagesLabel || '',
+        ownBookings: myOffersPageRoot?.dataset.myOffersTabOwnBookingsLabel || ''
+    },
+    bookings: {
+        loading: myOffersPageRoot?.dataset.myOffersBookingsLoading || '',
+        loadFailed: myOffersPageRoot?.dataset.myOffersBookingsLoadFailed || '',
+        emptyTitle: myOffersPageRoot?.dataset.myOffersBookingsEmptyTitle || '',
+        emptyText: myOffersPageRoot?.dataset.myOffersBookingsEmptyText || '',
+        activeHeading: myOffersPageRoot?.dataset.myOffersBookingsActiveHeading || '',
+        historyHeading: myOffersPageRoot?.dataset.myOffersBookingsHistoryHeading || '',
+        openChatAction: myOffersPageRoot?.dataset.myOffersBookingsOpenChatAction || '',
+        completeAction: myOffersPageRoot?.dataset.myOffersBookingsCompleteAction || '',
+        statusActive: myOffersPageRoot?.dataset.myOffersBookingsStatusActive || 'Aktiv',
+        statusCompleted: myOffersPageRoot?.dataset.myOffersBookingsStatusCompleted || 'Abgeschlossen',
+        labels: {
+            offer: myOffersPageRoot?.dataset.myOffersBookingsLabelOffer || '',
+            partner: myOffersPageRoot?.dataset.myOffersBookingsLabelPartner || '',
+            period: myOffersPageRoot?.dataset.myOffersBookingsLabelPeriod || '',
+            species: myOffersPageRoot?.dataset.myOffersBookingsLabelSpecies || '',
+            petCount: myOffersPageRoot?.dataset.myOffersBookingsLabelPetCount || '',
+            price: myOffersPageRoot?.dataset.myOffersBookingsLabelPrice || '',
+            status: myOffersPageRoot?.dataset.myOffersBookingsLabelStatus || ''
+        },
+        notifications: {
+            completeSuccessTitle: myOffersPageRoot?.dataset.myOffersBookingsNotificationCompleteSuccessTitle || '',
+            completeSuccessTemplate: myOffersPageRoot?.dataset.myOffersBookingsNotificationCompleteSuccessTemplate || '',
+            completeErrorTitle: myOffersPageRoot?.dataset.myOffersBookingsNotificationCompleteErrorTitle || '',
+            completeErrorMessage: myOffersPageRoot?.dataset.myOffersBookingsNotificationCompleteErrorMessage || ''
+        }
+    },
     actions: {
         previous: myOffersPageRoot?.dataset.myOffersActionPrevious || '',
         next: myOffersPageRoot?.dataset.myOffersActionNext || '',
@@ -2334,53 +2454,149 @@ const localizedMyOffersStrings = {
     }
 };
 const localizedHomeStrings = {
-    loading: homePageRoot?.dataset.homeLoadingLabel || '',
-    loadFailed: homePageRoot?.dataset.homeLoadFailed || '',
-    emptyTitle: homePageRoot?.dataset.homeEmptyTitle || '',
-    emptyText: homePageRoot?.dataset.homeEmptyText || '',
-    headingPrefix: homePageRoot?.dataset.homeHeadingPrefix || '',
-    allSpeciesLabel: homePageRoot?.dataset.homeAllSpeciesLabel || '',
-    speciesDropdownAria: homePageRoot?.dataset.homeSpeciesDropdownAria || '',
-    carouselAria: homePageRoot?.dataset.homeCarouselAria || '',
-    untitledOffer: homePageRoot?.dataset.homeUntitledOffer || '',
-    openDetailsTemplate: homePageRoot?.dataset.homeOpenDetailsTemplate || '',
-    modalCloseAria: homePageRoot?.dataset.homeModalCloseAria || '',
-    modalDescriptionLabel: homePageRoot?.dataset.homeModalDescriptionLabel || '',
-    modalServicesLabel: homePageRoot?.dataset.homeModalServicesLabel || '',
-    modalSpeciesLabel: homePageRoot?.dataset.homeModalSpeciesLabel || '',
-    modalHostLabel: homePageRoot?.dataset.homeModalHostLabel || '',
+    loading: homeDataRoot?.dataset.homeLoadingLabel || '',
+    loadFailed: homeDataRoot?.dataset.homeLoadFailed || '',
+    emptyTitle: homeDataRoot?.dataset.homeEmptyTitle || '',
+    emptyText: homeDataRoot?.dataset.homeEmptyText || '',
+    headingPrefix: homeDataRoot?.dataset.homeHeadingPrefix || '',
+    allSpeciesLabel: homeDataRoot?.dataset.homeAllSpeciesLabel || '',
+    speciesDropdownAria: homeDataRoot?.dataset.homeSpeciesDropdownAria || '',
+    carouselAria: homeDataRoot?.dataset.homeCarouselAria || '',
+    untitledOffer: homeDataRoot?.dataset.homeUntitledOffer || '',
+    openDetailsTemplate: homeDataRoot?.dataset.homeOpenDetailsTemplate || '',
+    modalCloseAria: homeDataRoot?.dataset.homeModalCloseAria || '',
+    modalDescriptionLabel: homeDataRoot?.dataset.homeModalDescriptionLabel || '',
+    modalServicesLabel: homeDataRoot?.dataset.homeModalServicesLabel || '',
+    modalSpeciesLabel: homeDataRoot?.dataset.homeModalSpeciesLabel || '',
+    modalHostLabel: homeDataRoot?.dataset.homeModalHostLabel || '',
     labels: {
-        date: homePageRoot?.dataset.homeLabelDate || '',
-        price: homePageRoot?.dataset.homeLabelPrice || '',
-        location: homePageRoot?.dataset.homeLabelLocation || '',
-        locationFallback: homePageRoot?.dataset.homeLabelLocationFallback || ''
+        date: homeDataRoot?.dataset.homeLabelDate || '',
+        price: homeDataRoot?.dataset.homeLabelPrice || '',
+        location: homeDataRoot?.dataset.homeLabelLocation || '',
+        locationFallback: homeDataRoot?.dataset.homeLabelLocationFallback || ''
     },
     actions: {
-        previous: homePageRoot?.dataset.homeActionPrevious || '',
-        next: homePageRoot?.dataset.homeActionNext || ''
+        previous: homeDataRoot?.dataset.homeActionPrevious || '',
+        next: homeDataRoot?.dataset.homeActionNext || ''
     },
     latest: {
-        heading: homePageRoot?.dataset.homeLatestHeading || '',
-        carouselAria: homePageRoot?.dataset.homeLatestCarouselAria || '',
-        emptyTitle: homePageRoot?.dataset.homeLatestEmptyTitle || '',
-        emptyText: homePageRoot?.dataset.homeLatestEmptyText || '',
-        openDetailsTemplate: homePageRoot?.dataset.homeLatestOpenDetailsTemplate || ''
+        heading: homeDataRoot?.dataset.homeLatestHeading || '',
+        carouselAria: homeDataRoot?.dataset.homeLatestCarouselAria || '',
+        emptyTitle: homeDataRoot?.dataset.homeLatestEmptyTitle || '',
+        emptyText: homeDataRoot?.dataset.homeLatestEmptyText || '',
+        openDetailsTemplate: homeDataRoot?.dataset.homeLatestOpenDetailsTemplate || ''
     },
     search: {
-        loading: homePageRoot?.dataset.homeSearchLoading || '',
-        loadFailed: homePageRoot?.dataset.homeSearchLoadFailed || '',
+        loading: homeDataRoot?.dataset.homeSearchLoading || '',
+        loadFailed: homeDataRoot?.dataset.homeSearchLoadFailed || '',
         matching: {
-            heading: homePageRoot?.dataset.homeSearchMatchHeading || '',
-            carouselAria: homePageRoot?.dataset.homeSearchMatchCarouselAria || '',
-            emptyTitle: homePageRoot?.dataset.homeSearchMatchEmptyTitle || '',
-            emptyText: homePageRoot?.dataset.homeSearchMatchEmptyText || ''
+            heading: homeDataRoot?.dataset.homeSearchMatchHeading || '',
+            carouselAria: homeDataRoot?.dataset.homeSearchMatchCarouselAria || '',
+            emptyTitle: homeDataRoot?.dataset.homeSearchMatchEmptyTitle || '',
+            emptyText: homeDataRoot?.dataset.homeSearchMatchEmptyText || ''
         },
         alternative: {
-            heading: homePageRoot?.dataset.homeSearchAltHeading || '',
-            carouselAria: homePageRoot?.dataset.homeSearchAltCarouselAria || '',
-            emptyTitle: homePageRoot?.dataset.homeSearchAltEmptyTitle || '',
-            emptyText: homePageRoot?.dataset.homeSearchAltEmptyText || ''
+            heading: homeDataRoot?.dataset.homeSearchAltHeading || '',
+            carouselAria: homeDataRoot?.dataset.homeSearchAltCarouselAria || '',
+            emptyTitle: homeDataRoot?.dataset.homeSearchAltEmptyTitle || '',
+            emptyText: homeDataRoot?.dataset.homeSearchAltEmptyText || ''
         }
+    }
+};
+const localizedOfferDetailStrings = {
+    untitledOffer: appRoot?.dataset.offerDetailUntitled || localizedHomeStrings.untitledOffer || '',
+    modalCloseAria: appRoot?.dataset.offerDetailModalCloseAria || localizedHomeStrings.modalCloseAria || '',
+    modalHostLabel: appRoot?.dataset.offerDetailModalHostLabel || localizedHomeStrings.modalHostLabel || '',
+    modalDescriptionLabel: appRoot?.dataset.offerDetailModalDescriptionLabel || localizedHomeStrings.modalDescriptionLabel || '',
+    modalServicesLabel: appRoot?.dataset.offerDetailModalServicesLabel || localizedHomeStrings.modalServicesLabel || '',
+    modalSpeciesLabel: appRoot?.dataset.offerDetailModalSpeciesLabel || localizedHomeStrings.modalSpeciesLabel || '',
+    requestButton: appRoot?.dataset.offerRequestButton || '',
+    requestPetsTitle: appRoot?.dataset.offerRequestPetsTitle || '',
+    requestPetsHint: appRoot?.dataset.offerRequestPetsHint || '',
+    requestPetsEmptyTitle: appRoot?.dataset.offerRequestPetsEmptyTitle || '',
+    requestPetsEmptyMessage: appRoot?.dataset.offerRequestPetsEmptyMessage || '',
+    requestPetsValidation: appRoot?.dataset.offerRequestPetsValidation || '',
+    requestSubmit: appRoot?.dataset.offerRequestSubmit || '',
+    requestCancel: appRoot?.dataset.offerRequestCancel || '',
+    requestOpeningIntro: appRoot?.dataset.offerRequestOpeningIntro || '',
+    requestOpeningPetsPrefix: appRoot?.dataset.offerRequestOpeningPetsPrefix || '',
+    requestNotifications: {
+        successTitle: appRoot?.dataset.offerRequestSuccessTitle || '',
+        successMessage: appRoot?.dataset.offerRequestSuccessMessage || '',
+        duplicateTitle: appRoot?.dataset.offerRequestDuplicateTitle || '',
+        duplicateMessage: appRoot?.dataset.offerRequestDuplicateMessage || '',
+        ownOfferTitle: appRoot?.dataset.offerRequestOwnOfferTitle || '',
+        ownOfferMessage: appRoot?.dataset.offerRequestOwnOfferMessage || '',
+        createErrorTitle: appRoot?.dataset.offerRequestCreateErrorTitle || '',
+        createErrorMessage: appRoot?.dataset.offerRequestCreateErrorMessage || ''
+    },
+    labels: {
+        date: appRoot?.dataset.offerDetailLabelDate || localizedHomeStrings.labels.date || '',
+        price: appRoot?.dataset.offerDetailLabelPrice || localizedHomeStrings.labels.price || '',
+        location: appRoot?.dataset.offerDetailLabelLocation || localizedHomeStrings.labels.location || '',
+        locationFallback: appRoot?.dataset.offerDetailLabelLocationFallback || localizedHomeStrings.labels.locationFallback || ''
+    }
+};
+const localizedMessagesStrings = {
+    loading: messagesPageRoot?.dataset.messagesLoadingLabel || '',
+    authRequired: messagesPageRoot?.dataset.messagesAuthRequired || '',
+    loadFailed: messagesPageRoot?.dataset.messagesLoadFailed || '',
+    emptyTitle: messagesPageRoot?.dataset.messagesEmptyTitle || '',
+    emptyText: messagesPageRoot?.dataset.messagesEmptyText || '',
+    noSelectionTitle: messagesPageRoot?.dataset.messagesNoSelectionTitle || '',
+    noSelectionText: messagesPageRoot?.dataset.messagesNoSelectionText || '',
+    chatListAria: messagesPageRoot?.dataset.messagesChatListAria || '',
+    messageInputPlaceholder: messagesPageRoot?.dataset.messagesMessageInputPlaceholder || '',
+    sendAction: messagesPageRoot?.dataset.messagesSendAction || '',
+    attachAction: messagesPageRoot?.dataset.messagesAttachAction || '',
+    openOfferAction: messagesPageRoot?.dataset.messagesOpenOfferAction || '',
+    proposalAction: messagesPageRoot?.dataset.messagesProposalAction || '',
+    proposalModalTitle: messagesPageRoot?.dataset.messagesProposalModalTitle || '',
+    proposalModalHint: messagesPageRoot?.dataset.messagesProposalModalHint || '',
+    proposalModalCloseAria: messagesPageRoot?.dataset.messagesProposalModalCloseAria || '',
+    proposalModalSubmit: messagesPageRoot?.dataset.messagesProposalModalSubmit || '',
+    proposalModalCancel: messagesPageRoot?.dataset.messagesProposalModalCancel || '',
+    proposalValidationSpecies: messagesPageRoot?.dataset.messagesProposalValidationSpecies || '',
+    proposalValidationPetCount: messagesPageRoot?.dataset.messagesProposalValidationPetCount || '',
+    proposalValidationDates: messagesPageRoot?.dataset.messagesProposalValidationDates || '',
+    proposalValidationPrice: messagesPageRoot?.dataset.messagesProposalValidationPrice || '',
+    proposalStatusPending: messagesPageRoot?.dataset.messagesProposalStatusPending || 'PENDING',
+    proposalStatusAccepted: messagesPageRoot?.dataset.messagesProposalStatusAccepted || 'ACCEPTED',
+    proposalStatusDeclined: messagesPageRoot?.dataset.messagesProposalStatusDeclined || 'DECLINED',
+    proposalStatusWithdrawn: messagesPageRoot?.dataset.messagesProposalStatusWithdrawn || 'WITHDRAWN',
+    proposalStatusCompleted: messagesPageRoot?.dataset.messagesProposalStatusCompleted || 'COMPLETED',
+    proposalAcceptAction: messagesPageRoot?.dataset.messagesProposalAcceptAction || '',
+    proposalDeclineAction: messagesPageRoot?.dataset.messagesProposalDeclineAction || '',
+    proposalWithdrawAction: messagesPageRoot?.dataset.messagesProposalWithdrawAction || '',
+    closeChatAction: messagesPageRoot?.dataset.messagesCloseChatAction || '',
+    closeChatConfirm: messagesPageRoot?.dataset.messagesCloseChatConfirm || '',
+    chatClosedLabel: messagesPageRoot?.dataset.messagesChatClosedLabel || '',
+    chatClosedNotice: messagesPageRoot?.dataset.messagesChatClosedNotice || '',
+    chatClosedComposer: messagesPageRoot?.dataset.messagesChatClosedComposer || '',
+    defaultOfferTitle: messagesPageRoot?.dataset.messagesDefaultOfferTitle || localizedOfferDetailStrings.untitledOffer || '',
+    participantUnknown: messagesPageRoot?.dataset.messagesParticipantUnknown || '',
+    imageAlt: messagesPageRoot?.dataset.messagesImageAlt || '',
+    attachmentOnlyPreview: messagesPageRoot?.dataset.messagesAttachmentOnlyPreview || '',
+    proposalLabels: {
+        startDate: messagesPageRoot?.dataset.messagesProposalLabelStartDate || '',
+        endDate: messagesPageRoot?.dataset.messagesProposalLabelEndDate || '',
+        priceTotal: messagesPageRoot?.dataset.messagesProposalLabelPriceTotal || '',
+        petSpecies: messagesPageRoot?.dataset.messagesProposalLabelPetSpecies || '',
+        petCount: messagesPageRoot?.dataset.messagesProposalLabelPetCount || '',
+        note: messagesPageRoot?.dataset.messagesProposalLabelNote || ''
+    },
+    notifications: {
+        loadErrorTitle: messagesPageRoot?.dataset.messagesNotificationLoadErrorTitle || '',
+        sendErrorTitle: messagesPageRoot?.dataset.messagesNotificationSendErrorTitle || '',
+        sendErrorMessage: messagesPageRoot?.dataset.messagesNotificationSendErrorMessage || '',
+        proposalSuccessTitle: messagesPageRoot?.dataset.messagesNotificationProposalSuccessTitle || '',
+        proposalSuccessMessage: messagesPageRoot?.dataset.messagesNotificationProposalSuccessMessage || '',
+        proposalErrorTitle: messagesPageRoot?.dataset.messagesNotificationProposalErrorTitle || '',
+        proposalErrorMessage: messagesPageRoot?.dataset.messagesNotificationProposalErrorMessage || '',
+        closeSuccessTitle: messagesPageRoot?.dataset.messagesNotificationCloseSuccessTitle || '',
+        closeSuccessMessage: messagesPageRoot?.dataset.messagesNotificationCloseSuccessMessage || '',
+        closeErrorTitle: messagesPageRoot?.dataset.messagesNotificationCloseErrorTitle || '',
+        closeErrorMessage: messagesPageRoot?.dataset.messagesNotificationCloseErrorMessage || ''
     }
 };
 const localizedSettingsStrings = {
@@ -2711,8 +2927,15 @@ createApp({
             myOffersViewUser: null,
             myOffersOffers: [],
             myOffersStrings: localizedMyOffersStrings,
+            myOffersViewTab: 'offeredPackages',
             myOffersCarouselIndex: 0,
             myOffersActionPendingId: null,
+            myOffersBookingsLoading: false,
+            myOffersBookingsLoadError: '',
+            myOffersBookingsAccepted: [],
+            myOffersBookingsActive: [],
+            myOffersBookingsHistory: [],
+            myOffersBookingCompletePendingId: null,
             myOffersCreateModalOpen: false,
             myOffersCreateStep: MY_OFFERS_CREATE_STEPS[0],
             myOffersFormEditingId: null,
@@ -2774,6 +2997,52 @@ createApp({
             homeOfferHostCityByHostId: {},
             homeOfferHostCityLoadingByHostId: {},
             homeStrings: localizedHomeStrings,
+            offerDetailStrings: localizedOfferDetailStrings,
+            offerRequestModalOpen: false,
+            offerRequestOffer: null,
+            offerRequestPets: [],
+            offerRequestPetsLoading: false,
+            showOfferRequestPetsLoadingDots: false,
+            offerRequestSelectedPetIds: [],
+            offerRequestSubmitting: false,
+            messagesViewLoading: false,
+            showMessagesViewLoadingDots: false,
+            messagesViewError: '',
+            messagesViewUser: null,
+            messagesStrings: localizedMessagesStrings,
+            messagesChats: [],
+            messagesChatsRequestId: 0,
+            messagesActiveChatId: null,
+            messagesByChatId: {},
+            messagesMessagesLoadingByChatId: {},
+            messagesMessagesLoadedByChatId: {},
+            messagesPartnerProfileById: {},
+            messagesPartnerProfileLoadingById: {},
+            messagesComposerText: '',
+            messagesComposerAttachments: [],
+            messagesComposerSending: false,
+            messagesClosingChat: false,
+            messagesProposalModalOpen: false,
+            messagesProposalSubmitting: false,
+            messagesProposalActionPendingId: null,
+            messagesProposalForm: {
+                startDate: '',
+                endDate: '',
+                priceTotal: '',
+                petCount: '',
+                note: '',
+                petSpecies: []
+            },
+            messagesThreadAutoScrollLockByChatId: {},
+            messagesWebSocket: null,
+            messagesWebSocketConnected: false,
+            messagesWebSocketConnectInFlight: false,
+            messagesWebSocketReconnectHandle: null,
+            messagesWebSocketReconnectAttempts: 0,
+            messagesWebSocketFrameBuffer: '',
+            messagesWebSocketSubscriptionIdCounter: 0,
+            messagesWebSocketSubscriptionIdByDestination: {},
+            messagesFallbackRefreshHandle: null,
             settingsViewLoading: false,
             showSettingsViewLoadingDots: false,
             settingsViewError: '',
@@ -3734,6 +4003,50 @@ createApp({
                 count: offerCount
             });
         },
+        myOffersCombinedBookings() {
+            const byId = new Map();
+            const mergeBooking = (value = null) => {
+                const normalizedBooking = this.normalizeMyOffersBooking(value || {});
+                if (!Number.isInteger(normalizedBooking.id) || normalizedBooking.id <= 0) {
+                    return;
+                }
+                const previous = byId.get(normalizedBooking.id) || {};
+                byId.set(normalizedBooking.id, {
+                    ...previous,
+                    ...normalizedBooking
+                });
+            };
+
+            (Array.isArray(this.myOffersBookingsAccepted) ? this.myOffersBookingsAccepted : []).forEach(mergeBooking);
+            (Array.isArray(this.myOffersBookingsActive) ? this.myOffersBookingsActive : []).forEach(mergeBooking);
+            (Array.isArray(this.myOffersBookingsHistory) ? this.myOffersBookingsHistory : []).forEach(mergeBooking);
+
+            return [...byId.values()];
+        },
+        myOffersActiveBookings() {
+            return this.myOffersCombinedBookings
+                .filter((booking) => booking.status === 'ACCEPTED')
+                .sort((left, right) => {
+                    const leftTime = Date.parse(left?.startDate || '') || 0;
+                    const rightTime = Date.parse(right?.startDate || '') || 0;
+                    if (leftTime !== rightTime) {
+                        return leftTime - rightTime;
+                    }
+                    return (left?.id || 0) - (right?.id || 0);
+                });
+        },
+        myOffersHistoryBookings() {
+            return this.myOffersCombinedBookings
+                .filter((booking) => booking.status === 'COMPLETED')
+                .sort((left, right) => {
+                    const leftTime = Date.parse(left?.endDate || '') || 0;
+                    const rightTime = Date.parse(right?.endDate || '') || 0;
+                    if (leftTime !== rightTime) {
+                        return rightTime - leftTime;
+                    }
+                    return (right?.id || 0) - (left?.id || 0);
+                });
+        },
         myOffersSpeciesChoices() {
             if (Array.isArray(this.registerPetChoices) && this.registerPetChoices.length) {
                 return this.registerPetChoices;
@@ -4154,6 +4467,91 @@ createApp({
             const speciesList = this.resolveMyOfferSpecies(detailOffer);
             return speciesList.length ? speciesList[0] : null;
         },
+        showOfferRequestAction() {
+            if (!this.authSessionLoggedIn) {
+                return false;
+            }
+
+            const detailOffer = this.homeOfferDetailOffer;
+            if (!detailOffer) {
+                return false;
+            }
+
+            return !this.isOwnMarketplaceOffer(detailOffer);
+        },
+        messagesViewDisplayName() {
+            if (this.messagesViewUser) {
+                const firstName = typeof this.messagesViewUser.firstName === 'string'
+                    ? this.messagesViewUser.firstName.trim()
+                    : '';
+                const lastName = typeof this.messagesViewUser.lastName === 'string'
+                    ? this.messagesViewUser.lastName.trim()
+                    : '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ');
+                if (fullName) {
+                    return fullName;
+                }
+                if (this.messagesViewUser.email) {
+                    return this.messagesViewUser.email;
+                }
+            }
+
+            const sessionName = [this.authSessionFirstName, this.authSessionLastName]
+                .map((value) => typeof value === 'string' ? value.trim() : '')
+                .filter(Boolean)
+                .join(' ');
+            if (sessionName) {
+                return sessionName;
+            }
+
+            const normalizedEmail = this.normalizePotentiallyEncodedEmail(this.authSessionEmail);
+            if (normalizedEmail) {
+                return normalizedEmail;
+            }
+
+            return localizedAppStrings.genericUser || this.messagesStrings.participantUnknown;
+        },
+        messagesViewInitial() {
+            const sourceText = this.messagesViewDisplayName || this.messagesStrings.participantUnknown || 'M';
+            const firstCharacter = sourceText.trim().charAt(0) || 'M';
+            return firstCharacter.toUpperCase();
+        },
+        messagesActiveChat() {
+            const activeId = this.normalizeProfileUserId(this.messagesActiveChatId);
+            if (!Number.isInteger(activeId) || activeId <= 0) {
+                return null;
+            }
+
+            return (Array.isArray(this.messagesChats) ? this.messagesChats : [])
+                .find((chat) => chat.id === activeId) || null;
+        },
+        messagesActiveMessages() {
+            const activeId = this.normalizeProfileUserId(this.messagesActiveChatId);
+            if (!Number.isInteger(activeId) || activeId <= 0) {
+                return [];
+            }
+
+            const messages = this.messagesByChatId?.[activeId];
+            return Array.isArray(messages) ? messages : [];
+        },
+        messagesActiveChatClosed() {
+            return this.isMessagesChatClosed(this.messagesActiveChat);
+        },
+        messagesActiveChatPartner() {
+            return this.messagesResolveChatPartner(this.messagesActiveChat);
+        },
+        messagesProposalSpeciesChoices() {
+            if (Array.isArray(this.registerPetChoices) && this.registerPetChoices.length) {
+                return this.registerPetChoices;
+            }
+
+            const locale = document.documentElement.lang || 'de';
+            return DEFAULT_PET_CHOICES.map((value) => ({
+                value,
+                label: formatPetChoiceLabel(value, locale),
+                emojiPath: resolvePetChoiceEmojiPath(value)
+            }));
+        },
         settingsViewDisplayName() {
             if (!this.settingsViewUser) {
                 return '';
@@ -4391,6 +4789,19 @@ createApp({
             nextTick(() => {
                 this.initializeDropdowns();
             });
+
+            if (!messagesPageRoot) {
+                return;
+            }
+
+            if (nextValue) {
+                this.connectMessagesSocket();
+                this.startMessagesFallbackRefresh();
+                return;
+            }
+
+            this.disconnectMessagesSocket();
+            this.stopMessagesFallbackRefresh();
         },
         profileViewTab(nextValue) {
             if (!profilePageRoot) {
@@ -4421,8 +4832,19 @@ createApp({
         myOffersViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showMyOffersViewLoadingDots', 'myOffersViewLoading', nextValue);
         },
+        myOffersViewTab() {
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
+        },
         settingsViewLoading(nextValue) {
             this.updateDelayedLoadingIndicator('showSettingsViewLoadingDots', 'settingsViewLoading', nextValue);
+        },
+        messagesViewLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showMessagesViewLoadingDots', 'messagesViewLoading', nextValue);
+        },
+        offerRequestPetsLoading(nextValue) {
+            this.updateDelayedLoadingIndicator('showOfferRequestPetsLoadingDots', 'offerRequestPetsLoading', nextValue);
         },
         myPetsPets(nextValue) {
             if (!Array.isArray(nextValue) || !nextValue.length) {
@@ -4472,6 +4894,9 @@ createApp({
             if (!Array.isArray(nextValue) || !nextValue.length) {
                 this.myOffersCarouselIndex = 0;
                 this.myOffersActionPendingId = null;
+                if (this.homeOfferDetailModalOpen) {
+                    this.closeHomeOfferDetailModal();
+                }
                 return;
             }
 
@@ -4484,6 +4909,55 @@ createApp({
             if (this.myOffersCarouselIndex > maxIndex) {
                 this.myOffersCarouselIndex = maxIndex;
             }
+
+            if (this.homeOfferDetailModalOpen) {
+                const detailOfferId = this.normalizeProfileUserId(this.homeOfferDetailOfferId);
+                if (!Number.isInteger(detailOfferId) || detailOfferId <= 0 || !this.findHomeOfferById(detailOfferId)) {
+                    this.closeHomeOfferDetailModal();
+                }
+            }
+        },
+        messagesChats(nextValue) {
+            const chats = Array.isArray(nextValue) ? nextValue : [];
+            if (!chats.length) {
+                this.messagesActiveChatId = null;
+                this.messagesByChatId = {};
+                this.messagesMessagesLoadedByChatId = {};
+                this.messagesMessagesLoadingByChatId = {};
+                this.messagesComposerText = '';
+                this.messagesClosingChat = false;
+                this.messagesProposalModalOpen = false;
+                return;
+            }
+
+            const activeId = this.normalizeProfileUserId(this.messagesActiveChatId);
+            if (!Number.isInteger(activeId) || activeId <= 0 || !chats.some((chat) => chat.id === activeId)) {
+                this.messagesActiveChatId = null;
+            }
+        },
+        messagesActiveChatId(nextValue, previousValue) {
+            const nextChatId = this.normalizeProfileUserId(nextValue);
+            const previousChatId = this.normalizeProfileUserId(previousValue);
+            if (nextChatId === previousChatId) {
+                return;
+            }
+
+            this.messagesComposerText = '';
+            this.clearMessagesComposerAttachments();
+            this.messagesClosingChat = false;
+            this.messagesProposalModalOpen = false;
+
+            if (Number.isInteger(nextChatId) && nextChatId > 0) {
+                this.ensureMessagesChatSubscription(nextChatId);
+                this.syncMessagesQueryChat(nextChatId);
+                this.loadMessagesForChat(nextChatId, { force: false });
+                nextTick(() => {
+                    this.scrollMessagesThreadToBottom({ force: false });
+                });
+                return;
+            }
+
+            this.syncMessagesQueryChat(null);
         },
         homeFilteredOffers(nextValue) {
             if (!Array.isArray(nextValue) || !nextValue.length) {
@@ -4540,13 +5014,32 @@ createApp({
             this.prefetchHomeLatestVisibleHostCities();
         },
         authSessionUserId(nextValue, previousValue) {
-            if (nextValue === previousValue || !homePageRoot) {
+            if (nextValue === previousValue) {
                 return;
             }
 
-            this.loadHomeLatestOffers();
-            if (this.homeSearchHasSubmitted) {
-                this.runHeaderSearchFlow({ scrollToResults: false });
+            if (homePageRoot || searchPageRoot) {
+                if (homePageRoot) {
+                    this.loadHomeLatestOffers();
+                }
+                if (this.homeSearchHasSubmitted) {
+                    this.refreshActiveSearchResults({ scrollToResults: false });
+                }
+            }
+
+            if (!messagesPageRoot) {
+                return;
+            }
+
+            if (!Number.isInteger(this.normalizeProfileUserId(nextValue)) || this.normalizeProfileUserId(nextValue) <= 0) {
+                this.disconnectMessagesSocket();
+                return;
+            }
+
+            this.connectMessagesSocket();
+            const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+            if (Number.isInteger(activeChatId) && activeChatId > 0) {
+                this.ensureMessagesChatSubscription(activeChatId);
             }
         },
         settingsCityOptionsLoading(nextValue) {
@@ -4635,9 +5128,11 @@ createApp({
         this.consumeRedirectNotification();
         this.initializeRegisterFlow();
         this.initializeHomeView();
+        this.initializeSearchView();
         this.initializeProfileView();
         this.initializeMyPetsView();
         this.initializeMyOffersView();
+        this.initializeMessagesView();
         this.initializeSettingsView();
         if (document.fonts?.ready) {
             document.fonts.ready
@@ -4676,6 +5171,11 @@ createApp({
         this.clearMyOffersCitySearchRuntime();
         this.clearSettingsCitySearchRuntime();
         this.clearSettingsCityLookupRuntime();
+        this.closeMessagesProposalModal();
+        this.clearMessagesComposerAttachments();
+        this.closeOfferRequestModal();
+        this.disconnectMessagesSocket();
+        this.stopMessagesFallbackRefresh();
         this.closeHomeOfferDetailModal();
         this.clearMyOffersFormImageSelection();
         this.clearMyOffersLocalImageMap();
@@ -5364,44 +5864,59 @@ createApp({
                 [value]: nextCount
             };
         },
-        hasPendingHomeSearchFromUrl() {
-            if (!homePageRoot) {
-                return false;
-            }
-
-            try {
-                const currentUrl = new URL(window.location.href);
-                return currentUrl.searchParams.get(HEADER_SEARCH_HOME_QUERY_PARAM) === HEADER_SEARCH_HOME_QUERY_VALUE;
-            } catch {
-                return false;
-            }
+        isSearchPath(pathname) {
+            return ROUTE_GUARD_SEARCH_PATTERN.test(this.normalizeRoutePath(pathname));
         },
-        clearPendingHomeSearchFromUrl() {
-            if (!homePageRoot || typeof window?.history?.replaceState !== 'function') {
-                return;
-            }
+        readSearchRouteParameter(pathname = window.location.pathname) {
+            return parseSearchRouteSegment(pathname);
+        },
+        buildHeaderSearchRouteParameter(query = null) {
+            const sourceQuery = query instanceof URLSearchParams
+                ? query
+                : this.buildHeaderSearchOfferSearchQuery();
+            const cityFromQuery = typeof sourceQuery.get('city') === 'string'
+                ? sourceQuery.get('city').trim()
+                : '';
+            const normalizedLocation = normalizeHeaderSearchSelectedLocation(this.selectedLocation);
+            const typedLocationQuery = typeof this.locationQuery === 'string'
+                ? this.locationQuery.trim()
+                : '';
+            const rawSegment = cityFromQuery
+                || normalizedLocation?.cityName
+                || normalizedLocation?.label
+                || typedLocationQuery;
+
+            return normalizeSearchRouteSegment(rawSegment);
+        },
+        buildSearchResultsPath(query = null) {
+            const searchQuery = query instanceof URLSearchParams
+                ? new URLSearchParams(query.toString())
+                : this.buildHeaderSearchOfferSearchQuery();
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            const routeParameter = this.buildHeaderSearchRouteParameter(searchQuery);
+            const searchPath = localePrefix
+                ? `${localePrefix}/search/${encodeURIComponent(routeParameter)}`
+                : `/search/${encodeURIComponent(routeParameter)}`;
 
             try {
                 const currentUrl = new URL(window.location.href);
-                if (currentUrl.searchParams.get(HEADER_SEARCH_HOME_QUERY_PARAM) !== HEADER_SEARCH_HOME_QUERY_VALUE) {
-                    return;
+                const searchUrl = new URL(searchPath, window.location.origin);
+                const localeParam = currentUrl.searchParams.get('locale');
+                if (localeParam) {
+                    searchUrl.searchParams.set('locale', localeParam);
                 }
 
-                currentUrl.searchParams.delete(HEADER_SEARCH_HOME_QUERY_PARAM);
-                window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
-            } catch {
-                return;
-            }
-        },
-        buildHomeSearchRedirectPath() {
-            const homePath = this.buildHomeRedirectPath();
+                searchQuery.forEach((value, key) => {
+                    if (key === 'locale') {
+                        return;
+                    }
+                    searchUrl.searchParams.append(key, value);
+                });
 
-            try {
-                const homeUrl = new URL(homePath, window.location.origin);
-                homeUrl.searchParams.set(HEADER_SEARCH_HOME_QUERY_PARAM, HEADER_SEARCH_HOME_QUERY_VALUE);
-                return `${homeUrl.pathname}${homeUrl.search}${homeUrl.hash}`;
+                return `${searchUrl.pathname}${searchUrl.search}${searchUrl.hash}`;
             } catch {
-                return homePath;
+                const queryString = searchQuery.toString();
+                return queryString ? `${searchPath}?${queryString}` : searchPath;
             }
         },
         resolveHeaderSearchSpeciesFilterValues() {
@@ -5487,7 +6002,8 @@ createApp({
             return query;
         },
         scrollToHomeSearchResults() {
-            const searchResultsElement = this.$refs?.homeSearchResults;
+            const searchResultsElement = this.$refs?.homeSearchResults
+                || document.querySelector('[data-search-view]');
             if (!searchResultsElement || typeof searchResultsElement.scrollIntoView !== 'function') {
                 return;
             }
@@ -5497,8 +6013,102 @@ createApp({
                 block: 'start'
             });
         },
-        async runHeaderSearchFlow({ scrollToResults = false } = {}) {
-            if (!homePageRoot) {
+        buildHeaderSearchQueryFromCurrentUrl() {
+            let currentUrl;
+            try {
+                currentUrl = new URL(window.location.href);
+            } catch {
+                return this.buildHeaderSearchOfferSearchQuery();
+            }
+
+            const query = new URLSearchParams();
+            const routeParameter = this.readSearchRouteParameter(currentUrl.pathname);
+            const cityFromQuery = typeof currentUrl.searchParams.get('city') === 'string'
+                ? currentUrl.searchParams.get('city').trim()
+                : '';
+            const routeParameterCity = routeParameter
+                && routeParameter.toLowerCase() !== HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT
+                ? routeParameter.replace(/[-_]+/g, ' ').trim()
+                : '';
+            const city = cityFromQuery || routeParameterCity;
+            if (city) {
+                query.set('city', city);
+            }
+
+            const postalCode = normalizePostalCode(currentUrl.searchParams.get('postalCode') || '');
+            if (/^\d{5}$/.test(postalCode)) {
+                query.set('postalCode', postalCode);
+            }
+
+            const normalizedDateRange = normalizeHeaderSearchDateRange(
+                currentUrl.searchParams.get('fromDate') || '',
+                currentUrl.searchParams.get('toDate') || ''
+            );
+            if (normalizedDateRange.start) {
+                query.set('fromDate', normalizedDateRange.start);
+            }
+            if (normalizedDateRange.end) {
+                query.set('toDate', normalizedDateRange.end);
+            }
+
+            currentUrl.searchParams.getAll('species')
+                .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                .filter((species) => /^[A-Z][A-Z0-9_]*$/.test(species))
+                .forEach((species) => {
+                    query.append('species', species);
+                });
+
+            query.set('limit', '10');
+            if (Number.isInteger(this.authSessionUserId) && this.authSessionUserId > 0) {
+                query.set('excludeHostId', String(this.authSessionUserId));
+            }
+
+            return query;
+        },
+        applySearchRouteState(query = new URLSearchParams(), routeParameter = '') {
+            const normalizedQuery = query instanceof URLSearchParams ? query : new URLSearchParams();
+            const normalizedRouteParameter = typeof routeParameter === 'string'
+                ? routeParameter.trim()
+                : '';
+            const cityFromQuery = typeof normalizedQuery.get('city') === 'string'
+                ? normalizedQuery.get('city').trim()
+                : '';
+            const cityFromRoute = normalizedRouteParameter
+                && normalizedRouteParameter.toLowerCase() !== HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT
+                ? normalizedRouteParameter.replace(/[-_]+/g, ' ').trim()
+                : '';
+            const city = cityFromQuery || cityFromRoute;
+            const normalizedDateRange = normalizeHeaderSearchDateRange(
+                normalizedQuery.get('fromDate') || '',
+                normalizedQuery.get('toDate') || ''
+            );
+            const selectedSpecies = normalizedQuery.getAll('species')
+                .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                .filter((species) => /^[A-Z][A-Z0-9_]*$/.test(species));
+            const nextPetCounts = Object.keys(this.petChoiceCounts || {}).reduce((accumulator, key) => {
+                accumulator[key] = 0;
+                return accumulator;
+            }, {});
+            selectedSpecies.forEach((species) => {
+                nextPetCounts[species] = 1;
+            });
+
+            this.locationQuery = '';
+            this.selectedLocation = city
+                ? normalizeHeaderSearchSelectedLocation({
+                    id: `search-route-${city.toLowerCase()}`,
+                    cityName: city,
+                    label: city,
+                    searchName: city.toLowerCase()
+                })
+                : null;
+            this.dateRangeStart = normalizedDateRange.start;
+            this.dateRangeEnd = normalizedDateRange.end;
+            this.petChoiceCounts = nextPetCounts;
+            this.persistHeaderSearchState();
+        },
+        async runHeaderSearchFlow({ scrollToResults = false, queryParams = null } = {}) {
+            if (!homeDataRoot) {
                 return;
             }
 
@@ -5514,7 +6124,9 @@ createApp({
             this.homeSearchAlternativeCarouselOffset = 0;
             this.homeSearchAlternativeCarouselDirection = 1;
 
-            const query = this.buildHeaderSearchOfferSearchQuery();
+            const query = queryParams instanceof URLSearchParams
+                ? new URLSearchParams(queryParams.toString())
+                : this.buildHeaderSearchOfferSearchQuery();
             const endpoint = `/api/marketplace/offers/search?${query.toString()}`;
 
             try {
@@ -5568,17 +6180,22 @@ createApp({
                 }
             }
         },
-        triggerHeaderSearch() {
-            this.closeAllDropdowns();
-
-            if (!homePageRoot) {
-                window.location.assign(this.buildHomeSearchRedirectPath());
+        async refreshActiveSearchResults({ scrollToResults = false } = {}) {
+            if (!this.homeSearchHasSubmitted || !homeDataRoot) {
                 return;
             }
 
-            this.runHeaderSearchFlow({
-                scrollToResults: true
+            const queryParams = this.isSearchPath(window.location.pathname)
+                ? this.buildHeaderSearchQueryFromCurrentUrl()
+                : null;
+            await this.runHeaderSearchFlow({
+                scrollToResults,
+                queryParams
             });
+        },
+        triggerHeaderSearch() {
+            this.closeAllDropdowns();
+            window.location.assign(this.buildSearchResultsPath());
         },
         normalizeNotificationTone(tone) {
             const normalizedTone = typeof tone === 'string' ? tone.trim().toLowerCase() : '';
@@ -6428,6 +7045,20 @@ createApp({
             this.closeAllDropdowns({ immediate: true });
             window.location.assign(myOffersPath);
         },
+        openCurrentUserMessages() {
+            if (!this.authSessionLoggedIn) {
+                return;
+            }
+
+            const messagesPath = this.buildMessagesPath();
+            if (!messagesPath) {
+                return;
+            }
+
+            this.menuOpen = false;
+            this.closeAllDropdowns({ immediate: true });
+            window.location.assign(messagesPath);
+        },
         openCurrentUserSettings() {
             if (!this.authSessionLoggedIn) {
                 return;
@@ -6965,6 +7596,11 @@ createApp({
             this.homeOfferHostCityLoadingByHostId = {};
             this.homeOfferDetailModalOpen = false;
             this.homeOfferDetailOfferId = null;
+            this.offerRequestModalOpen = false;
+            this.offerRequestOffer = null;
+            this.offerRequestPets = [];
+            this.offerRequestSelectedPetIds = [];
+            this.offerRequestSubmitting = false;
             this.syncModalBodyLock();
 
             if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
@@ -6979,11 +7615,41 @@ createApp({
                 this.loadHomeOffers(),
                 this.loadHomeLatestOffers()
             ]);
-
-            if (this.hasPendingHomeSearchFromUrl()) {
-                this.clearPendingHomeSearchFromUrl();
-                await this.runHeaderSearchFlow({ scrollToResults: true });
+        },
+        async initializeSearchView() {
+            if (!searchPageRoot) {
+                return;
             }
+
+            this.homeSearchLoading = false;
+            this.homeSearchError = '';
+            this.homeSearchHasSubmitted = false;
+            this.homeSearchRequestId = 0;
+            this.homeSearchMatchingOffers = [];
+            this.homeSearchAlternativeOffers = [];
+            this.homeSearchMatchingCarouselOffset = 0;
+            this.homeSearchMatchingCarouselDirection = 1;
+            this.homeSearchAlternativeCarouselOffset = 0;
+            this.homeSearchAlternativeCarouselDirection = 1;
+            this.homeLatestViewportWidth = Number.isFinite(window.innerWidth) ? window.innerWidth : 1280;
+            this.homeOfferHostCityByHostId = {};
+            this.homeOfferHostCityLoadingByHostId = {};
+            this.homeOfferDetailModalOpen = false;
+            this.homeOfferDetailOfferId = null;
+            this.offerRequestModalOpen = false;
+            this.offerRequestOffer = null;
+            this.offerRequestPets = [];
+            this.offerRequestSelectedPetIds = [];
+            this.offerRequestSubmitting = false;
+            this.syncModalBodyLock();
+
+            const routeParameter = this.readSearchRouteParameter(window.location.pathname);
+            const queryParams = this.buildHeaderSearchQueryFromCurrentUrl();
+            this.applySearchRouteState(queryParams, routeParameter);
+            await this.runHeaderSearchFlow({
+                queryParams,
+                scrollToResults: false
+            });
         },
         async loadHomeOffers() {
             if (!homePageRoot) {
@@ -7290,13 +7956,14 @@ createApp({
             const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
             const template = this.homeStrings.latest.openDetailsTemplate || this.homeStrings.openDetailsTemplate;
             return formatTemplate(template, {
-                name: offerName || this.homeStrings.untitledOffer
+                name: offerName || this.offerDetailStrings.untitledOffer || this.homeStrings.untitledOffer
             });
         },
         buildHomeOfferOpenDetailsLabel(offer = null) {
             const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
-            return formatTemplate(this.homeStrings.openDetailsTemplate, {
-                name: offerName || this.homeStrings.untitledOffer
+            const template = this.homeStrings.openDetailsTemplate || '{name}';
+            return formatTemplate(template, {
+                name: offerName || this.offerDetailStrings.untitledOffer || this.homeStrings.untitledOffer
             });
         },
         openHomeOfferDetailModal(offer = null) {
@@ -7313,18 +7980,17 @@ createApp({
                 return;
             }
 
-            this.menuOpen = false;
-            this.closeAllDropdowns({ immediate: true });
-            this.homeOfferDetailModalOpen = true;
-            this.homeOfferDetailOfferId = normalizedOffer.id;
-            this.prefetchHomeOfferHostCity(normalizedOffer);
-            this.syncModalBodyLock();
+            this.openOfferDetailModal(normalizedOffer);
         },
         openHomeOfferDetailModalFromLatest(offer = null) {
-            if (!homePageRoot) {
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
                 return;
             }
 
+            this.openOfferDetailModal(normalizedOffer);
+        },
+        openOfferDetailModal(offer = null) {
             const normalizedOffer = this.normalizeMyOffer(offer || {});
             if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
                 return;
@@ -7342,9 +8008,93 @@ createApp({
                 return;
             }
 
+            if (this.offerRequestModalOpen) {
+                this.closeOfferRequestModal();
+            }
             this.homeOfferDetailModalOpen = false;
             this.homeOfferDetailOfferId = null;
             this.syncModalBodyLock();
+        },
+        async openOfferDetailModalById(offerId) {
+            const normalizedOfferId = this.normalizeProfileUserId(offerId);
+            if (!Number.isInteger(normalizedOfferId) || normalizedOfferId <= 0) {
+                return;
+            }
+
+            const knownOffer = this.findHomeOfferById(normalizedOfferId);
+            if (knownOffer) {
+                this.openOfferDetailModal(knownOffer);
+                return;
+            }
+
+            try {
+                const response = await apiFetch('/api/marketplace/offers', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (response.ok && payload?.success !== false && Array.isArray(payload?.data)) {
+                    const normalizedOffers = payload.data
+                        .map((offer) => this.normalizeMyOffer(offer))
+                        .filter((offer) => Number.isInteger(offer.id) && offer.id > 0);
+                    const matchedOffer = normalizedOffers.find((offer) => offer.id === normalizedOfferId);
+                    if (matchedOffer) {
+                        this.homeOffers = this.mergeOffersById(this.homeOffers, [matchedOffer]);
+                        this.openOfferDetailModal(matchedOffer);
+                        return;
+                    }
+                }
+            } catch {
+                // Fallback to own-offer endpoint below.
+            }
+
+            try {
+                const response = await apiFetch(`/api/offers/${normalizedOfferId}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    return;
+                }
+
+                const normalizedOffer = this.normalizeMyOffer(payload?.data || {});
+                if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                    return;
+                }
+                this.homeOffers = this.mergeOffersById(this.homeOffers, [normalizedOffer]);
+                this.openOfferDetailModal(normalizedOffer);
+            } catch {
+                return;
+            }
+        },
+        mergeOffersById(sourceOffers = [], incomingOffers = []) {
+            const map = new Map();
+            const mergedList = [];
+            [...(Array.isArray(sourceOffers) ? sourceOffers : []), ...(Array.isArray(incomingOffers) ? incomingOffers : [])]
+                .forEach((offer) => {
+                    const normalizedOffer = this.normalizeMyOffer(offer || {});
+                    if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                        return;
+                    }
+
+                    if (!map.has(normalizedOffer.id)) {
+                        map.set(normalizedOffer.id, mergedList.length);
+                        mergedList.push(normalizedOffer);
+                        return;
+                    }
+
+                    const index = map.get(normalizedOffer.id);
+                    mergedList[index] = normalizedOffer;
+                });
+
+            return mergedList;
         },
         formatHomeOfferDateRange(offer = null) {
             const locale = document.documentElement.lang || 'de';
@@ -7389,9 +8139,27 @@ createApp({
                 if (cachedLocation) {
                     return cachedLocation;
                 }
+
+                if (this.profileViewUser && this.normalizeProfileUserId(this.profileViewUser.id) === hostId) {
+                    const profileCity = typeof this.profileViewUser.city === 'string'
+                        ? this.profileViewUser.city.trim()
+                        : '';
+                    if (profileCity) {
+                        return profileCity;
+                    }
+                }
+
+                if (this.myOffersViewUser && this.normalizeProfileUserId(this.myOffersViewUser.id) === hostId) {
+                    const ownOfferCity = typeof this.myOffersViewUser.city === 'string'
+                        ? this.myOffersViewUser.city.trim()
+                        : '';
+                    if (ownOfferCity) {
+                        return ownOfferCity;
+                    }
+                }
             }
 
-            return this.homeStrings.labels.locationFallback;
+            return this.offerDetailStrings.labels.locationFallback || this.homeStrings.labels.locationFallback || '—';
         },
         homeOfferHostDisplayName(offer = null) {
             const firstName = typeof offer?.hostFirstName === 'string' ? offer.hostFirstName.trim() : '';
@@ -7402,7 +8170,26 @@ createApp({
                 return fullName;
             }
 
-            return this.homeStrings.modalHostLabel;
+            const normalizedHostId = this.normalizeProfileUserId(offer?.hostId);
+            if (
+                Number.isInteger(normalizedHostId)
+                && normalizedHostId > 0
+                && this.profileViewUser
+                && this.normalizeProfileUserId(this.profileViewUser.id) === normalizedHostId
+            ) {
+                return this.profileViewDisplayName || this.offerDetailStrings.modalHostLabel || this.homeStrings.modalHostLabel;
+            }
+
+            if (
+                Number.isInteger(normalizedHostId)
+                && normalizedHostId > 0
+                && this.myOffersViewUser
+                && this.normalizeProfileUserId(this.myOffersViewUser.id) === normalizedHostId
+            ) {
+                return this.myOffersDisplayName || this.offerDetailStrings.modalHostLabel || this.homeStrings.modalHostLabel;
+            }
+
+            return this.offerDetailStrings.modalHostLabel || this.homeStrings.modalHostLabel || '';
         },
         isOwnMarketplaceOffer(offer = null) {
             const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
@@ -7422,7 +8209,8 @@ createApp({
                 ...(Array.isArray(this.homeOffers) ? this.homeOffers : []),
                 ...(Array.isArray(this.homeLatestOffers) ? this.homeLatestOffers : []),
                 ...(Array.isArray(this.homeSearchMatchingOffers) ? this.homeSearchMatchingOffers : []),
-                ...(Array.isArray(this.homeSearchAlternativeOffers) ? this.homeSearchAlternativeOffers : [])
+                ...(Array.isArray(this.homeSearchAlternativeOffers) ? this.homeSearchAlternativeOffers : []),
+                ...(Array.isArray(this.myOffersOffers) ? this.myOffersOffers : [])
             ];
 
             return offers.find((offer) => this.normalizeProfileUserId(offer?.id) === normalizedOfferId) || null;
@@ -7562,9 +8350,16 @@ createApp({
             this.myOffersViewLoading = true;
             this.myOffersViewError = '';
             this.myOffersViewUser = null;
+            this.myOffersViewTab = 'offeredPackages';
             this.myOffersOffers = [];
             this.myOffersCarouselIndex = 0;
             this.myOffersActionPendingId = null;
+            this.myOffersBookingsLoading = false;
+            this.myOffersBookingsLoadError = '';
+            this.myOffersBookingsAccepted = [];
+            this.myOffersBookingsActive = [];
+            this.myOffersBookingsHistory = [];
+            this.myOffersBookingCompletePendingId = null;
             this.myOffersCreateModalOpen = false;
             this.myOffersFormSaving = false;
             this.resetMyOffersForm();
@@ -7579,6 +8374,9 @@ createApp({
             }
 
             await this.loadMyOffersViewData();
+            nextTick(() => {
+                this.updateSegmentedIndicators();
+            });
         },
         normalizeMyOfferImagePath(value = '') {
             if (typeof value !== 'string') {
@@ -7760,6 +8558,240 @@ createApp({
 
             return detailMessage || backendMessage || this.myOffersStrings.actionErrorMessage;
         },
+        setMyOffersViewTab(value = 'offeredPackages') {
+            const normalizedValue = typeof value === 'string' ? value.trim() : '';
+            if (!['offeredPackages', 'ownBookings'].includes(normalizedValue)) {
+                return;
+            }
+            if (this.myOffersViewTab === normalizedValue) {
+                return;
+            }
+            this.myOffersViewTab = normalizedValue;
+        },
+        normalizeMyOffersBooking(value = {}) {
+            const bookingId = this.normalizeProfileUserId(value?.id);
+            const chatId = this.normalizeProfileUserId(value?.chatId);
+            const offerId = this.normalizeProfileUserId(value?.offerId);
+            const senderId = this.normalizeProfileUserId(value?.senderId);
+            const recipientId = this.normalizeProfileUserId(value?.recipientId);
+            const senderFirstName = typeof value?.senderFirstName === 'string' ? value.senderFirstName.trim() : '';
+            const senderLastName = typeof value?.senderLastName === 'string' ? value.senderLastName.trim() : '';
+            const recipientFirstName = typeof value?.recipientFirstName === 'string' ? value.recipientFirstName.trim() : '';
+            const recipientLastName = typeof value?.recipientLastName === 'string' ? value.recipientLastName.trim() : '';
+            const senderDisplayName = [senderFirstName, senderLastName].filter(Boolean).join(' ').trim();
+            const recipientDisplayName = [recipientFirstName, recipientLastName].filter(Boolean).join(' ').trim();
+            const currentUserId = this.normalizeProfileUserId(this.myOffersViewUser?.id)
+                || this.normalizeProfileUserId(this.authSessionUserId);
+            const status = typeof value?.status === 'string' ? value.status.trim().toUpperCase() : '';
+            const priceValue = Number.parseFloat(String(value?.priceTotal ?? '').replace(',', '.'));
+            const petCount = Number(value?.petCount);
+            const normalizedSpecies = Array.isArray(value?.petSpecies) || value?.petSpecies instanceof Set
+                ? Array.from(value.petSpecies)
+                    .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                    .filter(Boolean)
+                : [];
+
+            let partnerName = '';
+            if (Number.isInteger(currentUserId) && currentUserId > 0) {
+                if (senderId === currentUserId) {
+                    partnerName = recipientDisplayName;
+                } else if (recipientId === currentUserId) {
+                    partnerName = senderDisplayName;
+                }
+            }
+            if (!partnerName) {
+                partnerName = recipientDisplayName || senderDisplayName || localizedAppStrings.genericUser;
+            }
+
+            return {
+                id: bookingId,
+                chatId,
+                offerId,
+                offerTitle: typeof value?.offerTitle === 'string' ? value.offerTitle.trim() : '',
+                senderId,
+                senderDisplayName,
+                recipientId,
+                recipientDisplayName,
+                partnerName,
+                startDate: normalizeDateInputValue(value?.startDate),
+                endDate: normalizeDateInputValue(value?.endDate),
+                priceTotal: Number.isFinite(priceValue) ? priceValue : 0,
+                currency: typeof value?.currency === 'string' && value.currency.trim()
+                    ? value.currency.trim().toUpperCase()
+                    : 'EUR',
+                petSpecies: [...new Set(normalizedSpecies)],
+                petCount: Number.isFinite(petCount) ? Math.max(0, Math.round(petCount)) : 0,
+                note: typeof value?.note === 'string' ? value.note.trim() : '',
+                status
+            };
+        },
+        formatMyOffersBookingPeriod(booking = null) {
+            const startDate = normalizeDateInputValue(booking?.startDate);
+            const endDate = normalizeDateInputValue(booking?.endDate);
+            if (!startDate && !endDate) {
+                return '—';
+            }
+            if (startDate && endDate && startDate === endDate) {
+                return this.formatMessagesDateOnly(startDate);
+            }
+            return `${this.formatMessagesDateOnly(startDate)} – ${this.formatMessagesDateOnly(endDate)}`;
+        },
+        formatMyOffersBookingSpecies(speciesValues = []) {
+            const formatted = this.formatMessagesProposalSpecies(speciesValues);
+            return formatted || '—';
+        },
+        resolveMyOffersBookingStatusLabel(status = '') {
+            const normalizedStatus = typeof status === 'string' ? status.trim().toUpperCase() : '';
+            if (normalizedStatus === 'COMPLETED') {
+                return this.myOffersStrings.bookings.statusCompleted;
+            }
+            if (normalizedStatus === 'ACCEPTED') {
+                return this.myOffersStrings.bookings.statusActive;
+            }
+            return normalizedStatus || this.myOffersStrings.bookings.statusActive;
+        },
+        async loadMyOffersBookingsData({ showLoadingState = true, silent = false } = {}) {
+            if (!myOffersPageRoot) {
+                return;
+            }
+            if (showLoadingState) {
+                this.myOffersBookingsLoading = true;
+            }
+            this.myOffersBookingsLoadError = '';
+
+            const requestBookings = async (path) => {
+                const response = await apiFetch(path, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                return {
+                    response,
+                    payload
+                };
+            };
+
+            try {
+                const [acceptedResult, activeResult, historyResult] = await Promise.all([
+                    requestBookings('/api/bookings'),
+                    requestBookings('/api/bookings/active'),
+                    requestBookings('/api/bookings/history')
+                ]);
+
+                const resultList = [acceptedResult, activeResult, historyResult];
+                if (resultList.some((entry) => entry.response.status === 401 || entry.response.status === 403)) {
+                    this.myOffersViewError = this.myOffersStrings.authRequired;
+                    window.location.assign(this.buildNotFoundPath());
+                    return;
+                }
+
+                const normalizeBookingList = (entry) => {
+                    if (!entry.response.ok || entry.payload?.success === false) {
+                        return [];
+                    }
+                    return Array.isArray(entry.payload?.data)
+                        ? entry.payload.data
+                            .map((booking) => this.normalizeMyOffersBooking(booking))
+                            .filter((booking) => Number.isInteger(booking.id) && booking.id > 0)
+                        : [];
+                };
+
+                this.myOffersBookingsAccepted = normalizeBookingList(acceptedResult);
+                this.myOffersBookingsActive = normalizeBookingList(activeResult);
+                this.myOffersBookingsHistory = normalizeBookingList(historyResult);
+
+                const failedEntry = resultList.find((entry) => !entry.response.ok || entry.payload?.success === false);
+                if (failedEntry) {
+                    this.myOffersBookingsLoadError = this.myOffersStrings.bookings.loadFailed || this.myOffersStrings.loadFailed;
+                    if (!silent) {
+                        this.pushNotification({
+                            title: this.myOffersStrings.actionErrorTitle,
+                            message: this.buildMyOffersActionErrorMessage(failedEntry.payload),
+                            tone: 'warning'
+                        });
+                    }
+                }
+            } catch {
+                this.myOffersBookingsLoadError = this.myOffersStrings.bookings.loadFailed || this.myOffersStrings.loadFailed;
+                if (!silent) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.actionErrorTitle,
+                        message: this.myOffersStrings.bookings.loadFailed || this.myOffersStrings.actionErrorMessage,
+                        tone: 'warning'
+                    });
+                }
+            } finally {
+                this.myOffersBookingsLoading = false;
+            }
+        },
+        openMyOffersBookingChat(booking = null) {
+            const normalizedChatId = this.normalizeProfileUserId(booking?.chatId);
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+
+            window.location.assign(this.buildMessagesPath(normalizedChatId));
+        },
+        async completeMyOffersBooking(booking = null) {
+            const normalizedBookingId = this.normalizeProfileUserId(booking?.id);
+            if (!Number.isInteger(normalizedBookingId) || normalizedBookingId <= 0) {
+                return;
+            }
+            const normalizedStatus = typeof booking?.status === 'string' ? booking.status.trim().toUpperCase() : '';
+            if (normalizedStatus !== 'ACCEPTED') {
+                return;
+            }
+            if (this.myOffersBookingCompletePendingId === normalizedBookingId) {
+                return;
+            }
+
+            this.myOffersBookingCompletePendingId = normalizedBookingId;
+            try {
+                const response = await apiFetch(`/api/bookings/${normalizedBookingId}/complete`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.myOffersStrings.bookings.notifications.completeErrorTitle || this.myOffersStrings.actionErrorTitle,
+                        message: this.buildMyOffersActionErrorMessage(payload) || this.myOffersStrings.bookings.notifications.completeErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const offerName = typeof booking?.offerTitle === 'string' && booking.offerTitle.trim()
+                    ? booking.offerTitle.trim()
+                    : this.myOffersStrings.labels.title;
+                this.pushNotification({
+                    title: this.myOffersStrings.bookings.notifications.completeSuccessTitle,
+                    message: formatTemplate(this.myOffersStrings.bookings.notifications.completeSuccessTemplate, {
+                        name: offerName
+                    }),
+                    tone: 'success'
+                });
+
+                await this.loadMyOffersBookingsData({
+                    showLoadingState: false,
+                    silent: true
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.myOffersStrings.bookings.notifications.completeErrorTitle || this.myOffersStrings.actionErrorTitle,
+                    message: this.myOffersStrings.bookings.notifications.completeErrorMessage || this.myOffersStrings.actionErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.myOffersBookingCompletePendingId = null;
+            }
+        },
         async loadMyOffersViewData() {
             if (!myOffersPageRoot) {
                 return;
@@ -7817,6 +8849,10 @@ createApp({
                     : [];
                 this.myOffersOffers = normalizedOffers;
                 this.myOffersCarouselIndex = 0;
+                await this.loadMyOffersBookingsData({
+                    showLoadingState: false,
+                    silent: true
+                });
             } catch {
                 this.myOffersViewError = this.myOffersStrings.loadFailed;
             } finally {
@@ -7872,8 +8908,13 @@ createApp({
         },
         buildMyOfferOpenDetailsLabel(offer = null) {
             const offerName = typeof offer?.title === 'string' ? offer.title.trim() : '';
-            return formatTemplate(this.myOffersStrings.openDetailsTemplate, {
-                name: offerName || this.myOffersStrings.labels.title
+            const template = this.myOffersStrings.openDetailsTemplate || this.homeStrings.openDetailsTemplate || '{name}';
+            return formatTemplate(template, {
+                name: offerName
+                    || this.offerDetailStrings.untitledOffer
+                    || this.homeStrings.untitledOffer
+                    || this.myOffersStrings.labels.title
+                    || '—'
             });
         },
         resolveMyOfferStatusLabel(offer = null) {
@@ -9691,6 +10732,2069 @@ createApp({
             await this.ensurePhoneCountryOptionsLoaded();
             await this.loadCurrentUserSettings();
         },
+        async initializeMessagesView() {
+            if (!messagesPageRoot) {
+                return;
+            }
+
+            this.messagesViewLoading = true;
+            this.messagesViewError = '';
+            this.messagesViewUser = null;
+            this.messagesChats = [];
+            this.messagesActiveChatId = null;
+            this.messagesByChatId = {};
+            this.messagesMessagesLoadedByChatId = {};
+            this.messagesMessagesLoadingByChatId = {};
+            this.messagesPartnerProfileById = {};
+            this.messagesPartnerProfileLoadingById = {};
+            this.messagesComposerText = '';
+            this.clearMessagesComposerAttachments();
+            this.messagesClosingChat = false;
+            this.messagesProposalModalOpen = false;
+            this.messagesProposalSubmitting = false;
+            this.messagesProposalActionPendingId = null;
+            this.resetMessagesProposalForm();
+            this.stopMessagesFallbackRefresh();
+            this.disconnectMessagesSocket();
+
+            if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
+                try {
+                    await this.loadRegisterPetChoices();
+                } catch {
+                    // Proposal species chips gracefully fall back to defaults.
+                }
+            }
+
+            await this.loadMessagesViewData({
+                preserveSelection: false,
+                showLoadingState: true
+            });
+        },
+        readMessagesQueryChatId() {
+            try {
+                const currentUrl = new URL(window.location.href);
+                return this.normalizeProfileUserId(currentUrl.searchParams.get('chat'));
+            } catch {
+                return null;
+            }
+        },
+        syncMessagesQueryChat(chatId = null) {
+            if (!messagesPageRoot || !this.isMessagesPath(window.location.pathname)) {
+                return;
+            }
+
+            try {
+                const currentUrl = new URL(window.location.href);
+                const normalizedChatId = this.normalizeProfileUserId(chatId);
+                if (Number.isInteger(normalizedChatId) && normalizedChatId > 0) {
+                    currentUrl.searchParams.set('chat', String(normalizedChatId));
+                } else {
+                    currentUrl.searchParams.delete('chat');
+                }
+
+                const nextPath = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+                window.history.replaceState({}, '', nextPath);
+            } catch {
+                // Ignore URL update failures.
+            }
+        },
+        normalizeMessagesChat(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const offerId = this.normalizeProfileUserId(value?.offerId);
+            const hostId = this.normalizeProfileUserId(value?.hostId);
+            const requesterId = this.normalizeProfileUserId(value?.requesterId);
+            const closedByUserId = this.normalizeProfileUserId(value?.closedByUserId);
+            const offerTitle = typeof value?.offerTitle === 'string' ? value.offerTitle.trim() : '';
+            const hostFirstName = typeof value?.hostFirstName === 'string' ? value.hostFirstName.trim() : '';
+            const hostLastName = typeof value?.hostLastName === 'string' ? value.hostLastName.trim() : '';
+            const requesterFirstName = typeof value?.requesterFirstName === 'string' ? value.requesterFirstName.trim() : '';
+            const requesterLastName = typeof value?.requesterLastName === 'string' ? value.requesterLastName.trim() : '';
+            const createdAt = typeof value?.createdAt === 'string' ? value.createdAt.trim() : '';
+            const lastMessageAt = typeof value?.lastMessageAt === 'string' ? value.lastMessageAt.trim() : '';
+            const closedAt = typeof value?.closedAt === 'string' ? value.closedAt.trim() : '';
+            const preview = typeof value?.lastMessagePreview === 'string' ? value.lastMessagePreview.trim() : '';
+
+            return {
+                id: normalizedId,
+                offerId,
+                offerTitle: offerTitle || this.messagesStrings.defaultOfferTitle,
+                hostId,
+                hostFirstName,
+                hostLastName,
+                requesterId,
+                requesterFirstName,
+                requesterLastName,
+                createdAt,
+                lastMessageAt,
+                closedAt,
+                closedByUserId,
+                lastMessagePreview: this.resolveMessagesPreviewText(preview)
+            };
+        },
+        sortMessagesChats(chats = []) {
+            return [...chats].sort((left, right) => {
+                const leftStamp = Date.parse(left?.lastMessageAt || left?.createdAt || '') || 0;
+                const rightStamp = Date.parse(right?.lastMessageAt || right?.createdAt || '') || 0;
+                if (leftStamp !== rightStamp) {
+                    return rightStamp - leftStamp;
+                }
+
+                return (right?.id || 0) - (left?.id || 0);
+            });
+        },
+        isMessagesChatClosed(chat = null) {
+            const closedAt = typeof chat?.closedAt === 'string' ? chat.closedAt.trim() : '';
+            return Boolean(closedAt);
+        },
+        upsertMessagesChat(chatValue = {}) {
+            const normalizedChat = this.normalizeMessagesChat(chatValue);
+            if (!Number.isInteger(normalizedChat.id) || normalizedChat.id <= 0) {
+                return;
+            }
+
+            const existingChats = Array.isArray(this.messagesChats) ? [...this.messagesChats] : [];
+            const existingIndex = existingChats.findIndex((chat) => chat.id === normalizedChat.id);
+            if (existingIndex >= 0) {
+                existingChats[existingIndex] = {
+                    ...existingChats[existingIndex],
+                    ...normalizedChat
+                };
+            } else {
+                existingChats.push(normalizedChat);
+            }
+
+            this.messagesChats = this.sortMessagesChats(existingChats);
+            this.prefetchMessagesPartnerProfiles(this.messagesChats);
+        },
+        async refreshMessagesChatsSilently() {
+            const response = await apiFetch('/api/chats', {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload?.success === false) {
+                throw new Error(this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.loadFailed));
+            }
+
+            const normalizedChats = Array.isArray(payload?.data)
+                ? payload.data
+                    .map((chat) => this.normalizeMessagesChat(chat))
+                    .filter((chat) => Number.isInteger(chat.id) && chat.id > 0)
+                : [];
+            this.messagesChats = this.sortMessagesChats(normalizedChats);
+            this.prefetchMessagesPartnerProfiles(this.messagesChats);
+            return normalizedChats;
+        },
+        async loadMessagesViewData({ preserveSelection = true, showLoadingState = true } = {}) {
+            if (!messagesPageRoot) {
+                return;
+            }
+
+            const requestId = this.messagesChatsRequestId + 1;
+            this.messagesChatsRequestId = requestId;
+            if (showLoadingState) {
+                this.messagesViewLoading = true;
+            }
+            this.messagesViewError = '';
+
+            try {
+                const [profileResponse, chatsResponse] = await Promise.all([
+                    apiFetch('/api/users/me', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    }),
+                    apiFetch('/api/chats', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        cache: 'no-store'
+                    })
+                ]);
+                const profilePayload = await profileResponse.json().catch(() => ({}));
+                const chatsPayload = await chatsResponse.json().catch(() => ({}));
+
+                if (requestId !== this.messagesChatsRequestId) {
+                    return;
+                }
+
+                if (
+                    profileResponse.status === 401
+                    || profileResponse.status === 403
+                    || chatsResponse.status === 401
+                    || chatsResponse.status === 403
+                ) {
+                    this.messagesViewError = this.messagesStrings.authRequired;
+                    window.location.assign(this.buildNotFoundPath());
+                    return;
+                }
+
+                if (
+                    !profileResponse.ok
+                    || profilePayload?.success === false
+                    || !chatsResponse.ok
+                    || chatsPayload?.success === false
+                ) {
+                    this.messagesViewError = this.messagesStrings.loadFailed;
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.loadErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(
+                            chatsPayload?.success === false ? chatsPayload : profilePayload,
+                            this.messagesStrings.loadFailed
+                        ),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.messagesViewUser = this.normalizeProfileUser(profilePayload?.data || {});
+                const currentUserId = this.normalizeProfileUserId(this.messagesViewUser?.id);
+                if (Number.isInteger(currentUserId) && currentUserId > 0) {
+                    this.authSessionUserId = currentUserId;
+                    this.authSessionLoggedIn = true;
+                }
+                if (typeof this.messagesViewUser?.email === 'string' && this.messagesViewUser.email.trim()) {
+                    this.authSessionEmail = this.messagesViewUser.email.trim();
+                }
+                if (typeof this.messagesViewUser?.firstName === 'string') {
+                    this.authSessionFirstName = this.messagesViewUser.firstName;
+                }
+                if (typeof this.messagesViewUser?.lastName === 'string') {
+                    this.authSessionLastName = this.messagesViewUser.lastName;
+                }
+
+                const normalizedChats = Array.isArray(chatsPayload?.data)
+                    ? chatsPayload.data
+                        .map((chat) => this.normalizeMessagesChat(chat))
+                        .filter((chat) => Number.isInteger(chat.id) && chat.id > 0)
+                    : [];
+                this.messagesChats = this.sortMessagesChats(normalizedChats);
+                this.prefetchMessagesPartnerProfiles(normalizedChats);
+
+                const routeChatId = this.readMessagesQueryChatId();
+                const keepSelectedChatId = preserveSelection
+                    ? this.normalizeProfileUserId(this.messagesActiveChatId)
+                    : null;
+                const preferredChatId = Number.isInteger(routeChatId) && routeChatId > 0
+                    ? routeChatId
+                    : keepSelectedChatId;
+                const hasPreferredChat = Number.isInteger(preferredChatId)
+                    && preferredChatId > 0
+                    && normalizedChats.some((chat) => chat.id === preferredChatId);
+
+                this.messagesActiveChatId = hasPreferredChat ? preferredChatId : null;
+
+                if (this.messagesActiveChatId) {
+                    await this.loadMessagesForChat(this.messagesActiveChatId, { force: false });
+                }
+
+                this.connectMessagesSocket();
+                this.startMessagesFallbackRefresh();
+            } catch {
+                if (requestId !== this.messagesChatsRequestId) {
+                    return;
+                }
+
+                this.messagesViewError = this.messagesStrings.loadFailed;
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.loadErrorTitle,
+                    message: this.messagesStrings.loadFailed,
+                    tone: 'warning'
+                });
+            } finally {
+                if (requestId === this.messagesChatsRequestId) {
+                    this.messagesViewLoading = false;
+                }
+            }
+        },
+        startMessagesFallbackRefresh() {
+            if (!messagesPageRoot) {
+                return;
+            }
+
+            this.stopMessagesFallbackRefresh();
+            this.messagesFallbackRefreshHandle = window.setInterval(() => {
+                if (this.messagesWebSocketConnected) {
+                    return;
+                }
+
+                this.refreshMessagesChatsSilently().catch(() => {
+                    // Background fallback refresh should remain silent.
+                });
+                const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+                if (Number.isInteger(activeChatId) && activeChatId > 0) {
+                    this.loadMessagesForChat(activeChatId, {
+                        force: true,
+                        silent: true
+                    });
+                }
+            }, MESSAGES_SOCKET_FALLBACK_REFRESH_INTERVAL_MS);
+        },
+        stopMessagesFallbackRefresh() {
+            if (typeof this.messagesFallbackRefreshHandle === 'number') {
+                window.clearInterval(this.messagesFallbackRefreshHandle);
+            }
+            this.messagesFallbackRefreshHandle = null;
+        },
+        messagesBuildSocketUrl() {
+            try {
+                const currentUrl = new URL(window.location.href);
+                const protocol = currentUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+                return `${protocol}//${currentUrl.host}${MESSAGES_WEBSOCKET_ENDPOINT}`;
+            } catch {
+                return '';
+            }
+        },
+        escapeStompHeaderValue(value = '') {
+            return String(value)
+                .replaceAll('\\', '\\\\')
+                .replaceAll('\r', '\\r')
+                .replaceAll('\n', '\\n')
+                .replaceAll(':', '\\c');
+        },
+        unescapeStompHeaderValue(value = '') {
+            return String(value)
+                .replaceAll('\\r', '\r')
+                .replaceAll('\\n', '\n')
+                .replaceAll('\\c', ':')
+                .replaceAll('\\\\', '\\');
+        },
+        sendMessagesSocketFrame(command, headers = {}, body = '') {
+            if (!this.messagesWebSocket || this.messagesWebSocket.readyState !== WebSocket.OPEN) {
+                return;
+            }
+
+            let frame = `${command}\n`;
+            Object.entries(headers || {}).forEach(([headerKey, headerValue]) => {
+                frame += `${this.escapeStompHeaderValue(headerKey)}:${this.escapeStompHeaderValue(headerValue)}\n`;
+            });
+            frame += '\n';
+            if (body) {
+                frame += body;
+            }
+            frame += '\0';
+
+            this.messagesWebSocket.send(frame);
+        },
+        parseMessagesSocketFrame(rawFrame = '') {
+            const normalizedFrame = String(rawFrame || '').replace(/\r/g, '');
+            const separatorIndex = normalizedFrame.indexOf('\n\n');
+            const headerSection = separatorIndex >= 0
+                ? normalizedFrame.slice(0, separatorIndex)
+                : normalizedFrame;
+            const bodySection = separatorIndex >= 0
+                ? normalizedFrame.slice(separatorIndex + 2)
+                : '';
+            const lines = headerSection.split('\n');
+            const command = (lines.shift() || '').trim();
+            const headers = {};
+
+            lines.forEach((line) => {
+                const dividerIndex = line.indexOf(':');
+                if (dividerIndex <= 0) {
+                    return;
+                }
+                const headerKey = this.unescapeStompHeaderValue(line.slice(0, dividerIndex).trim());
+                const headerValue = this.unescapeStompHeaderValue(line.slice(dividerIndex + 1).trim());
+                if (!headerKey) {
+                    return;
+                }
+                headers[headerKey] = headerValue;
+            });
+
+            return {
+                command,
+                headers,
+                body: bodySection
+            };
+        },
+        handleMessagesSocketData(rawData = '') {
+            if (typeof rawData !== 'string') {
+                return;
+            }
+
+            this.messagesWebSocketFrameBuffer += rawData;
+            let delimiterIndex = this.messagesWebSocketFrameBuffer.indexOf('\0');
+
+            while (delimiterIndex >= 0) {
+                const rawFrame = this.messagesWebSocketFrameBuffer.slice(0, delimiterIndex);
+                this.messagesWebSocketFrameBuffer = this.messagesWebSocketFrameBuffer.slice(delimiterIndex + 1);
+
+                if (rawFrame.trim()) {
+                    const frame = this.parseMessagesSocketFrame(rawFrame);
+                    this.handleMessagesSocketFrame(frame);
+                }
+
+                delimiterIndex = this.messagesWebSocketFrameBuffer.indexOf('\0');
+            }
+        },
+        handleMessagesSocketFrame(frame = {}) {
+            const command = typeof frame?.command === 'string' ? frame.command.trim().toUpperCase() : '';
+
+            if (command === 'CONNECTED') {
+                this.messagesWebSocketConnected = true;
+                this.messagesWebSocketReconnectAttempts = 0;
+                this.messagesWebSocketSubscriptionIdByDestination = {};
+                this.ensureMessagesQueueSubscription();
+                const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+                if (Number.isInteger(activeChatId) && activeChatId > 0) {
+                    this.ensureMessagesChatSubscription(activeChatId);
+                }
+                return;
+            }
+
+            if (command === 'MESSAGE') {
+                const destination = typeof frame?.headers?.destination === 'string'
+                    ? frame.headers.destination.trim()
+                    : '';
+                this.handleMessagesSocketMessage(destination, frame?.body || '');
+                return;
+            }
+
+            if (command === 'ERROR') {
+                this.disconnectMessagesSocket();
+            }
+        },
+        handleMessagesSocketMessage(destination = '', body = '') {
+            const normalizedDestination = typeof destination === 'string' ? destination.trim() : '';
+            if (!normalizedDestination || typeof body !== 'string' || !body.trim()) {
+                return;
+            }
+
+            let payload = null;
+            try {
+                payload = JSON.parse(body);
+            } catch {
+                return;
+            }
+
+            if (normalizedDestination.endsWith('/queue/chats')) {
+                const chat = payload?.chat || null;
+                if (chat) {
+                    this.upsertMessagesChat(chat);
+                }
+                return;
+            }
+
+            const topicMatch = normalizedDestination.match(/\/topic\/chats\/(\d+)\/messages$/);
+            if (!topicMatch) {
+                return;
+            }
+
+            const chatId = this.normalizeProfileUserId(topicMatch[1]);
+            const eventMessage = payload?.message || null;
+            if (!Number.isInteger(chatId) || chatId <= 0 || !eventMessage) {
+                return;
+            }
+
+            const normalizedMessage = this.normalizeMessagesMessage(eventMessage);
+            this.upsertMessagesMessage(chatId, normalizedMessage, {
+                autoScrollIfNearBottom: true
+            });
+        },
+        ensureMessagesQueueSubscription() {
+            this.ensureMessagesSocketSubscription('/user/queue/chats');
+        },
+        ensureMessagesChatSubscription(chatId) {
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+            this.ensureMessagesSocketSubscription(`/topic/chats/${normalizedChatId}/messages`);
+        },
+        ensureMessagesSocketSubscription(destination = '') {
+            if (!this.messagesWebSocketConnected || !this.messagesWebSocket || this.messagesWebSocket.readyState !== WebSocket.OPEN) {
+                return;
+            }
+
+            const normalizedDestination = typeof destination === 'string' ? destination.trim() : '';
+            if (!normalizedDestination) {
+                return;
+            }
+
+            const currentMap = this.messagesWebSocketSubscriptionIdByDestination || {};
+            if (currentMap[normalizedDestination]) {
+                return;
+            }
+
+            const subscriptionId = `sub-${Date.now().toString(36)}-${(this.messagesWebSocketSubscriptionIdCounter + 1).toString(36)}`;
+            this.messagesWebSocketSubscriptionIdCounter += 1;
+            this.messagesWebSocketSubscriptionIdByDestination = {
+                ...currentMap,
+                [normalizedDestination]: subscriptionId
+            };
+            this.sendMessagesSocketFrame('SUBSCRIBE', {
+                id: subscriptionId,
+                destination: normalizedDestination
+            });
+        },
+        scheduleMessagesSocketReconnect() {
+            if (!messagesPageRoot || !this.authSessionLoggedIn) {
+                return;
+            }
+
+            if (typeof this.messagesWebSocketReconnectHandle === 'number') {
+                return;
+            }
+
+            const attempt = this.messagesWebSocketReconnectAttempts + 1;
+            this.messagesWebSocketReconnectAttempts = attempt;
+            const exponentialDelay = MESSAGES_SOCKET_RECONNECT_BASE_DELAY_MS * (2 ** (attempt - 1));
+            const reconnectDelay = Math.min(MESSAGES_SOCKET_RECONNECT_MAX_DELAY_MS, exponentialDelay);
+
+            this.messagesWebSocketReconnectHandle = window.setTimeout(() => {
+                this.messagesWebSocketReconnectHandle = null;
+                this.connectMessagesSocket();
+            }, reconnectDelay);
+        },
+        connectMessagesSocket() {
+            if (!messagesPageRoot || !this.authSessionLoggedIn) {
+                return;
+            }
+            if (this.messagesWebSocketConnected || this.messagesWebSocketConnectInFlight) {
+                return;
+            }
+
+            const socketUrl = this.messagesBuildSocketUrl();
+            if (!socketUrl || typeof WebSocket !== 'function') {
+                return;
+            }
+
+            try {
+                const socket = new WebSocket(socketUrl, ['v12.stomp', 'v11.stomp', 'v10.stomp']);
+                this.messagesWebSocket = socket;
+                this.messagesWebSocketConnectInFlight = true;
+                this.messagesWebSocketFrameBuffer = '';
+
+                socket.addEventListener('open', () => {
+                    if (this.messagesWebSocket !== socket) {
+                        return;
+                    }
+
+                    this.messagesWebSocketConnectInFlight = false;
+                    this.sendMessagesSocketFrame('CONNECT', {
+                        'accept-version': MESSAGES_STOMP_ACCEPT_VERSION,
+                        'heart-beat': '0,0'
+                    });
+                });
+
+                socket.addEventListener('message', (event) => {
+                    if (this.messagesWebSocket !== socket) {
+                        return;
+                    }
+                    this.handleMessagesSocketData(typeof event?.data === 'string' ? event.data : '');
+                });
+
+                socket.addEventListener('close', () => {
+                    if (this.messagesWebSocket !== socket) {
+                        return;
+                    }
+
+                    this.messagesWebSocket = null;
+                    this.messagesWebSocketConnected = false;
+                    this.messagesWebSocketConnectInFlight = false;
+                    this.messagesWebSocketFrameBuffer = '';
+                    this.messagesWebSocketSubscriptionIdByDestination = {};
+                    this.scheduleMessagesSocketReconnect();
+                });
+
+                socket.addEventListener('error', () => {
+                    if (this.messagesWebSocket !== socket) {
+                        return;
+                    }
+                    this.messagesWebSocketConnected = false;
+                });
+            } catch {
+                this.messagesWebSocket = null;
+                this.messagesWebSocketConnected = false;
+                this.messagesWebSocketConnectInFlight = false;
+            }
+        },
+        disconnectMessagesSocket() {
+            if (typeof this.messagesWebSocketReconnectHandle === 'number') {
+                window.clearTimeout(this.messagesWebSocketReconnectHandle);
+            }
+            this.messagesWebSocketReconnectHandle = null;
+            this.messagesWebSocketReconnectAttempts = 0;
+            this.messagesWebSocketSubscriptionIdByDestination = {};
+            this.messagesWebSocketFrameBuffer = '';
+            this.messagesWebSocketConnectInFlight = false;
+            this.messagesWebSocketConnected = false;
+
+            if (this.messagesWebSocket) {
+                try {
+                    this.messagesWebSocket.close();
+                } catch {
+                    // Ignore socket close errors.
+                }
+            }
+            this.messagesWebSocket = null;
+        },
+        resolveMessagesApiErrorMessage(payload = {}, fallbackMessage = '') {
+            const backendMessage = typeof payload?.message === 'string'
+                ? payload.message.trim()
+                : '';
+            const detailMessage = Array.isArray(payload?.error?.details)
+                ? payload.error.details
+                    .map((detail) => (typeof detail?.message === 'string' ? detail.message.trim() : ''))
+                    .find(Boolean)
+                : '';
+
+            return detailMessage || backendMessage || fallbackMessage;
+        },
+        normalizeMessagesAttachment(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const messageId = this.normalizeProfileUserId(value?.messageId);
+            const url = typeof value?.url === 'string' ? value.url.trim() : '';
+            const originalFilename = typeof value?.originalFilename === 'string' ? value.originalFilename.trim() : '';
+            const contentType = typeof value?.contentType === 'string' ? value.contentType.trim() : '';
+            const sizeBytes = Number(value?.sizeBytes);
+            const createdAt = typeof value?.createdAt === 'string' ? value.createdAt.trim() : '';
+
+            return {
+                id: normalizedId,
+                messageId,
+                url,
+                originalFilename,
+                contentType,
+                sizeBytes: Number.isFinite(sizeBytes) ? Math.max(0, Math.round(sizeBytes)) : 0,
+                createdAt
+            };
+        },
+        normalizeMessagesProposal(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const chatId = this.normalizeProfileUserId(value?.chatId);
+            const offerId = this.normalizeProfileUserId(value?.offerId);
+            const senderId = this.normalizeProfileUserId(value?.senderId);
+            const recipientId = this.normalizeProfileUserId(value?.recipientId);
+            const priceValue = Number.parseFloat(String(value?.priceTotal ?? '').replace(',', '.'));
+            const petCountValue = Number(value?.petCount);
+            const normalizedPetSpecies = Array.isArray(value?.petSpecies) || value?.petSpecies instanceof Set
+                ? Array.from(value.petSpecies)
+                    .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                    .filter(Boolean)
+                : [];
+
+            return {
+                id: normalizedId,
+                chatId,
+                offerId,
+                offerTitle: typeof value?.offerTitle === 'string' ? value.offerTitle.trim() : '',
+                senderId,
+                senderFirstName: typeof value?.senderFirstName === 'string' ? value.senderFirstName.trim() : '',
+                senderLastName: typeof value?.senderLastName === 'string' ? value.senderLastName.trim() : '',
+                recipientId,
+                recipientFirstName: typeof value?.recipientFirstName === 'string' ? value.recipientFirstName.trim() : '',
+                recipientLastName: typeof value?.recipientLastName === 'string' ? value.recipientLastName.trim() : '',
+                startDate: normalizeDateInputValue(value?.startDate),
+                endDate: normalizeDateInputValue(value?.endDate),
+                priceTotal: Number.isFinite(priceValue) ? priceValue : 0,
+                currency: typeof value?.currency === 'string' && value.currency.trim()
+                    ? value.currency.trim().toUpperCase()
+                    : 'EUR',
+                petSpecies: [...new Set(normalizedPetSpecies)],
+                petCount: Number.isFinite(petCountValue) ? Math.max(0, Math.round(petCountValue)) : 0,
+                note: typeof value?.note === 'string' ? value.note.trim() : '',
+                status: typeof value?.status === 'string' ? value.status.trim().toUpperCase() : 'PENDING',
+                declineReason: typeof value?.declineReason === 'string' ? value.declineReason.trim().toUpperCase() : '',
+                createdAt: typeof value?.createdAt === 'string' ? value.createdAt.trim() : '',
+                respondedAt: typeof value?.respondedAt === 'string' ? value.respondedAt.trim() : ''
+            };
+        },
+        parseOfferRequestToken(content = '') {
+            const normalizedContent = typeof content === 'string' ? content.trim() : '';
+            if (!normalizedContent.startsWith(MESSAGES_OFFER_REQUEST_TOKEN_PREFIX) || !normalizedContent.endsWith(MESSAGES_OFFER_REQUEST_TOKEN_SUFFIX)) {
+                return null;
+            }
+
+            const rawPayload = normalizedContent.slice(
+                MESSAGES_OFFER_REQUEST_TOKEN_PREFIX.length,
+                normalizedContent.length - MESSAGES_OFFER_REQUEST_TOKEN_SUFFIX.length
+            );
+            const decodedPayload = decodeUtf8Base64(rawPayload);
+            if (!decodedPayload) {
+                return null;
+            }
+
+            let parsedPayload = null;
+            try {
+                parsedPayload = JSON.parse(decodedPayload);
+            } catch {
+                return null;
+            }
+
+            const requesterId = this.normalizeProfileUserId(parsedPayload?.requesterId);
+            const offerId = this.normalizeProfileUserId(parsedPayload?.offerId);
+            if (!Number.isInteger(requesterId) || requesterId <= 0 || !Number.isInteger(offerId) || offerId <= 0) {
+                return null;
+            }
+
+            const requesterName = typeof parsedPayload?.requesterName === 'string'
+                ? parsedPayload.requesterName.trim()
+                : this.messagesStrings.participantUnknown;
+            const offerTitle = typeof parsedPayload?.offerTitle === 'string' && parsedPayload.offerTitle.trim()
+                ? parsedPayload.offerTitle.trim()
+                : this.messagesStrings.defaultOfferTitle;
+            const petNames = Array.isArray(parsedPayload?.petNames)
+                ? parsedPayload.petNames
+                    .map((petName) => (typeof petName === 'string' ? petName.trim() : ''))
+                    .filter(Boolean)
+                : [];
+            const species = Array.isArray(parsedPayload?.petSpecies)
+                ? parsedPayload.petSpecies
+                    .map((value) => (typeof value === 'string' ? value.trim().toUpperCase() : ''))
+                    .filter(Boolean)
+                : [];
+
+            const petsLabel = petNames.length
+                ? petNames.join(', ')
+                : (species.length
+                    ? species.map((value) => formatPetChoiceLabel(value, document.documentElement.lang || 'de')).join(', ')
+                    : '');
+            const petsText = petsLabel
+                ? `${this.offerDetailStrings.requestOpeningPetsPrefix} ${petsLabel}`.trim()
+                : this.offerDetailStrings.requestOpeningPetsPrefix;
+
+            return {
+                requesterId,
+                requesterName: requesterName || this.messagesStrings.participantUnknown,
+                offerId,
+                offerTitle: offerTitle || this.messagesStrings.defaultOfferTitle,
+                introText: this.offerDetailStrings.requestOpeningIntro,
+                petsText: petsText || ''
+            };
+        },
+        resolveMessagesPreviewText(rawPreview = '') {
+            const preview = typeof rawPreview === 'string' ? rawPreview.trim() : '';
+            if (!preview) {
+                return '';
+            }
+
+            const parsedOfferRequest = this.parseOfferRequestToken(preview);
+            if (parsedOfferRequest) {
+                const parts = [
+                    parsedOfferRequest.requesterName,
+                    parsedOfferRequest.introText,
+                    parsedOfferRequest.offerTitle,
+                    parsedOfferRequest.petsText
+                ].filter(Boolean);
+                return parts.join(' ');
+            }
+
+            return preview;
+        },
+        normalizeMessagesMessage(value = {}) {
+            const normalizedId = this.normalizeProfileUserId(value?.id);
+            const chatId = this.normalizeProfileUserId(value?.chatId);
+            const senderId = this.normalizeProfileUserId(value?.senderId);
+            const senderFirstName = typeof value?.senderFirstName === 'string' ? value.senderFirstName.trim() : '';
+            const senderLastName = typeof value?.senderLastName === 'string' ? value.senderLastName.trim() : '';
+            const rawContent = typeof value?.content === 'string' ? value.content.trim() : '';
+            const parsedOfferRequest = this.parseOfferRequestToken(rawContent);
+            const attachments = Array.isArray(value?.attachments)
+                ? value.attachments
+                    .map((attachment) => this.normalizeMessagesAttachment(attachment))
+                    .filter((attachment) => Number.isInteger(attachment.id) && attachment.id > 0 && attachment.url)
+                : [];
+            const type = typeof value?.type === 'string' ? value.type.trim().toUpperCase() : 'TEXT';
+            const bookingProposal = value?.bookingProposal
+                ? this.normalizeMessagesProposal(value.bookingProposal)
+                : null;
+
+            return {
+                id: normalizedId,
+                chatId,
+                senderId,
+                senderFirstName,
+                senderLastName,
+                content: parsedOfferRequest ? '' : rawContent,
+                createdAt: typeof value?.createdAt === 'string' ? value.createdAt.trim() : '',
+                attachments,
+                type,
+                bookingProposal,
+                offerRequest: parsedOfferRequest
+            };
+        },
+        buildMessagesMessagePreview(message = null) {
+            if (!message || typeof message !== 'object') {
+                return '';
+            }
+
+            if (message.offerRequest) {
+                const parts = [
+                    message.offerRequest.requesterName,
+                    message.offerRequest.introText,
+                    message.offerRequest.offerTitle,
+                    message.offerRequest.petsText
+                ].filter(Boolean);
+                return parts.join(' ').trim();
+            }
+
+            const content = typeof message.content === 'string' ? message.content.trim() : '';
+            if (content) {
+                return content;
+            }
+
+            if (Array.isArray(message.attachments) && message.attachments.length) {
+                return this.messagesStrings.attachmentOnlyPreview;
+            }
+
+            return '';
+        },
+        upsertMessagesMessage(chatId, messageValue, { autoScrollIfNearBottom = false } = {}) {
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+            const normalizedMessage = this.normalizeMessagesMessage(messageValue || {});
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+            if (!Number.isInteger(normalizedMessage.id) || normalizedMessage.id <= 0) {
+                return;
+            }
+
+            const previousMessages = Array.isArray(this.messagesByChatId?.[normalizedChatId])
+                ? [...this.messagesByChatId[normalizedChatId]]
+                : [];
+            const existingIndex = previousMessages.findIndex((message) => message.id === normalizedMessage.id);
+            if (existingIndex >= 0) {
+                previousMessages[existingIndex] = {
+                    ...previousMessages[existingIndex],
+                    ...normalizedMessage
+                };
+            } else {
+                previousMessages.push(normalizedMessage);
+            }
+
+            previousMessages.sort((left, right) => {
+                const leftStamp = Date.parse(left?.createdAt || '') || 0;
+                const rightStamp = Date.parse(right?.createdAt || '') || 0;
+                if (leftStamp !== rightStamp) {
+                    return leftStamp - rightStamp;
+                }
+                return (left?.id || 0) - (right?.id || 0);
+            });
+
+            this.messagesByChatId = {
+                ...(this.messagesByChatId || {}),
+                [normalizedChatId]: previousMessages
+            };
+            this.messagesMessagesLoadedByChatId = {
+                ...(this.messagesMessagesLoadedByChatId || {}),
+                [normalizedChatId]: true
+            };
+
+            const lastMessage = previousMessages.length ? previousMessages[previousMessages.length - 1] : null;
+            if (lastMessage) {
+                this.upsertMessagesChat({
+                    ...(this.messagesChats.find((chat) => chat.id === normalizedChatId) || {}),
+                    id: normalizedChatId,
+                    lastMessageAt: lastMessage.createdAt,
+                    lastMessagePreview: this.buildMessagesMessagePreview(lastMessage)
+                });
+            }
+
+            const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+            if (activeChatId === normalizedChatId) {
+                nextTick(() => {
+                    this.scrollMessagesThreadToBottom({
+                        force: !autoScrollIfNearBottom ? true : this.isMessagesThreadNearBottom()
+                    });
+                });
+            }
+        },
+        async loadMessagesForChat(chatId, { force = false, silent = false } = {}) {
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+
+            if (this.messagesMessagesLoadingByChatId?.[normalizedChatId] === true) {
+                return;
+            }
+
+            if (!force && this.messagesMessagesLoadedByChatId?.[normalizedChatId] === true) {
+                return;
+            }
+
+            this.messagesMessagesLoadingByChatId = {
+                ...(this.messagesMessagesLoadingByChatId || {}),
+                [normalizedChatId]: true
+            };
+
+            try {
+                const response = await apiFetch(`/api/chats/${normalizedChatId}/messages`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    if (!silent) {
+                        this.pushNotification({
+                            title: this.messagesStrings.notifications.loadErrorTitle,
+                            message: this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.loadFailed),
+                            tone: 'warning'
+                        });
+                    }
+                    return;
+                }
+
+                const normalizedMessages = Array.isArray(payload?.data)
+                    ? payload.data
+                        .map((message) => this.normalizeMessagesMessage(message))
+                        .filter((message) => Number.isInteger(message.id) && message.id > 0)
+                    : [];
+                this.messagesByChatId = {
+                    ...(this.messagesByChatId || {}),
+                    [normalizedChatId]: normalizedMessages
+                };
+                this.messagesMessagesLoadedByChatId = {
+                    ...(this.messagesMessagesLoadedByChatId || {}),
+                    [normalizedChatId]: true
+                };
+
+                const lastMessage = normalizedMessages.length ? normalizedMessages[normalizedMessages.length - 1] : null;
+                if (lastMessage) {
+                    this.upsertMessagesChat({
+                        ...(this.messagesChats.find((chat) => chat.id === normalizedChatId) || {}),
+                        id: normalizedChatId,
+                        lastMessageAt: lastMessage.createdAt,
+                        lastMessagePreview: this.buildMessagesMessagePreview(lastMessage)
+                    });
+                }
+
+                nextTick(() => {
+                    this.scrollMessagesThreadToBottom({ force: true });
+                });
+            } catch {
+                if (!silent) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.loadErrorTitle,
+                        message: this.messagesStrings.loadFailed,
+                        tone: 'warning'
+                    });
+                }
+            } finally {
+                this.messagesMessagesLoadingByChatId = {
+                    ...(this.messagesMessagesLoadingByChatId || {}),
+                    [normalizedChatId]: false
+                };
+            }
+        },
+        selectMessagesChat(chatId) {
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+            if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+            this.messagesActiveChatId = normalizedChatId;
+        },
+        async closeMessagesActiveChat() {
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat || this.messagesClosingChat || this.isMessagesChatClosed(activeChat)) {
+                return;
+            }
+
+            const confirmText = typeof this.messagesStrings.closeChatConfirm === 'string'
+                ? this.messagesStrings.closeChatConfirm.trim()
+                : '';
+            if (confirmText && typeof window !== 'undefined' && !window.confirm(confirmText)) {
+                return;
+            }
+
+            this.messagesClosingChat = true;
+            try {
+                const response = await apiFetch(`/api/chats/${activeChat.id}/close`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.closeErrorTitle || this.messagesStrings.notifications.loadErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.notifications.closeErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.upsertMessagesChat(payload?.data || {});
+                await this.loadMessagesForChat(activeChat.id, {
+                    force: true,
+                    silent: true
+                });
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.closeSuccessTitle,
+                    message: this.messagesStrings.notifications.closeSuccessMessage,
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.closeErrorTitle || this.messagesStrings.notifications.loadErrorTitle,
+                    message: this.messagesStrings.notifications.closeErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.messagesClosingChat = false;
+            }
+        },
+        formatMessagesChatListTime(value = '') {
+            const parsed = value ? new Date(value) : null;
+            if (!(parsed instanceof Date) || Number.isNaN(parsed.getTime())) {
+                return '';
+            }
+
+            const now = new Date();
+            const sameDay = (
+                parsed.getFullYear() === now.getFullYear()
+                && parsed.getMonth() === now.getMonth()
+                && parsed.getDate() === now.getDate()
+            );
+
+            try {
+                if (sameDay) {
+                    return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }).format(parsed);
+                }
+
+                return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+                    day: '2-digit',
+                    month: '2-digit'
+                }).format(parsed);
+            } catch {
+                return '';
+            }
+        },
+        formatMessagesTimestamp(value = '') {
+            const parsed = value ? new Date(value) : null;
+            if (!(parsed instanceof Date) || Number.isNaN(parsed.getTime())) {
+                return '';
+            }
+
+            try {
+                return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).format(parsed);
+            } catch {
+                return '';
+            }
+        },
+        formatMessagesDateOnly(value = '') {
+            const date = parseDateInputValue(normalizeDateInputValue(value));
+            if (!date) {
+                return '—';
+            }
+
+            try {
+                return new Intl.DateTimeFormat(document.documentElement.lang || 'de', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).format(date);
+            } catch {
+                return normalizeDateInputValue(value) || '—';
+            }
+        },
+        formatMessagesProposalPrice(amount = null, currency = 'EUR') {
+            const numericAmount = Number.parseFloat(String(amount ?? '').replace(',', '.'));
+            if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+                return '—';
+            }
+
+            const normalizedCurrency = typeof currency === 'string' && currency.trim()
+                ? currency.trim().toUpperCase()
+                : 'EUR';
+            try {
+                return new Intl.NumberFormat(document.documentElement.lang || 'de', {
+                    style: 'currency',
+                    currency: normalizedCurrency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(numericAmount);
+            } catch {
+                return `${numericAmount.toFixed(2)} ${normalizedCurrency}`;
+            }
+        },
+        formatMessagesProposalSpecies(speciesValues = []) {
+            const list = Array.isArray(speciesValues) ? speciesValues : [];
+            if (!list.length) {
+                return '—';
+            }
+
+            const locale = document.documentElement.lang || 'de';
+            return list
+                .map((species) => formatPetChoiceLabel(species, locale))
+                .filter(Boolean)
+                .join(', ');
+        },
+        messagesResolveProposalStatusLabel(status = '') {
+            const normalizedStatus = typeof status === 'string' ? status.trim().toUpperCase() : '';
+            if (normalizedStatus === 'ACCEPTED') {
+                return this.messagesStrings.proposalStatusAccepted;
+            }
+            if (normalizedStatus === 'DECLINED') {
+                return this.messagesStrings.proposalStatusDeclined;
+            }
+            if (normalizedStatus === 'WITHDRAWN') {
+                return this.messagesStrings.proposalStatusWithdrawn;
+            }
+            if (normalizedStatus === 'COMPLETED') {
+                return this.messagesStrings.proposalStatusCompleted;
+            }
+
+            return this.messagesStrings.proposalStatusPending;
+        },
+        messagesCanRespondToProposal(proposal = null) {
+            const normalizedProposal = this.normalizeMessagesProposal(proposal || {});
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            if (!Number.isInteger(sessionUserId) || sessionUserId <= 0) {
+                return false;
+            }
+
+            return normalizedProposal.status === 'PENDING'
+                && normalizedProposal.recipientId === sessionUserId;
+        },
+        messagesCanWithdrawProposal(proposal = null) {
+            const normalizedProposal = this.normalizeMessagesProposal(proposal || {});
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            if (!Number.isInteger(sessionUserId) || sessionUserId <= 0) {
+                return false;
+            }
+
+            return normalizedProposal.status === 'PENDING'
+                && normalizedProposal.senderId === sessionUserId;
+        },
+        openMessagesProposalModal() {
+            if (!this.messagesActiveChat || this.messagesProposalSubmitting) {
+                return;
+            }
+            if (this.messagesActiveChatClosed) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.closeErrorTitle || this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.chatClosedComposer || this.messagesStrings.notifications.closeErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            this.resetMessagesProposalForm();
+            this.messagesProposalModalOpen = true;
+            this.syncModalBodyLock();
+            nextTick(() => {
+                document.querySelector('.messages_proposal_modal .auth_input')?.focus();
+            });
+        },
+        closeMessagesProposalModal() {
+            if (!this.messagesProposalModalOpen) {
+                return;
+            }
+
+            this.messagesProposalModalOpen = false;
+            this.messagesProposalSubmitting = false;
+            this.resetMessagesProposalForm();
+            this.syncModalBodyLock();
+        },
+        resetMessagesProposalForm() {
+            this.messagesProposalForm = {
+                startDate: '',
+                endDate: '',
+                priceTotal: '',
+                petCount: '',
+                note: '',
+                petSpecies: []
+            };
+        },
+        toggleMessagesProposalSpecies(value = '') {
+            const normalizedValue = typeof value === 'string' ? value.trim().toUpperCase() : '';
+            if (!normalizedValue) {
+                return;
+            }
+
+            const activeSpecies = Array.isArray(this.messagesProposalForm?.petSpecies)
+                ? [...this.messagesProposalForm.petSpecies]
+                : [];
+            if (activeSpecies.includes(normalizedValue)) {
+                this.messagesProposalForm.petSpecies = activeSpecies.filter((species) => species !== normalizedValue);
+                return;
+            }
+
+            this.messagesProposalForm.petSpecies = [...activeSpecies, normalizedValue];
+        },
+        normalizeMessagesDecimal(value = '') {
+            if (typeof value === 'number') {
+                return Number.isFinite(value) ? value : Number.NaN;
+            }
+
+            const normalized = typeof value === 'string'
+                ? value.trim().replace(',', '.')
+                : '';
+            if (!normalized) {
+                return Number.NaN;
+            }
+
+            const parsed = Number.parseFloat(normalized);
+            return Number.isFinite(parsed) ? parsed : Number.NaN;
+        },
+        async submitMessagesProposal() {
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat || this.messagesProposalSubmitting) {
+                return;
+            }
+            if (this.messagesActiveChatClosed) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.chatClosedComposer || this.messagesStrings.notifications.proposalErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const species = Array.isArray(this.messagesProposalForm?.petSpecies)
+                ? this.messagesProposalForm.petSpecies
+                : [];
+            if (!species.length) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.proposalValidationSpecies,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const petCount = Number.parseInt(String(this.messagesProposalForm?.petCount ?? '').trim(), 10);
+            if (!Number.isInteger(petCount) || petCount < 1) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.proposalValidationPetCount,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const startDate = normalizeDateInputValue(this.messagesProposalForm?.startDate);
+            const endDate = normalizeDateInputValue(this.messagesProposalForm?.endDate);
+            if (!startDate || !endDate || endDate < startDate) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.proposalValidationDates,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const priceValue = this.normalizeMessagesDecimal(this.messagesProposalForm?.priceTotal || '');
+            if (!Number.isFinite(priceValue) || priceValue <= 0) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.proposalValidationPrice,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            this.messagesProposalSubmitting = true;
+
+            try {
+                const response = await apiFetch(`/api/chats/${activeChat.id}/booking-proposals`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        startDate,
+                        endDate,
+                        priceTotal: Number(priceValue.toFixed(2)),
+                        petSpecies: species,
+                        petCount,
+                        note: typeof this.messagesProposalForm?.note === 'string' && this.messagesProposalForm.note.trim()
+                            ? this.messagesProposalForm.note.trim()
+                            : null
+                    })
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.proposalErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.notifications.proposalErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                this.closeMessagesProposalModal();
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalSuccessTitle,
+                    message: this.messagesStrings.notifications.proposalSuccessMessage,
+                    tone: 'success'
+                });
+
+                const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+                if (Number.isInteger(activeChatId) && activeChatId > 0) {
+                    await this.loadMessagesForChat(activeChatId, {
+                        force: true,
+                        silent: true
+                    });
+                }
+            } catch {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.notifications.proposalErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.messagesProposalSubmitting = false;
+            }
+        },
+        async executeBookingProposalAction(proposalId, action) {
+            const normalizedProposalId = this.normalizeProfileUserId(proposalId);
+            const normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : '';
+            if (!Number.isInteger(normalizedProposalId) || normalizedProposalId <= 0) {
+                return;
+            }
+            if (!['accept', 'decline', 'withdraw'].includes(normalizedAction)) {
+                return;
+            }
+            if (this.messagesActiveChatClosed) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.chatClosedComposer || this.messagesStrings.notifications.proposalErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+            if (this.messagesProposalActionPendingId === normalizedProposalId) {
+                return;
+            }
+
+            this.messagesProposalActionPendingId = normalizedProposalId;
+            try {
+                const response = await apiFetch(`/api/booking-proposals/${normalizedProposalId}/${normalizedAction}`, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.proposalErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(payload, this.messagesStrings.notifications.proposalErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const activeChatId = this.normalizeProfileUserId(this.messagesActiveChatId);
+                if (Number.isInteger(activeChatId) && activeChatId > 0) {
+                    await this.loadMessagesForChat(activeChatId, {
+                        force: true,
+                        silent: true
+                    });
+                }
+            } catch {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.proposalErrorTitle,
+                    message: this.messagesStrings.notifications.proposalErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.messagesProposalActionPendingId = null;
+            }
+        },
+        async acceptBookingProposal(proposalId) {
+            await this.executeBookingProposalAction(proposalId, 'accept');
+        },
+        async declineBookingProposal(proposalId) {
+            await this.executeBookingProposalAction(proposalId, 'decline');
+        },
+        async withdrawBookingProposal(proposalId) {
+            await this.executeBookingProposalAction(proposalId, 'withdraw');
+        },
+        handleMessagesAttachmentSelection(event) {
+            if (this.messagesActiveChatClosed) {
+                if (event?.target) {
+                    event.target.value = '';
+                }
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.sendErrorTitle,
+                    message: this.messagesStrings.chatClosedComposer || this.messagesStrings.notifications.sendErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const fileList = Array.isArray(event?.target?.files)
+                ? event.target.files
+                : Array.from(event?.target?.files || []);
+            if (!fileList.length) {
+                return;
+            }
+
+            const existingAttachments = Array.isArray(this.messagesComposerAttachments)
+                ? [...this.messagesComposerAttachments]
+                : [];
+            const availableSlots = Math.max(0, MESSAGES_ATTACHMENT_MAX_COUNT - existingAttachments.length);
+            const selectedFiles = fileList.slice(0, availableSlots);
+
+            selectedFiles.forEach((file) => {
+                if (!(file instanceof File)) {
+                    return;
+                }
+
+                const contentType = typeof file.type === 'string' ? file.type.trim().toLowerCase() : '';
+                if (!contentType.startsWith('image/')) {
+                    return;
+                }
+
+                const attachmentKey = `composer-attachment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+                const previewUrl = URL.createObjectURL(file);
+                existingAttachments.push({
+                    key: attachmentKey,
+                    file,
+                    name: file.name || this.messagesStrings.imageAlt,
+                    previewUrl
+                });
+            });
+
+            this.messagesComposerAttachments = existingAttachments;
+            if (event?.target) {
+                event.target.value = '';
+            }
+        },
+        removeMessagesComposerAttachment(attachmentKey = '') {
+            const normalizedKey = typeof attachmentKey === 'string' ? attachmentKey.trim() : '';
+            if (!normalizedKey) {
+                return;
+            }
+
+            const existingAttachments = Array.isArray(this.messagesComposerAttachments)
+                ? [...this.messagesComposerAttachments]
+                : [];
+            const targetAttachment = existingAttachments.find((attachment) => attachment.key === normalizedKey);
+            if (targetAttachment?.previewUrl && targetAttachment.previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(targetAttachment.previewUrl);
+            }
+
+            this.messagesComposerAttachments = existingAttachments.filter((attachment) => attachment.key !== normalizedKey);
+        },
+        clearMessagesComposerAttachments() {
+            const attachments = Array.isArray(this.messagesComposerAttachments)
+                ? this.messagesComposerAttachments
+                : [];
+            attachments.forEach((attachment) => {
+                const previewUrl = typeof attachment?.previewUrl === 'string' ? attachment.previewUrl.trim() : '';
+                if (previewUrl && previewUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+            });
+            this.messagesComposerAttachments = [];
+        },
+        async submitMessagesComposer() {
+            if (this.messagesComposerSending) {
+                return;
+            }
+
+            const activeChat = this.messagesActiveChat;
+            if (!activeChat) {
+                return;
+            }
+            if (this.messagesActiveChatClosed) {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.sendErrorTitle,
+                    message: this.messagesStrings.chatClosedComposer || this.messagesStrings.notifications.sendErrorMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const content = typeof this.messagesComposerText === 'string'
+                ? this.messagesComposerText.trim()
+                : '';
+            const attachments = Array.isArray(this.messagesComposerAttachments)
+                ? [...this.messagesComposerAttachments]
+                : [];
+            if (!content && !attachments.length) {
+                return;
+            }
+
+            this.messagesComposerSending = true;
+
+            try {
+                const messageResponse = await apiFetch(`/api/chats/${activeChat.id}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        content
+                    })
+                });
+                const messagePayload = await messageResponse.json().catch(() => ({}));
+
+                if (!messageResponse.ok || messagePayload?.success === false) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.sendErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(messagePayload, this.messagesStrings.notifications.sendErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const createdMessage = this.normalizeMessagesMessage(messagePayload?.data || {});
+                this.upsertMessagesMessage(activeChat.id, createdMessage, {
+                    autoScrollIfNearBottom: false
+                });
+
+                let attachmentUploadFailed = false;
+                for (const attachment of attachments) {
+                    const file = attachment?.file;
+                    if (!(file instanceof File)) {
+                        continue;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('image', file, file.name || 'upload-image');
+
+                    const attachmentResponse = await apiFetch(`/api/messages/${createdMessage.id}/attachments`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const attachmentPayload = await attachmentResponse.json().catch(() => ({}));
+                    if (!attachmentResponse.ok || attachmentPayload?.success === false) {
+                        attachmentUploadFailed = true;
+                    }
+                }
+
+                this.messagesComposerText = '';
+                this.clearMessagesComposerAttachments();
+
+                await this.loadMessagesForChat(activeChat.id, {
+                    force: true,
+                    silent: true
+                });
+
+                if (attachmentUploadFailed) {
+                    this.pushNotification({
+                        title: this.messagesStrings.notifications.sendErrorTitle,
+                        message: this.messagesStrings.notifications.sendErrorMessage,
+                        tone: 'warning'
+                    });
+                }
+            } catch {
+                this.pushNotification({
+                    title: this.messagesStrings.notifications.sendErrorTitle,
+                    message: this.messagesStrings.notifications.sendErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.messagesComposerSending = false;
+            }
+        },
+        isMessagesThreadNearBottom(thresholdPx = 92) {
+            const scrollArea = document.querySelector('[data-messages-thread-scroll]');
+            if (!scrollArea) {
+                return true;
+            }
+
+            const distance = scrollArea.scrollHeight - (scrollArea.scrollTop + scrollArea.clientHeight);
+            return distance <= thresholdPx;
+        },
+        scrollMessagesThreadToBottom({ force = true } = {}) {
+            const scrollArea = document.querySelector('[data-messages-thread-scroll]');
+            if (!scrollArea) {
+                return;
+            }
+
+            if (!force && !this.isMessagesThreadNearBottom()) {
+                return;
+            }
+
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+        },
+        resolveMessagesChatPartnerBase(chat = null) {
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            const normalizedChat = this.normalizeMessagesChat(chat || {});
+            if (!Number.isInteger(normalizedChat.id) || normalizedChat.id <= 0) {
+                return {
+                    id: null,
+                    firstName: '',
+                    lastName: '',
+                    displayName: this.messagesStrings.participantUnknown || localizedAppStrings.genericUser,
+                    initial: (this.messagesStrings.participantUnknown || localizedAppStrings.genericUser || 'U').charAt(0).toUpperCase(),
+                    profilePicture: ''
+                };
+            }
+
+            const hostIsCurrentUser = Number.isInteger(sessionUserId)
+                && sessionUserId > 0
+                && normalizedChat.hostId === sessionUserId;
+            const partnerId = hostIsCurrentUser ? normalizedChat.requesterId : normalizedChat.hostId;
+            const partnerFirstName = hostIsCurrentUser ? normalizedChat.requesterFirstName : normalizedChat.hostFirstName;
+            const partnerLastName = hostIsCurrentUser ? normalizedChat.requesterLastName : normalizedChat.hostLastName;
+            const displayName = [partnerFirstName, partnerLastName].filter(Boolean).join(' ').trim();
+
+            return {
+                id: partnerId,
+                firstName: partnerFirstName,
+                lastName: partnerLastName,
+                displayName: displayName || this.messagesStrings.participantUnknown || localizedAppStrings.genericUser,
+                initial: (displayName || this.messagesStrings.participantUnknown || localizedAppStrings.genericUser || 'U').charAt(0).toUpperCase(),
+                profilePicture: ''
+            };
+        },
+        messagesResolveChatPartner(chat = null) {
+            const basePartner = this.resolveMessagesChatPartnerBase(chat);
+            const normalizedPartnerId = this.normalizeProfileUserId(basePartner?.id);
+            if (!Number.isInteger(normalizedPartnerId) || normalizedPartnerId <= 0) {
+                return basePartner;
+            }
+
+            const partnerProfile = this.messagesPartnerProfileById?.[normalizedPartnerId];
+            if (!partnerProfile) {
+                this.ensureMessagesPartnerProfile(normalizedPartnerId);
+                return basePartner;
+            }
+
+            return {
+                ...basePartner,
+                ...partnerProfile,
+                displayName: partnerProfile.displayName || basePartner.displayName,
+                initial: partnerProfile.initial || basePartner.initial,
+                profilePicture: partnerProfile.profilePicture || ''
+            };
+        },
+        prefetchMessagesPartnerProfiles(chats = []) {
+            const partnerIds = new Set();
+            (Array.isArray(chats) ? chats : []).forEach((chat) => {
+                const partner = this.resolveMessagesChatPartnerBase(chat);
+                const partnerId = this.normalizeProfileUserId(partner?.id);
+                if (Number.isInteger(partnerId) && partnerId > 0) {
+                    partnerIds.add(partnerId);
+                }
+            });
+
+            partnerIds.forEach((partnerId) => {
+                this.ensureMessagesPartnerProfile(partnerId);
+            });
+        },
+        async ensureMessagesPartnerProfile(userId) {
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return null;
+            }
+
+            if (this.messagesPartnerProfileById?.[normalizedUserId]) {
+                return this.messagesPartnerProfileById[normalizedUserId];
+            }
+            if (this.messagesPartnerProfileLoadingById?.[normalizedUserId]) {
+                return null;
+            }
+
+            this.messagesPartnerProfileLoadingById = {
+                ...(this.messagesPartnerProfileLoadingById || {}),
+                [normalizedUserId]: true
+            };
+
+            try {
+                const response = await apiFetch(`/api/users/${normalizedUserId}`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success === false) {
+                    return null;
+                }
+
+                const normalizedProfile = this.normalizeProfileUser(payload?.data || {});
+                const firstName = typeof normalizedProfile?.firstName === 'string' ? normalizedProfile.firstName.trim() : '';
+                const lastName = typeof normalizedProfile?.lastName === 'string' ? normalizedProfile.lastName.trim() : '';
+                const displayName = [firstName, lastName].filter(Boolean).join(' ').trim()
+                    || normalizedProfile?.email
+                    || this.messagesStrings.participantUnknown
+                    || localizedAppStrings.genericUser;
+
+                const profileRecord = {
+                    id: normalizedUserId,
+                    firstName,
+                    lastName,
+                    displayName,
+                    initial: (displayName.charAt(0) || 'U').toUpperCase(),
+                    profilePicture: normalizeProfilePicturePath(normalizedProfile?.profilePicture || '')
+                };
+
+                this.messagesPartnerProfileById = {
+                    ...(this.messagesPartnerProfileById || {}),
+                    [normalizedUserId]: profileRecord
+                };
+                return profileRecord;
+            } catch {
+                return null;
+            } finally {
+                this.messagesPartnerProfileLoadingById = {
+                    ...(this.messagesPartnerProfileLoadingById || {}),
+                    [normalizedUserId]: false
+                };
+            }
+        },
+        handleMessagesAvatarError() {
+            if (!this.messagesViewUser || typeof this.messagesViewUser !== 'object') {
+                return;
+            }
+
+            this.messagesViewUser.profilePicture = '';
+        },
+        handleMessagesPartnerAvatarError(userId = null) {
+            const normalizedUserId = this.normalizeProfileUserId(userId);
+            if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
+                return;
+            }
+
+            const profileRecord = this.messagesPartnerProfileById?.[normalizedUserId];
+            if (!profileRecord) {
+                return;
+            }
+
+            this.messagesPartnerProfileById = {
+                ...(this.messagesPartnerProfileById || {}),
+                [normalizedUserId]: {
+                    ...profileRecord,
+                    profilePicture: ''
+                }
+            };
+        },
+        buildOfferRequestOpeningToken(offer = null, pets = []) {
+            const normalizedOffer = this.normalizeMyOffer(offer || {});
+            const normalizedOfferId = this.normalizeProfileUserId(normalizedOffer?.id);
+            if (!Number.isInteger(normalizedOfferId) || normalizedOfferId <= 0) {
+                return '';
+            }
+
+            const requesterId = this.normalizeProfileUserId(this.authSessionUserId);
+            if (!Number.isInteger(requesterId) || requesterId <= 0) {
+                return '';
+            }
+
+            const requesterName = this.messagesViewDisplayName || localizedAppStrings.genericUser;
+            const selectedPets = Array.isArray(pets) ? pets : [];
+            const payload = {
+                type: 'offer_request',
+                requesterId,
+                requesterName,
+                offerId: normalizedOfferId,
+                offerTitle: normalizedOffer.title || this.messagesStrings.defaultOfferTitle,
+                petIds: selectedPets.map((pet) => this.normalizeProfileUserId(pet?.id)).filter((id) => Number.isInteger(id) && id > 0),
+                petNames: selectedPets.map((pet) => (typeof pet?.name === 'string' ? pet.name.trim() : '')).filter(Boolean),
+                petSpecies: selectedPets.map((pet) => (typeof pet?.species === 'string' ? pet.species.trim().toUpperCase() : '')).filter(Boolean)
+            };
+            const encodedPayload = encodeUtf8Base64(JSON.stringify(payload));
+            if (!encodedPayload) {
+                return '';
+            }
+
+            return `${MESSAGES_OFFER_REQUEST_TOKEN_PREFIX}${encodedPayload}${MESSAGES_OFFER_REQUEST_TOKEN_SUFFIX}`;
+        },
+        async findMessagesOfferRequestChat(offerId, { refresh = false } = {}) {
+            const normalizedOfferId = this.normalizeProfileUserId(offerId);
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            if (!Number.isInteger(normalizedOfferId) || normalizedOfferId <= 0 || !Number.isInteger(sessionUserId) || sessionUserId <= 0) {
+                return null;
+            }
+
+            if (refresh) {
+                try {
+                    await this.refreshMessagesChatsSilently();
+                } catch {
+                    // If refreshing fails, use locally available chat state.
+                }
+            }
+
+            return (Array.isArray(this.messagesChats) ? this.messagesChats : [])
+                .find((chat) => chat.offerId === normalizedOfferId && chat.requesterId === sessionUserId) || null;
+        },
+        async loadOfferRequestPets() {
+            const response = await apiFetch('/api/pets', {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload?.success === false) {
+                throw new Error(this.resolveMessagesApiErrorMessage(payload, this.offerDetailStrings.requestNotifications.createErrorMessage));
+            }
+
+            return Array.isArray(payload?.data)
+                ? payload.data
+                    .map((pet) => this.normalizeMyPet(pet))
+                    .filter((pet) => Number.isInteger(pet.id) && pet.id > 0)
+                : [];
+        },
+        async openOfferRequestModalFromOfferDetail() {
+            const detailOffer = this.homeOfferDetailOffer;
+            if (!detailOffer) {
+                return;
+            }
+
+            if (!this.authSessionLoggedIn) {
+                this.openLoginModal();
+                return;
+            }
+
+            if (this.isOwnMarketplaceOffer(detailOffer)) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.ownOfferTitle,
+                    message: this.offerDetailStrings.requestNotifications.ownOfferMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const existingChat = await this.findMessagesOfferRequestChat(detailOffer.id, { refresh: true });
+            if (existingChat) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.duplicateTitle,
+                    message: this.offerDetailStrings.requestNotifications.duplicateMessage,
+                    tone: 'warning'
+                });
+                window.location.assign(this.buildMessagesPath(existingChat.id));
+                return;
+            }
+
+            this.offerRequestPetsLoading = true;
+            this.offerRequestSubmitting = false;
+            this.offerRequestOffer = this.normalizeMyOffer(detailOffer);
+            this.offerRequestPets = [];
+            this.offerRequestSelectedPetIds = [];
+            this.offerRequestModalOpen = true;
+            this.syncModalBodyLock();
+
+            try {
+                const pets = await this.loadOfferRequestPets();
+                this.offerRequestPets = pets;
+                if (!pets.length) {
+                    this.offerRequestModalOpen = false;
+                    this.syncModalBodyLock();
+                    this.pushNotification({
+                        title: this.offerDetailStrings.requestPetsEmptyTitle,
+                        message: this.offerDetailStrings.requestPetsEmptyMessage,
+                        tone: 'warning'
+                    });
+                }
+            } catch {
+                this.offerRequestModalOpen = false;
+                this.syncModalBodyLock();
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                    message: this.offerDetailStrings.requestNotifications.createErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.offerRequestPetsLoading = false;
+            }
+        },
+        closeOfferRequestModal() {
+            if (!this.offerRequestModalOpen && !this.offerRequestOffer) {
+                return;
+            }
+
+            this.offerRequestModalOpen = false;
+            this.offerRequestOffer = null;
+            this.offerRequestPets = [];
+            this.offerRequestSelectedPetIds = [];
+            this.offerRequestPetsLoading = false;
+            this.offerRequestSubmitting = false;
+            this.syncModalBodyLock();
+        },
+        toggleOfferRequestPetSelection(petId = null) {
+            const normalizedPetId = this.normalizeProfileUserId(petId);
+            if (!Number.isInteger(normalizedPetId) || normalizedPetId <= 0) {
+                return;
+            }
+
+            const selectedIds = Array.isArray(this.offerRequestSelectedPetIds)
+                ? [...this.offerRequestSelectedPetIds]
+                : [];
+            if (selectedIds.includes(normalizedPetId)) {
+                this.offerRequestSelectedPetIds = selectedIds.filter((id) => id !== normalizedPetId);
+                return;
+            }
+
+            this.offerRequestSelectedPetIds = [...selectedIds, normalizedPetId];
+        },
+        async submitOfferRequest() {
+            if (this.offerRequestSubmitting) {
+                return;
+            }
+
+            const normalizedOffer = this.normalizeMyOffer(this.offerRequestOffer || {});
+            if (!Number.isInteger(normalizedOffer.id) || normalizedOffer.id <= 0) {
+                return;
+            }
+
+            if (this.isOwnMarketplaceOffer(normalizedOffer)) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.ownOfferTitle,
+                    message: this.offerDetailStrings.requestNotifications.ownOfferMessage,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const selectedPetIds = Array.isArray(this.offerRequestSelectedPetIds)
+                ? this.offerRequestSelectedPetIds
+                    .map((id) => this.normalizeProfileUserId(id))
+                    .filter((id) => Number.isInteger(id) && id > 0)
+                : [];
+            if (!selectedPetIds.length) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestPetsTitle,
+                    message: this.offerDetailStrings.requestPetsValidation,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const selectedPets = (Array.isArray(this.offerRequestPets) ? this.offerRequestPets : [])
+                .filter((pet) => selectedPetIds.includes(this.normalizeProfileUserId(pet?.id)));
+            if (!selectedPets.length) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestPetsTitle,
+                    message: this.offerDetailStrings.requestPetsValidation,
+                    tone: 'warning'
+                });
+                return;
+            }
+
+            const existingChat = await this.findMessagesOfferRequestChat(normalizedOffer.id, { refresh: true });
+            if (existingChat) {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.duplicateTitle,
+                    message: this.offerDetailStrings.requestNotifications.duplicateMessage,
+                    tone: 'warning'
+                });
+                this.closeOfferRequestModal();
+                window.location.assign(this.buildMessagesPath(existingChat.id));
+                return;
+            }
+
+            this.offerRequestSubmitting = true;
+
+            try {
+                const createChatResponse = await apiFetch('/api/chats', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        offerId: normalizedOffer.id
+                    })
+                });
+                const createChatPayload = await createChatResponse.json().catch(() => ({}));
+                if (!createChatResponse.ok || createChatPayload?.success === false) {
+                    this.pushNotification({
+                        title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(createChatPayload, this.offerDetailStrings.requestNotifications.createErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const createdChat = this.normalizeMessagesChat(createChatPayload?.data || {});
+                if (!Number.isInteger(createdChat.id) || createdChat.id <= 0) {
+                    this.pushNotification({
+                        title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                        message: this.offerDetailStrings.requestNotifications.createErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+                this.upsertMessagesChat(createdChat);
+
+                const openingToken = this.buildOfferRequestOpeningToken(normalizedOffer, selectedPets);
+                if (!openingToken) {
+                    this.pushNotification({
+                        title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                        message: this.offerDetailStrings.requestNotifications.createErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const openingMessageResponse = await apiFetch(`/api/chats/${createdChat.id}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        content: openingToken
+                    })
+                });
+                const openingMessagePayload = await openingMessageResponse.json().catch(() => ({}));
+                if (!openingMessageResponse.ok || openingMessagePayload?.success === false) {
+                    this.pushNotification({
+                        title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                        message: this.resolveMessagesApiErrorMessage(openingMessagePayload, this.offerDetailStrings.requestNotifications.createErrorMessage),
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const openingMessage = this.normalizeMessagesMessage(openingMessagePayload?.data || {});
+                this.upsertMessagesMessage(createdChat.id, openingMessage, {
+                    autoScrollIfNearBottom: false
+                });
+
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.successTitle,
+                    message: this.offerDetailStrings.requestNotifications.successMessage,
+                    tone: 'success'
+                });
+
+                this.closeOfferRequestModal();
+                this.closeHomeOfferDetailModal();
+                window.location.assign(this.buildMessagesPath(createdChat.id));
+            } catch {
+                this.pushNotification({
+                    title: this.offerDetailStrings.requestNotifications.createErrorTitle,
+                    message: this.offerDetailStrings.requestNotifications.createErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.offerRequestSubmitting = false;
+            }
+        },
         async loadCurrentUserSettings() {
             if (!settingsPageRoot) {
                 return;
@@ -9855,6 +12959,7 @@ createApp({
                 return;
             }
 
+            this.closeAllDropdowns({ immediate: true });
             this.settingsEditModalOpen = false;
             this.settingsEditField = '';
             this.settingsEditValue = '';
@@ -11366,6 +14471,9 @@ createApp({
         isMyOffersPath(pathname) {
             return ROUTE_GUARD_MY_OFFERS_PATTERN.test(this.normalizeRoutePath(pathname));
         },
+        isMessagesPath(pathname) {
+            return ROUTE_GUARD_MESSAGES_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
         isSettingsPath(pathname) {
             return ROUTE_GUARD_SETTINGS_PATTERN.test(this.normalizeRoutePath(pathname));
         },
@@ -11392,6 +14500,12 @@ createApp({
                 {
                     id: 'my-offers-auth-only',
                     pathPattern: ROUTE_GUARD_MY_OFFERS_PATTERN,
+                    redirectWhen: 'unauthenticated',
+                    target: 'notFound'
+                },
+                {
+                    id: 'messages-auth-only',
+                    pathPattern: ROUTE_GUARD_MESSAGES_PATTERN,
                     redirectWhen: 'unauthenticated',
                     target: 'notFound'
                 },
@@ -11663,6 +14777,24 @@ createApp({
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
             return localePrefix ? `${localePrefix}/profile/my-offers` : '/profile/my-offers';
         },
+        buildMessagesPath(chatId = null) {
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            const basePath = localePrefix ? `${localePrefix}/profile/messages` : '/profile/messages';
+            const currentUrl = new URL(window.location.href);
+            const nextUrl = new URL(basePath, window.location.origin);
+            const localeParam = currentUrl.searchParams.get('locale');
+            const normalizedChatId = this.normalizeProfileUserId(chatId);
+
+            if (localeParam) {
+                nextUrl.searchParams.set('locale', localeParam);
+            }
+
+            if (Number.isInteger(normalizedChatId) && normalizedChatId > 0) {
+                nextUrl.searchParams.set('chat', String(normalizedChatId));
+            }
+
+            return `${nextUrl.pathname}${nextUrl.search}`;
+        },
         buildProfilePath(userId = null) {
             const normalizedUserId = this.normalizeProfileUserId(userId);
             if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
@@ -11852,6 +14984,8 @@ createApp({
             this.closeMyPetsAddModal();
             this.closeMyPetsDetailModal();
             this.closeMyPetsDeleteModal();
+            this.closeOfferRequestModal();
+            this.closeMessagesProposalModal();
             this.closeHomeOfferDetailModal();
             this.closeSettingsEditModal();
             this.closeUserSearchModal();
@@ -12113,6 +15247,8 @@ createApp({
             this.closeMyPetsDetailModal();
             this.closeMyPetsDeleteModal();
             this.closeMyOffersCreateModal();
+            this.closeOfferRequestModal();
+            this.closeMessagesProposalModal();
             this.closeHomeOfferDetailModal();
             this.closeSettingsEditModal();
             this.closeLoginModal();
@@ -12184,6 +15320,8 @@ createApp({
                     || this.myPetsDeleteModalOpen
                     || this.myOffersCreateModalOpen
                     || this.homeOfferDetailModalOpen
+                    || this.offerRequestModalOpen
+                    || this.messagesProposalModalOpen
                     || this.activeGitCommitModalHash
                     || this.activeBoardCardKey
                 )
@@ -12330,6 +15468,9 @@ createApp({
                     if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY)) {
                         surface.style.removeProperty(MODAL_WIDTH_TARGET_PROPERTY);
                     }
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_INLINE_PROPERTY)) {
+                        surface.style.removeProperty(MODAL_WIDTH_INLINE_PROPERTY);
+                    }
                     return;
                 }
 
@@ -12337,6 +15478,9 @@ createApp({
                 if (modalContainerStyle.display === 'none' || modalContainerStyle.visibility === 'hidden') {
                     if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY)) {
                         surface.style.removeProperty(MODAL_WIDTH_TARGET_PROPERTY);
+                    }
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_INLINE_PROPERTY)) {
+                        surface.style.removeProperty(MODAL_WIDTH_INLINE_PROPERTY);
                     }
                     return;
                 }
@@ -12346,10 +15490,16 @@ createApp({
                     if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY)) {
                         surface.style.removeProperty(MODAL_WIDTH_TARGET_PROPERTY);
                     }
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_INLINE_PROPERTY)) {
+                        surface.style.removeProperty(MODAL_WIDTH_INLINE_PROPERTY);
+                    }
                 } else {
                     const nextWidthValue = `${targetWidth}px`;
                     if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY) !== nextWidthValue) {
                         surface.style.setProperty(MODAL_WIDTH_TARGET_PROPERTY, nextWidthValue);
+                    }
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_INLINE_PROPERTY) !== nextWidthValue) {
+                        surface.style.setProperty(MODAL_WIDTH_INLINE_PROPERTY, nextWidthValue);
                     }
                 }
 
@@ -12665,6 +15815,73 @@ createApp({
         isPhoneCountryDropdown(details) {
             return Boolean(details?.classList?.contains('phone_country_menu'));
         },
+        getPhoneCountryDropdownPanel(details) {
+            if (!this.isPhoneCountryDropdown(details)) {
+                return null;
+            }
+
+            const portalState = phoneCountryDropdownPortals.get(details);
+            if (portalState?.panel instanceof HTMLElement) {
+                return portalState.panel;
+            }
+
+            return details.querySelector('.phone_country_menu__panel');
+        },
+        portalPhoneCountryDropdownPanel(details, panel) {
+            if (!this.isPhoneCountryDropdown(details) || !(panel instanceof HTMLElement)) {
+                return panel;
+            }
+
+            const existingState = phoneCountryDropdownPortals.get(details);
+            if (existingState?.panel === panel) {
+                if (panel.parentElement !== document.body) {
+                    document.body.appendChild(panel);
+                }
+                return panel;
+            }
+
+            const originalParent = panel.parentElement;
+            if (!(originalParent instanceof Node)) {
+                return panel;
+            }
+
+            phoneCountryDropdownPortals.set(details, {
+                panel,
+                originalParent,
+                originalNextSibling: panel.nextSibling
+            });
+            document.body.appendChild(panel);
+
+            return panel;
+        },
+        restorePhoneCountryDropdownPanel(details) {
+            if (!this.isPhoneCountryDropdown(details)) {
+                return;
+            }
+
+            const portalState = phoneCountryDropdownPortals.get(details);
+            if (!portalState) {
+                return;
+            }
+
+            const { panel, originalParent, originalNextSibling } = portalState;
+            if (!(panel instanceof HTMLElement)) {
+                phoneCountryDropdownPortals.delete(details);
+                return;
+            }
+
+            if (originalParent instanceof Node) {
+                if (originalNextSibling instanceof Node && originalNextSibling.parentNode === originalParent) {
+                    originalParent.insertBefore(panel, originalNextSibling);
+                } else {
+                    originalParent.appendChild(panel);
+                }
+            } else if (details instanceof Node) {
+                details.appendChild(panel);
+            }
+
+            phoneCountryDropdownPortals.delete(details);
+        },
         repositionOpenPhoneCountryDropdownPanels(event = null) {
             const scrollTarget = event?.target;
             if (scrollTarget instanceof Element && scrollTarget.closest('.phone_country_menu__panel')) {
@@ -12681,10 +15898,12 @@ createApp({
             }
 
             const summary = details.querySelector('summary');
-            const panel = details.querySelector('.phone_country_menu__panel');
+            const panel = this.getPhoneCountryDropdownPanel(details);
             if (!summary || !panel) {
                 return;
             }
+
+            this.portalPhoneCountryDropdownPanel(details, panel);
 
             const viewportPadding = 12;
             const panelGap = 8;
@@ -12725,6 +15944,7 @@ createApp({
 
             details.dataset.phoneCountryDropdownDirection = shouldOpenUpwards ? 'up' : 'down';
             details.classList.add('phone_country_menu--overlay');
+            panel.style.position = 'fixed';
             panel.style.left = `${Math.round(clampedLeft)}px`;
             panel.style.right = 'auto';
             panel.style.top = `${top}px`;
@@ -12739,20 +15959,21 @@ createApp({
                 return;
             }
 
-            const panel = details.querySelector('.phone_country_menu__panel');
+            const panel = this.getPhoneCountryDropdownPanel(details);
             details.classList.remove('phone_country_menu--overlay');
-            if (!panel) {
-                return;
+            if (panel) {
+                panel.style.position = '';
+                panel.style.left = '';
+                panel.style.right = '';
+                panel.style.top = '';
+                panel.style.width = '';
+                panel.style.maxHeight = '';
+                panel.style.zIndex = '';
+                panel.style.transformOrigin = '';
+                panel.style.transform = '';
             }
 
-            panel.style.left = '';
-            panel.style.right = '';
-            panel.style.top = '';
-            panel.style.width = '';
-            panel.style.maxHeight = '';
-            panel.style.zIndex = '';
-            panel.style.transformOrigin = '';
-            panel.style.transform = '';
+            this.restorePhoneCountryDropdownPanel(details);
             details.dataset.phoneCountryDropdownDirection = '';
         },
         initializeDropdowns() {
@@ -12909,7 +16130,12 @@ createApp({
             this.syncHeaderSearchInteractionState();
         },
         handleDocumentPointerDown(event) {
-            if (event.target.closest(DROPDOWN_SELECTOR)) {
+            const pointerTarget = event?.target;
+            if (!(pointerTarget instanceof Element)) {
+                return;
+            }
+
+            if (pointerTarget.closest('.phone_country_menu__panel') || pointerTarget.closest(DROPDOWN_SELECTOR)) {
                 return;
             }
 
@@ -13038,6 +16264,16 @@ createApp({
 
             if (this.myOffersCreateModalOpen) {
                 this.closeMyOffersCreateModal();
+                return;
+            }
+
+            if (this.messagesProposalModalOpen) {
+                this.closeMessagesProposalModal();
+                return;
+            }
+
+            if (this.offerRequestModalOpen) {
+                this.closeOfferRequestModal();
                 return;
             }
 

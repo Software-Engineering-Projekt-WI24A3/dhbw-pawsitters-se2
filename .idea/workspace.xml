@@ -4,9 +4,37 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updates for the previous merge 4.1">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updates for the previous merge 4.4.1">
+      <change afterPath="$PROJECT_DIR$/frontend/src/media/2709.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ChatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/ChatResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/ChatResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Chat.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/Chat.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatRealtimeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatRealtimeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/ChatIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/ChatIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/ChatRealtimeServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/ChatRealtimeServiceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/nginx.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/check-thymeleaf.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/dev.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/dev.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/lib/thymeleaf-preview.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/scripts/serve.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/scripts/serve.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers 2.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers 2.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets 2.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets 2.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-pets.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/home-search-results.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-search-results.e2e.spec.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,61 +185,61 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "HTTP Request.AcceptBookingProposal | Accept booking proposal.executor": "Run",
-    "HTTP Request.AuthLogin | Login (Auth).executor": "Run",
-    "HTTP Request.AuthLogin2ndCredentials | #1.executor": "Run",
-    "HTTP Request.AuthRegister | Registrieren (Auth).executor": "Run",
-    "HTTP Request.AuthSession | Sessionstatus (Auth).executor": "Run",
-    "HTTP Request.CompleteBooking | Complete an accepted booking.executor": "Run",
-    "HTTP Request.CreateAvailability | Create single availability.executor": "Run",
-    "HTTP Request.CreateBookingProposal | Create booking proposal in chat.executor": "Run",
-    "HTTP Request.CreateHostProfile | Gastgeberprofil anlegen oder aktualisieren.executor": "Run",
-    "HTTP Request.CreateNewChat | #1.executor": "Run",
-    "HTTP Request.CreateOffer | Create offer draft.executor": "Run",
-    "HTTP Request.DeclineBookingProposal | Decline booking proposal.executor": "Run",
-    "HTTP Request.GetActiveBookings | Get active bookings for current user.executor": "Run",
-    "HTTP Request.GetBookingHistory | Get completed booking history for current user.executor": "Run",
-    "HTTP Request.GetBookings | Get accepted bookings for current user.executor": "Run",
-    "HTTP Request.GetBookings | Get active bookings for current user (compatibility endpoint).executor": "Run",
-    "HTTP Request.GetChatMessages | #1.executor": "Run",
-    "HTTP Request.GetChats | #1.executor": "Run",
-    "HTTP Request.GetHostProfile | Gastgeberprofil abrufen.executor": "Run",
-    "HTTP Request.GetHostStats | Gastgeber-Statistiken abrufen.executor": "Run",
-    "HTTP Request.GetMarketplaceOffers | Get published marketplace offers.executor": "Run",
-    "HTTP Request.PostToNewChat | #1.executor": "Run",
-    "HTTP Request.PublishOffer | Publish offer.executor": "Run",
-    "HTTP Request.SendChatMessage | #1.executor": "Run",
-    "HTTP Request.UploadHostGalleryImage | Unterkunftsbild zur Gastgeber-Galerie hochladen.executor": "Run",
-    "HTTP Request.WithdrawBookingProposal | Withdraw own booking proposal.executor": "Run",
-    "HTTP Request.WithdrawOffer | Withdraw offer.executor": "Run",
-    "Maven.pawsitters [install].executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHELLCHECK.PATH": "/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck",
-    "Shell Script.Projektstart.executor": "Run",
-    "Spring Boot.PawsittersApplication.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "develop",
-    "javascript.preferred.runtime.type.id": "node",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "rest.client.default.execution.environment": "dev",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;HTTP Request.AcceptBookingProposal | Accept booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogin | Login (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogin2ndCredentials | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthRegister | Registrieren (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthSession | Sessionstatus (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CompleteBooking | Complete an accepted booking.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateAvailability | Create single availability.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateBookingProposal | Create booking proposal in chat.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateHostProfile | Gastgeberprofil anlegen oder aktualisieren.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateNewChat | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateOffer | Create offer draft.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.DeclineBookingProposal | Decline booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetActiveBookings | Get active bookings for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookingHistory | Get completed booking history for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookings | Get accepted bookings for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookings | Get active bookings for current user (compatibility endpoint).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetChatMessages | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetChats | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetHostProfile | Gastgeberprofil abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetHostStats | Gastgeber-Statistiken abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetMarketplaceOffers | Get published marketplace offers.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.PostToNewChat | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.PublishOffer | Publish offer.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.SendChatMessage | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.UploadHostGalleryImage | Unterkunftsbild zur Gastgeber-Galerie hochladen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.WithdrawBookingProposal | Withdraw own booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.WithdrawOffer | Withdraw offer.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pawsitters [install].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/niklasulbrich/Library/Application Support/JetBrains/WebStorm2026.1/plugins/Shell Script/shellcheck&quot;,
+    &quot;Shell Script.Projektstart.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PawsittersApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;n__feature__integrating-chat-and-marketplace-apis&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;rest.client.default.execution.environment&quot;: &quot;dev&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src/media" />

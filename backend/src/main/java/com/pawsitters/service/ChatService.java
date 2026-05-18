@@ -120,6 +120,7 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse createMessage(Long chatId, String senderEmail, String rawContent) {
         Chat chat = getChatForParticipant(chatId, senderEmail);
+        assertChatOpen(chat);
         User sender = getUserByEmail(senderEmail);
         String content = normalizeMessageContent(rawContent);
 
@@ -142,6 +143,7 @@ public class ChatService {
                 .orElseThrow(() -> new NotFoundException("Nachricht nicht gefunden."));
         Chat chat = message.getChat();
         assertParticipant(chat, uploaderEmail);
+        assertChatOpen(chat);
 
         byte[] imageBytes = validateAndReadImage(image);
         String extension = extractExtension(image.getOriginalFilename());
@@ -185,6 +187,36 @@ public class ChatService {
         }
     }
 
+    @Transactional
+    public ChatResponse closeChat(Long chatId, String actorEmail) {
+        Chat chat = getChatForParticipant(chatId, actorEmail);
+        if (chat.isClosed()) {
+            return toChatResponse(chat);
+        }
+
+        User actor = getUserByEmail(actorEmail);
+        chat.setClosedAt(Instant.now());
+        chat.setClosedByUser(actor);
+
+        ChatMessage systemMessage = new ChatMessage();
+        systemMessage.setChat(chat);
+        systemMessage.setSender(actor);
+        systemMessage.setContent(buildChatClosedMessage(actor));
+
+        ChatMessage savedMessage = chatMessageRepository.save(systemMessage);
+        chat.setLastMessageAt(savedMessage.getCreatedAt());
+
+        ChatMessageResponse messageResponse = ChatMessageResponse.from(savedMessage);
+        ChatResponse chatResponse = toChatResponse(chat, savedMessage.getContent());
+        chatRealtimeService.publishChatClosed(
+                messageResponse,
+                chatResponse,
+                chat.getHost().getEmail(),
+                chat.getRequester().getEmail()
+        );
+        return chatResponse;
+    }
+
     private Chat getChatForParticipant(Long chatId, String email) {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat nicht gefunden."));
@@ -204,6 +236,12 @@ public class ChatService {
         }
     }
 
+    private void assertChatOpen(Chat chat) {
+        if (chat != null && chat.isClosed()) {
+            throw new IllegalArgumentException("Dieser Chat wurde bereits beendet.");
+        }
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden."));
@@ -219,6 +257,25 @@ public class ChatService {
             throw new IllegalArgumentException("Nachrichten duerfen hoechstens 2000 Zeichen lang sein.");
         }
         return content;
+    }
+
+    private String buildChatClosedMessage(User actor) {
+        if (actor == null) {
+            return "Chat wurde beendet.";
+        }
+
+        String firstName = actor.getFirstName() == null ? "" : actor.getFirstName().trim();
+        String lastName = actor.getLastName() == null ? "" : actor.getLastName().trim();
+        String displayName = (firstName + " " + lastName).trim();
+        if (displayName.isBlank()) {
+            displayName = actor.getEmail() == null ? "" : actor.getEmail().trim();
+        }
+
+        if (displayName.isBlank()) {
+            return "Chat wurde beendet.";
+        }
+
+        return displayName + " hat den Chat beendet.";
     }
 
     private byte[] validateAndReadImage(MultipartFile image) {

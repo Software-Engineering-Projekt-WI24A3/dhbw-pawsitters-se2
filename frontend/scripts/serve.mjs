@@ -90,7 +90,16 @@ function resolveLocalePrefixedRedirect(requestUrl) {
 
 function resolveDynamicPageFallback(urlPath = '') {
   const normalizedPath = String(urlPath || '').trim().replace(/\/+$/, '') || '/';
+  const localizedSearchMatch = normalizedPath.match(/^\/(de|en|ro)\/search\/.+$/i);
   const localizedProfileMatch = normalizedPath.match(/^\/(de|en|ro)\/profile\/\d+$/i);
+
+  if (localizedSearchMatch?.[1]) {
+    return `/${localizedSearchMatch[1].toLowerCase()}/search`;
+  }
+
+  if (/^\/search\/.+$/i.test(normalizedPath)) {
+    return '/search';
+  }
 
   if (localizedProfileMatch?.[1]) {
     return `/${localizedProfileMatch[1].toLowerCase()}/profile`;

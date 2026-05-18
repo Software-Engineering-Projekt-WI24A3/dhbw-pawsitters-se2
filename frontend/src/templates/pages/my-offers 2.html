@@ -93,13 +93,6 @@
                 <p class="profile_hero__eyebrow" th:text="#{myOffers.page.eyebrow}">myOffers.page.eyebrow</p>
                 <h1 class="profile_hero__title" th:text="#{myOffers.page.title}">myOffers.page.title</h1>
             </div>
-            <div class="profile_hero__avatar_ring settings_profile_avatar">
-                <img v-if="myOffersViewUser && myOffersViewUser.profilePicture"
-                     class="profile_hero__avatar"
-                     :src="myOffersViewUser.profilePicture"
-                     :alt="myOffersDisplayName">
-                <span v-else class="profile_hero__avatar profile_hero__avatar--fallback" v-text="myOffersViewInitial"></span>
-            </div>
         </header>
 
         <article class="profile_panel my_offers_panel">
@@ -160,9 +153,9 @@
                                      :style="buildMyOfferCardStyle(item.offer)"
                                      role="button"
                                      tabindex="0"
-                                     @click="setMyOffersCarouselIndex(item.index)"
-                                     @keydown.enter.prevent="setMyOffersCarouselIndex(item.index)"
-                                     @keydown.space.prevent="setMyOffersCarouselIndex(item.index)"
+                                     @click="openOfferDetailModal(item.offer)"
+                                     @keydown.enter.prevent="openOfferDetailModal(item.offer)"
+                                     @keydown.space.prevent="openOfferDetailModal(item.offer)"
                                      :aria-label="buildMyOfferOpenDetailsLabel(item.offer)">
                                     <div class="my_offers_card__header">
                                         <span class="my_offers_card__status_badge"

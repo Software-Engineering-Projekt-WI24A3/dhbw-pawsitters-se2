@@ -16,6 +16,8 @@ public record ChatResponse(
         String requesterLastName,
         Instant createdAt,
         Instant lastMessageAt,
+        Instant closedAt,
+        Long closedByUserId,
         String lastMessagePreview
 ) {
     public static ChatResponse from(Chat chat, String lastMessagePreview) {
@@ -31,6 +33,8 @@ public record ChatResponse(
                 chat.getRequester().getLastName(),
                 chat.getCreatedAt(),
                 chat.getLastMessageAt(),
+                chat.getClosedAt(),
+                chat.getClosedByUser() == null ? null : chat.getClosedByUser().getId(),
                 lastMessagePreview
         );
     }
