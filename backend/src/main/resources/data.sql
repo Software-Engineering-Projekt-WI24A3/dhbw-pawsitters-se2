@@ -25,6 +25,15 @@ VALUES ((SELECT id FROM users WHERE email = 'mia.fischer@example.com'), 'RABBIT'
 INSERT INTO user_accepted_pet_species (user_id, species)
 VALUES ((SELECT id FROM users WHERE email = 'noah.becker@example.com'), 'DOG');
 
+INSERT INTO host_profiles (host_id, experience, accommodation_description)
+VALUES ((SELECT id FROM users WHERE email = 'lukas.schmidt@example.com'), '', '');
+
+INSERT INTO host_profiles (host_id, experience, accommodation_description)
+VALUES ((SELECT id FROM users WHERE email = 'mia.fischer@example.com'), '', '');
+
+INSERT INTO host_profiles (host_id, experience, accommodation_description)
+VALUES ((SELECT id FROM users WHERE email = 'noah.becker@example.com'), '', '');
+
 INSERT INTO users (email, password_hash, first_name, last_name, phone, birth_date, emergency_contact, profile_picture, bio, rating, number_of_ratings, role, password_change_required)
 VALUES ('sara.wagner@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOQxD9jQ2b6K8wF5gQd0mL5m8uM4uQx6K', 'Sara', 'Wagner', '01731234567', '1997-11-21', 'Tom Wagner', 'sara.png', 'Katzenliebhaberin und flexibel verfügbar.', 0.0, 0, 'PET_OWNER', FALSE);
 

@@ -1,0 +1,3 @@
+### Decline booking proposal
+PATCH {{baseUrl}}/api/booking-proposals/{{bookingProposalId}}/decline
+Authorization: Bearer {{hostToken}}

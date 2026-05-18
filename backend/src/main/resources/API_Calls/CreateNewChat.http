@@ -1,9 +1,9 @@
 POST {{baseUrl}}/api/chats
-Authorization: Bearer {{token}}
+Authorization: Bearer {{requesterToken}}
 Content-Type: application/json
 
 {
-  "offerId": 1
+  "offerId": 3
 }
 
 > {%

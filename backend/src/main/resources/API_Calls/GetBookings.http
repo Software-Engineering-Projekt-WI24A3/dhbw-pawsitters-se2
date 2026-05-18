@@ -1,0 +1,3 @@
+### Get active bookings for current user (compatibility endpoint)
+GET {{baseUrl}}/api/bookings
+Authorization: Bearer {{requesterToken}}

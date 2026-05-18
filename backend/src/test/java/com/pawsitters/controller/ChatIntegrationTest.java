@@ -22,7 +22,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -152,11 +155,382 @@ class ChatIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
     }
 
+    @Test
+    void bookingProposalFromPetOwnerCanBeAcceptedByHostAndAppearsInChat() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken, List.of("DOG", "CAT"));
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "120.00",
+                2,
+                "DOG",
+                "CAT"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"))
+                .andExpect(jsonPath("$.data.petSpecies", containsInAnyOrder("DOG", "CAT")))
+                .andExpect(jsonPath("$.data.petCount").value(2))
+                .andExpect(jsonPath("$.data.priceTotal").value(120.00));
+
+        mockMvc.perform(get("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meta.total").value(2))
+                .andExpect(jsonPath("$.data[0].type").value("BOOKING_PROPOSAL"))
+                .andExpect(jsonPath("$.data[0].bookingProposal.id").value(proposalId))
+                .andExpect(jsonPath("$.data[0].bookingProposal.status").value("ACCEPTED"))
+                .andExpect(jsonPath("$.data[1].type").value("BOOKING_EVENT"))
+                .andExpect(jsonPath("$.data[1].bookingProposal.status").value("ACCEPTED"));
+
+        mockMvc.perform(get("/api/bookings")
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+
+        mockMvc.perform(get("/api/bookings")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+    }
+
+    @Test
+    void acceptedBookingCanBeCompletedAndMovesFromActiveToHistory() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String strangerToken = jwtService.generateToken("sara.wagner@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-04",
+                "2026-07-05",
+                "120.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"));
+
+        mockMvc.perform(get("/api/bookings/active")
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + strangerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("COMPLETED"));
+
+        mockMvc.perform(get("/api/bookings/active")
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].id", not(hasItem(proposalId.intValue()))));
+
+        mockMvc.perform(get("/api/bookings/history")
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[*].id", hasItem(proposalId.intValue())));
+
+        mockMvc.perform(patch("/api/bookings/{id}/complete", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void bookingProposalAllowsSingleDayAtOfferAvailabilityStart() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken, List.of("DOG"), "2005-08-12", "2005-08-13");
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2005-08-12",
+                                "2005-08-12",
+                                "39.90",
+                                1,
+                                "DOG"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.startDate").value("2005-08-12"))
+                .andExpect(jsonPath("$.data.endDate").value("2005-08-12"))
+                .andExpect(jsonPath("$.data.status").value("PENDING"));
+    }
+
+    @Test
+    void bookingProposalFromHostCanBeAcceptedOnlyByPetOwner() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                hostToken,
+                chatId,
+                "2026-07-03",
+                "2026-07-04",
+                "98.50",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"));
+    }
+
+    @Test
+    void newBookingProposalAutomaticallyDeclinesPreviousPendingProposal() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long firstProposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "80.00",
+                1,
+                "DOG"
+        );
+        Long secondProposalId = createBookingProposal(
+                hostToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "90.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(get("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meta.total").value(2))
+                .andExpect(jsonPath("$.data[0].bookingProposal.id").value(firstProposalId))
+                .andExpect(jsonPath("$.data[0].bookingProposal.status").value("DECLINED"))
+                .andExpect(jsonPath("$.data[0].bookingProposal.declineReason").value("REPLACED_BY_NEW_PROPOSAL"))
+                .andExpect(jsonPath("$.data[1].bookingProposal.id").value(secondProposalId))
+                .andExpect(jsonPath("$.data[1].bookingProposal.status").value("PENDING"));
+    }
+
+    @Test
+    void manualDeclineSetsManualReasonAndInvalidProposalRequestsAreRejected() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+        String strangerToken = jwtService.generateToken("sara.wagner@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2026-07-01",
+                                "2026-07-02",
+                                "75.00",
+                                1,
+                                "CAT"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2026-07-01",
+                                "2026-07-02",
+                                "75.00",
+                                0,
+                                "DOG"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "75.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/decline", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/decline", proposalId)
+                        .header("Authorization", "Bearer " + strangerToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/decline", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("DECLINED"))
+                .andExpect(jsonPath("$.data.declineReason").value("MANUAL"));
+    }
+
+    @Test
+    void bookingProposalRequiresPetCountAtLeastPetSpeciesCount() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken, List.of("DOG", "CAT"));
+        Long chatId = createChat(requesterToken, offerId);
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2026-07-01",
+                                "2026-07-02",
+                                "75.00",
+                                1,
+                                "DOG",
+                                "CAT"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void acceptingOverlappingAcceptedBookingReturnsConflict() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long acceptedProposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-03",
+                "180.00",
+                1,
+                "DOG"
+        );
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", acceptedProposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk());
+
+        Long conflictingProposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-02",
+                "2026-07-04",
+                "190.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", conflictingProposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("CONFLICT"));
+    }
+
+    @Test
+    void bookingProposalsCannotBeCreatedOrAcceptedAfterOfferIsWithdrawn() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "120.00",
+                1,
+                "DOG"
+        );
+
+        mockMvc.perform(patch("/api/offers/{id}/withdraw", offerId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + requesterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                "2026-07-03",
+                                "2026-07-04",
+                                "130.00",
+                                1,
+                                "DOG"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/accept", proposalId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
     private Long createPublishedOffer(String hostToken) throws Exception {
+        return createPublishedOffer(hostToken, List.of("DOG"));
+    }
+
+    private Long createPublishedOffer(String hostToken, List<String> acceptedPetSpecies) throws Exception {
+        return createPublishedOffer(hostToken, acceptedPetSpecies, "2026-07-01", "2026-07-05");
+    }
+
+    private Long createPublishedOffer(String hostToken,
+                                      List<String> acceptedPetSpecies,
+                                      String availableFrom,
+                                      String availableTo) throws Exception {
         MvcResult createResult = mockMvc.perform(post("/api/offers")
                         .header("Authorization", "Bearer " + hostToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildOfferPayload())))
+                        .content(objectMapper.writeValueAsString(buildOfferPayload(acceptedPetSpecies, availableFrom, availableTo))))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -202,15 +576,66 @@ class ChatIntegrationTest {
         return data.get("id").asLong();
     }
 
+    private Long createBookingProposal(String token,
+                                       Long chatId,
+                                       String startDate,
+                                       String endDate,
+                                       String priceTotal,
+                                       int petCount,
+                                       String... petSpecies) throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
+                                startDate,
+                                endDate,
+                                priceTotal,
+                                petCount,
+                                petSpecies
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("PENDING"))
+                .andReturn();
+
+        JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).get("data");
+        return data.get("id").asLong();
+    }
+
     private Map<String, Object> buildOfferPayload() {
+        return buildOfferPayload(List.of("DOG"));
+    }
+
+    private Map<String, Object> buildOfferPayload(List<String> acceptedPetSpecies) {
+        return buildOfferPayload(acceptedPetSpecies, "2026-07-01", "2026-07-05");
+    }
+
+    private Map<String, Object> buildOfferPayload(List<String> acceptedPetSpecies,
+                                                  String availableFrom,
+                                                  String availableTo) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("title", "Live-Chat Testangebot " + UUID.randomUUID());
         payload.put("description", "Betreuung mit Updates, Bildern und persoenlicher Abstimmung.");
         payload.put("pricePerDay", BigDecimal.valueOf(42.50));
-        payload.put("availableFrom", "2026-07-01");
-        payload.put("availableTo", "2026-07-05");
-        payload.put("acceptedPetSpecies", List.of("DOG"));
+        payload.put("availableFrom", availableFrom);
+        payload.put("availableTo", availableTo);
+        payload.put("acceptedPetSpecies", acceptedPetSpecies);
         payload.put("services", List.of("Fuetterung", "Spaziergang"));
+        return payload;
+    }
+
+    private Map<String, Object> buildBookingProposalPayload(String startDate,
+                                                            String endDate,
+                                                            String priceTotal,
+                                                            int petCount,
+                                                            String... petSpecies) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("startDate", startDate);
+        payload.put("endDate", endDate);
+        payload.put("priceTotal", new BigDecimal(priceTotal));
+        payload.put("petSpecies", List.of(petSpecies));
+        payload.put("petCount", petCount);
+        payload.put("note", "Bitte mit taeglichen Updates.");
         return payload;
     }
 

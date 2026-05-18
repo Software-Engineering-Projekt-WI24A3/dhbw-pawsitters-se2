@@ -10,12 +10,12 @@ import java.util.Optional;
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"offer", "host", "requester"})
+    @EntityGraph(attributePaths = {"offer", "offer.acceptedPetSpecies", "host", "requester"})
     Optional<Chat> findById(Long id);
 
-    @EntityGraph(attributePaths = {"offer", "host", "requester"})
+    @EntityGraph(attributePaths = {"offer", "offer.acceptedPetSpecies", "host", "requester"})
     Optional<Chat> findByOfferIdAndRequesterId(Long offerId, Long requesterId);
 
-    @EntityGraph(attributePaths = {"offer", "host", "requester"})
+    @EntityGraph(attributePaths = {"offer", "offer.acceptedPetSpecies", "host", "requester"})
     List<Chat> findByHostIdOrRequesterId(Long hostId, Long requesterId);
 }

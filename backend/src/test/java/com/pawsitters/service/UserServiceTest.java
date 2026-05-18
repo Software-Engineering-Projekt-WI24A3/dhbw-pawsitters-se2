@@ -2,8 +2,10 @@ package com.pawsitters.service;
 
 import com.pawsitters.exception.ForbiddenException;
 import com.pawsitters.exception.NotFoundException;
+import com.pawsitters.model.HostProfile;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
+import com.pawsitters.repository.HostProfileRepository;
 import com.pawsitters.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,13 +29,16 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private HostProfileRepository hostProfileRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, passwordEncoder, "uploads-test", 5 * 1024 * 1024);
+        userService = new UserService(userRepository, hostProfileRepository, passwordEncoder, "uploads-test", 5 * 1024 * 1024);
     }
 
     // ===== createUser =====
@@ -55,6 +60,34 @@ class UserServiceTest {
         assertEquals("hashedPassword", result.getPasswordHash());
         assertEquals(UserRole.PET_OWNER, result.getRole());
         verify(userRepository).save(any(User.class));
+        verify(hostProfileRepository, never()).save(any(HostProfile.class));
+    }
+
+    @Test
+    void whenValidHost_thenEmptyHostProfileIsCreated() {
+        when(userRepository.existsByEmailIgnoreCase(any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("hashedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(i -> {
+            User user = i.getArgument(0);
+            user.setId(42L);
+            return user;
+        });
+        when(hostProfileRepository.findByHostId(42L)).thenReturn(Optional.empty());
+        when(hostProfileRepository.save(any(HostProfile.class))).thenAnswer(i -> i.getArgument(0));
+
+        User result = userService.createUser(
+                "host@test.de", "VeryStrongPass!123", "Hanna", "Host",
+                "01234567", LocalDate.of(2000, 1, 1), "Notfall: 0987",
+                "bild.jpg", "Ich betreue Tiere", UserRole.HOST
+        );
+
+        assertEquals(UserRole.HOST, result.getRole());
+        verify(hostProfileRepository).save(argThat(profile ->
+                profile.getHost() == result
+                        && "".equals(profile.getExperience())
+                        && "".equals(profile.getAccommodationDescription())
+                        && profile.getExperiences().isEmpty()
+        ));
     }
 
     @Test

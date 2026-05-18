@@ -1,0 +1,4 @@
+### Gastgeber-Statistiken abrufen
+GET {{baseUrl}}/api/hosts/3/stats
+
+###

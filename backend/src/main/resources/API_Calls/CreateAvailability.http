@@ -1,0 +1,36 @@
+### Create single availability
+POST {{baseUrl}}/api/availability
+Authorization: Bearer {{hostToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-10-01",
+  "endDate": "2026-10-02"
+}
+
+> {%
+    client.global.set("availabilityId", response.body.data.id);
+%}
+
+### Create recurring weekend availability
+POST {{baseUrl}}/api/availability/recurring
+Authorization: Bearer {{hostToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-10-03",
+  "endDate": "2026-12-31",
+  "daysOfWeek": ["SATURDAY", "SUNDAY"]
+}
+
+> {%
+    client.global.set("recurringAvailabilityId", response.body.data.id);
+%}
+
+### Get own availability
+GET {{baseUrl}}/api/availability
+Authorization: Bearer {{hostToken}}
+
+### Delete availability
+DELETE {{baseUrl}}/api/availability/{{availabilityId}}
+Authorization: Bearer {{hostToken}}

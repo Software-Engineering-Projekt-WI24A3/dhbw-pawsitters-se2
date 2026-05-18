@@ -1,10 +1,13 @@
 package com.pawsitters.controller;
 
 import com.pawsitters.dto.ApiResponse;
+import com.pawsitters.dto.BookingProposalCreateRequest;
+import com.pawsitters.dto.BookingProposalResponse;
 import com.pawsitters.dto.ChatCreateRequest;
 import com.pawsitters.dto.ChatMessageCreateRequest;
 import com.pawsitters.dto.ChatMessageResponse;
 import com.pawsitters.dto.ChatResponse;
+import com.pawsitters.service.BookingProposalService;
 import com.pawsitters.service.ChatService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,9 +30,11 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
+    private final BookingProposalService bookingProposalService;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, BookingProposalService bookingProposalService) {
         this.chatService = chatService;
+        this.bookingProposalService = bookingProposalService;
     }
 
     @PostMapping
@@ -82,6 +87,30 @@ public class ChatController {
                 HttpStatus.OK,
                 "Chat message created successfully.",
                 message,
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @PostMapping("/{id}/booking-proposals")
+    public ResponseEntity<ApiResponse<BookingProposalResponse>> createBookingProposal(
+            @PathVariable Long id,
+            @Valid @RequestBody BookingProposalCreateRequest request,
+            Authentication authentication,
+            HttpServletRequest servletRequest) {
+        BookingProposalResponse proposal = bookingProposalService.createProposal(
+                id,
+                authentication.getName(),
+                request.startDate(),
+                request.endDate(),
+                request.priceTotal(),
+                request.petSpecies(),
+                request.petCount(),
+                request.note()
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Booking proposal created successfully.",
+                proposal,
                 servletRequest.getRequestURI()
         ));
     }

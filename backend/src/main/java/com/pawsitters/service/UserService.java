@@ -2,9 +2,11 @@ package com.pawsitters.service;
 
 import com.pawsitters.exception.ForbiddenException;
 import com.pawsitters.exception.NotFoundException;
+import com.pawsitters.model.HostProfile;
 import com.pawsitters.model.PetChoice;
 import com.pawsitters.model.User;
 import com.pawsitters.model.UserRole;
+import com.pawsitters.repository.HostProfileRepository;
 import com.pawsitters.repository.UserRepository;
 import com.pawsitters.validation.PasswordPolicy;
 import com.pawsitters.validation.PasswordNormalizer;
@@ -41,15 +43,18 @@ public class UserService {
             Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp");
 
     private final UserRepository userRepository;
+    private final HostProfileRepository hostProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final Path uploadRoot;
     private final long maxProfileImageSizeBytes;
 
     public UserService(UserRepository userRepository,
+                       HostProfileRepository hostProfileRepository,
                        PasswordEncoder passwordEncoder,
                        @Value("${app.upload.dir:uploads}") String uploadDir,
                        @Value("${app.profile-image.max-size-bytes:5242880}") long maxProfileImageSizeBytes) {
         this.userRepository = userRepository;
+        this.hostProfileRepository = hostProfileRepository;
         this.passwordEncoder = passwordEncoder;
         this.uploadRoot = Paths.get(uploadDir == null || uploadDir.isBlank() ? "uploads" : uploadDir)
                 .toAbsolutePath()
@@ -57,6 +62,7 @@ public class UserService {
         this.maxProfileImageSizeBytes = Math.max(1, maxProfileImageSizeBytes);
     }
 
+    @Transactional
     public User createUser(
             String email,
             String rawPassword,
@@ -142,7 +148,24 @@ public class UserService {
         user.setCity(normalizeBlank(city));
         user.setAcceptedPetSpecies(acceptedPetSpecies);
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        createEmptyHostProfileIfNeeded(saved);
+        return saved;
+    }
+
+    private void createEmptyHostProfileIfNeeded(User user) {
+        if (user.getRole() != UserRole.HOST) {
+            return;
+        }
+        if (hostProfileRepository.findByHostId(user.getId()).isPresent()) {
+            return;
+        }
+
+        HostProfile profile = new HostProfile();
+        profile.setHost(user);
+        profile.setExperience("");
+        profile.setAccommodationDescription("");
+        hostProfileRepository.save(profile);
     }
     public User getUserById(Long id) {
         return userRepository.findById(id)

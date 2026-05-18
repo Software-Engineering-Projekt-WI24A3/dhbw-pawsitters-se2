@@ -101,4 +101,46 @@ class ChatRealtimeServiceTest {
         assertEquals("message.attachment_added", chatEventCaptor.getValue().type());
         assertEquals(message, chatEventCaptor.getValue().message());
     }
+
+    @Test
+    void publishesBookingEventWithProvidedType() {
+        ChatRealtimeService service = new ChatRealtimeService(messagingTemplate);
+        ChatMessageResponse message = new ChatMessageResponse(
+                13L,
+                9L,
+                5L,
+                "Anna",
+                "Meier",
+                "Buchungsangebot gesendet.",
+                Instant.parse("2026-05-13T10:25:30Z"),
+                List.of()
+        );
+        ChatResponse chat = new ChatResponse(
+                9L,
+                21L,
+                "Hundebetreuung",
+                4L,
+                "Lukas",
+                "Schmidt",
+                5L,
+                "Anna",
+                "Meier",
+                Instant.parse("2026-05-13T10:00:00Z"),
+                Instant.parse("2026-05-13T10:25:30Z"),
+                "Buchungsangebot gesendet."
+        );
+
+        service.publishBookingEvent(
+                message,
+                chat,
+                "booking.proposal_created",
+                "lukas.schmidt@example.com",
+                "anna.meier@example.com"
+        );
+
+        ArgumentCaptor<ChatEventResponse> chatEventCaptor = ArgumentCaptor.forClass(ChatEventResponse.class);
+        verify(messagingTemplate).convertAndSend(eq("/topic/chats/9/messages"), chatEventCaptor.capture());
+        assertEquals("booking.proposal_created", chatEventCaptor.getValue().type());
+        assertEquals(message, chatEventCaptor.getValue().message());
+    }
 }

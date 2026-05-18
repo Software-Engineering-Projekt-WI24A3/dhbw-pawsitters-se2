@@ -3,6 +3,8 @@ package com.pawsitters.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,8 +35,16 @@ public class ChatMessage {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private ChatMessageType type = ChatMessageType.TEXT;
+
     @Column(nullable = false, length = 2000)
     private String content = "";
+
+    @ManyToOne
+    @JoinColumn(name = "booking_proposal_id")
+    private BookingProposal bookingProposal;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -56,7 +66,11 @@ public class ChatMessage {
 
     public User getSender() { return sender; }
 
+    public ChatMessageType getType() { return type; }
+
     public String getContent() { return content; }
+
+    public BookingProposal getBookingProposal() { return bookingProposal; }
 
     public Instant getCreatedAt() { return createdAt; }
 
@@ -68,7 +82,11 @@ public class ChatMessage {
 
     public void setSender(User sender) { this.sender = sender; }
 
+    public void setType(ChatMessageType type) { this.type = type == null ? ChatMessageType.TEXT : type; }
+
     public void setContent(String content) { this.content = content == null ? "" : content; }
+
+    public void setBookingProposal(BookingProposal bookingProposal) { this.bookingProposal = bookingProposal; }
 
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 

@@ -72,13 +72,14 @@
         <option value="Class" />
         <option value="HTTP Public Environment File" />
         <option value="HTTP Request" />
+        <option value="HTTP Private Environment File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="j_feature_bookinghistory" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -112,14 +113,28 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetMarketplaceOffers.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateOffer.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PublishOffer.http" environment="server" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawOffer.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawOffer.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" environment="server" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/PostToNewChat.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateNewChat.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SendChatMessage.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChats.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChatMessages.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthRegister.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateHostProfile.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostProfile.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostStats.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadHostGalleryImage.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateBookingProposal.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawBookingProposal.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AcceptBookingProposal.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeclineBookingProposal.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookings.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookingHistory.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetActiveBookings.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CompleteBooking.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateAvailability.http" environment="dev" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -164,10 +179,38 @@
     &quot;HTTP Request.CreateOffer | Create offer draft.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetChatMessages | #1.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetChats | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AcceptBookingProposal | Accept booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogin | Login (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthLogin2ndCredentials | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthRegister | Registrieren (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.AuthSession | Sessionstatus (Auth).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CompleteBooking | Complete an accepted booking.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateAvailability | Create single availability.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateBookingProposal | Create booking proposal in chat.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateHostProfile | Gastgeberprofil anlegen oder aktualisieren.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateNewChat | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.CreateOffer | Create offer draft.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.DeclineBookingProposal | Decline booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetActiveBookings | Get active bookings for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookingHistory | Get completed booking history for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookings | Get accepted bookings for current user.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetBookings | Get active bookings for current user (compatibility endpoint).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetChatMessages | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetChats | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetHostProfile | Gastgeberprofil abrufen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.GetHostStats | Gastgeber-Statistiken abrufen.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.GetMarketplaceOffers | Get published marketplace offers.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.PostToNewChat | #1.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.PublishOffer | Publish offer.executor&quot;: &quot;Run&quot;,
     &quot;HTTP Request.SendChatMessage | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.UploadHostGalleryImage | Unterkunftsbild zur Gastgeber-Galerie hochladen.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.WithdrawBookingProposal | Withdraw own booking proposal.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.WithdrawOffer | Withdraw offer.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pawsitters [install].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
@@ -177,6 +220,9 @@
     &quot;Shell Script.Projektstart.executor&quot;: &quot;Run&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;n__feature__some-bug-fixes&quot;,
+    &quot;Spring Boot.PawsittersApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;j__feature__Availability&quot;,
     &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -185,6 +231,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;rest.client.default.execution.environment&quot;: &quot;server&quot;,
+    &quot;rest.client.default.execution.environment&quot;: &quot;dev&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -194,29 +241,55 @@
       <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
   </component>
-  <component name="RunManager" selected="HTTP Request.GetChatMessages | #1">
+  <component name="RunDashboard">
+    <option name="configurationStatuses">
+      <map>
+        <entry key="HttpClient.HttpRequestRunConfigurationType">
+          <value>
+            <map>
+              <entry key="AuthLogin | Login (Auth)" value="STOPPED" />
+              <entry key="AuthLogin2ndCredentials | #1" value="STOPPED" />
+              <entry key="CreateAvailability | Create single availability" value="STOPPED" />
+              <entry key="CreateBookingProposal | Create booking proposal in chat" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager" selected="HTTP Request.CreateBookingProposal | Create booking proposal in chat">
+    <configuration name="AuthLogin | Login (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" executionIdentifier="Login (Auth)" runType="Run single request">
+      <method v="2" />
+    </configuration>
     <configuration name="AuthLogin2ndCredentials | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="GetChatMessages | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChatMessages.http" executionIdentifier="#1" runType="Run single request">
+    <configuration name="CreateAvailability | Create single availability" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateAvailability.http" executionIdentifier="Create single availability" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="GetChats | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChats.http" executionIdentifier="#1" runType="Run single request">
+    <configuration name="CreateBookingProposal | Create booking proposal in chat" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateBookingProposal.http" executionIdentifier="Create booking proposal in chat" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="PostToNewChat | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/PostToNewChat.http" executionIdentifier="#1" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="SendChatMessage | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/SendChatMessage.http" executionIdentifier="#1" runType="Run single request">
-      <method v="2" />
+    <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="pawsitters" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.pawsitters.PawsittersApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.pawsitters.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="HTTP Request.GetChatMessages | #1" />
-        <item itemvalue="HTTP Request.SendChatMessage | #1" />
-        <item itemvalue="HTTP Request.GetChats | #1" />
-        <item itemvalue="HTTP Request.PostToNewChat | #1" />
+        <item itemvalue="HTTP Request.CreateBookingProposal | Create booking proposal in chat" />
         <item itemvalue="HTTP Request.AuthLogin2ndCredentials | #1" />
+        <item itemvalue="HTTP Request.CreateAvailability | Create single availability" />
+        <item itemvalue="HTTP Request.AuthLogin | Login (Auth)" />
+        <item itemvalue="Spring Boot.PawsittersApplication" />
       </list>
     </recent_temporary>
   </component>
@@ -259,8 +332,12 @@
       <workItem from="1778427823789" duration="1423000" />
       <workItem from="1778490221650" duration="368000" />
       <workItem from="1778621154707" duration="2493000" />
-      <workItem from="1778752204259" duration="1724000" />
-      <workItem from="1778847058763" duration="595000" />
+      <workItem from="1778752204259" duration="5142000" />
+      <workItem from="1778845767100" duration="1293000" />
+      <workItem from="1778861191185" duration="13161000" />
+      <workItem from="1779021008511" duration="714000" />
+      <workItem from="1779024918539" duration="2181000" />
+      <workItem from="1779047949704" duration="314000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
@@ -398,15 +475,31 @@
       <option name="project" value="LOCAL" />
       <updated>1778696611311</updated>
     </task>
-    <task id="LOCAL-00018" summary="updates for the previous merge 4.1">
+    <task id="LOCAL-00018" summary="ergänzungen zum chat update">
       <option name="closed" value="true" />
-      <created>1778772350740</created>
+      <created>1778753973829</created>
       <option name="number" value="00018" />
       <option name="presentableId" value="LOCAL-00018" />
       <option name="project" value="LOCAL" />
-      <updated>1778772350740</updated>
+      <updated>1778753973829</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="feat(booking): add chat-based booking proposals&#10;&#10;- add BookingProposal domain with accept, decline and withdraw flows&#10;- support multiple pet species per proposal&#10;- validate pet count against selected species&#10;- expose accepted bookings via GET /api/bookings&#10;- update OpenAPI, HTTP requests and booking tests">
+      <option name="closed" value="true" />
+      <created>1778884485351</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1778884485351</updated>
+    </task>
+    <task id="LOCAL-00020" summary="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow">
+      <option name="closed" value="true" />
+      <created>1778929129666</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1778929129666</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -442,6 +535,10 @@
     <MESSAGE value="prompt update" />
     <MESSAGE value="updates for the previous merge 4.1" />
     <option name="LAST_COMMIT_MESSAGE" value="updates for the previous merge 4.1" />
+    <MESSAGE value="ergänzungen zum chat update" />
+    <MESSAGE value="feat(booking): add chat-based booking proposals&#10;&#10;- add BookingProposal domain with accept, decline and withdraw flows&#10;- support multiple pet species per proposal&#10;- validate pet count against selected species&#10;- expose accepted bookings via GET /api/bookings&#10;- update OpenAPI, HTTP requests and booking tests" />
+    <MESSAGE value="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
