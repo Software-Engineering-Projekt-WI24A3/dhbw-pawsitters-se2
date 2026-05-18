@@ -8,13 +8,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "host_reviews")
+@Table(
+        name = "host_reviews",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_host_reviews_booking",
+                columnNames = "booking_id"
+        )
+)
 public class HostReview {
 
     @Id
@@ -28,6 +36,10 @@ public class HostReview {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_owner_id")
     private User petOwner;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", unique = true)
+    private BookingProposal booking;
 
     @Column(nullable = false)
     private Integer rating;
@@ -60,6 +72,8 @@ public class HostReview {
 
     public User getPetOwner() { return petOwner; }
 
+    public BookingProposal getBooking() { return booking; }
+
     public Integer getRating() { return rating; }
 
     public Integer getCommunicationRating() { return communicationRating; }
@@ -77,6 +91,8 @@ public class HostReview {
     public void setHost(User host) { this.host = host; }
 
     public void setPetOwner(User petOwner) { this.petOwner = petOwner; }
+
+    public void setBooking(BookingProposal booking) { this.booking = booking; }
 
     public void setRating(Integer rating) { this.rating = rating; }
 

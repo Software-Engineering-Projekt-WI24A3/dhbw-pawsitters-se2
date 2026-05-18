@@ -1,0 +1,17 @@
+### Create review for a completed booking
+POST {{baseUrl}}/api/reviews
+Authorization: Bearer {{requesterToken}}
+Content-Type: application/json
+
+{
+  "bookingId": 3,
+  "rating": 5,
+  "communicationRating": 5,
+  "reliabilityRating": 5,
+  "careRating": 5,
+  "comment": "Sehr liebevolle Betreuung mit guten Updates."
+}
+
+> {%
+    client.global.set("reviewId", response.body.data.id);
+%}
