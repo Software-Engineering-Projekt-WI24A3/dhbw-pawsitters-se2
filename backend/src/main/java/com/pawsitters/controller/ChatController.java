@@ -128,4 +128,17 @@ public class ChatController {
                 servletRequest.getRequestURI()
         ));
     }
+
+    @PatchMapping("/{id}/reopen")
+    public ResponseEntity<ApiResponse<ChatResponse>> reopenChat(@PathVariable Long id,
+                                                                Authentication authentication,
+                                                                HttpServletRequest servletRequest) {
+        ChatResponse chat = chatService.reopenChat(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "Chat reopened successfully.",
+                chat,
+                servletRequest.getRequestURI()
+        ));
+    }
 }

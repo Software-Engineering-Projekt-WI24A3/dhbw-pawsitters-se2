@@ -115,20 +115,6 @@
     }
   },
   "header": {
-    "tabs": {
-      "aria": "Header views",
-      "discover": "Discover offers",
-      "about": "About this project"
-    },
-    "about": {
-      "welcome": "Welcome to Pawsitters. This project connects pet owners and hosts through a clear, modern interface for fast and trustworthy matching."
-    },
-    "backend": {
-      "checking": "Checking backend connection",
-      "online": "Backend connected",
-      "offline": "Backend unreachable",
-      "retry": "Retry backend connection check"
-    },
     "search": {
       "destination": {
         "label": "Where",
@@ -457,6 +443,8 @@
       "labels": {
         "date": "Period",
         "price": "Price",
+        "pricePerDay": "Price (€/day)",
+        "priceTotal": "Total price",
         "location": "Care location",
         "locationFallback": "Unknown"
       },
@@ -487,6 +475,8 @@
         "requestCreateErrorTitle": "Request failed",
         "requestCreateErrorMessage": "The request could not be created. Please try again.",
         "requestOpeningIntro": "is requesting the offer",
+        "requestOpeningSuffix": "as a non-binding request.",
+        "requestOpeningPetsHeading": "The following pets should be cared for ({count}):",
         "requestOpeningPetsPrefix": "with pets"
       }
     }
@@ -638,7 +628,8 @@
         "flow": "Schedule",
         "dayStructure": "Day structure",
         "description": "Description",
-        "price": "Price per day",
+        "price": "Price (€/day)",
+        "priceTotal": "Total price",
         "city": "Care location",
         "species": "Accepted pet species",
         "services": "Services",
@@ -651,7 +642,7 @@
         "flow": "Describe the schedule",
         "dayStructure": "Describe the day structure",
         "description": "Describe routine, structure, and strengths",
-        "price": "Price in €",
+        "price": "Price in €/day",
         "city": "Select care location",
         "services": "Services, separated by commas"
       },
@@ -741,7 +732,7 @@
       "openOfferAction": "Open offer",
       "proposalAction": "Booking proposal",
       "proposalModalTitle": "Create booking proposal",
-      "proposalModalHint": "Set period, price, and species for your negotiable proposal.",
+      "proposalModalHint": "Enter your price in €/day. The total price is calculated automatically for the full offer period.",
       "proposalModalCloseAria": "Close booking proposal dialog",
       "proposalModalSubmit": "Send booking proposal",
       "proposalModalCancel": "Cancel",
@@ -760,7 +751,10 @@
       "proposalLabels": {
         "startDate": "Start",
         "endDate": "End",
+        "pricePerDay": "Price (€/day)",
         "priceTotal": "Total price",
+        "offerExpectationPerDay": "Expected price (€/day)",
+        "offerExpectationTotal": "Expected total price",
         "petSpecies": "Species",
         "petCount": "Pets",
         "note": "Note"
@@ -780,12 +774,19 @@
         "closeSuccessTitle": "Chat closed",
         "closeSuccessMessage": "The chat was closed successfully.",
         "closeErrorTitle": "Could not close chat",
-        "closeErrorMessage": "The chat could not be closed."
+        "closeErrorMessage": "The chat could not be closed.",
+        "reopenSuccessTitle": "Chat reopened",
+        "reopenSuccessMessage": "The chat was reopened.",
+        "reopenErrorTitle": "Could not reopen chat",
+        "reopenErrorMessage": "The chat could not be reopened."
       },
       "closeChatAction": "End chat",
+      "reopenChatAction": "Reopen chat",
       "closeChatConfirm": "Do you really want to end this chat?",
       "chatClosedLabel": "Closed",
       "chatClosedNotice": "This chat has been closed.",
+      "chatAutoDeleteCountdownTemplate": "Automatic deletion in {countdown}.",
+      "chatAutoDeleteExpired": "This chat is being deleted automatically now.",
       "chatClosedComposer": "This chat is closed. You can no longer send messages or booking proposals."
     }
   },

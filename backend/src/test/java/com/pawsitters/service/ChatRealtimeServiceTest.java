@@ -41,6 +41,9 @@ class ChatRealtimeServiceTest {
                 7L,
                 19L,
                 "Hundebetreuung",
+                null,
+                null,
+                null,
                 2L,
                 "Lukas",
                 "Schmidt",
@@ -85,6 +88,9 @@ class ChatRealtimeServiceTest {
                 8L,
                 20L,
                 "Katzenbetreuung",
+                null,
+                null,
+                null,
                 4L,
                 "Lukas",
                 "Schmidt",
@@ -123,6 +129,9 @@ class ChatRealtimeServiceTest {
                 9L,
                 21L,
                 "Hundebetreuung",
+                null,
+                null,
+                null,
                 4L,
                 "Lukas",
                 "Schmidt",
@@ -167,6 +176,9 @@ class ChatRealtimeServiceTest {
                 10L,
                 22L,
                 "Kleintierbetreuung",
+                null,
+                null,
+                null,
                 4L,
                 "Lukas",
                 "Schmidt",
@@ -191,5 +203,83 @@ class ChatRealtimeServiceTest {
         verify(messagingTemplate).convertAndSend(eq("/topic/chats/10/messages"), chatEventCaptor.capture());
         assertEquals("chat.closed", chatEventCaptor.getValue().type());
         assertEquals(message, chatEventCaptor.getValue().message());
+    }
+
+    @Test
+    void publishesChatReopenedEventWithProvidedPayload() {
+        ChatRealtimeService service = new ChatRealtimeService(messagingTemplate);
+        ChatMessageResponse message = new ChatMessageResponse(
+                15L,
+                11L,
+                6L,
+                "Anna",
+                "Meier",
+                "Anna Meier hat den Chat erneut geoeffnet.",
+                Instant.parse("2026-05-13T10:35:30Z"),
+                List.of()
+        );
+        ChatResponse chat = new ChatResponse(
+                11L,
+                23L,
+                "Katzenbetreuung",
+                null,
+                null,
+                null,
+                4L,
+                "Lukas",
+                "Schmidt",
+                6L,
+                "Anna",
+                "Meier",
+                Instant.parse("2026-05-13T10:00:00Z"),
+                Instant.parse("2026-05-13T10:35:30Z"),
+                null,
+                null,
+                "Anna Meier hat den Chat erneut geoeffnet."
+        );
+
+        service.publishChatReopened(
+                message,
+                chat,
+                "lukas.schmidt@example.com",
+                "anna.meier@example.com"
+        );
+
+        ArgumentCaptor<ChatEventResponse> chatEventCaptor = ArgumentCaptor.forClass(ChatEventResponse.class);
+        verify(messagingTemplate).convertAndSend(eq("/topic/chats/11/messages"), chatEventCaptor.capture());
+        assertEquals("chat.reopened", chatEventCaptor.getValue().type());
+        assertEquals(message, chatEventCaptor.getValue().message());
+    }
+
+    @Test
+    void publishesChatDeletedListEvent() {
+        ChatRealtimeService service = new ChatRealtimeService(messagingTemplate);
+        ChatResponse chat = new ChatResponse(
+                12L,
+                24L,
+                "Hundebetreuung",
+                null,
+                null,
+                null,
+                4L,
+                "Lukas",
+                "Schmidt",
+                6L,
+                "Anna",
+                "Meier",
+                Instant.parse("2026-05-13T10:00:00Z"),
+                Instant.parse("2026-05-14T10:00:00Z"),
+                Instant.parse("2026-05-13T10:30:30Z"),
+                6L,
+                "Anna Meier hat den Chat beendet."
+        );
+
+        service.publishChatDeleted(chat, "lukas.schmidt@example.com", "anna.meier@example.com");
+
+        ArgumentCaptor<ChatListEventResponse> listEventCaptor = ArgumentCaptor.forClass(ChatListEventResponse.class);
+        verify(messagingTemplate).convertAndSendToUser(eq("lukas.schmidt@example.com"), eq("/queue/chats"), listEventCaptor.capture());
+        verify(messagingTemplate).convertAndSendToUser(eq("anna.meier@example.com"), eq("/queue/chats"), listEventCaptor.capture());
+        assertEquals("chat.deleted", listEventCaptor.getAllValues().get(0).type());
+        assertEquals(chat, listEventCaptor.getAllValues().get(0).chat());
     }
 }

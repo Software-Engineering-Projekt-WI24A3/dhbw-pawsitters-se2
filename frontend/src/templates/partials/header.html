@@ -32,40 +32,10 @@
                                   data-destination-no-results=#{header.search.destination.noResults},
                                   data-destination-loading=#{header.search.destination.loading},
                                   data-pet-loading=#{header.search.pet.loading},
-                                  data-pet-empty=#{header.search.pet.empty},
-                                  data-backend-status-checking=#{header.backend.checking},
-                                  data-backend-status-online=#{header.backend.online},
-                                  data-backend-status-offline=#{header.backend.offline},
-                                  data-backend-status-retry=#{header.backend.retry}">
-                        <div class="header_search_tabs"
-                             role="tablist"
-                             th:attr="aria-label=#{header.tabs.aria}">
-                            <button class="header_search_tab"
-                                    type="button"
-                                    role="tab"
-                                    id="header-search-tab-discover"
-                                    aria-controls="header-search-panel-discover"
-                                    :class="{ 'header_search_tab--active': headerCenterTab === 'discover' }"
-                                    :aria-selected="(headerCenterTab === 'discover').toString()"
-                                    @click="setHeaderCenterTab('discover')"
-                                    th:text="#{header.tabs.discover}">header.tabs.discover</button>
-                            <button class="header_search_tab"
-                                    type="button"
-                                    role="tab"
-                                    id="header-search-tab-about"
-                                    aria-controls="header-search-panel-about"
-                                    :class="{ 'header_search_tab--active': headerCenterTab === 'about' }"
-                                    :aria-selected="(headerCenterTab === 'about').toString()"
-                                    @click="setHeaderCenterTab('about')"
-                                    th:text="#{header.tabs.about}">header.tabs.about</button>
-                        </div>
+                                  data-pet-empty=#{header.search.pet.empty}">
 
                         <div class="header_search_shell">
-                            <div class="header_search_mode header_search_mode--discover"
-                                 id="header-search-panel-discover"
-                                 role="tabpanel"
-                                 aria-labelledby="header-search-tab-discover"
-                                 v-show="headerCenterTab === 'discover'">
+                            <div class="header_search_mode header_search_mode--discover">
                             <details class="header_search_field header_search_field--destination"
                                      th:attr="aria-label=#{header.search.destination.label}">
                                 <summary class="header_search_field__summary">
@@ -301,44 +271,6 @@
                                      aria-hidden="true">
                             </button>
                             </div>
-
-                            <section class="header_search_mode header_search_mode--about"
-                                     id="header-search-panel-about"
-                                     role="tabpanel"
-                                     aria-labelledby="header-search-tab-about"
-                                     v-show="headerCenterTab === 'about'">
-                                <div class="header_search_about">
-                                    <article class="header_search_about__content"
-                                             th:text="#{header.about.welcome}">
-                                        header.about.welcome
-                                    </article>
-                                </div>
-                            </section>
-                        </div>
-                        <div class="header_backend_status"
-                             :class="{ 'header_backend_status--compact': headerSearchCompactMode,
-                                 'header_backend_status--online': backendStatusState === 'online',
-                                 'header_backend_status--offline': backendStatusState === 'offline',
-                                 'header_backend_status--checking': backendStatusState === 'checking'
-                             }"
-                             role="status"
-                             aria-live="polite">
-                            <span class="header_backend_status__dot" aria-hidden="true"></span>
-                            <span class="header_backend_status__label" v-text="backendStatusLabel"></span>
-                            <button v-if="backendStatusState === 'offline'"
-                                    class="header_backend_status__retry"
-                                    :class="{ 'header_backend_status__retry--loading': backendStatusChecking }"
-                                    type="button"
-                                    :disabled="backendStatusChecking"
-                                    :aria-busy="String(backendStatusChecking)"
-                                    @click="refreshBackendStatus()"
-                                    th:attr="aria-label=#{header.backend.retry}">
-                                <span class="sr-only" v-text="headerSearchStrings.backendStatusRetry"></span>
-                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                                    <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
-                                    <path d="M20 4v6h-6"></path>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 </div>

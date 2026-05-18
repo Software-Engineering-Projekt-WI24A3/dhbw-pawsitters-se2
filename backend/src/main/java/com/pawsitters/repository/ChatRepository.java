@@ -4,6 +4,7 @@ import com.pawsitters.model.Chat;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     @EntityGraph(attributePaths = {"offer", "offer.acceptedPetSpecies", "host", "requester"})
     List<Chat> findByHostIdOrRequesterId(Long hostId, Long requesterId);
+
+    @EntityGraph(attributePaths = {"offer", "offer.acceptedPetSpecies", "host", "requester"})
+    List<Chat> findByClosedAtIsNotNullAndClosedAtLessThanEqual(Instant closedAt);
 }

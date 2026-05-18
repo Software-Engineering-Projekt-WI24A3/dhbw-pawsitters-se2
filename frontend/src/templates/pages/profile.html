@@ -212,7 +212,11 @@
                                                  aria-hidden="true">
                                             <span v-text="resolveMyPetSpeciesLabel(item.pet)"></span>
                                         </span>
-                                        <span class="my_pets_reel__name" v-text="item.pet.name"></span>
+                                        <button class="my_pets_reel__name my_pets_reel__name_action"
+                                                type="button"
+                                                @click="openReadOnlyPetDetailModal(item.pet)"
+                                                :aria-label="buildMyPetsOpenDetailsLabel(item.pet)"
+                                                v-text="item.pet.name"></button>
                                     </div>
 
                                     <div class="my_pets_reel__reflection" aria-hidden="true">

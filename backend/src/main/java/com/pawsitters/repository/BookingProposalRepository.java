@@ -20,6 +20,9 @@ public interface BookingProposalRepository extends JpaRepository<BookingProposal
     @EntityGraph(attributePaths = {"chat", "offer", "sender", "recipient", "petSpecies"})
     List<BookingProposal> findByChatIdAndStatus(Long chatId, BookingProposalStatus status);
 
+    @EntityGraph(attributePaths = {"chat", "offer", "sender", "recipient", "petSpecies"})
+    List<BookingProposal> findByChatId(Long chatId);
+
     @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "offer", "sender", "recipient", "petSpecies"})
     @Query("""
             select proposal from BookingProposal proposal

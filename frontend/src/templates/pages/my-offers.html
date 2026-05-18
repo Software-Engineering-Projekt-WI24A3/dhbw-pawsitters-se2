@@ -56,6 +56,7 @@
                       data-my-offers-label-day-structure=#{myOffers.page.labels.dayStructure},
                       data-my-offers-label-description=#{myOffers.page.labels.description},
                       data-my-offers-label-price=#{myOffers.page.labels.price},
+                      data-my-offers-label-price-total=#{myOffers.page.labels.priceTotal},
                       data-my-offers-label-city=#{myOffers.page.labels.city},
                       data-my-offers-label-species=#{myOffers.page.labels.species},
                       data-my-offers-label-services=#{myOffers.page.labels.services},
@@ -164,7 +165,8 @@
                     <span class="repository_segmented__indicator" aria-hidden="true"></span>
                 </nav>
 
-                <section data-segment-panel="myOffersViewTab"
+                <section class="my_offers_packages"
+                         data-segment-panel="myOffersViewTab"
                          data-segment-value="offeredPackages"
                          :hidden="myOffersViewTab !== 'offeredPackages'"
                          :aria-hidden="String(myOffersViewTab !== 'offeredPackages')">

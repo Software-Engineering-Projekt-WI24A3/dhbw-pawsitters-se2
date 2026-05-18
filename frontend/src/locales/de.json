@@ -115,20 +115,6 @@
     }
   },
   "header": {
-    "tabs": {
-      "aria": "Header Ansichten",
-      "discover": "Angebote entdecken",
-      "about": "Über dieses Projekt"
-    },
-    "about": {
-      "welcome": "Willkommen bei Pawsitters. Dieses Projekt verbindet Tierhalter und Gastgeber in einer klaren, modernen Oberfläche für eine schnelle und vertrauensvolle Vermittlung."
-    },
-    "backend": {
-      "checking": "Backend-Verbindung wird geprüft",
-      "online": "Backend verbunden",
-      "offline": "Backend nicht erreichbar",
-      "retry": "Backend-Verbindung erneut prüfen"
-    },
     "search": {
       "destination": {
         "label": "Wohin",
@@ -457,6 +443,8 @@
       "labels": {
         "date": "Zeitraum",
         "price": "Preis",
+        "pricePerDay": "Preis (€/Tag)",
+        "priceTotal": "Gesamtpreis",
         "location": "Betreuungsort",
         "locationFallback": "Unbekannt"
       },
@@ -487,6 +475,8 @@
         "requestCreateErrorTitle": "Anfrage fehlgeschlagen",
         "requestCreateErrorMessage": "Die Anfrage konnte nicht erstellt werden. Bitte versuche es erneut.",
         "requestOpeningIntro": "fragt für das Angebot",
+        "requestOpeningSuffix": "eine unverbindliche Anfrage an.",
+        "requestOpeningPetsHeading": "Folgende Tiere sollen betreut werden ({count}) :",
         "requestOpeningPetsPrefix": "mit Haustieren"
       }
     }
@@ -638,7 +628,8 @@
         "flow": "Ablauf",
         "dayStructure": "Tagesstruktur",
         "description": "Beschreibung",
-        "price": "Preis pro Tag",
+        "price": "Preis (€/Tag)",
+        "priceTotal": "Gesamtpreis",
         "city": "Betreuungsort",
         "species": "Betreute Tierarten",
         "services": "Leistungen",
@@ -651,7 +642,7 @@
         "flow": "Beschreibe den Ablauf",
         "dayStructure": "Beschreibe die Tagesstruktur",
         "description": "Beschreibe Ablauf, Tagesstruktur und besondere Stärken",
-        "price": "Preis in €",
+        "price": "Preis in €/Tag",
         "city": "Betreuungsort auswählen",
         "services": "Leistungen, mit Komma getrennt"
       },
@@ -741,7 +732,7 @@
       "openOfferAction": "Angebot öffnen",
       "proposalAction": "Buchungsangebot",
       "proposalModalTitle": "Buchungsangebot erstellen",
-      "proposalModalHint": "Lege Zeitraum, Preis und Tierarten für dein verhandelbares Angebot fest.",
+      "proposalModalHint": "Gib deinen Preis in €/Tag an. Der Gesamtpreis wird automatisch für die Angebotsdauer berechnet.",
       "proposalModalCloseAria": "Buchungsangebot-Dialog schließen",
       "proposalModalSubmit": "Buchungsangebot senden",
       "proposalModalCancel": "Abbrechen",
@@ -760,7 +751,10 @@
       "proposalLabels": {
         "startDate": "Start",
         "endDate": "Ende",
+        "pricePerDay": "Preis (€/Tag)",
         "priceTotal": "Gesamtpreis",
+        "offerExpectationPerDay": "Preisvorstellung (€/Tag)",
+        "offerExpectationTotal": "Preisvorstellung gesamt",
         "petSpecies": "Tierarten",
         "petCount": "Tiere",
         "note": "Notiz"
@@ -780,12 +774,19 @@
         "closeSuccessTitle": "Chat beendet",
         "closeSuccessMessage": "Der Chat wurde erfolgreich beendet.",
         "closeErrorTitle": "Chat konnte nicht beendet werden",
-        "closeErrorMessage": "Der Chat konnte nicht beendet werden."
+        "closeErrorMessage": "Der Chat konnte nicht beendet werden.",
+        "reopenSuccessTitle": "Chat erneut geöffnet",
+        "reopenSuccessMessage": "Der Chat wurde erneut geöffnet.",
+        "reopenErrorTitle": "Chat konnte nicht erneut geöffnet werden",
+        "reopenErrorMessage": "Der Chat konnte nicht erneut geöffnet werden."
       },
       "closeChatAction": "Chat beenden",
+      "reopenChatAction": "Chat erneut öffnen",
       "closeChatConfirm": "Möchtest du diesen Chat wirklich beenden?",
       "chatClosedLabel": "Beendet",
       "chatClosedNotice": "Dieser Chat wurde beendet.",
+      "chatAutoDeleteCountdownTemplate": "Automatische Löschung in {countdown}.",
+      "chatAutoDeleteExpired": "Dieser Chat wird jetzt automatisch gelöscht.",
       "chatClosedComposer": "Dieser Chat wurde beendet. Du kannst keine neuen Nachrichten oder Buchungsangebote mehr senden."
     }
   },
