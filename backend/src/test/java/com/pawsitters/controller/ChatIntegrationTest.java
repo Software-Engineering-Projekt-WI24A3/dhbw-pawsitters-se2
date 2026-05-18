@@ -267,23 +267,23 @@ class ChatIntegrationTest {
         String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
         String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
 
-        Long offerId = createPublishedOffer(hostToken, List.of("DOG"), "2005-08-12", "2005-08-13");
+        Long offerId = createPublishedOffer(hostToken, List.of("DOG"), "2026-07-01", "2026-07-02");
         Long chatId = createChat(requesterToken, offerId);
 
         mockMvc.perform(post("/api/chats/{id}/booking-proposals", chatId)
                         .header("Authorization", "Bearer " + requesterToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildBookingProposalPayload(
-                                "2005-08-12",
-                                "2005-08-12",
+                                "2026-07-01",
+                                "2026-07-01",
                                 "39.90",
                                 1,
                                 "DOG"
                         ))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.startDate").value("2005-08-12"))
-                .andExpect(jsonPath("$.data.endDate").value("2005-08-12"))
+                .andExpect(jsonPath("$.data.startDate").value("2026-07-01"))
+                .andExpect(jsonPath("$.data.endDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.data.status").value("PENDING"));
     }
 
