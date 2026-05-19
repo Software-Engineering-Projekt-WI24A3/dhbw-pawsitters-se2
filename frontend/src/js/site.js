@@ -11955,7 +11955,10 @@ createApp({
             const senderFirstName = typeof value?.senderFirstName === 'string' ? value.senderFirstName.trim() : '';
             const senderLastName = typeof value?.senderLastName === 'string' ? value.senderLastName.trim() : '';
             const rawContent = typeof value?.content === 'string' ? value.content.trim() : '';
-            const parsedOfferRequest = this.parseOfferRequestToken(rawContent);
+            const existingOfferRequest = value?.offerRequest && typeof value.offerRequest === 'object'
+                ? value.offerRequest
+                : null;
+            const parsedOfferRequest = existingOfferRequest || this.parseOfferRequestToken(rawContent);
             const attachments = Array.isArray(value?.attachments)
                 ? value.attachments
                     .map((attachment) => this.normalizeMessagesAttachment(attachment))
