@@ -268,6 +268,8 @@ const hostCities = {
 };
 
 test.describe('Home offers carousel', () => {
+  const HOME_OFFERS_REEL_CARD_COUNT = 7;
+
   test('excludes own published offers when logged in and supports species filter plus center modal', async ({ page }) => {
     await page.setViewportSize({ width: 1360, height: 920 });
     const latestRequestUrls = [];
@@ -367,7 +369,9 @@ test.describe('Home offers carousel', () => {
     await page.goto('/?locale=de');
 
     await expect(page.getByText(token('de', 'home.page.headingPrefix'))).toBeVisible();
-    await expect(page.locator('.home_offers_reel__card')).toHaveCount(5);
+    await expect(page.locator('.home_offers_reel__card')).toHaveCount(HOME_OFFERS_REEL_CARD_COUNT);
+    await expect(page.locator('.home_offers_reel__card--left-3')).toHaveCount(1);
+    await expect(page.locator('.home_offers_reel__card--right-3')).toHaveCount(1);
     await expect(page.locator('.home_offers_reel__card--left-2')).toHaveCount(1);
     await expect(page.locator('.home_offers_reel__card--right-2')).toHaveCount(1);
     await expect(page.locator('.home_offer_slide--interactive')).toHaveCount(1);
@@ -508,7 +512,7 @@ test.describe('Home offers carousel', () => {
     await page.goto('/?locale=de');
 
     await expect(page.locator('.home_offers_reel__card--center .home_offer_slide__title')).toHaveText('Eigenes Hundesitting');
-    await expect(page.locator('.home_offers_reel__card')).toHaveCount(5);
+    await expect(page.locator('.home_offers_reel__card')).toHaveCount(HOME_OFFERS_REEL_CARD_COUNT);
     await expect(page.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
     await expect.poll(
       () => latestRequestUrls.every((url) => !new URL(url).searchParams.has('excludeHostId'))
