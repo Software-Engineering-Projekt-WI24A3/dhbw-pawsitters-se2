@@ -4,11 +4,47 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updates for the previous merge 4.4.3">
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-offers-carousel.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tests/e2e/home-search-results.e2e.spec.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tests/e2e/home-search-results.e2e.spec.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/orga/TEST_DOCUMENTATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/orga/TEST_DOCUMENTATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ApiExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ApiExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/HostReview.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/model/HostReview.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/HostReviewRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/HostReviewRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials 2.http" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CompleteBooking.http" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CompleteBooking.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/db/manual/fix-host-profile-schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/db/manual/fix-host-profile-schema.sql" afterDir="false" />
+    <list default="true" id="25f87486-9dbf-4007-a092-f04fdd7fabb6" name="Changes" comment="updates for the previous merge 4.4.1">
+      <change afterPath="$PROJECT_DIR$/frontend/src/media/2709.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/controller/ChatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/BookingProposalCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/BookingProposalCreateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/ChatResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/dto/ChatResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/BookingProposalRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/BookingProposalRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/ChatMessageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/ChatMessageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/ChatRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/ChatRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/MessageAttachmentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/repository/MessageAttachmentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/BookingProposalService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatRealtimeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatRealtimeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/pawsitters/service/ChatService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/ChatIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/controller/ChatIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/ChatRealtimeServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/pawsitters/service/ChatRealtimeServiceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/de.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/de.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/en.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/locales/ro.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/locales/ro.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/tailwind/site.components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout-no-footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/messages.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/messages.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/my-offers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/pages/search.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/pages/search.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/my-pets-modals.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/my-pets-modals.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/partials/offer-details-modal.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/partials/offer-details-modal.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +88,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1128" />
+    <option name="cachedIndexableFilesCount" value="737" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -67,7 +103,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="j_feature_Availability" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -104,7 +140,7 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawOffer.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthSession.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" environment="server" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateNewChat.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SendChatMessage.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetChats.http" environment="server" />
@@ -114,15 +150,20 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostProfile.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostStats.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/UploadHostGalleryImage.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateBookingProposal.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateBookingProposal.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/WithdrawBookingProposal.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/AcceptBookingProposal.http" environment="server" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/DeclineBookingProposal.http" environment="dev" />
-    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookings.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookings.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookingHistory.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetActiveBookings.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CompleteBooking.http" environment="dev" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateAvailability.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/SearchMarketplaceOffers.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetLatestMarketplaceOffers.http" environment="server" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostOffers.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostReviews.http" environment="dev" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateReview.http" environment="dev" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -220,45 +261,61 @@
       <recent name="C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\resources\API_Calls" />
     </key>
   </component>
-  <component name="RunManager" selected="HTTP Request.CreateBookingProposal | Create booking proposal in chat">
-    <configuration name="AuthLogin | Login (Auth)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin.http" executionIdentifier="Login (Auth)" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="AuthLogin2ndCredentials | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/AuthLogin2ndCredentials.http" executionIdentifier="#1" runType="Run single request">
-      <method v="2" />
-    </configuration>
-    <configuration name="CreateAvailability | Create single availability" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateAvailability.http" executionIdentifier="Create single availability" runType="Run single request">
-      <method v="2" />
-    </configuration>
+  <component name="RunDashboard">
+    <option name="configurationStatuses">
+      <map>
+        <entry key="HttpClient.HttpRequestRunConfigurationType">
+          <value>
+            <map>
+              <entry key="CreateBookingProposal | Create booking proposal in chat" value="STOPPED" />
+              <entry key="CreateReview | Create review for a completed booking" value="STOPPED" />
+              <entry key="GetBookingHistory | Get completed booking history for current user" value="STOPPED" />
+              <entry key="GetBookings | Get active bookings for current user (compatibility endpoint)" value="STOPPED" />
+              <entry key="GetHostReviews | Bewertungen eines Gastgebers abrufen" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager" selected="HTTP Request.GetHostReviews | Bewertungen eines Gastgebers abrufen">
     <configuration name="CreateBookingProposal | Create booking proposal in chat" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateBookingProposal.http" executionIdentifier="Create booking proposal in chat" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="PawsittersApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
-      <module name="pawsitters" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.pawsitters.PawsittersApplication" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.pawsitters.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
+    <configuration name="CreateReview | Create review for a completed booking" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/CreateReview.http" executionIdentifier="Create review for a completed booking" runType="Run single request">
+      <method v="2" />
     </configuration>
+    <configuration name="GetBookingHistory | Get completed booking history for current user" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookingHistory.http" executionIdentifier="Get completed booking history for current user" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="GetBookings | Get active bookings for current user (compatibility endpoint)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetBookings.http" executionIdentifier="Get active bookings for current user (compatibility endpoint)" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="GetHostReviews | Bewertungen eines Gastgebers abrufen" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/resources/API_Calls/GetHostReviews.http" executionIdentifier="Bewertungen eines Gastgebers abrufen" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="HTTP Request.CreateBookingProposal | Create booking proposal in chat" />
+      <item itemvalue="HTTP Request.CreateReview | Create review for a completed booking" />
+      <item itemvalue="HTTP Request.GetBookingHistory | Get completed booking history for current user" />
+      <item itemvalue="HTTP Request.GetBookings | Get active bookings for current user (compatibility endpoint)" />
+      <item itemvalue="HTTP Request.GetHostReviews | Bewertungen eines Gastgebers abrufen" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="HTTP Request.GetHostReviews | Bewertungen eines Gastgebers abrufen" />
+        <item itemvalue="HTTP Request.CreateReview | Create review for a completed booking" />
+        <item itemvalue="HTTP Request.GetBookingHistory | Get completed booking history for current user" />
         <item itemvalue="HTTP Request.CreateBookingProposal | Create booking proposal in chat" />
-        <item itemvalue="HTTP Request.CreateAvailability | Create single availability" />
-        <item itemvalue="HTTP Request.AuthLogin2ndCredentials | #1" />
-        <item itemvalue="HTTP Request.AuthLogin | Login (Auth)" />
+        <item itemvalue="HTTP Request.GetBookings | Get active bookings for current user (compatibility endpoint)" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
       </set>
     </attachedChunks>
   </component>
@@ -300,7 +357,7 @@
       <workItem from="1779021008511" duration="714000" />
       <workItem from="1779024918539" duration="2181000" />
       <workItem from="1779047949704" duration="314000" />
-      <workItem from="1779118860353" duration="5573000" />
+      <workItem from="1779118860353" duration="4625000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add JWT authentication with registration and login endpoints">
       <option name="closed" value="true" />
@@ -470,15 +527,7 @@
       <option name="project" value="LOCAL" />
       <updated>1779118900930</updated>
     </task>
-    <task id="LOCAL-00022" summary="updates for the previous merge 4.4.3">
-      <option name="closed" value="true" />
-      <created>1779136345080</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1779136345080</updated>
-    </task>
-    <option name="localTasksCounter" value="23" />
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -512,13 +561,10 @@
     <MESSAGE value="r" />
     <MESSAGE value="Merge branch 'j_feature_chatting' into develop" />
     <MESSAGE value="prompt update" />
-    <MESSAGE value="updates for the previous merge 4.1" />
     <MESSAGE value="ergänzungen zum chat update" />
     <MESSAGE value="feat(booking): add chat-based booking proposals&#10;&#10;- add BookingProposal domain with accept, decline and withdraw flows&#10;- support multiple pet species per proposal&#10;- validate pet count against selected species&#10;- expose accepted bookings via GET /api/bookings&#10;- update OpenAPI, HTTP requests and booking tests" />
     <MESSAGE value="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow" />
-    <MESSAGE value="updates for the previous merge 4.4.2" />
-    <MESSAGE value="updates for the previous merge 4.4.3" />
-    <option name="LAST_COMMIT_MESSAGE" value="updates for the previous merge 4.4.3" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add booking status tracking endpoints&#10;&#10;- add active and history booking endpoints&#10;- allow accepted bookings to be marked as completed&#10;- move completed bookings out of active bookings into history&#10;- migrate MySQL booking status column away from enum&#10;- update HTTP request examples and OpenAPI documentation&#10;- add integration coverage for active-to-history flow" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -1,0 +1,4 @@
+### Bewertungen eines Gastgebers abrufen
+GET {{baseUrl}}/api/hosts/5/reviews
+
+###

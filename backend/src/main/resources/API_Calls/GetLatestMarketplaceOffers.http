@@ -1,0 +1,4 @@
+### Neueste veroeffentlichte Marketplace-Angebote abrufen
+GET {{baseUrl}}/api/marketplace/offers/latest?limit=5
+
+###

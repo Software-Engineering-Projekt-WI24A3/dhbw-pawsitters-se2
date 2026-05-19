@@ -1,0 +1,4 @@
+### Veroeffentlichte Angebote eines Gastgebers abrufen
+GET {{baseUrl}}/api/offers/host/2
+
+###
