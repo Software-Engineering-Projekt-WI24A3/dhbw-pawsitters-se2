@@ -73,14 +73,14 @@ const HOME_HERO_SLIDES = [
     },
     {
         id: 'summer',
-        imageUrl: 'https://www.sir-peter-morgan.de/wp-content/uploads/2022/09/Sir-peter-morgan-Stadtrallye-Frankfurt-Roemer-02.jpg',
+        imageUrl: 'https://palaissommer.de/wp-content/uploads/2022/08/220721_Palaissommer_FK_Opening_Konzert_full-6155.jpg',
         searchQuery: {
             preset: 'SUMMER_RANGE'
         }
     },
     {
         id: 'frankfurt',
-        imageUrl: 'https://entwicklungsstadt.de/wp-content/uploads/2025/06/Frankfurter-Roemer-%C2%A9-Foto-Depositphotos.com-2.jpg',
+        imageUrl: 'https://www.sir-peter-morgan.de/wp-content/uploads/2022/09/Sir-peter-morgan-Stadtrallye-Frankfurt-Roemer-02.jpg',
         searchQuery: {
             city: 'Frankfurt am Main',
             postalCode: '60559'
