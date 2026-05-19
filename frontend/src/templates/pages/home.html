@@ -3,6 +3,74 @@
       xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: shell(#{meta.home.title}, #{meta.home.description}, ${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, 'page-home', ~{::content})}">
 <th:block th:fragment="content">
+    <section class="home_discovery_hero"
+             @mouseenter="setHomeHeroAutoplayPaused(true)"
+             @mouseleave="setHomeHeroAutoplayPaused(false)"
+             @focusin="setHomeHeroAutoplayPaused(true)"
+             @focusout="handleHomeHeroFocusOut($event)">
+        <div class="home_discovery_hero__viewport"
+             role="region"
+             :aria-label="homeStrings.hero.carouselAria">
+            <article v-for="(slide, index) in homeHeroSlidesWithLinks"
+                     :key="'home-hero-slide-' + slide.id"
+                     class="home_discovery_hero__slide"
+                     :class="homeHeroSlideClass(index)"
+                     :aria-hidden="homeHeroSafeActiveSlideIndex !== index ? 'true' : 'false'">
+                <img class="home_discovery_hero__image"
+                     :src="slide.imageUrl"
+                     :alt="slide.title"
+                     loading="eager">
+                <div class="home_discovery_hero__scrim" aria-hidden="true"></div>
+
+                <div class="home_discovery_hero__copy">
+                    <h2 class="home_discovery_hero__title" v-text="slide.title"></h2>
+                    <p class="home_discovery_hero__description" v-text="slide.description"></p>
+                    <a class="home_discovery_hero__link"
+                       :href="slide.searchPath"
+                       :tabindex="homeHeroSafeActiveSlideIndex === index ? null : '-1'"
+                       v-text="slide.linkLabel"></a>
+                </div>
+            </article>
+
+            <div class="home_discovery_hero__controls">
+                <button class="my_offers_carousel__nav my_offers_carousel__nav--prev"
+                        type="button"
+                        @click="navigateHomeHeroSlides(-1)"
+                        :aria-label="homeStrings.hero.actions.previous">
+                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                        <path d="M9.9 3.6 5.5 8l4.4 4.4"></path>
+                    </svg>
+                </button>
+
+                <div class="home_discovery_hero__dots" role="tablist" :aria-label="homeStrings.hero.carouselAria">
+                    <button v-for="(slide, index) in homeHeroSlidesWithLinks"
+                            :key="'home-hero-dot-' + slide.id"
+                            class="home_discovery_hero__dot"
+                            :class="{ 'home_discovery_hero__dot--active': index === homeHeroSafeActiveSlideIndex }"
+                            type="button"
+                            role="tab"
+                            :aria-selected="index === homeHeroSafeActiveSlideIndex ? 'true' : 'false'"
+                            @click="setHomeHeroSlide(index)">
+                        <span class="sr-only" v-text="slide.title"></span>
+                    </button>
+                </div>
+
+                <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
+                        type="button"
+                        @click="navigateHomeHeroSlides(1)"
+                        :aria-label="homeStrings.hero.actions.next">
+                    <svg class="my_offers_carousel__nav_icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                        <path d="m6.1 3.6 4.4 4.4-4.4 4.4"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="home_discovery_hero__search_dock">
+            <th:block th:replace="~{partials/header-search :: searchWidget}"></th:block>
+        </div>
+    </section>
+
     <section class="home_offers_view"
              data-home-view
              th:attr="data-home-loading-label=#{home.page.loading},
@@ -13,6 +81,18 @@
                       data-home-all-species-label=#{home.page.allSpeciesLabel},
                       data-home-species-dropdown-aria=#{home.page.speciesDropdownAria},
                       data-home-carousel-aria=#{home.page.carouselAria},
+                      data-home-hero-carousel-aria=#{home.page.hero.carouselAria},
+                      data-home-hero-action-previous=#{home.page.hero.actions.previous},
+                      data-home-hero-action-next=#{home.page.hero.actions.next},
+                      data-home-hero-helsinki-title=#{home.page.hero.slides.helsinki.title},
+                      data-home-hero-helsinki-description=#{home.page.hero.slides.helsinki.description},
+                      data-home-hero-helsinki-link-label=#{home.page.hero.slides.helsinki.linkLabel},
+                      data-home-hero-summer-title=#{home.page.hero.slides.summer.title},
+                      data-home-hero-summer-description=#{home.page.hero.slides.summer.description},
+                      data-home-hero-summer-link-label=#{home.page.hero.slides.summer.linkLabel},
+                      data-home-hero-frankfurt-title=#{home.page.hero.slides.frankfurt.title},
+                      data-home-hero-frankfurt-description=#{home.page.hero.slides.frankfurt.description},
+                      data-home-hero-frankfurt-link-label=#{home.page.hero.slides.frankfurt.linkLabel},
                       data-home-untitled-offer=#{home.page.untitledOffer},
                       data-home-open-details-template=#{home.page.openDetailsTemplate},
                       data-home-modal-close-aria=#{home.page.modal.closeAria},

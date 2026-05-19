@@ -55,12 +55,38 @@ const MODAL_SIMPLE_CONTENT_MAX_WIDTH_PX = 464;
 const MODAL_FORM_MIN_WIDTH_PX = 512;
 const MODAL_FORM_WIDE_MIN_WIDTH_PX = 608;
 const ROUTE_GUARD_REGISTER_PATTERN = /^\/(?:(?:de|en|ro)\/)?register$/i;
+const ROUTE_GUARD_HOME_PATTERN = /^\/(?:(?:de|en|ro))?$/i;
 const ROUTE_GUARD_PROFILE_BASE_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile$/i;
 const ROUTE_GUARD_MY_PETS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-pets$/i;
 const ROUTE_GUARD_MY_OFFERS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/my-offers$/i;
 const ROUTE_GUARD_MESSAGES_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/messages$/i;
 const ROUTE_GUARD_SETTINGS_PATTERN = /^\/(?:(?:de|en|ro)\/)?profile\/settings$/i;
 const ROUTE_GUARD_SEARCH_PATTERN = /^\/(?:(?:de|en|ro)\/)?search(?:\/[^/?#]+)?$/i;
+const HOME_HERO_AUTOPLAY_INTERVAL_MS = 6800;
+const HOME_HERO_SLIDES = [
+    {
+        id: 'helsinki',
+        imageUrl: 'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Helsinki-1.jpg',
+        searchQuery: {
+            city: 'Helsinki'
+        }
+    },
+    {
+        id: 'summer',
+        imageUrl: 'https://www.sir-peter-morgan.de/wp-content/uploads/2022/09/Sir-peter-morgan-Stadtrallye-Frankfurt-Roemer-02.jpg',
+        searchQuery: {
+            preset: 'SUMMER_RANGE'
+        }
+    },
+    {
+        id: 'frankfurt',
+        imageUrl: 'https://entwicklungsstadt.de/wp-content/uploads/2025/06/Frankfurter-Roemer-%C2%A9-Foto-Depositphotos.com-2.jpg',
+        searchQuery: {
+            city: 'Frankfurt am Main',
+            postalCode: '60559'
+        }
+    }
+];
 const DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/pawsitters-scene.svg';
 const LEGACY_DEFAULT_PROFILE_PICTURE_PATH = '/assets/media/favicon.png';
 const HEADER_SEARCH_CITY_FEATURE_CODES = new Set([
@@ -2185,6 +2211,87 @@ function decodeUtf8Base64(value = '') {
     }
 }
 
+if (document.body?.classList?.contains('page-home')) {
+    const heroSearchElement = document.querySelector('.home_discovery_hero__search_dock [data-header-search]');
+    const headerSearchElement = document.querySelector('#site-shell-header [data-header-search]');
+    if (heroSearchElement && headerSearchElement && heroSearchElement !== headerSearchElement) {
+        headerSearchElement.remove();
+    }
+
+    const homeOffersRuntimeStyle = document.documentElement?.style || null;
+    const clearHomeOffersHeadingRuntimeSpacing = () => {
+        if (!homeOffersRuntimeStyle) {
+            return;
+        }
+        homeOffersRuntimeStyle.removeProperty('--home-offers-top-gap-adjust-runtime');
+        homeOffersRuntimeStyle.removeProperty('--home-offers-heading-gap-adjust-runtime');
+    };
+    const syncHomeOffersHeadingRuntimeSpacing = () => {
+        if (!homeOffersRuntimeStyle) {
+            return;
+        }
+
+        clearHomeOffersHeadingRuntimeSpacing();
+
+        const searchShellElement = document.querySelector('.home_discovery_hero__search_dock .header_search_shell');
+        const headingElement = document.querySelector('[data-home-view] .home_offers_heading');
+        const centerCardElement = document.querySelector('[data-home-view] .home_offers_reel__card--center .home_offer_slide');
+        if (!searchShellElement || !headingElement || !centerCardElement) {
+            clearHomeOffersHeadingRuntimeSpacing();
+            return;
+        }
+
+        const searchShellRect = searchShellElement.getBoundingClientRect();
+        const headingRect = headingElement.getBoundingClientRect();
+        const centerCardRect = centerCardElement.getBoundingClientRect();
+        const topGap = headingRect.top - searchShellRect.bottom;
+        const bottomGap = centerCardRect.top - headingRect.bottom;
+        if (!Number.isFinite(topGap) || !Number.isFinite(bottomGap) || topGap <= 0 || bottomGap <= 0) {
+            clearHomeOffersHeadingRuntimeSpacing();
+            return;
+        }
+
+        // Keep both gaps equal and reduce both to half of the current average spacing.
+        const targetGap = Math.max(0, (topGap + bottomGap) / 4);
+        const topGapAdjustment = targetGap - topGap;
+        const bottomGapAdjustment = targetGap - bottomGap;
+        homeOffersRuntimeStyle.setProperty('--home-offers-top-gap-adjust-runtime', `${topGapAdjustment.toFixed(3)}px`);
+        homeOffersRuntimeStyle.setProperty('--home-offers-heading-gap-adjust-runtime', `${bottomGapAdjustment.toFixed(3)}px`);
+    };
+
+    let homeOffersHeadingSpacingFrame = 0;
+    const scheduleHomeOffersHeadingRuntimeSpacingSync = () => {
+        if (homeOffersHeadingSpacingFrame > 0 || typeof window === 'undefined') {
+            return;
+        }
+        homeOffersHeadingSpacingFrame = window.requestAnimationFrame(() => {
+            homeOffersHeadingSpacingFrame = 0;
+            syncHomeOffersHeadingRuntimeSpacing();
+        });
+    };
+
+    window.addEventListener('resize', scheduleHomeOffersHeadingRuntimeSpacingSync, { passive: true });
+    window.addEventListener('load', scheduleHomeOffersHeadingRuntimeSpacingSync, { once: true });
+
+    if (typeof MutationObserver === 'function') {
+        const homeViewObserverRoot = document.querySelector('[data-home-view]');
+        if (homeViewObserverRoot) {
+            const observer = new MutationObserver(() => {
+                scheduleHomeOffersHeadingRuntimeSpacingSync();
+            });
+            observer.observe(homeViewObserverRoot, {
+                subtree: true,
+                childList: true,
+                attributes: true
+            });
+        }
+    }
+
+    scheduleHomeOffersHeadingRuntimeSpacingSync();
+    window.setTimeout(scheduleHomeOffersHeadingRuntimeSpacingSync, 140);
+    window.setTimeout(scheduleHomeOffersHeadingRuntimeSpacingSync, 520);
+}
+
 const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
@@ -2568,6 +2675,30 @@ const localizedHomeStrings = {
     actions: {
         previous: homeDataRoot?.dataset.homeActionPrevious || '',
         next: homeDataRoot?.dataset.homeActionNext || ''
+    },
+    hero: {
+        carouselAria: homeDataRoot?.dataset.homeHeroCarouselAria || homeDataRoot?.dataset.homeCarouselAria || '',
+        actions: {
+            previous: homeDataRoot?.dataset.homeHeroActionPrevious || homeDataRoot?.dataset.homeActionPrevious || '',
+            next: homeDataRoot?.dataset.homeHeroActionNext || homeDataRoot?.dataset.homeActionNext || ''
+        },
+        slides: {
+            helsinki: {
+                title: homeDataRoot?.dataset.homeHeroHelsinkiTitle || '',
+                description: homeDataRoot?.dataset.homeHeroHelsinkiDescription || '',
+                linkLabel: homeDataRoot?.dataset.homeHeroHelsinkiLinkLabel || ''
+            },
+            summer: {
+                title: homeDataRoot?.dataset.homeHeroSummerTitle || '',
+                description: homeDataRoot?.dataset.homeHeroSummerDescription || '',
+                linkLabel: homeDataRoot?.dataset.homeHeroSummerLinkLabel || ''
+            },
+            frankfurt: {
+                title: homeDataRoot?.dataset.homeHeroFrankfurtTitle || '',
+                description: homeDataRoot?.dataset.homeHeroFrankfurtDescription || '',
+                linkLabel: homeDataRoot?.dataset.homeHeroFrankfurtLinkLabel || ''
+            }
+        }
     },
     latest: {
         heading: homeDataRoot?.dataset.homeLatestHeading || '',
@@ -3100,6 +3231,16 @@ createApp({
             homeLatestViewportWidth: typeof window !== 'undefined' && Number.isFinite(window.innerWidth)
                 ? window.innerWidth
                 : 1280,
+            homeHeroSlides: HOME_HERO_SLIDES.map((slide) => ({
+                id: slide.id,
+                imageUrl: slide.imageUrl,
+                searchQuery: {
+                    ...(slide.searchQuery || {})
+                }
+            })),
+            homeHeroActiveSlideIndex: 0,
+            homeHeroAutoplayHandle: null,
+            homeHeroAutoplayPaused: false,
             homeOfferDetailModalOpen: false,
             homeOfferDetailOfferId: null,
             homeOfferHostCityByHostId: {},
@@ -3493,6 +3634,10 @@ createApp({
                 .slice(0, 70);
         },
         headerSearchCompactMode() {
+            if (this.isHomePath(window.location.pathname)) {
+                return false;
+            }
+
             return this.headerCenterTab === 'discover'
                 && this.headerScrollProgress >= 0.52
                 && !this.headerSearchInteractionExpanded;
@@ -4399,6 +4544,39 @@ createApp({
             );
             return offers[safeIndex] || null;
         },
+        homeHeroSlideCount() {
+            const slides = Array.isArray(this.homeHeroSlides) ? this.homeHeroSlides : [];
+            return slides.length;
+        },
+        homeHeroSafeActiveSlideIndex() {
+            const slideCount = this.homeHeroSlideCount;
+            if (!slideCount) {
+                return 0;
+            }
+
+            const normalizedIndex = Number.isFinite(Number(this.homeHeroActiveSlideIndex))
+                ? Math.round(Number(this.homeHeroActiveSlideIndex))
+                : 0;
+            const wrappedIndex = ((normalizedIndex % slideCount) + slideCount) % slideCount;
+            return wrappedIndex;
+        },
+        homeHeroSlidesWithLinks() {
+            const slides = Array.isArray(this.homeHeroSlides) ? this.homeHeroSlides : [];
+            const localizedHeroSlides = this.homeStrings?.hero?.slides || {};
+            return slides.map((slide) => ({
+                ...slide,
+                title: typeof localizedHeroSlides?.[slide.id]?.title === 'string'
+                    ? localizedHeroSlides[slide.id].title
+                    : '',
+                description: typeof localizedHeroSlides?.[slide.id]?.description === 'string'
+                    ? localizedHeroSlides[slide.id].description
+                    : '',
+                linkLabel: typeof localizedHeroSlides?.[slide.id]?.linkLabel === 'string'
+                    ? localizedHeroSlides[slide.id].linkLabel
+                    : '',
+                searchPath: this.buildHomeHeroSearchPath(slide.searchQuery || {})
+            }));
+        },
         homeCarouselRenderItems() {
             const offers = Array.isArray(this.homeFilteredOffers) ? this.homeFilteredOffers : [];
             if (!offers.length) {
@@ -5109,7 +5287,7 @@ createApp({
                 this.syncMessagesQueryChat(nextChatId);
                 this.loadMessagesForChat(nextChatId, { force: false });
                 nextTick(() => {
-                    this.scrollMessagesThreadToBottom({ force: true });
+                    this.scrollMessagesThreadToBottom({ force: true, settleFrames: 4 });
                     this.focusMessagesComposerInput({ preventScroll: true });
                 });
                 return;
@@ -5170,6 +5348,24 @@ createApp({
             }
 
             this.prefetchHomeLatestVisibleHostCities();
+        },
+        homeHeroSlides(nextValue) {
+            if (!Array.isArray(nextValue) || !nextValue.length) {
+                this.homeHeroActiveSlideIndex = 0;
+                this.stopHomeHeroAutoplay();
+                return;
+            }
+
+            const maxIndex = nextValue.length - 1;
+            if (!Number.isFinite(Number(this.homeHeroActiveSlideIndex))) {
+                this.homeHeroActiveSlideIndex = 0;
+                return;
+            }
+
+            const safeIndex = Math.min(Math.max(0, Math.round(Number(this.homeHeroActiveSlideIndex))), maxIndex);
+            if (safeIndex !== this.homeHeroActiveSlideIndex) {
+                this.homeHeroActiveSlideIndex = safeIndex;
+            }
         },
         authSessionUserId(nextValue, previousValue) {
             if (nextValue === previousValue) {
@@ -5329,6 +5525,7 @@ createApp({
         this.clearMyOffersCitySearchRuntime();
         this.clearSettingsCitySearchRuntime();
         this.clearSettingsCityLookupRuntime();
+        this.stopHomeHeroAutoplay();
         this.closeMessagesProposalModal();
         this.closeMessagesImageModal();
         this.clearMessagesComposerAttachments();
@@ -6023,11 +6220,159 @@ createApp({
                 [value]: nextCount
             };
         },
+        getHomeHeroSlideRelativeOffset(index, totalCount = null) {
+            const normalizedIndex = Number(index);
+            const normalizedCount = Number.isFinite(Number(totalCount))
+                ? Math.max(0, Math.round(Number(totalCount)))
+                : this.homeHeroSlideCount;
+            if (!Number.isInteger(normalizedIndex) || normalizedCount <= 0) {
+                return 0;
+            }
+
+            const safeActiveIndex = this.homeHeroSafeActiveSlideIndex;
+            let offset = normalizedIndex - safeActiveIndex;
+            const halfRange = normalizedCount / 2;
+
+            if (offset > halfRange) {
+                offset -= normalizedCount;
+            } else if (offset < -halfRange) {
+                offset += normalizedCount;
+            }
+
+            return Math.round(offset);
+        },
+        homeHeroSlideClass(index) {
+            const relativeOffset = this.getHomeHeroSlideRelativeOffset(index, this.homeHeroSlideCount);
+            if (relativeOffset === 0) {
+                return 'home_discovery_hero__slide--active';
+            }
+
+            if (relativeOffset === -1) {
+                return 'home_discovery_hero__slide--previous';
+            }
+
+            if (relativeOffset === 1) {
+                return 'home_discovery_hero__slide--next';
+            }
+
+            return relativeOffset < 0
+                ? 'home_discovery_hero__slide--off-left'
+                : 'home_discovery_hero__slide--off-right';
+        },
+        setHomeHeroSlide(index = 0) {
+            const slideCount = this.homeHeroSlideCount;
+            if (!slideCount) {
+                this.homeHeroActiveSlideIndex = 0;
+                return;
+            }
+
+            const normalizedIndex = Number.isFinite(Number(index)) ? Math.round(Number(index)) : 0;
+            const wrappedIndex = ((normalizedIndex % slideCount) + slideCount) % slideCount;
+            this.homeHeroActiveSlideIndex = wrappedIndex;
+        },
+        navigateHomeHeroSlides(direction = 1) {
+            const slideCount = this.homeHeroSlideCount;
+            if (slideCount <= 1) {
+                this.homeHeroActiveSlideIndex = 0;
+                return;
+            }
+
+            const normalizedDirection = Number(direction) < 0 ? -1 : 1;
+            const nextIndex = (this.homeHeroSafeActiveSlideIndex + normalizedDirection + slideCount) % slideCount;
+            this.homeHeroActiveSlideIndex = nextIndex;
+        },
+        setHomeHeroAutoplayPaused(paused = true) {
+            this.homeHeroAutoplayPaused = Boolean(paused);
+        },
+        handleHomeHeroFocusOut(event = null) {
+            const currentTarget = event?.currentTarget;
+            const relatedTarget = event?.relatedTarget;
+            if (
+                currentTarget instanceof Element
+                && relatedTarget instanceof Node
+                && currentTarget.contains(relatedTarget)
+            ) {
+                return;
+            }
+
+            this.setHomeHeroAutoplayPaused(false);
+        },
+        stopHomeHeroAutoplay() {
+            if (typeof this.homeHeroAutoplayHandle === 'number') {
+                window.clearInterval(this.homeHeroAutoplayHandle);
+            }
+            this.homeHeroAutoplayHandle = null;
+        },
+        startHomeHeroAutoplay() {
+            this.stopHomeHeroAutoplay();
+
+            if (!homePageRoot || this.homeHeroSlideCount <= 1) {
+                return;
+            }
+
+            this.homeHeroAutoplayHandle = window.setInterval(() => {
+                if (this.homeHeroAutoplayPaused || document.hidden) {
+                    return;
+                }
+
+                this.navigateHomeHeroSlides(1);
+            }, HOME_HERO_AUTOPLAY_INTERVAL_MS);
+        },
+        isHomePath(pathname) {
+            return ROUTE_GUARD_HOME_PATTERN.test(this.normalizeRoutePath(pathname));
+        },
         isSearchPath(pathname) {
             return ROUTE_GUARD_SEARCH_PATTERN.test(this.normalizeRoutePath(pathname));
         },
         readSearchRouteParameter(pathname = window.location.pathname) {
             return parseSearchRouteSegment(pathname);
+        },
+        resolveHomeHeroSummerDateRange(referenceDate = new Date()) {
+            const safeReferenceDate = referenceDate instanceof Date && !Number.isNaN(referenceDate.getTime())
+                ? referenceDate
+                : new Date();
+            const currentMonthIndex = safeReferenceDate.getMonth();
+            const shouldUseNextYear = currentMonthIndex >= 9;
+            const targetYear = safeReferenceDate.getFullYear() + (shouldUseNextYear ? 1 : 0);
+
+            return {
+                fromDate: `${targetYear}-07-01`,
+                toDate: `${targetYear}-09-30`
+            };
+        },
+        buildHomeHeroSearchPath(filters = {}) {
+            const query = new URLSearchParams();
+            query.set('limit', '10');
+
+            const city = typeof filters?.city === 'string' ? filters.city.trim() : '';
+            if (city) {
+                query.set('city', city);
+            }
+
+            const postalCode = normalizePostalCode(filters?.postalCode || '');
+            if (/^\d{5}$/.test(postalCode)) {
+                query.set('postalCode', postalCode);
+            }
+
+            let rawFromDate = filters?.fromDate || '';
+            let rawToDate = filters?.toDate || '';
+            if ((typeof filters?.preset === 'string' ? filters.preset.trim().toUpperCase() : '') === 'SUMMER_RANGE') {
+                const dynamicSummerRange = this.resolveHomeHeroSummerDateRange();
+                rawFromDate = dynamicSummerRange.fromDate;
+                rawToDate = dynamicSummerRange.toDate;
+            }
+
+            const normalizedDateRange = normalizeHeaderSearchDateRange(rawFromDate, rawToDate);
+            if (normalizedDateRange.start) {
+                query.set('fromDate', normalizedDateRange.start);
+            }
+            if (normalizedDateRange.end) {
+                query.set('toDate', normalizedDateRange.end);
+            }
+
+            const routeSegmentSource = city || HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT;
+            const routeParameter = normalizeSearchRouteSegment(routeSegmentSource);
+            return `/search/${encodeURIComponent(routeParameter)}?${query.toString()}`;
         },
         buildHeaderSearchRouteParameter(query = null) {
             const sourceQuery = query instanceof URLSearchParams
@@ -7751,6 +8096,8 @@ createApp({
             this.homeSearchAlternativeCarouselOffset = 0;
             this.homeSearchAlternativeCarouselDirection = 1;
             this.homeLatestViewportWidth = Number.isFinite(window.innerWidth) ? window.innerWidth : 1280;
+            this.homeHeroActiveSlideIndex = 0;
+            this.homeHeroAutoplayPaused = false;
             this.homeOfferHostCityByHostId = {};
             this.homeOfferHostCityLoadingByHostId = {};
             this.homeOfferDetailModalOpen = false;
@@ -7761,6 +8108,7 @@ createApp({
             this.offerRequestSelectedPetIds = [];
             this.offerRequestSubmitting = false;
             this.syncModalBodyLock();
+            this.startHomeHeroAutoplay();
 
             if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
                 try {
@@ -7791,6 +8139,7 @@ createApp({
             this.homeSearchAlternativeCarouselOffset = 0;
             this.homeSearchAlternativeCarouselDirection = 1;
             this.homeLatestViewportWidth = Number.isFinite(window.innerWidth) ? window.innerWidth : 1280;
+            this.stopHomeHeroAutoplay();
             this.homeOfferHostCityByHostId = {};
             this.homeOfferHostCityLoadingByHostId = {};
             this.homeOfferDetailModalOpen = false;
@@ -12109,7 +12458,8 @@ createApp({
             if (activeChatId === normalizedChatId) {
                 nextTick(() => {
                     this.scrollMessagesThreadToBottom({
-                        force: !autoScrollIfNearBottom ? true : this.isMessagesThreadNearBottom()
+                        force: !autoScrollIfNearBottom ? true : this.isMessagesThreadNearBottom(),
+                        settleFrames: autoScrollIfNearBottom ? 1 : 2
                     });
                 });
             }
@@ -12180,7 +12530,7 @@ createApp({
                 }
 
                 nextTick(() => {
-                    this.scrollMessagesThreadToBottom({ force: true });
+                    this.scrollMessagesThreadToBottom({ force: true, settleFrames: 4 });
                 });
             } catch {
                 if (!silent) {
@@ -12204,7 +12554,7 @@ createApp({
             }
             if (normalizedChatId === this.normalizeProfileUserId(this.messagesActiveChatId)) {
                 nextTick(() => {
-                    this.scrollMessagesThreadToBottom({ force: true });
+                    this.scrollMessagesThreadToBottom({ force: true, settleFrames: 4 });
                     this.focusMessagesComposerInput({ preventScroll: true });
                 });
                 return;
@@ -12954,7 +13304,7 @@ createApp({
             const distance = scrollArea.scrollHeight - (scrollArea.scrollTop + scrollArea.clientHeight);
             return distance <= thresholdPx;
         },
-        scrollMessagesThreadToBottom({ force = true } = {}) {
+        scrollMessagesThreadToBottom({ force = true, settleFrames = 2 } = {}) {
             const scrollArea = document.querySelector('[data-messages-thread-scroll]');
             if (!scrollArea) {
                 return;
@@ -12964,7 +13314,35 @@ createApp({
                 return;
             }
 
-            scrollArea.scrollTop = scrollArea.scrollHeight;
+            const applyScrollToBottom = () => {
+                scrollArea.scrollTop = scrollArea.scrollHeight;
+            };
+
+            applyScrollToBottom();
+
+            const normalizedSettleFrames = Number.isInteger(settleFrames)
+                ? Math.max(0, settleFrames)
+                : 0;
+            if (
+                normalizedSettleFrames <= 0
+                || typeof window === 'undefined'
+                || typeof window.requestAnimationFrame !== 'function'
+            ) {
+                return;
+            }
+
+            let framesRemaining = normalizedSettleFrames;
+            const settle = () => {
+                if (framesRemaining <= 0) {
+                    return;
+                }
+                framesRemaining -= 1;
+                window.requestAnimationFrame(() => {
+                    applyScrollToBottom();
+                    settle();
+                });
+            };
+            settle();
         },
         resolveMessagesChatPartnerBase(chat = null) {
             const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);

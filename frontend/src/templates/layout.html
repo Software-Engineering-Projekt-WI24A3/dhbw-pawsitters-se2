@@ -90,7 +90,7 @@
             <g class="site_background__nodes"></g>
         </svg>
     </div>
-    <div th:replace="~{partials/header :: siteHeader(${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath})}"></div>
+    <div th:replace="~{partials/header :: siteHeader(${currentLocale}, ${localeLinks}, ${currentLocaleLabel}, ${currentLocaleCode}, ${currentLocaleFlagPath}, ${pageClass})}"></div>
 
     <transition name="auth_modal_presence">
         <div v-if="loginModalOpen"

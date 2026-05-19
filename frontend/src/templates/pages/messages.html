@@ -247,17 +247,14 @@
                                                        :href="buildProfilePath(message.offerRequest.requesterId)"
                                                        v-text="message.offerRequest.requesterName"></a>
                                                     <span v-else v-text="message.offerRequest.requesterName"></span>
-                                                    <span> </span>
-                                                    <span v-text="message.offerRequest.introText"></span>
-                                                    <span> </span>
-                                                    <span>&quot;</span>
+                                                    <span v-text="' ' + message.offerRequest.introText + ' &quot; '"></span>
                                                     <button class="messages_request_notice__offer_button"
                                                             type="button"
                                                             @click="openOfferDetailModalById(message.offerRequest.offerId)"
                                                             v-text="message.offerRequest.offerTitle"></button>
-                                                    <span>&quot;</span>
-                                                    <span v-if="message.offerRequest.introSuffix"> </span>
-                                                    <span v-text="message.offerRequest.introSuffix"></span>
+                                                    <span v-if="message.offerRequest.introSuffix"
+                                                          v-text="' &quot; ' + message.offerRequest.introSuffix"></span>
+                                                    <span v-else v-text="' &quot;'"></span>
                                                 </p>
                                                 <p v-if="message.offerRequest.petsHeadingText"
                                                    class="messages_request_notice__line"
@@ -269,7 +266,7 @@
                                                         class="messages_request_notice__pet">
                                                         <img class="messages_request_notice__pet_icon"
                                                              :src="pet.iconPath"
-                                                             :alt="pet.speciesLabel"
+                                                             :alt="pet.speciesLabel ? `${pet.speciesLabel} ` : ''"
                                                              loading="lazy"
                                                              decoding="async">
                                                         <button class="messages_request_notice__pet_name messages_request_notice__pet_name_button"
