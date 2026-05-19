@@ -65,6 +65,13 @@ const ROUTE_GUARD_SEARCH_PATTERN = /^\/(?:(?:de|en|ro)\/)?search(?:\/[^/?#]+)?$/
 const HOME_HERO_AUTOPLAY_INTERVAL_MS = 6800;
 const HOME_HERO_SLIDES = [
     {
+        id: 'summer',
+        imageUrl: 'https://images.squarespace-cdn.com/content/v1/5a284ad2e9bfdf71e4cf2053/1563976475832-P4ZCHQ2IDBWZ1AHXIJTI/AdobeStock_198853887.jpeg',
+        searchQuery: {
+            preset: 'SUMMER_RANGE'
+        }
+    },
+    {
         id: 'helsinki',
         imageUrl: 'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Helsinki-1.jpg',
         searchQuery: {
@@ -72,18 +79,20 @@ const HOME_HERO_SLIDES = [
         }
     },
     {
-        id: 'summer',
-        imageUrl: 'https://palaissommer.de/wp-content/uploads/2022/08/220721_Palaissommer_FK_Opening_Konzert_full-6155.jpg',
-        searchQuery: {
-            preset: 'SUMMER_RANGE'
-        }
-    },
-    {
         id: 'frankfurt',
-        imageUrl: 'https://www.sir-peter-morgan.de/wp-content/uploads/2022/09/Sir-peter-morgan-Stadtrallye-Frankfurt-Roemer-02.jpg',
+        imageUrl: 'https://images.musement.com/cover/0064/01/frankfurt-old-town_header-6300753.jpeg',
         searchQuery: {
             city: 'Frankfurt am Main',
             postalCode: '60559'
+        }
+    },
+    {
+        id: 'dresden',
+        imageUrl: 'https://palaissommer.de/wp-content/uploads/2022/08/220721_Palaissommer_FK_Opening_Konzert_full-6155.jpg',
+        searchQuery: {
+            city: 'Dresden',
+            fromDate: '2026-07-01',
+            toDate: '2026-09-30'
         }
     }
 ];
@@ -2212,12 +2221,6 @@ function decodeUtf8Base64(value = '') {
 }
 
 if (document.body?.classList?.contains('page-home')) {
-    const heroSearchElement = document.querySelector('.home_discovery_hero__search_dock [data-header-search]');
-    const headerSearchElement = document.querySelector('#site-shell-header [data-header-search]');
-    if (heroSearchElement && headerSearchElement && heroSearchElement !== headerSearchElement) {
-        headerSearchElement.remove();
-    }
-
     const homeOffersRuntimeStyle = document.documentElement?.style || null;
     const clearHomeOffersHeadingRuntimeSpacing = () => {
         if (!homeOffersRuntimeStyle) {
@@ -2251,8 +2254,8 @@ if (document.body?.classList?.contains('page-home')) {
             return;
         }
 
-        // Keep both gaps equal and reduce both to half of the current average spacing.
-        const targetGap = Math.max(0, (topGap + bottomGap) / 4);
+        // Keep both gaps equal and reduce both by one third from the current runtime spacing.
+        const targetGap = Math.max(0, ((topGap + bottomGap) / 4) * (2 / 3));
         const topGapAdjustment = targetGap - topGap;
         const bottomGapAdjustment = targetGap - bottomGap;
         homeOffersRuntimeStyle.setProperty('--home-offers-top-gap-adjust-runtime', `${topGapAdjustment.toFixed(3)}px`);
@@ -2296,9 +2299,18 @@ const appShellTemplate = document.querySelector('#app-shell')?.innerHTML ?? '';
 const appShellRender = appShellTemplate ? compile(appShellTemplate) : () => null;
 const initialRepository = readRepositoryBootstrap();
 
+function resolvePrimaryHeaderSearchElement() {
+    const homeHeroSearchElement = document.querySelector('.home_discovery_hero__search_dock [data-header-search]');
+    if (homeHeroSearchElement) {
+        return homeHeroSearchElement;
+    }
+
+    return document.querySelector('[data-header-search]');
+}
+
 const appRoot = document.querySelector('#app-shell');
 const playwrightRunnerRoot = document.querySelector('[data-playwright-runner]');
-const headerSearchRoot = document.querySelector('[data-header-search]');
+const headerSearchRoot = resolvePrimaryHeaderSearchElement();
 const authModalFormRoot = document.querySelector('.auth_modal__form');
 const userSearchModalFormRoot = document.querySelector('.user_search_modal__form');
 const registerFormRoot = document.querySelector('.auth_form');
@@ -2697,6 +2709,11 @@ const localizedHomeStrings = {
                 title: homeDataRoot?.dataset.homeHeroFrankfurtTitle || '',
                 description: homeDataRoot?.dataset.homeHeroFrankfurtDescription || '',
                 linkLabel: homeDataRoot?.dataset.homeHeroFrankfurtLinkLabel || ''
+            },
+            dresden: {
+                title: homeDataRoot?.dataset.homeHeroDresdenTitle || '',
+                description: homeDataRoot?.dataset.homeHeroDresdenDescription || '',
+                linkLabel: homeDataRoot?.dataset.homeHeroDresdenLinkLabel || ''
             }
         }
     },
@@ -3389,7 +3406,13 @@ createApp({
             headerScrollProgress: 0,
             headerMotionLowPerformance: false,
             headerScrollProgressPrecision: HEADER_SCROLL_PROGRESS_PRECISION,
+            headerShellElement: null,
             headerSurfaceElement: null,
+            homeHeaderSearchSlotElement: null,
+            homeHeroSearchDockElement: null,
+            homeHeroSearchDockTopBoundary: Number.POSITIVE_INFINITY,
+            homeHeroSearchDockBottomBoundary: Number.NEGATIVE_INFINITY,
+            homeHeaderSearchVisible: false,
             headerSearchTabsResizeObserver: null,
             headerSearchInteractionExpanded: false,
             headerCenterTab: initialHeaderSearchState.headerCenterTab,
@@ -4582,43 +4605,35 @@ createApp({
             if (!offers.length) {
                 return [];
             }
+            const safeActiveIndex = Math.min(
+                Math.max(0, Number.isFinite(this.homeOffersCarouselIndex) ? this.homeOffersCarouselIndex : 0),
+                offers.length - 1
+            );
+            const slotOffsets = [-2, -1, 0, 1, 2];
 
-            const visibleItems = offers
-                .map((offer, index) => {
-                    const relativeOffset = this.getHomeOffersCarouselRelativeOffset(index, offers.length);
-                    const absoluteOffset = Math.abs(relativeOffset);
-                    if (absoluteOffset > 2) {
-                        return null;
-                    }
-
-                    let positionClass = 'home_offers_reel__card--center';
-                    if (relativeOffset === -1) {
-                        positionClass = 'home_offers_reel__card--left-1';
-                    } else if (relativeOffset === -2) {
-                        positionClass = 'home_offers_reel__card--left-2';
-                    } else if (relativeOffset === 1) {
-                        positionClass = 'home_offers_reel__card--right-1';
-                    } else if (relativeOffset === 2) {
-                        positionClass = 'home_offers_reel__card--right-2';
-                    }
-
-                    return {
-                        offer,
-                        index,
-                        relativeOffset,
-                        absoluteOffset,
-                        isCenter: relativeOffset === 0,
-                        positionClass
-                    };
-                })
-                .filter(Boolean);
-
-            return visibleItems.sort((left, right) => {
-                if (left.absoluteOffset !== right.absoluteOffset) {
-                    return right.absoluteOffset - left.absoluteOffset;
+            return slotOffsets.map((relativeOffset, slotIndex) => {
+                const wrappedIndex = ((safeActiveIndex + relativeOffset) % offers.length + offers.length) % offers.length;
+                const offer = offers[wrappedIndex];
+                let positionClass = 'home_offers_reel__card--center';
+                if (relativeOffset === -1) {
+                    positionClass = 'home_offers_reel__card--left-1';
+                } else if (relativeOffset === -2) {
+                    positionClass = 'home_offers_reel__card--left-2';
+                } else if (relativeOffset === 1) {
+                    positionClass = 'home_offers_reel__card--right-1';
+                } else if (relativeOffset === 2) {
+                    positionClass = 'home_offers_reel__card--right-2';
                 }
 
-                return left.relativeOffset - right.relativeOffset;
+                return {
+                    offer,
+                    index: wrappedIndex,
+                    relativeOffset,
+                    absoluteOffset: Math.abs(relativeOffset),
+                    isCenter: relativeOffset === 0,
+                    positionClass,
+                    renderKey: `${wrappedIndex}-${relativeOffset}-${slotIndex}`
+                };
             });
         },
         homeLatestFilteredOffers() {
@@ -5285,11 +5300,24 @@ createApp({
             if (Number.isInteger(nextChatId) && nextChatId > 0) {
                 this.ensureMessagesChatSubscription(nextChatId);
                 this.syncMessagesQueryChat(nextChatId);
-                this.loadMessagesForChat(nextChatId, { force: false });
+                const loadTask = this.loadMessagesForChat(nextChatId, { force: false });
                 nextTick(() => {
                     this.scrollMessagesThreadToBottom({ force: true, settleFrames: 4 });
                     this.focusMessagesComposerInput({ preventScroll: true });
                 });
+                if (loadTask && typeof loadTask.finally === 'function') {
+                    loadTask.finally(() => {
+                        nextTick(() => {
+                            this.scrollMessagesThreadToBottom({ force: true, settleFrames: 6 });
+                            if (typeof window === 'undefined') {
+                                return;
+                            }
+                            window.setTimeout(() => {
+                                this.scrollMessagesThreadToBottom({ force: true, settleFrames: 2 });
+                            }, 120);
+                        });
+                    });
+                }
                 return;
             }
 
@@ -5449,6 +5477,7 @@ createApp({
         }
     },
     mounted() {
+        this.headerShellElement = document.querySelector('#site-shell-header');
         this.headerSurfaceElement = document.querySelector('#site-shell-header .header_surface');
         this.headerMotionLowPerformance = this.shouldUseLowPerformanceHeaderMotion();
         this.headerScrollProgressPrecision = this.headerMotionLowPerformance
@@ -5458,6 +5487,7 @@ createApp({
             this.headerSurfaceElement.classList.toggle('header_surface--fast-scroll', this.headerMotionLowPerformance);
         }
         this.initializeHeaderSearch();
+        this.initializeHomeHeaderSearchReveal();
         this.initializeRepositoryViews();
         this.initializeDropdowns();
         this.initializeModalSurfaceAutoSizing();
@@ -5545,7 +5575,13 @@ createApp({
         }
         headerScrollAnimationState.progress = 0;
         headerScrollAnimationState.appliedProgress = Number.NaN;
+        this.headerShellElement = null;
         this.headerSurfaceElement = null;
+        this.homeHeaderSearchSlotElement = null;
+        this.homeHeroSearchDockElement = null;
+        this.homeHeroSearchDockTopBoundary = Number.POSITIVE_INFINITY;
+        this.homeHeroSearchDockBottomBoundary = Number.NEGATIVE_INFINITY;
+        this.homeHeaderSearchVisible = false;
         document.body.classList.remove('body--modal-open');
     },
     methods: {
@@ -5605,7 +5641,7 @@ createApp({
             });
         },
         initializeHeaderSearch() {
-            const headerSearchElement = document.querySelector('[data-header-search]');
+            const headerSearchElement = resolvePrimaryHeaderSearchElement();
             if (!headerSearchElement) {
                 return;
             }
@@ -5634,8 +5670,135 @@ createApp({
                 }
             }
         },
+        initializeHomeHeaderSearchReveal() {
+            if (!document.body?.classList?.contains('page-home')) {
+                return;
+            }
+
+            this.homeHeaderSearchSlotElement = document.querySelector('[data-home-header-search-slot]');
+            this.homeHeroSearchDockElement = document.querySelector('.home_discovery_hero__search_dock');
+
+            if (!this.homeHeaderSearchSlotElement || !this.homeHeroSearchDockElement) {
+                return;
+            }
+
+            this.homeHeaderSearchVisible = this.homeHeaderSearchSlotElement.classList.contains('is-visible');
+            this.syncHomeHeaderSearchTriggerBounds({ force: true });
+            this.syncHomeHeaderSearchVisibility(Math.max(0, window.scrollY || 0), { force: true });
+
+            this.$nextTick(() => {
+                this.syncHomeHeaderSearchTriggerBounds({ force: true });
+                this.syncHomeHeaderSearchVisibility(Math.max(0, window.scrollY || 0), { force: true });
+            });
+
+            window.setTimeout(() => {
+                this.syncHomeHeaderSearchTriggerBounds({ force: true });
+                this.syncHomeHeaderSearchVisibility(Math.max(0, window.scrollY || 0), { force: true });
+            }, 180);
+        },
+        syncHomeHeaderSearchTriggerBounds(options = {}) {
+            const { force = false } = options;
+            const slotElement = this.homeHeaderSearchSlotElement;
+            const dockElement = this.homeHeroSearchDockElement;
+            if (!slotElement || !dockElement) {
+                return;
+            }
+
+            const dockRect = dockElement.getBoundingClientRect();
+            const scrollY = Math.max(0, window.scrollY || 0);
+            const nextTopBoundary = dockRect.top + scrollY;
+            const nextBottomBoundary = nextTopBoundary + dockRect.height;
+            const canUpdateBoundaries = force || !this.homeHeaderSearchVisible;
+            if (
+                canUpdateBoundaries
+                && Number.isFinite(nextTopBoundary)
+                && Number.isFinite(nextBottomBoundary)
+                && nextBottomBoundary > nextTopBoundary
+            ) {
+                this.homeHeroSearchDockTopBoundary = nextTopBoundary;
+                this.homeHeroSearchDockBottomBoundary = nextBottomBoundary;
+            }
+
+            const searchElement = slotElement.querySelector('.header_search');
+            const searchRectHeight = searchElement ? searchElement.getBoundingClientRect().height : 0;
+            const measuredHeight = Math.ceil(
+                Number(searchElement?.scrollHeight || 0)
+                || Number(searchRectHeight || 0)
+                || 0
+            );
+            if (Number.isFinite(measuredHeight) && measuredHeight > 0) {
+                slotElement.style.setProperty('--home-header-search-height', `${measuredHeight}px`);
+            }
+        },
+        syncHomeHeaderSearchVisibility(scrollY = 0, options = {}) {
+            const slotElement = this.homeHeaderSearchSlotElement;
+            const dockElement = this.homeHeroSearchDockElement;
+            if (!slotElement || !dockElement) {
+                return;
+            }
+
+            const { force = false } = options;
+            this.syncHomeHeaderSearchTriggerBounds();
+            const hasBoundaries = Number.isFinite(this.homeHeroSearchDockTopBoundary)
+                && Number.isFinite(this.homeHeroSearchDockBottomBoundary)
+                && this.homeHeroSearchDockBottomBoundary > this.homeHeroSearchDockTopBoundary;
+            if (!hasBoundaries) {
+                return;
+            }
+
+            const normalizedScrollY = Number.isFinite(Number(scrollY))
+                ? Math.max(0, Number(scrollY))
+                : 0;
+            const headerElement = this.headerShellElement || document.querySelector('#site-shell-header');
+            if (!this.headerShellElement && headerElement instanceof HTMLElement) {
+                this.headerShellElement = headerElement;
+            }
+            const headerBottomBoundary = (() => {
+                if (!(headerElement instanceof HTMLElement)) {
+                    return normalizedScrollY;
+                }
+
+                const headerRect = headerElement.getBoundingClientRect();
+                const documentBoundary = normalizedScrollY + headerRect.bottom;
+                if (!Number.isFinite(documentBoundary)) {
+                    return normalizedScrollY;
+                }
+
+                return Math.max(normalizedScrollY, documentBoundary);
+            })();
+            let nextVisible = this.homeHeaderSearchVisible;
+
+            if (headerBottomBoundary >= this.homeHeroSearchDockBottomBoundary) {
+                nextVisible = true;
+            } else if (headerBottomBoundary <= this.homeHeroSearchDockTopBoundary) {
+                nextVisible = false;
+            }
+
+            if (!force && nextVisible === this.homeHeaderSearchVisible) {
+                return;
+            }
+
+            this.homeHeaderSearchVisible = nextVisible;
+            slotElement.classList.toggle('is-visible', nextVisible);
+            slotElement.setAttribute('aria-hidden', nextVisible ? 'false' : 'true');
+
+            if (!nextVisible) {
+                this.closeHomeHeaderSearchDropdowns();
+            }
+        },
+        closeHomeHeaderSearchDropdowns() {
+            const slotElement = this.homeHeaderSearchSlotElement;
+            if (!slotElement) {
+                return;
+            }
+
+            this.getDropdowns()
+                .filter((details) => this.isHeaderSearchDropdown(details) && slotElement.contains(details))
+                .forEach((details) => this.closeDropdown(details, { immediate: true }));
+            this.syncHeaderSearchInteractionState();
+        },
         syncHeaderSearchTabsGeometry() {
-            const headerSearchElement = document.querySelector('[data-header-search]');
+            const headerSearchElement = resolvePrimaryHeaderSearchElement();
             if (!headerSearchElement) {
                 return;
             }
@@ -6370,9 +6533,18 @@ createApp({
                 query.set('toDate', normalizedDateRange.end);
             }
 
+            if (Number.isInteger(this.authSessionUserId) && this.authSessionUserId > 0) {
+                query.set('excludeHostId', String(this.authSessionUserId));
+            }
+
             const routeSegmentSource = city || HEADER_SEARCH_RESULTS_PATH_FALLBACK_SEGMENT;
             const routeParameter = normalizeSearchRouteSegment(routeSegmentSource);
-            return `/search/${encodeURIComponent(routeParameter)}?${query.toString()}`;
+            const localePrefix = this.extractLocalePrefix(window.location.pathname);
+            const basePath = localePrefix
+                ? `${localePrefix}/search/${encodeURIComponent(routeParameter)}`
+                : `/search/${encodeURIComponent(routeParameter)}`;
+            const targetPath = `${basePath}?${query.toString()}`;
+            return this.resolveLocaleAwareInternalHref(targetPath) || targetPath;
         },
         buildHeaderSearchRouteParameter(query = null) {
             const sourceQuery = query instanceof URLSearchParams
@@ -7607,7 +7779,7 @@ createApp({
                 this.clearAuthSessionIdentity();
                 this.menuOpen = false;
                 this.closeAllDropdowns({ immediate: true });
-                window.location.assign('/');
+                window.location.assign(this.buildHomeRedirectPath());
             } catch {
                 return;
             }
@@ -14444,7 +14616,7 @@ createApp({
             this.clearAuthSessionIdentity();
             this.menuOpen = false;
             this.closeAllDropdowns({ immediate: true });
-            window.location.assign('/');
+            window.location.assign(this.buildHomeRedirectPath());
         },
         async submitSettingsProfileImageReset() {
             if (this.settingsEditSaving || !this.settingsViewUser) {
@@ -15683,6 +15855,100 @@ createApp({
                 return '';
             }
         },
+        shouldHandleManagedNavigationClick(event, anchorElement) {
+            if (!(anchorElement instanceof HTMLAnchorElement)) {
+                return false;
+            }
+
+            if (event?.defaultPrevented) {
+                return false;
+            }
+
+            const target = (anchorElement.getAttribute('target') || '').trim().toLowerCase();
+            if (target && target !== '_self') {
+                return false;
+            }
+
+            if (anchorElement.hasAttribute('download')) {
+                return false;
+            }
+
+            if (event instanceof MouseEvent) {
+                if (event.button !== 0) {
+                    return false;
+                }
+
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+        resolveLocaleAwareInternalHref(href = '') {
+            const rawHref = typeof href === 'string' ? href.trim() : '';
+            if (!rawHref || rawHref.startsWith('#')) {
+                return '';
+            }
+
+            if (/^(?:mailto:|tel:|javascript:|data:)/i.test(rawHref)) {
+                return '';
+            }
+
+            try {
+                const parsed = new URL(rawHref, window.location.origin);
+                if (parsed.origin !== window.location.origin) {
+                    return '';
+                }
+
+                if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                    return '';
+                }
+
+                if (/^\/(?:api|assets)(?:\/|$)/i.test(parsed.pathname)) {
+                    return '';
+                }
+
+                if (this.extractLocalePrefix(parsed.pathname)) {
+                    return '';
+                }
+
+                const explicitLocale = normalizeUiLocaleCode(parsed.searchParams.get('locale') || '');
+                if (explicitLocale) {
+                    return '';
+                }
+
+                const currentLocaleCode = this.resolveCurrentLocaleCode();
+                if (!currentLocaleCode || currentLocaleCode === 'de') {
+                    if (
+                        this.isSearchPath(parsed.pathname)
+                        && !parsed.searchParams.has('excludeHostId')
+                        && Number.isInteger(this.authSessionUserId)
+                        && this.authSessionUserId > 0
+                    ) {
+                        parsed.searchParams.set('excludeHostId', String(this.authSessionUserId));
+                        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+                    }
+
+                    return '';
+                }
+
+                parsed.searchParams.set('locale', currentLocaleCode);
+
+                if (
+                    this.isSearchPath(parsed.pathname)
+                    && !parsed.searchParams.has('excludeHostId')
+                    && Number.isInteger(this.authSessionUserId)
+                    && this.authSessionUserId > 0
+                ) {
+                    parsed.searchParams.set('excludeHostId', String(this.authSessionUserId));
+                }
+
+                return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+            } catch {
+                return '';
+            }
+        },
         buildLocaleSwitchNavigationTarget(targetLocaleCode = '') {
             const normalizedTargetLocaleCode = normalizeUiLocaleCode(targetLocaleCode);
             if (!normalizedTargetLocaleCode) {
@@ -15795,15 +16061,18 @@ createApp({
         },
         buildSettingsPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
-            return localePrefix ? `${localePrefix}/profile/settings` : '/profile/settings';
+            const basePath = localePrefix ? `${localePrefix}/profile/settings` : '/profile/settings';
+            return this.resolveLocaleAwareInternalHref(basePath) || basePath;
         },
         buildMyPetsPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
-            return localePrefix ? `${localePrefix}/profile/my-pets` : '/profile/my-pets';
+            const basePath = localePrefix ? `${localePrefix}/profile/my-pets` : '/profile/my-pets';
+            return this.resolveLocaleAwareInternalHref(basePath) || basePath;
         },
         buildMyOffersPath() {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
-            return localePrefix ? `${localePrefix}/profile/my-offers` : '/profile/my-offers';
+            const basePath = localePrefix ? `${localePrefix}/profile/my-offers` : '/profile/my-offers';
+            return this.resolveLocaleAwareInternalHref(basePath) || basePath;
         },
         buildMessagesPath(chatId = null) {
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
@@ -15831,7 +16100,8 @@ createApp({
 
             const localePrefix = this.extractLocalePrefix(window.location.pathname);
             const profileBasePath = localePrefix ? `${localePrefix}/profile` : '/profile';
-            return `${profileBasePath}/${normalizedUserId}`;
+            const basePath = `${profileBasePath}/${normalizedUserId}`;
+            return this.resolveLocaleAwareInternalHref(basePath) || basePath;
         },
         handleLoginIdentifierInput() {
             if (!this.loginPasswordVisible) {
@@ -17254,12 +17524,23 @@ createApp({
             }
 
             const href = anchorElement.getAttribute('href') || '';
-            if (!this.isLegacyLoginHref(href) && anchorElement.dataset.legacyLoginModal !== 'true') {
+            if (this.isLegacyLoginHref(href) || anchorElement.dataset.legacyLoginModal === 'true') {
+                event.preventDefault();
+                this.openLoginModal();
+                return;
+            }
+
+            if (!this.shouldHandleManagedNavigationClick(event, anchorElement)) {
+                return;
+            }
+
+            const localeAwareTarget = this.resolveLocaleAwareInternalHref(href);
+            if (!localeAwareTarget) {
                 return;
             }
 
             event.preventDefault();
-            this.openLoginModal();
+            window.location.assign(localeAwareTarget);
         },
         handleDocumentKeydown(event) {
             if (event.key !== 'Escape') {
@@ -18845,6 +19126,7 @@ createApp({
             this.headerScrollSyncFrame = window.requestAnimationFrame(() => {
                 this.headerScrollSyncFrame = 0;
                 const pendingY = Math.max(0, this.headerScrollPendingY || 0);
+                this.syncHomeHeaderSearchVisibility(pendingY);
                 const compactThreshold = this.scrolled
                     ? HEADER_SCROLL_COMPACT_EXIT_PX
                     : HEADER_SCROLL_COMPACT_ENTER_PX;
@@ -18900,6 +19182,8 @@ createApp({
             }
 
             this.syncScrollState();
+            this.syncHomeHeaderSearchTriggerBounds({ force: true });
+            this.syncHomeHeaderSearchVisibility(Math.max(0, window.scrollY || 0), { force: true });
             this.syncHeaderSearchTabsGeometry();
             this.scheduleModalSurfaceAutoSizing();
         }

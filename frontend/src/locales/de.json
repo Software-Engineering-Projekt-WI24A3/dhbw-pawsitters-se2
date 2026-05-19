@@ -473,6 +473,11 @@
             "title": "Frankfurt am Main wartet",
             "description": "Finde verlässliche Betreuung in Frankfurt am Main und starte stressfrei in deine nächste Reise.",
             "linkLabel": "Betreuung in Frankfurt finden"
+          },
+          "dresden": {
+            "title": "Auf nach Dresden",
+            "description": "Plane deine Reise nach Dresden und finde liebevolle Betreuung vom 01.07.2026 bis 30.09.2026.",
+            "linkLabel": "Betreuung in Dresden finden"
           }
         }
       },
