@@ -4037,7 +4037,9 @@
         --home-offers-anchor-gap: clamp(9.2rem, 19vw, 14.2rem);
         --home-offers-dock-half-height-offset: clamp(2.2rem, 2.8vw, 2.5rem);
         --home-offers-heading-gap: calc(var(--home-offers-anchor-gap) - var(--home-offers-dock-half-height-offset));
-        --home-offers-vertical-spacing-scale: 0.6666667;
+        --home-offers-vertical-spacing-scale-base: 0.6666667;
+        --home-offers-vertical-spacing-boost: 1.3333333;
+        --home-offers-vertical-spacing-scale: calc(var(--home-offers-vertical-spacing-scale-base) * var(--home-offers-vertical-spacing-boost));
         width: min(94rem, calc(100% - 1.2rem));
         margin: calc((var(--home-offers-anchor-gap) * var(--home-offers-vertical-spacing-scale)) + var(--home-offers-top-gap-adjust-runtime, 0px)) auto 0;
     }
@@ -4159,13 +4161,45 @@
     }
 
     .home_offers_carousel {
-        --home-offers-card-gap: clamp(0.5rem, 1vw, 0.8rem);
+        --home-offers-card-width: clamp(15.4rem, 21vw, 19.4rem);
+        --home-offers-step-1: clamp(8.8rem, 12.8vw, 12.8rem);
+        --home-offers-step-2: clamp(15.5rem, 22.4vw, 21.6rem);
+        --home-offers-step-3: clamp(22rem, 31.8vw, 30rem);
         position: relative;
-        width: min(100%, 92rem);
+        width: min(100%, 96rem);
         margin-inline: auto;
-        min-height: clamp(22rem, 46vw, 32rem);
-        padding-top: 0.2rem;
+        min-height: clamp(23rem, 48vw, 33rem);
+        padding-top: 0.35rem;
         isolation: isolate;
+    }
+
+    .home_offers_carousel::before,
+    .home_offers_carousel::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .home_offers_carousel::before {
+        top: clamp(0.7rem, 2vw, 1.4rem);
+        left: 50%;
+        width: min(74rem, calc(100% - 2.2rem));
+        height: clamp(11rem, 25vw, 16rem);
+        border-radius: 999px;
+        transform: translateX(-50%);
+        background:
+            radial-gradient(circle at 18% 50%, rgba(255, 138, 61, 0.44) 0%, rgba(255, 138, 61, 0) 66%),
+            radial-gradient(circle at 50% 40%, rgba(255, 213, 123, 0.42) 0%, rgba(255, 213, 123, 0) 64%),
+            radial-gradient(circle at 82% 56%, rgba(88, 183, 214, 0.36) 0%, rgba(88, 183, 214, 0) 68%);
+        filter: blur(18px);
+        animation: home-offers-aura-drift 7.8s ease-in-out infinite;
+    }
+
+    .home_offers_carousel::after {
+        inset: auto 0 clamp(0.2rem, 1vw, 0.9rem);
+        height: clamp(4.6rem, 9vw, 7.4rem);
+        background: radial-gradient(ellipse at center, rgba(16, 20, 28, 0.32) 0%, rgba(16, 20, 28, 0) 72%);
     }
 
     .home_offers_reel {
@@ -4174,6 +4208,8 @@
         align-items: center;
         column-gap: clamp(0.72rem, 1.8vw, 1.32rem);
         width: 100%;
+        position: relative;
+        z-index: 1;
     }
 
     .home_offers_reel .my_offers_carousel__nav {
@@ -4184,73 +4220,88 @@
         transform: none;
         flex-shrink: 0;
         z-index: 120;
+        border-color: rgba(255, 255, 255, 0.54);
+        background: rgba(14, 20, 30, 0.74);
+        color: rgba(255, 255, 255, 0.96);
+        box-shadow:
+            0 12px 24px rgba(7, 9, 14, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(8px);
     }
 
     .home_offers_reel .my_offers_carousel__nav:hover {
-        transform: scale(1.04);
+        transform: translateY(-1px) scale(1.04);
     }
 
     .home_offers_reel__viewport {
         grid-column: 2;
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: var(--home-offers-card-gap);
-        align-items: stretch;
+        position: relative;
         width: 100%;
-        min-height: clamp(16.2rem, 28vw, 20.4rem);
-        padding-block: clamp(0.3rem, 0.9vw, 0.6rem);
-        overflow: visible;
+        min-height: clamp(16.8rem, 30vw, 21.6rem);
+        padding-block: clamp(0.4rem, 1vw, 0.8rem);
+        overflow: hidden;
+        perspective: 1600px;
     }
 
     .home_offers_reel__card {
-        position: relative;
-        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: var(--home-offers-card-width);
+        min-width: 11.8rem;
+        max-width: min(78vw, 20rem);
+        aspect-ratio: 17 / 12;
         transform-origin: center center;
-        transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease;
-        will-change: transform, opacity;
+        transition: transform 640ms cubic-bezier(0.22, 1, 0.36, 1), filter 460ms ease;
+        will-change: transform, filter;
         pointer-events: none;
+        opacity: 1;
     }
 
     .home_offers_reel__card--center {
-        z-index: 60;
-        opacity: 1;
-        transform: scale(1.08);
+        z-index: 80;
+        transform: translate3d(-50%, -50%, 0) scale(1.14);
+        filter: drop-shadow(0 26px 34px rgba(7, 10, 18, 0.34));
     }
 
     .home_offers_reel__card--left-1 {
-        z-index: 50;
-        opacity: 0.96;
-        transform: scale(1);
+        z-index: 60;
+        transform: translate3d(calc(-50% - var(--home-offers-step-1)), -50%, 0) scale(0.97) rotate(-6deg);
+        filter: drop-shadow(0 18px 28px rgba(7, 10, 18, 0.3));
     }
 
     .home_offers_reel__card--right-1 {
-        z-index: 50;
-        opacity: 0.96;
-        transform: scale(1);
+        z-index: 60;
+        transform: translate3d(calc(-50% + var(--home-offers-step-1)), -50%, 0) scale(0.97) rotate(6deg);
+        filter: drop-shadow(0 18px 28px rgba(7, 10, 18, 0.3));
     }
 
     .home_offers_reel__card--left-2 {
         z-index: 40;
-        opacity: 0.92;
-        transform: scale(0.96);
+        transform: translate3d(calc(-50% - var(--home-offers-step-2)), -49%, 0) scale(0.83) rotate(-9deg);
+        filter: drop-shadow(0 14px 24px rgba(7, 10, 18, 0.26));
     }
 
     .home_offers_reel__card--right-2 {
         z-index: 40;
-        opacity: 0.92;
-        transform: scale(0.96);
+        transform: translate3d(calc(-50% + var(--home-offers-step-2)), -49%, 0) scale(0.83) rotate(9deg);
+        filter: drop-shadow(0 14px 24px rgba(7, 10, 18, 0.26));
     }
 
     .home_offers_reel__card--left-3 {
         z-index: 30;
-        opacity: 0.88;
-        transform: scale(0.94);
+        transform: translate3d(calc(-50% - var(--home-offers-step-3)), -48%, 0) scale(0.7) rotate(-12deg);
+        filter: drop-shadow(0 10px 20px rgba(7, 10, 18, 0.24));
     }
 
     .home_offers_reel__card--right-3 {
         z-index: 30;
-        opacity: 0.88;
-        transform: scale(0.94);
+        transform: translate3d(calc(-50% + var(--home-offers-step-3)), -48%, 0) scale(0.7) rotate(12deg);
+        filter: drop-shadow(0 10px 20px rgba(7, 10, 18, 0.24));
+    }
+
+    .home_offers_reel__card--center .home_offer_slide {
+        animation: home-offers-spotlight-breathe 5.4s ease-in-out infinite;
     }
 
     .home_offer_slide {
@@ -4258,16 +4309,17 @@
         position: relative;
         display: grid;
         align-content: end;
-        min-height: clamp(11.8rem, 23vw, 15rem);
-        border-radius: 1.35rem;
+        min-height: 100%;
+        height: 100%;
+        border-radius: 1.45rem;
         overflow: hidden;
-        border: 1px solid rgba(17, 17, 19, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.32);
         background:
-            linear-gradient(180deg, rgba(228, 233, 239, 0.98) 0%, rgba(193, 201, 211, 0.95) 100%),
-            radial-gradient(circle at top right, rgba(145, 155, 168, 0.24) 0%, rgba(145, 155, 168, 0) 54%);
+            linear-gradient(152deg, rgba(255, 123, 68, 0.9) 0%, rgba(255, 196, 98, 0.9) 38%, rgba(108, 198, 186, 0.9) 100%),
+            radial-gradient(circle at 12% 20%, rgba(255, 248, 233, 0.44) 0%, rgba(255, 248, 233, 0) 44%);
         box-shadow:
-            0 16px 32px rgba(8, 11, 18, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.82);
+            0 20px 34px rgba(8, 11, 18, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.58);
     }
 
     .home_offer_slide::before,
@@ -4285,16 +4337,16 @@
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        transform: scale(1.03);
-        transition: opacity 260ms ease, transform 420ms ease;
+        transform: scale(1.05);
+        transition: opacity 320ms ease, transform 560ms ease;
     }
 
     .home_offer_slide::after {
         z-index: 1;
         background:
-            linear-gradient(180deg, rgba(7, 9, 14, 0.32) 0%, rgba(7, 9, 14, 0.34) 36%, rgba(7, 9, 14, 0.76) 100%),
-            radial-gradient(circle at top right, rgba(8, 24, 42, 0.28) 0%, rgba(8, 24, 42, 0) 52%);
-        transition: opacity 260ms ease;
+            linear-gradient(180deg, rgba(8, 10, 15, 0.24) 0%, rgba(8, 10, 15, 0.3) 40%, rgba(8, 10, 15, 0.7) 100%),
+            radial-gradient(circle at top right, rgba(255, 167, 75, 0.26) 0%, rgba(255, 167, 75, 0) 56%);
+        transition: opacity 320ms ease;
     }
 
     .home_offer_slide > * {
@@ -4363,19 +4415,44 @@
     .home_offer_slide--interactive {
         pointer-events: auto;
         cursor: pointer;
-        transition: transform 260ms ease, box-shadow 260ms ease, border-color 220ms ease;
+        transition: transform 260ms ease, box-shadow 260ms ease, border-color 220ms ease, filter 260ms ease;
     }
 
     .home_offer_slide--interactive:hover {
-        transform: translateY(-2px);
-        border-color: rgba(17, 17, 19, 0.2);
+        transform: translateY(-4px) scale(1.02);
+        border-color: rgba(255, 255, 255, 0.66);
+        filter: saturate(1.08);
         box-shadow:
-            0 20px 38px rgba(8, 11, 18, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            0 26px 42px rgba(7, 10, 18, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.84);
     }
 
     .home_offer_slide--interactive:focus-visible {
-        @apply outline-none ring-2 ring-black/20;
+        @apply outline-none ring-2 ring-white/60;
+    }
+
+    @keyframes home-offers-spotlight-breathe {
+        0%,
+        100% {
+            box-shadow:
+                0 20px 34px rgba(8, 11, 18, 0.24),
+                inset 0 1px 0 rgba(255, 255, 255, 0.58);
+        }
+        50% {
+            box-shadow:
+                0 28px 42px rgba(8, 11, 18, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72);
+        }
+    }
+
+    @keyframes home-offers-aura-drift {
+        0%,
+        100% {
+            transform: translateX(-50%) scale(1);
+        }
+        50% {
+            transform: translateX(-50%) scale(1.06);
+        }
     }
 
     .home_offers_meta {
@@ -5101,6 +5178,8 @@
 
     .messages_thread__header {
         @apply flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3;
+        position: relative;
+        padding-right: 5.4rem;
         background: rgba(255, 255, 255, 0.74);
         backdrop-filter: blur(10px);
     }
@@ -5133,10 +5212,16 @@
 
     .messages_thread__actions {
         @apply flex shrink-0 items-center justify-end gap-2;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 0;
     }
 
     .messages_thread__actions_menu {
         @apply shrink-0;
+        order: 1;
     }
 
     .messages_thread__actions_summary {
@@ -5178,6 +5263,8 @@
         right: auto;
         top: auto;
         flex-shrink: 0;
+        order: 2;
+        margin: 0;
     }
 
     .messages_thread__scroll {
@@ -5581,11 +5668,11 @@
 
     @media (max-width: 640px) {
         .messages_thread__header {
-            @apply flex-wrap;
+            @apply flex-nowrap;
         }
 
         .messages_thread__actions {
-            margin-left: auto;
+            margin-left: 0;
         }
 
         .messages_message__bubble {
@@ -5644,12 +5731,15 @@
         }
 
         .home_offers_carousel {
+            --home-offers-card-width: clamp(13.3rem, 35vw, 16.6rem);
+            --home-offers-step-1: clamp(6.9rem, 16vw, 9.2rem);
+            --home-offers-step-2: clamp(12rem, 25vw, 14.9rem);
+            --home-offers-step-3: clamp(15.8rem, 33vw, 19.2rem);
             min-height: clamp(19rem, 56vw, 26rem);
         }
 
         .home_offers_reel__viewport {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            min-height: clamp(13.2rem, 42vw, 17rem);
+            min-height: clamp(14rem, 46vw, 17.8rem);
         }
 
         .home_latest_offers__heading {
@@ -5730,15 +5820,21 @@
         }
 
         .home_offers_carousel {
+            --home-offers-card-width: clamp(12rem, 60vw, 15.2rem);
+            --home-offers-step-1: clamp(5.7rem, 26vw, 7.3rem);
+            --home-offers-step-2: clamp(9.2rem, 38vw, 11.7rem);
+            --home-offers-step-3: clamp(12.6rem, 48vw, 14.4rem);
             min-height: clamp(15.6rem, 70vw, 19.2rem);
         }
 
         .home_offers_reel__viewport {
-            min-height: clamp(12.4rem, 58vw, 15.2rem);
+            min-height: clamp(12.7rem, 62vw, 15.6rem);
         }
 
         .home_offers_reel__card--left-2,
-        .home_offers_reel__card--right-2 {
+        .home_offers_reel__card--right-2,
+        .home_offers_reel__card--left-3,
+        .home_offers_reel__card--right-3 {
             display: none;
         }
 

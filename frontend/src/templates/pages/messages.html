@@ -511,10 +511,10 @@
 
                             <label class="auth_field corp_field settings_edit_modal__field">
                                 <span class="sr-only" v-text="messagesStrings.proposalLabels.note"></span>
-                                <textarea class="auth_input corp_input corp_input--textarea"
-                                          rows="4"
-                                          v-model="messagesProposalForm.note"
-                                          :aria-label="messagesStrings.proposalLabels.note"></textarea>
+                                <input class="auth_input corp_input"
+                                       type="text"
+                                       v-model="messagesProposalForm.note"
+                                       :aria-label="messagesStrings.proposalLabels.note">
                                 <span class="auth_field__label corp_field__label" v-text="messagesStrings.proposalLabels.note"></span>
                             </label>
 

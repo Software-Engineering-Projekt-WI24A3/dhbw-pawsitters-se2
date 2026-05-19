@@ -4619,10 +4619,14 @@ createApp({
                     positionClass = 'home_offers_reel__card--left-1';
                 } else if (relativeOffset === -2) {
                     positionClass = 'home_offers_reel__card--left-2';
+                } else if (relativeOffset === -3) {
+                    positionClass = 'home_offers_reel__card--left-3';
                 } else if (relativeOffset === 1) {
                     positionClass = 'home_offers_reel__card--right-1';
                 } else if (relativeOffset === 2) {
                     positionClass = 'home_offers_reel__card--right-2';
+                } else if (relativeOffset === 3) {
+                    positionClass = 'home_offers_reel__card--right-3';
                 }
 
                 return {
