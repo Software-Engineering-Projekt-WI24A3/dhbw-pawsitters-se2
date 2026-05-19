@@ -76,6 +76,7 @@ test('creates and renders a non-empty opening message when requesting an offer',
     closedByUserId: null,
     lastMessagePreview: ''
   };
+  const expectedOpeningLine = `${currentUser.firstName} ${currentUser.lastName} ${token('de', 'home.page.modal.requestOpeningIntro')} " ${offer.title} " ${token('de', 'home.page.modal.requestOpeningSuffix')}`;
 
   let chatExists = false;
   let createdMessage = null;
@@ -252,6 +253,7 @@ test('creates and renders a non-empty opening message when requesting an offer',
   expect(capturedOpeningContent).toBeTruthy();
   expect(capturedOpeningContent.startsWith('[PAWSITTERS_OFFER_REQUEST:')).toBeTruthy();
   await expect(page.locator('.messages_request_notice').first()).toBeVisible();
-  await expect(page.locator('.messages_request_notice__line').first()).toContainText(token('de', 'home.page.modal.requestOpeningIntro'));
+  const openingLineText = (await page.locator('.messages_request_notice__line').first().innerText()).replace(/\s+/g, ' ').trim();
+  expect(openingLineText).toContain(expectedOpeningLine);
   await expect(page.locator('.messages_request_notice__offer_button').first()).toHaveText(offer.title);
 });

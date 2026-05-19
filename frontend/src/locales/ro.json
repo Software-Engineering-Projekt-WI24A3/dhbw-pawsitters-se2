@@ -452,6 +452,30 @@
         "previous": "Oferta anterioară",
         "next": "Oferta următoare"
       },
+      "hero": {
+        "carouselAria": "Carusel de imagini cu sugestii de căutare sezoniere",
+        "actions": {
+          "previous": "Bannerul anterior",
+          "next": "Bannerul următor"
+        },
+        "slides": {
+          "helsinki": {
+            "title": "Descoperă Helsinki",
+            "description": "Bucură-te de farmecul capitalei Finlandei și descoperă oferte de îngrijire pentru animalul tău.",
+            "linkLabel": "Descoperă oferte"
+          },
+          "summer": {
+            "title": "Vară plină de aventuri pentru lăbuțe",
+            "description": "Planifică vara din timp și găsește îngrijire atentă între începutul lui iulie și sfârșitul lui septembrie.",
+            "linkLabel": "Vezi ofertele de vară"
+          },
+          "frankfurt": {
+            "title": "Frankfurt pe Main te așteaptă",
+            "description": "Găsește îngrijire de încredere în Frankfurt pe Main și pleacă liniștit în următoarea călătorie.",
+            "linkLabel": "Găsește îngrijire în Frankfurt"
+          }
+        }
+      },
       "modal": {
         "closeAria": "Închide detaliile ofertei",
         "hostLabel": "Gazdă",

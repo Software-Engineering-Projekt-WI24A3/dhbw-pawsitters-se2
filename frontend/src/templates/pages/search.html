@@ -71,7 +71,7 @@
                 <section class="home_latest_offers home_latest_offers--search"
                          :aria-label="homeStrings.search.matching.carouselAria">
                     <header class="home_latest_offers__header">
-                        <h1 class="home_latest_offers__heading" v-text="homeStrings.search.matching.heading"></h1>
+                        <h2 class="home_latest_offers__heading" v-text="homeStrings.search.matching.heading"></h2>
                     </header>
 
                     <template v-if="homeSearchMatchingOffers.length">
@@ -150,7 +150,7 @@
                     </template>
 
                     <div v-else class="home_latest_offers__empty">
-                        <h2 class="home_latest_offers__empty_title" v-text="homeStrings.search.matching.emptyTitle"></h2>
+                        <h3 class="home_latest_offers__empty_title" v-text="homeStrings.search.matching.emptyTitle"></h3>
                         <p class="home_latest_offers__empty_text" v-text="homeStrings.search.matching.emptyText"></p>
                     </div>
                 </section>

@@ -452,6 +452,30 @@
         "previous": "Vorheriges Angebot",
         "next": "Nächstes Angebot"
       },
+      "hero": {
+        "carouselAria": "Bildkarussell mit saisonalen Suchvorschlägen",
+        "actions": {
+          "previous": "Vorheriges Banner",
+          "next": "Nächstes Banner"
+        },
+        "slides": {
+          "helsinki": {
+            "title": "Entdecke Helsinki",
+            "description": "Genieße den Flair der finnischen Hauptstadt und entdecke Betreuungsangebote für dein Haustier.",
+            "linkLabel": "Angebote entdecken"
+          },
+          "summer": {
+            "title": "Sommerzeit für Pfotenabenteuer",
+            "description": "Plane deinen Sommer entspannt voraus und finde liebevolle Betreuung zwischen Anfang Juli und Ende September.",
+            "linkLabel": "Sommerangebote ansehen"
+          },
+          "frankfurt": {
+            "title": "Frankfurt am Main wartet",
+            "description": "Finde verlässliche Betreuung in Frankfurt am Main und starte stressfrei in deine nächste Reise.",
+            "linkLabel": "Betreuung in Frankfurt finden"
+          }
+        }
+      },
       "modal": {
         "closeAria": "Angebotsdetails schließen",
         "hostLabel": "Gastgeber",

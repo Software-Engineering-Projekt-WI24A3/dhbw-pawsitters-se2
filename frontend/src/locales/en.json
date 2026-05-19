@@ -452,6 +452,30 @@
         "previous": "Previous offer",
         "next": "Next offer"
       },
+      "hero": {
+        "carouselAria": "Image carousel with seasonal search suggestions",
+        "actions": {
+          "previous": "Previous banner",
+          "next": "Next banner"
+        },
+        "slides": {
+          "helsinki": {
+            "title": "Discover Helsinki",
+            "description": "Enjoy the atmosphere of Finland's capital and discover care offers for your pet.",
+            "linkLabel": "Discover offers"
+          },
+          "summer": {
+            "title": "Summer days for happy paws",
+            "description": "Plan your summer ahead and find caring pet sitters between early July and late September.",
+            "linkLabel": "View summer offers"
+          },
+          "frankfurt": {
+            "title": "Frankfurt am Main is calling",
+            "description": "Find reliable care in Frankfurt am Main and start your next trip without stress.",
+            "linkLabel": "Find care in Frankfurt"
+          }
+        }
+      },
       "modal": {
         "closeAria": "Close offer details",
         "hostLabel": "Host",
