@@ -4609,9 +4609,7 @@ createApp({
                 Math.max(0, Number.isFinite(this.homeOffersCarouselIndex) ? this.homeOffersCarouselIndex : 0),
                 offers.length - 1
             );
-            const slotOffsets = offers.length >= 7
-                ? [-3, -2, -1, 0, 1, 2, 3]
-                : [-2, -1, 0, 1, 2];
+            const slotOffsets = [-2, -1, 0, 1, 2];
 
             return slotOffsets.map((relativeOffset, slotIndex) => {
                 const wrappedIndex = ((safeActiveIndex + relativeOffset) % offers.length + offers.length) % offers.length;
