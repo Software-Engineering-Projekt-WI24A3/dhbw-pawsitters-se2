@@ -398,8 +398,8 @@ test.describe('Home offers carousel', () => {
           && parsedUrl.searchParams.get('excludeHostId') === '501';
       })
     ).toBe(true);
-    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
-    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(6);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
     await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(0);
     await expect(page.locator('.home_latest_offers__item--full .home_latest_offer_card__title').first()).toHaveText('Loft Dogs Downtown');
     await expect(latestSection).not.toContainText('Eigenes Hundesitting');
@@ -409,9 +409,9 @@ test.describe('Home offers carousel', () => {
 
     await latestSection.locator('.my_offers_carousel__nav--next').click();
 
-    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(4);
-    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
-    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(6);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
+    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(0);
     await expect(latestSection.locator('.my_offers_carousel__nav--prev')).toBeVisible();
     await expect(latestSection.locator('.my_offers_carousel__nav--next')).toBeVisible();
 
@@ -424,10 +424,10 @@ test.describe('Home offers carousel', () => {
       await nextButton.click();
       latestRightClicks += 1;
     }
-    expect(latestRightClicks + 1).toBe(5);
+    expect(latestRightClicks + 1).toBe(4);
 
-    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
-    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(6);
+    await expect(page.locator('.home_latest_offers__item--peek-left')).toHaveCount(0);
     await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
     await expect(latestSection).not.toContainText('Eigenes Hundesitting');
     await expect(latestSection.locator('.my_offers_carousel__nav--next')).toHaveCount(0);
@@ -513,7 +513,7 @@ test.describe('Home offers carousel', () => {
     await expect.poll(
       () => latestRequestUrls.every((url) => !new URL(url).searchParams.has('excludeHostId'))
     ).toBe(true);
-    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
-    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);
+    await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(6);
+    await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(0);
   });
 });

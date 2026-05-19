@@ -265,6 +265,7 @@ test('redirects to /search/{parameter} and renders matching plus alternative car
   await expect(searchResultsSection.getByText('Wochenendpaket im Süden')).toBeVisible();
 
   const primarySearchCarousel = searchResultsSection.locator('.home_latest_offers--search').nth(0);
-  await primarySearchCarousel.getByRole('button', { name: token('de', 'home.page.actions.next'), exact: true }).click();
-  await expect(primarySearchCarousel.getByRole('button', { name: token('de', 'home.page.actions.previous'), exact: true })).toBeVisible();
+  await expect(primarySearchCarousel.locator('.home_latest_offers__item--full')).toHaveCount(6);
+  await expect(primarySearchCarousel.getByRole('button', { name: token('de', 'home.page.actions.next'), exact: true })).toHaveCount(0);
+  await expect(primarySearchCarousel.getByRole('button', { name: token('de', 'home.page.actions.previous'), exact: true })).toHaveCount(0);
 });
