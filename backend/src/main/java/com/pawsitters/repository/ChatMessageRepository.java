@@ -25,6 +25,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findByChatIdOrderByCreatedAtAscIdAsc(Long chatId);
 
     Optional<ChatMessage> findFirstByChatIdOrderByCreatedAtDescIdDesc(Long chatId);
+    Optional<ChatMessage> findFirstByBookingProposalIdOrderByCreatedAtAscIdAsc(Long bookingProposalId);
     Optional<ChatMessage> findFirstByBookingProposalIdAndTypeOrderByCreatedAtAscIdAsc(Long bookingProposalId, ChatMessageType type);
 
     @EntityGraph(attributePaths = {"chat", "chat.offer", "chat.host", "chat.requester", "sender", "attachments", "bookingProposal", "bookingProposal.petSpecies"})

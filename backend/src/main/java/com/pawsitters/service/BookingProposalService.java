@@ -193,7 +193,7 @@ public class BookingProposalService {
         proposal.setRespondedAt(Instant.now());
 
         BookingProposal savedProposal = bookingProposalRepository.save(proposal);
-        ChatMessageResponse message = resolveProposalTimelineMessage(savedProposal, actor, "Buchungsangebot zurueckgezogen.");
+        ChatMessageResponse message = resolveProposalTimelineMessage(savedProposal, actor, "Buchungsangebot gesendet.");
         publishBookingEvent("booking.proposal_withdrawn", message, savedProposal.getChat(), "Buchungsangebot zurueckgezogen.");
         return BookingProposalResponse.from(savedProposal);
     }
@@ -280,18 +280,46 @@ public class BookingProposalService {
     private ChatMessageResponse resolveProposalTimelineMessage(BookingProposal proposal,
                                                                User actor,
                                                                String fallbackContent) {
-        return chatMessageRepository.findFirstByBookingProposalIdAndTypeOrderByCreatedAtAscIdAsc(
-                        proposal.getId(),
-                        ChatMessageType.BOOKING_PROPOSAL
-                )
+        return chatMessageRepository.findFirstByBookingProposalIdOrderByCreatedAtAscIdAsc(proposal.getId())
+                .map((existingMessage) -> ensureProposalTimelineMessage(existingMessage, proposal, fallbackContent))
                 .map(ChatMessageResponse::from)
                 .orElseGet(() -> createBookingMessage(
                         proposal.getChat(),
                         actor,
                         proposal,
-                        ChatMessageType.BOOKING_EVENT,
+                        ChatMessageType.BOOKING_PROPOSAL,
                         fallbackContent
                 ));
+    }
+
+    private ChatMessage ensureProposalTimelineMessage(ChatMessage existingMessage,
+                                                      BookingProposal proposal,
+                                                      String fallbackContent) {
+        boolean changed = false;
+
+        if (existingMessage.getType() != ChatMessageType.BOOKING_PROPOSAL) {
+            existingMessage.setType(ChatMessageType.BOOKING_PROPOSAL);
+            changed = true;
+        }
+
+        if (existingMessage.getBookingProposal() == null
+                || !proposal.getId().equals(existingMessage.getBookingProposal().getId())) {
+            existingMessage.setBookingProposal(proposal);
+            changed = true;
+        }
+
+        String currentContent = existingMessage.getContent() == null ? "" : existingMessage.getContent().trim();
+        String normalizedFallbackContent = fallbackContent == null ? "" : fallbackContent.trim();
+        if (currentContent.isEmpty() && !normalizedFallbackContent.isEmpty()) {
+            existingMessage.setContent(normalizedFallbackContent);
+            changed = true;
+        }
+
+        if (!changed) {
+            return existingMessage;
+        }
+
+        return chatMessageRepository.save(existingMessage);
     }
 
     private BookingProposal getProposalForParticipant(Long proposalId, String email) {

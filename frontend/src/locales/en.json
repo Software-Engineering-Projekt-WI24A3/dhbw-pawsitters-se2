@@ -745,6 +745,8 @@
       "proposalStatusDeclined": "Declined",
       "proposalStatusWithdrawn": "Withdrawn",
       "proposalStatusCompleted": "Completed",
+      "proposalWithdrawnInvalidLabel": "No longer valid",
+      "proposalWithdrawnInvalidHint": "This booking proposal was withdrawn and can no longer be accepted.",
       "proposalAcceptAction": "Accept",
       "proposalDeclineAction": "Decline",
       "proposalWithdrawAction": "Withdraw",

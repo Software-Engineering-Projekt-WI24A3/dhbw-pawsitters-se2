@@ -745,6 +745,8 @@
       "proposalStatusDeclined": "Respinsă",
       "proposalStatusWithdrawn": "Retrasă",
       "proposalStatusCompleted": "Finalizată",
+      "proposalWithdrawnInvalidLabel": "Nu mai este valabilă",
+      "proposalWithdrawnInvalidHint": "Această propunere de rezervare a fost retrasă și nu mai poate fi acceptată.",
       "proposalAcceptAction": "Acceptă",
       "proposalDeclineAction": "Respinge",
       "proposalWithdrawAction": "Retrage",
