@@ -2,6 +2,9 @@ package com.pawsitters.controller;
 
 import com.pawsitters.security.JwtService;
 import com.pawsitters.service.ChatService;
+import com.pawsitters.model.ChatMessage;
+import com.pawsitters.model.ChatMessageType;
+import com.pawsitters.repository.ChatMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,6 +62,9 @@ class ChatIntegrationTest {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
 
     @Test
     void messagesAreReturnedChronologicallyAndOnlyParticipantsCanReadThem() throws Exception {
@@ -443,6 +449,43 @@ class ChatIntegrationTest {
                 1,
                 "DOG"
         );
+
+        mockMvc.perform(patch("/api/booking-proposals/{id}/withdraw", proposalId)
+                        .header("Authorization", "Bearer " + requesterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("WITHDRAWN"));
+
+        mockMvc.perform(get("/api/chats/{id}/messages", chatId)
+                        .header("Authorization", "Bearer " + hostToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meta.total").value(1))
+                .andExpect(jsonPath("$.data[0].type").value("BOOKING_PROPOSAL"))
+                .andExpect(jsonPath("$.data[0].bookingProposal.id").value(proposalId))
+                .andExpect(jsonPath("$.data[0].bookingProposal.status").value("WITHDRAWN"));
+    }
+
+    @Test
+    void withdrawingProposalReusesLegacyProposalMessageInsteadOfCreatingExtraEvent() throws Exception {
+        String hostToken = jwtService.generateToken("lukas.schmidt@example.com", "HOST");
+        String requesterToken = jwtService.generateToken("anna.meier@example.com", "PET_OWNER");
+
+        Long offerId = createPublishedOffer(hostToken);
+        Long chatId = createChat(requesterToken, offerId);
+        Long proposalId = createBookingProposal(
+                requesterToken,
+                chatId,
+                "2026-07-01",
+                "2026-07-02",
+                "75.00",
+                1,
+                "DOG"
+        );
+
+        ChatMessage legacyMessage = chatMessageRepository.findFirstByBookingProposalIdOrderByCreatedAtAscIdAsc(proposalId)
+                .orElseThrow();
+        legacyMessage.setType(ChatMessageType.TEXT);
+        chatMessageRepository.save(legacyMessage);
 
         mockMvc.perform(patch("/api/booking-proposals/{id}/withdraw", proposalId)
                         .header("Authorization", "Bearer " + requesterToken))

@@ -29,6 +29,8 @@
                       data-messages-proposal-status-declined=#{messages.page.proposalStatusDeclined},
                       data-messages-proposal-status-withdrawn=#{messages.page.proposalStatusWithdrawn},
                       data-messages-proposal-status-completed=#{messages.page.proposalStatusCompleted},
+                      data-messages-proposal-withdrawn-invalid-label=#{messages.page.proposalWithdrawnInvalidLabel},
+                      data-messages-proposal-withdrawn-invalid-hint=#{messages.page.proposalWithdrawnInvalidHint},
                       data-messages-proposal-accept-action=#{messages.page.proposalAcceptAction},
                       data-messages-proposal-decline-action=#{messages.page.proposalDeclineAction},
                       data-messages-proposal-withdraw-action=#{messages.page.proposalWithdrawAction},
@@ -310,6 +312,9 @@
                                                       :class="'messages_proposal__status--' + message.bookingProposal.status.toLowerCase()"
                                                       v-text="messagesResolveProposalStatusLabel(message.bookingProposal.status)"></span>
                                             </header>
+                                            <p v-if="messagesIsWithdrawnProposal(message.bookingProposal)"
+                                               class="messages_proposal__invalid"
+                                               v-text="messagesStrings.proposalWithdrawnInvalidLabel || messagesStrings.proposalStatusWithdrawn"></p>
                                             <dl class="messages_proposal__facts">
                                                 <div class="messages_proposal__fact">
                                                     <dt v-text="messagesStrings.proposalLabels.startDate"></dt>
@@ -349,6 +354,9 @@
                                                     <dd v-text="message.bookingProposal.note"></dd>
                                                 </div>
                                             </dl>
+                                            <p v-if="messagesIsWithdrawnProposal(message.bookingProposal)"
+                                               class="messages_proposal__invalid_hint"
+                                               v-text="messagesStrings.proposalWithdrawnInvalidHint || messagesStrings.proposalStatusWithdrawn"></p>
                                             <div v-if="messagesCanRespondToProposal(message.bookingProposal) && !messagesActiveChatClosed"
                                                  class="messages_proposal__actions">
                                                 <button class="button"

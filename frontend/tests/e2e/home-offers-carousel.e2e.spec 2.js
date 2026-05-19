@@ -306,9 +306,9 @@ test.describe('Home offers carousel', () => {
     await page.goto('/?locale=de');
 
     await expect(page.getByText(token('de', 'home.page.headingPrefix'))).toBeVisible();
-    await expect(page.locator('.home_offers_reel__card')).toHaveCount(7);
-    await expect(page.locator('.home_offers_reel__card--left-3')).toHaveCount(1);
-    await expect(page.locator('.home_offers_reel__card--right-3')).toHaveCount(1);
+    await expect(page.locator('.home_offers_reel__card')).toHaveCount(5);
+    await expect(page.locator('.home_offers_reel__card--left-2')).toHaveCount(1);
+    await expect(page.locator('.home_offers_reel__card--right-2')).toHaveCount(1);
     await expect(page.locator('.home_offer_slide--interactive')).toHaveCount(1);
 
     await expect(page.locator('.home_offers_reel__viewport')).not.toContainText('Eigenes Hundesitting');
@@ -429,7 +429,7 @@ test.describe('Home offers carousel', () => {
     await page.goto('/?locale=de');
 
     await expect(page.locator('.home_offers_reel__card--center .home_offer_slide__title')).toHaveText('Eigenes Hundesitting');
-    await expect(page.locator('.home_offers_reel__card')).toHaveCount(7);
+    await expect(page.locator('.home_offers_reel__card')).toHaveCount(5);
     await expect(page.getByText(token('de', 'home.page.latest.heading'))).toBeVisible();
     await expect(page.locator('.home_latest_offers__item--full')).toHaveCount(5);
     await expect(page.locator('.home_latest_offers__item--peek-right')).toHaveCount(1);

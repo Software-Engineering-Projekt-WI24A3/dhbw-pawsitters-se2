@@ -745,6 +745,8 @@
       "proposalStatusDeclined": "Abgelehnt",
       "proposalStatusWithdrawn": "Zurückgezogen",
       "proposalStatusCompleted": "Abgeschlossen",
+      "proposalWithdrawnInvalidLabel": "Nicht mehr gültig",
+      "proposalWithdrawnInvalidHint": "Dieses Buchungsangebot wurde zurückgezogen und kann nicht mehr angenommen werden.",
       "proposalAcceptAction": "Annehmen",
       "proposalDeclineAction": "Ablehnen",
       "proposalWithdrawAction": "Zurückziehen",

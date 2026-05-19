@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final long corsMaxAgeSeconds;
 
     public WebConfig(@Value("${app.upload.dir:uploads}") String uploadDir,
-                     @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*}") String corsAllowedOriginPatterns,
+                     @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://*.justus.software,https://justus.software,http://*.justus.software,http://justus.software}") String corsAllowedOriginPatterns,
                      @Value("${app.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") String corsAllowedMethods,
                      @Value("${app.cors.allowed-headers:*}") String corsAllowedHeaders,
                      @Value("${app.cors.exposed-headers:}") String corsExposedHeaders,

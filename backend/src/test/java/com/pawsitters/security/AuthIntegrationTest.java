@@ -430,6 +430,17 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void corsPreflightForSessionAllowsDefaultProductionOriginPattern() throws Exception {
+        mockMvc.perform(options("/api/auth/session")
+                        .header("Origin", "https://pawsitters.justus.software")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "Authorization"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://pawsitters.justus.software"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"));
+    }
+
+    @Test
     void sessionWithRawAuthorizationTokenReturnsLoggedInTrue() throws Exception {
         String baseEmail = "session.raw." + UUID.randomUUID() + "@test.de";
         String token = registerUser(baseEmail, "StrongPhrase123!");

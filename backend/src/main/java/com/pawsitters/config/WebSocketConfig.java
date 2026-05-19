@@ -52,7 +52,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                            JwtTokenResolver jwtTokenResolver,
                            RevokedTokenService revokedTokenService,
                            ChatAuthorizationService chatAuthorizationService,
-                           @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*}") String allowedOriginPatterns) {
+                           @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://*.justus.software,https://justus.software,http://*.justus.software,http://justus.software}") String allowedOriginPatterns) {
         this.jwtService = jwtService;
         this.jwtTokenResolver = jwtTokenResolver;
         this.revokedTokenService = revokedTokenService;

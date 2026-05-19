@@ -2659,6 +2659,8 @@ const localizedMessagesStrings = {
     proposalStatusDeclined: messagesPageRoot?.dataset.messagesProposalStatusDeclined || 'DECLINED',
     proposalStatusWithdrawn: messagesPageRoot?.dataset.messagesProposalStatusWithdrawn || 'WITHDRAWN',
     proposalStatusCompleted: messagesPageRoot?.dataset.messagesProposalStatusCompleted || 'COMPLETED',
+    proposalWithdrawnInvalidLabel: messagesPageRoot?.dataset.messagesProposalWithdrawnInvalidLabel || '',
+    proposalWithdrawnInvalidHint: messagesPageRoot?.dataset.messagesProposalWithdrawnInvalidHint || '',
     proposalAcceptAction: messagesPageRoot?.dataset.messagesProposalAcceptAction || '',
     proposalDeclineAction: messagesPageRoot?.dataset.messagesProposalDeclineAction || '',
     proposalWithdrawAction: messagesPageRoot?.dataset.messagesProposalWithdrawAction || '',
@@ -4407,7 +4409,7 @@ createApp({
                 .map((offer, index) => {
                     const relativeOffset = this.getHomeOffersCarouselRelativeOffset(index, offers.length);
                     const absoluteOffset = Math.abs(relativeOffset);
-                    if (absoluteOffset > 3) {
+                    if (absoluteOffset > 2) {
                         return null;
                     }
 
@@ -4416,14 +4418,10 @@ createApp({
                         positionClass = 'home_offers_reel__card--left-1';
                     } else if (relativeOffset === -2) {
                         positionClass = 'home_offers_reel__card--left-2';
-                    } else if (relativeOffset === -3) {
-                        positionClass = 'home_offers_reel__card--left-3';
                     } else if (relativeOffset === 1) {
                         positionClass = 'home_offers_reel__card--right-1';
                     } else if (relativeOffset === 2) {
                         positionClass = 'home_offers_reel__card--right-2';
-                    } else if (relativeOffset === 3) {
-                        positionClass = 'home_offers_reel__card--right-3';
                     }
 
                     return {
@@ -12001,9 +11999,9 @@ createApp({
 
                 timeline.push(normalizedMessage);
                 if (
-                    normalizedMessage.type === 'BOOKING_PROPOSAL'
-                    && Number.isInteger(proposalId)
+                    Number.isInteger(proposalId)
                     && proposalId > 0
+                    && normalizedMessage.type !== 'BOOKING_EVENT'
                     && !proposalMessageIndexById.has(proposalId)
                 ) {
                     proposalMessageIndexById.set(proposalId, timeline.length - 1);
@@ -12783,6 +12781,12 @@ createApp({
                 }
             });
             this.messagesComposerAttachments = [];
+        },
+        handleMessagesComposerEnterKey(event) {
+            if (event && typeof event.preventDefault === 'function') {
+                event.preventDefault();
+            }
+            this.submitMessagesComposer();
         },
         async submitMessagesComposer() {
             if (this.messagesComposerSending) {
