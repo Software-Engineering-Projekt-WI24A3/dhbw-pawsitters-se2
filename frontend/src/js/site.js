@@ -4514,10 +4514,12 @@ createApp({
         },
         homeLatestCarouselTrackItems() {
             const offers = Array.isArray(this.homeLatestFilteredOffers) ? this.homeLatestFilteredOffers : [];
-            return offers.map((offer) => ({
+            const fullStart = this.homeLatestSafeOffset;
+            const fullEnd = Math.min(offers.length, fullStart + this.homeLatestEdgeVisibleCount);
+            return offers.map((offer, index) => ({
                 offer,
                 role: 'full',
-                className: 'home_latest_offers__item--full'
+                className: index >= fullStart && index < fullEnd ? 'home_latest_offers__item--full' : ''
             }));
         },
         homeSearchMatchingCarouselState() {
@@ -5108,6 +5110,7 @@ createApp({
                 this.loadMessagesForChat(nextChatId, { force: false });
                 nextTick(() => {
                     this.scrollMessagesThreadToBottom({ force: true });
+                    this.focusMessagesComposerInput({ preventScroll: true });
                 });
                 return;
             }
@@ -8019,10 +8022,10 @@ createApp({
             const hasRightPeek = safeOffset < maxOffset;
             const fullStart = safeOffset;
             const fullEnd = Math.min(offerCount, fullStart + edgeVisibleCount);
-            const trackItems = normalizedOffers.map((offer) => ({
+            const trackItems = normalizedOffers.map((offer, index) => ({
                 offer,
                 role: 'full',
-                className: 'home_latest_offers__item--full'
+                className: index >= fullStart && index < fullEnd ? 'home_latest_offers__item--full' : ''
             }));
             const renderItems = [];
 
@@ -12199,6 +12202,7 @@ createApp({
             if (normalizedChatId === this.normalizeProfileUserId(this.messagesActiveChatId)) {
                 nextTick(() => {
                     this.scrollMessagesThreadToBottom({ force: true });
+                    this.focusMessagesComposerInput({ preventScroll: true });
                 });
                 return;
             }
@@ -12812,6 +12816,22 @@ createApp({
                 }
             });
             this.messagesComposerAttachments = [];
+        },
+        focusMessagesComposerInput({ preventScroll = true } = {}) {
+            if (!this.messagesActiveChat || this.messagesActiveChatClosed) {
+                return;
+            }
+
+            const composerInput = document.querySelector('[data-messages-composer-input]');
+            if (!composerInput || composerInput.disabled || composerInput.readOnly) {
+                return;
+            }
+
+            try {
+                composerInput.focus({ preventScroll: Boolean(preventScroll) });
+            } catch {
+                composerInput.focus();
+            }
         },
         handleMessagesComposerEnterKey(event) {
             if (event && typeof event.preventDefault === 'function') {
@@ -16096,6 +16116,16 @@ createApp({
             }
 
             surfaces.forEach((surface) => {
+                if (surface.closest('.messages_image_modal')) {
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY)) {
+                        surface.style.removeProperty(MODAL_WIDTH_TARGET_PROPERTY);
+                    }
+                    if (surface.style.getPropertyValue(MODAL_WIDTH_INLINE_PROPERTY)) {
+                        surface.style.removeProperty(MODAL_WIDTH_INLINE_PROPERTY);
+                    }
+                    return;
+                }
+
                 const modalContainer = surface.closest(MODAL_CONTAINER_SELECTOR);
                 if (!modalContainer) {
                     if (surface.style.getPropertyValue(MODAL_WIDTH_TARGET_PROPERTY)) {
