@@ -4609,7 +4609,9 @@ createApp({
                 Math.max(0, Number.isFinite(this.homeOffersCarouselIndex) ? this.homeOffersCarouselIndex : 0),
                 offers.length - 1
             );
-            const slotOffsets = [-2, -1, 0, 1, 2];
+            const slotOffsets = offers.length >= 7
+                ? [-3, -2, -1, 0, 1, 2, 3]
+                : [-2, -1, 0, 1, 2];
 
             return slotOffsets.map((relativeOffset, slotIndex) => {
                 const wrappedIndex = ((safeActiveIndex + relativeOffset) % offers.length + offers.length) % offers.length;
@@ -4619,10 +4621,14 @@ createApp({
                     positionClass = 'home_offers_reel__card--left-1';
                 } else if (relativeOffset === -2) {
                     positionClass = 'home_offers_reel__card--left-2';
+                } else if (relativeOffset === -3) {
+                    positionClass = 'home_offers_reel__card--left-3';
                 } else if (relativeOffset === 1) {
                     positionClass = 'home_offers_reel__card--right-1';
                 } else if (relativeOffset === 2) {
                     positionClass = 'home_offers_reel__card--right-2';
+                } else if (relativeOffset === 3) {
+                    positionClass = 'home_offers_reel__card--right-3';
                 }
 
                 return {
