@@ -21,9 +21,10 @@
                         <a class="repo_menu__item"
                            th:href="${repositoryBoardPath}">nav.repositoryBoard</a>
                     </div>
-                    <th:block th:if="${currentPageClass != 'page-home'}">
+                    <div class="header_home_search_slot"
+                         data-home-header-search-slot>
                         <th:block th:replace="~{partials/header-search :: searchWidget}"></th:block>
-                    </th:block>
+                    </div>
                 </div>
             </div>
 

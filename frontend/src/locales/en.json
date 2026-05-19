@@ -473,6 +473,11 @@
             "title": "Frankfurt am Main is calling",
             "description": "Find reliable care in Frankfurt am Main and start your next trip without stress.",
             "linkLabel": "Find care in Frankfurt"
+          },
+          "dresden": {
+            "title": "Trip to Dresden",
+            "description": "Plan your trip to Dresden and find loving pet care from July 1, 2026 to September 30, 2026.",
+            "linkLabel": "Find care in Dresden"
           }
         }
       },

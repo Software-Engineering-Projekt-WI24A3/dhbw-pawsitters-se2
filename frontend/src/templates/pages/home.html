@@ -93,6 +93,9 @@
                       data-home-hero-frankfurt-title=#{home.page.hero.slides.frankfurt.title},
                       data-home-hero-frankfurt-description=#{home.page.hero.slides.frankfurt.description},
                       data-home-hero-frankfurt-link-label=#{home.page.hero.slides.frankfurt.linkLabel},
+                      data-home-hero-dresden-title=#{home.page.hero.slides.dresden.title},
+                      data-home-hero-dresden-description=#{home.page.hero.slides.dresden.description},
+                      data-home-hero-dresden-link-label=#{home.page.hero.slides.dresden.linkLabel},
                       data-home-untitled-offer=#{home.page.untitledOffer},
                       data-home-open-details-template=#{home.page.openDetailsTemplate},
                       data-home-modal-close-aria=#{home.page.modal.closeAria},
@@ -198,7 +201,7 @@
 
                         <div class="home_offers_reel__viewport">
                             <article v-for="item in homeCarouselRenderItems"
-                                     :key="'home-offer-card-' + item.offer.id"
+                                     :key="'home-offer-card-' + item.renderKey"
                                      class="home_offers_reel__card"
                                      :class="item.positionClass">
                                 <button v-if="item.isCenter"
