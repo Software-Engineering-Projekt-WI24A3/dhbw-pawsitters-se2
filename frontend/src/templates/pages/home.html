@@ -199,7 +199,12 @@
                             </svg>
                         </button>
 
-                        <div class="home_offers_reel__viewport">
+                        <div class="home_offers_reel__viewport"
+                             :class="{ 'home_offers_reel__viewport--dragging': homeOffersSwipeActive }"
+                             @pointerdown="handleHomeOffersCarouselPointerDown"
+                             @pointermove="handleHomeOffersCarouselPointerMove"
+                             @pointerup="handleHomeOffersCarouselPointerUp"
+                             @pointercancel="handleHomeOffersCarouselPointerCancel">
                             <article v-for="item in homeCarouselRenderItems"
                                      :key="'home-offer-card-' + item.renderKey"
                                      class="home_offers_reel__card"

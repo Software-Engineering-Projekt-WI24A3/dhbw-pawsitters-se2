@@ -294,6 +294,11 @@ const HEADER_SCROLL_PROGRESS_RANGE_PX = 84;
 const HEADER_SCROLL_COMPACT_ENTER_PX = 22;
 const HEADER_SCROLL_COMPACT_EXIT_PX = 8;
 const HOME_LATEST_CAROUSEL_VISIBLE_COUNT = 6;
+const HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS = 3;
+const HOME_OFFERS_CAROUSEL_MAX_RENDER_ITEMS = (HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS * 2) + 1;
+const HOME_OFFERS_CAROUSEL_SWIPE_DISTANCE_PX = 56;
+const HOME_OFFERS_CAROUSEL_SWIPE_VELOCITY_PX_PER_MS = 0.42;
+const HOME_OFFERS_CAROUSEL_SWIPE_AXIS_LOCK_RATIO = 1.15;
 const HEADER_SCROLL_PROGRESS_EPSILON = 0.0015;
 const HEADER_SCROLL_PROGRESS_PRECISION = 360;
 const HEADER_SCROLL_PROGRESS_LOW_PERF_PRECISION = 90;
@@ -3230,6 +3235,14 @@ createApp({
             homeOfferSpeciesFilter: 'ALL',
             homeOffers: [],
             homeOffersCarouselIndex: 0,
+            homeOffersSwipeActive: false,
+            homeOffersSwipePointerId: null,
+            homeOffersSwipeStartX: 0,
+            homeOffersSwipeStartY: 0,
+            homeOffersSwipeLastX: 0,
+            homeOffersSwipeLastY: 0,
+            homeOffersSwipeStartedAt: 0,
+            homeOffersSwipeAxis: '',
             homeLatestOffers: [],
             homeLatestOfferLoadRequestId: 0,
             homeLatestCarouselOffset: 0,
@@ -4602,43 +4615,51 @@ createApp({
         },
         homeCarouselRenderItems() {
             const offers = Array.isArray(this.homeFilteredOffers) ? this.homeFilteredOffers : [];
-            if (!offers.length) {
+            const offerCount = offers.length;
+            if (!offerCount) {
                 return [];
             }
             const safeActiveIndex = Math.min(
                 Math.max(0, Number.isFinite(this.homeOffersCarouselIndex) ? this.homeOffersCarouselIndex : 0),
-                offers.length - 1
+                offerCount - 1
             );
-            const slotOffsets = [-2, -1, 0, 1, 2];
+            const renderIndexes = [];
 
-            return slotOffsets.map((relativeOffset, slotIndex) => {
-                const wrappedIndex = ((safeActiveIndex + relativeOffset) % offers.length + offers.length) % offers.length;
-                const offer = offers[wrappedIndex];
-                let positionClass = 'home_offers_reel__card--center';
-                if (relativeOffset === -1) {
-                    positionClass = 'home_offers_reel__card--left-1';
-                } else if (relativeOffset === -2) {
-                    positionClass = 'home_offers_reel__card--left-2';
-                } else if (relativeOffset === -3) {
-                    positionClass = 'home_offers_reel__card--left-3';
-                } else if (relativeOffset === 1) {
-                    positionClass = 'home_offers_reel__card--right-1';
-                } else if (relativeOffset === 2) {
-                    positionClass = 'home_offers_reel__card--right-2';
-                } else if (relativeOffset === 3) {
-                    positionClass = 'home_offers_reel__card--right-3';
+            if (offerCount <= HOME_OFFERS_CAROUSEL_MAX_RENDER_ITEMS) {
+                for (let index = 0; index < offerCount; index += 1) {
+                    renderIndexes.push(index);
                 }
+            } else {
+                for (let relativeOffset = -HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS; relativeOffset <= HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS; relativeOffset += 1) {
+                    const wrappedIndex = ((safeActiveIndex + relativeOffset) % offerCount + offerCount) % offerCount;
+                    renderIndexes.push(wrappedIndex);
+                }
+            }
 
-                return {
-                    offer,
-                    index: wrappedIndex,
-                    relativeOffset,
-                    absoluteOffset: Math.abs(relativeOffset),
-                    isCenter: relativeOffset === 0,
-                    positionClass,
-                    renderKey: `${wrappedIndex}-${relativeOffset}-${slotIndex}`
-                };
-            });
+            return renderIndexes
+                .map((index) => {
+                    const offer = offers[index];
+                    const relativeOffset = this.getHomeOffersCarouselRelativeOffset(index, offerCount);
+                    if (!Number.isInteger(relativeOffset) || Math.abs(relativeOffset) > HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS) {
+                        return null;
+                    }
+
+                    const offerKey = Number.isInteger(offer?.id) && offer.id > 0
+                        ? offer.id
+                        : `index-${index}`;
+
+                    return {
+                        offer,
+                        index,
+                        relativeOffset,
+                        absoluteOffset: Math.abs(relativeOffset),
+                        isCenter: relativeOffset === 0,
+                        positionClass: this.resolveHomeOffersCarouselPositionClass(relativeOffset),
+                        renderKey: offerKey
+                    };
+                })
+                .filter((item) => item !== null)
+                .sort((firstItem, secondItem) => firstItem.relativeOffset - secondItem.relativeOffset);
         },
         homeLatestFilteredOffers() {
             const offers = Array.isArray(this.homeLatestOffers) ? this.homeLatestOffers : [];
@@ -5328,6 +5349,7 @@ createApp({
             this.syncMessagesQueryChat(null);
         },
         homeFilteredOffers(nextValue) {
+            this.resetHomeOffersCarouselSwipeState();
             if (!Array.isArray(nextValue) || !nextValue.length) {
                 this.homeOffersCarouselIndex = 0;
                 if (!this.homeLatestFilteredOffers.length) {
@@ -5567,6 +5589,7 @@ createApp({
         this.disconnectMessagesSocket();
         this.stopMessagesFallbackRefresh();
         this.closeHomeOfferDetailModal();
+        this.resetHomeOffersCarouselSwipeState();
         this.clearMyOffersFormImageSelection();
         this.clearMyOffersLocalImageMap();
         if (this.segmentedIndicatorRetryFrame > 0) {
@@ -8457,6 +8480,174 @@ createApp({
             const dropdownElement = event?.currentTarget?.closest?.('details.repo_menu');
             if (dropdownElement) {
                 this.closeDropdown(dropdownElement, { immediate: true });
+            }
+        },
+        resolveHomeOffersCarouselPositionClass(relativeOffset = 0) {
+            if (relativeOffset === -3) {
+                return 'home_offers_reel__card--left-3';
+            }
+            if (relativeOffset === -2) {
+                return 'home_offers_reel__card--left-2';
+            }
+            if (relativeOffset === -1) {
+                return 'home_offers_reel__card--left-1';
+            }
+            if (relativeOffset === 1) {
+                return 'home_offers_reel__card--right-1';
+            }
+            if (relativeOffset === 2) {
+                return 'home_offers_reel__card--right-2';
+            }
+            if (relativeOffset === 3) {
+                return 'home_offers_reel__card--right-3';
+            }
+            return 'home_offers_reel__card--center';
+        },
+        resetHomeOffersCarouselSwipeState(targetElement = null) {
+            const activePointerId = Number.isFinite(this.homeOffersSwipePointerId)
+                ? this.homeOffersSwipePointerId
+                : null;
+
+            if (
+                targetElement instanceof Element
+                && activePointerId !== null
+                && typeof targetElement.releasePointerCapture === 'function'
+            ) {
+                try {
+                    targetElement.releasePointerCapture(activePointerId);
+                } catch {
+                    // Ignore release errors when the pointer capture is already cleared.
+                }
+            }
+
+            this.homeOffersSwipeActive = false;
+            this.homeOffersSwipePointerId = null;
+            this.homeOffersSwipeStartX = 0;
+            this.homeOffersSwipeStartY = 0;
+            this.homeOffersSwipeLastX = 0;
+            this.homeOffersSwipeLastY = 0;
+            this.homeOffersSwipeStartedAt = 0;
+            this.homeOffersSwipeAxis = '';
+        },
+        handleHomeOffersCarouselPointerDown(event) {
+            if (
+                !event
+                || !Array.isArray(this.homeFilteredOffers)
+                || this.homeFilteredOffers.length <= 1
+                || !Number.isFinite(event.clientX)
+                || !Number.isFinite(event.clientY)
+            ) {
+                return;
+            }
+
+            if (event.pointerType === 'mouse' && event.button !== 0) {
+                return;
+            }
+
+            const pointerId = Number.isFinite(event.pointerId) ? event.pointerId : null;
+            const targetElement = event.currentTarget instanceof Element ? event.currentTarget : null;
+
+            this.homeOffersSwipeActive = true;
+            this.homeOffersSwipePointerId = pointerId;
+            this.homeOffersSwipeStartX = event.clientX;
+            this.homeOffersSwipeStartY = event.clientY;
+            this.homeOffersSwipeLastX = event.clientX;
+            this.homeOffersSwipeLastY = event.clientY;
+            this.homeOffersSwipeStartedAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
+            this.homeOffersSwipeAxis = '';
+
+            if (
+                targetElement
+                && pointerId !== null
+                && typeof targetElement.setPointerCapture === 'function'
+            ) {
+                try {
+                    targetElement.setPointerCapture(pointerId);
+                } catch {
+                    // Ignore capture errors and continue with normal pointer propagation.
+                }
+            }
+        },
+        handleHomeOffersCarouselPointerMove(event) {
+            if (
+                !this.homeOffersSwipeActive
+                || !event
+                || !Number.isFinite(event.clientX)
+                || !Number.isFinite(event.clientY)
+            ) {
+                return;
+            }
+
+            if (
+                Number.isFinite(this.homeOffersSwipePointerId)
+                && Number.isFinite(event.pointerId)
+                && event.pointerId !== this.homeOffersSwipePointerId
+            ) {
+                return;
+            }
+
+            this.homeOffersSwipeLastX = event.clientX;
+            this.homeOffersSwipeLastY = event.clientY;
+
+            const deltaX = event.clientX - this.homeOffersSwipeStartX;
+            const deltaY = event.clientY - this.homeOffersSwipeStartY;
+            const absX = Math.abs(deltaX);
+            const absY = Math.abs(deltaY);
+
+            if (!this.homeOffersSwipeAxis && (absX > 8 || absY > 8)) {
+                this.homeOffersSwipeAxis = absX > (absY * HOME_OFFERS_CAROUSEL_SWIPE_AXIS_LOCK_RATIO) ? 'x' : 'y';
+            }
+
+            if (this.homeOffersSwipeAxis === 'x' && absX > 10) {
+                event.preventDefault();
+            }
+        },
+        handleHomeOffersCarouselPointerUp(event) {
+            if (
+                !this.homeOffersSwipeActive
+                || !event
+                || !Number.isFinite(event.clientX)
+                || !Number.isFinite(event.clientY)
+            ) {
+                return;
+            }
+
+            if (
+                Number.isFinite(this.homeOffersSwipePointerId)
+                && Number.isFinite(event.pointerId)
+                && event.pointerId !== this.homeOffersSwipePointerId
+            ) {
+                return;
+            }
+
+            const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+            const elapsedMs = Math.max(1, now - this.homeOffersSwipeStartedAt);
+            const deltaX = event.clientX - this.homeOffersSwipeStartX;
+            const deltaY = event.clientY - this.homeOffersSwipeStartY;
+            const absX = Math.abs(deltaX);
+            const absY = Math.abs(deltaY);
+            const swipeVelocity = absX / elapsedMs;
+            const isHorizontalSwipe = this.homeOffersSwipeAxis === 'x'
+                || absX > (absY * HOME_OFFERS_CAROUSEL_SWIPE_AXIS_LOCK_RATIO);
+            const passedSwipeThreshold = absX >= HOME_OFFERS_CAROUSEL_SWIPE_DISTANCE_PX
+                || swipeVelocity >= HOME_OFFERS_CAROUSEL_SWIPE_VELOCITY_PX_PER_MS;
+
+            if (isHorizontalSwipe && passedSwipeThreshold) {
+                this.navigateHomeOffersCarousel(deltaX < 0 ? 1 : -1);
+            }
+
+            const targetElement = event.currentTarget instanceof Element ? event.currentTarget : null;
+            this.resetHomeOffersCarouselSwipeState(targetElement);
+        },
+        handleHomeOffersCarouselPointerCancel(event) {
+            if (
+                this.homeOffersSwipeActive
+                && (!Number.isFinite(this.homeOffersSwipePointerId)
+                    || !Number.isFinite(event?.pointerId)
+                    || event.pointerId === this.homeOffersSwipePointerId)
+            ) {
+                const targetElement = event?.currentTarget instanceof Element ? event.currentTarget : null;
+                this.resetHomeOffersCarouselSwipeState(targetElement);
             }
         },
         getHomeOffersCarouselRelativeOffset(index, totalCount = null) {
