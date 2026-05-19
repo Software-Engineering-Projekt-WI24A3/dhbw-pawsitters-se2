@@ -266,7 +266,7 @@
                                                         class="messages_request_notice__pet">
                                                         <img class="messages_request_notice__pet_icon"
                                                              :src="pet.iconPath"
-                                                             :alt="pet.speciesLabel ? `${pet.speciesLabel} ` : ''"
+                                                             :alt="pet.speciesLabel ? (pet.speciesLabel + ' ') : ''"
                                                              loading="lazy"
                                                              decoding="async">
                                                         <button class="messages_request_notice__pet_name messages_request_notice__pet_name_button"

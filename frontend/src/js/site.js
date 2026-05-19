@@ -9170,11 +9170,6 @@ createApp({
                 ]);
 
                 const resultList = [acceptedResult, activeResult, historyResult];
-                if (resultList.some((entry) => entry.response.status === 401 || entry.response.status === 403)) {
-                    this.myOffersViewError = this.myOffersStrings.authRequired;
-                    window.location.assign(this.buildNotFoundPath());
-                    return;
-                }
 
                 const normalizeBookingList = (entry) => {
                     if (!entry.response.ok || entry.payload?.success === false) {
