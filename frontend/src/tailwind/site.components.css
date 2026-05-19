@@ -4218,11 +4218,9 @@
         --home-latest-fade-width: clamp(1.6rem, 4vw, 2.8rem);
         --home-latest-edge-surface: rgba(246, 248, 250, 0.96);
         --home-latest-nav-size: 2.7rem;
-        --home-latest-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
-        --home-latest-move-duration: 760ms;
-        --home-latest-fade-duration: 540ms;
-        --home-latest-enter-shift: calc(var(--home-latest-card-width) + var(--home-latest-card-gap));
-        --home-latest-leave-shift: calc((var(--home-latest-card-width) + var(--home-latest-card-gap)) * -1);
+        --home-latest-motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --home-latest-track-duration: 840ms;
+        --home-latest-offset: 0;
         position: relative;
         width: min(100%, 88rem);
         min-height: clamp(12.6rem, 24vw, 14.8rem);
@@ -4231,13 +4229,11 @@
     }
 
     .home_latest_offers__carousel--forward {
-        --home-latest-enter-shift: calc(var(--home-latest-card-width) + var(--home-latest-card-gap));
-        --home-latest-leave-shift: calc((var(--home-latest-card-width) + var(--home-latest-card-gap)) * -1);
+        --home-latest-motion-ease: cubic-bezier(0.19, 0.82, 0.3, 1);
     }
 
     .home_latest_offers__carousel--backward {
-        --home-latest-enter-shift: calc((var(--home-latest-card-width) + var(--home-latest-card-gap)) * -1);
-        --home-latest-leave-shift: calc(var(--home-latest-card-width) + var(--home-latest-card-gap));
+        --home-latest-motion-ease: cubic-bezier(0.19, 0.82, 0.3, 1);
     }
 
     .home_latest_offers__viewport {
@@ -4291,12 +4287,17 @@
     }
 
     .home_latest_offers__track {
+        --home-latest-step-size: calc(var(--home-latest-card-width) + var(--home-latest-card-gap));
         display: flex;
         align-items: stretch;
         gap: var(--home-latest-card-gap);
         min-height: clamp(11.4rem, 23vw, 13.4rem);
         width: 100%;
         position: relative;
+        transform: translate3d(calc(var(--home-latest-step-size) * var(--home-latest-offset) * -1), 0, 0);
+        transition: transform var(--home-latest-track-duration) var(--home-latest-motion-ease);
+        will-change: transform;
+        backface-visibility: hidden;
     }
 
     .home_latest_offers__item {
@@ -4304,9 +4305,6 @@
         flex: 0 0 var(--home-latest-card-width);
         width: var(--home-latest-card-width);
         overflow: hidden;
-        will-change: transform, opacity;
-        transform: translate3d(0, 0, 0);
-        backface-visibility: hidden;
     }
 
     .home_latest_offers__item--full {
@@ -4455,43 +4453,14 @@
         @apply outline-none ring-2 ring-black/20;
     }
 
-    .home_latest_carousel-enter-active,
-    .home_latest_carousel-leave-active {
-        transition:
-            transform var(--home-latest-move-duration) var(--home-latest-motion-ease),
-            opacity var(--home-latest-fade-duration) ease-out;
-        will-change: transform, opacity;
-    }
-
-    .home_latest_carousel-move {
-        transition: transform var(--home-latest-move-duration) var(--home-latest-motion-ease);
-        will-change: transform;
-    }
-
-    .home_latest_carousel-leave-active {
-        position: absolute;
-        pointer-events: none;
-    }
-
-    .home_latest_carousel-enter-from {
-        opacity: 0;
-        transform: translate3d(var(--home-latest-enter-shift), 0, 0) scale(0.992);
-    }
-
-    .home_latest_carousel-leave-to {
-        opacity: 0;
-        transform: translate3d(var(--home-latest-leave-shift), 0, 0) scale(0.992);
-    }
-
     @media (prefers-reduced-motion: reduce) {
+        .home_latest_offers__track,
         .home_latest_offers__item {
             will-change: auto;
             transform: none;
         }
 
-        .home_latest_carousel-enter-active,
-        .home_latest_carousel-leave-active,
-        .home_latest_carousel-move {
+        .home_latest_offers__track {
             transition: none;
         }
     }
@@ -4682,20 +4651,32 @@
     }
 
     .messages_split {
-        @apply grid h-full min-h-[24rem] gap-3;
+        --messages-chat-item-height: 4.12rem;
+        --messages-chat-item-gap: 0.12rem;
+        --messages-shared-pane-height: calc((var(--messages-chat-item-height) * 5.5) + (var(--messages-chat-item-gap) * 4.5) + 1rem);
+        @apply grid gap-3;
         grid-template-columns: minmax(13rem, 1fr) minmax(0, 4fr);
+    }
+
+    .messages_sidebar,
+    .messages_conversation {
+        height: var(--messages-shared-pane-height);
+        min-height: var(--messages-shared-pane-height);
+        max-height: var(--messages-shared-pane-height);
     }
 
     .messages_sidebar {
         @apply overflow-y-auto rounded-[1.45rem] border border-black/10 p-2;
         background: rgba(255, 255, 255, 0.8);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
-        max-height: min(68dvh, 44rem);
+        overflow-x: hidden;
+        scrollbar-width: thin;
     }
 
     .messages_chat_item {
         @apply flex w-full items-start gap-2 rounded-[1rem] border border-transparent px-2 py-2 text-left transition duration-300;
         background: transparent;
+        min-height: var(--messages-chat-item-height);
     }
 
     .messages_chat_item + .messages_chat_item {
@@ -4775,6 +4756,8 @@
             0 16px 34px rgba(12, 18, 28, 0.11),
             inset 0 1px 0 rgba(255, 255, 255, 0.9);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .messages_conversation--active-chat {
@@ -4787,7 +4770,7 @@
     }
 
     .messages_empty_selection {
-        @apply grid h-full min-h-[24rem] place-items-center px-4 py-8 text-center;
+        @apply grid h-full min-h-0 place-items-center px-4 py-8 text-center;
     }
 
     .messages_empty_selection__icon {
@@ -4820,7 +4803,7 @@
     .messages_thread {
         @apply grid h-full;
         grid-template-rows: auto minmax(0, 1fr) auto;
-        min-height: min(70dvh, 48rem);
+        min-height: 0;
     }
 
     .messages_thread__header {
@@ -4897,7 +4880,7 @@
         top: calc(100% + 0.5rem);
     }
 
-    .messages_thread__dismiss_action {
+    .messages_thread__actions .messages_thread__dismiss_action {
         position: static;
         right: auto;
         top: auto;
@@ -5297,15 +5280,14 @@
 
         .messages_split {
             grid-template-columns: minmax(0, 1fr);
-            min-height: auto;
         }
 
         .messages_sidebar {
-            max-height: min(34dvh, 18rem);
+            max-height: var(--messages-shared-pane-height);
         }
 
         .messages_conversation {
-            min-height: clamp(19rem, 58vh, 33rem);
+            min-height: var(--messages-shared-pane-height);
         }
     }
 
