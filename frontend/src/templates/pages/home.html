@@ -198,7 +198,7 @@
 
                 <template v-if="homeLatestFilteredOffers.length">
                     <div class="home_latest_offers__carousel"
-                         :style="{ '--home-latest-visible-count': String(homeLatestEdgeVisibleCount || 1) }"
+                         :style="buildHomeLatestCarouselStyle(homeLatestEdgeVisibleCount, homeLatestSafeOffset)"
                          :class="{
                              'home_latest_offers__carousel--has-left': homeLatestHasLeftPeek,
                              'home_latest_offers__carousel--has-right': homeLatestHasRightPeek,
@@ -216,10 +216,8 @@
                         </button>
 
                         <div class="home_latest_offers__viewport">
-                            <transition-group name="home_latest_carousel"
-                                              tag="div"
-                                              class="home_latest_offers__track">
-                                <article v-for="item in homeLatestCarouselRenderItems"
+                            <div class="home_latest_offers__track">
+                                <article v-for="item in homeLatestCarouselTrackItems"
                                          :key="'home-latest-offer-' + item.offer.id"
                                          class="home_latest_offers__item"
                                          :data-role="item.role"
@@ -258,7 +256,7 @@
                                         </span>
                                     </button>
                                 </article>
-                            </transition-group>
+                            </div>
                         </div>
 
                         <button class="my_offers_carousel__nav my_offers_carousel__nav--next"

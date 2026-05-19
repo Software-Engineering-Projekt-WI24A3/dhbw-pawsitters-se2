@@ -4512,14 +4512,21 @@ createApp({
 
             return renderItems;
         },
+        homeLatestCarouselTrackItems() {
+            const offers = Array.isArray(this.homeLatestFilteredOffers) ? this.homeLatestFilteredOffers : [];
+            return offers.map((offer) => ({
+                offer,
+                role: 'full',
+                className: 'home_latest_offers__item--full'
+            }));
+        },
         homeSearchMatchingCarouselState() {
             const offers = Array.isArray(this.homeSearchMatchingOffers)
                 ? this.homeSearchMatchingOffers.slice(0, 10)
                 : [];
             return this.buildOfferPeekCarouselState(
                 offers,
-                this.homeSearchMatchingCarouselOffset,
-                this.homeLatestViewportWidth
+                this.homeSearchMatchingCarouselOffset
             );
         },
         homeSearchAlternativeCarouselState() {
@@ -4528,8 +4535,7 @@ createApp({
                 : [];
             return this.buildOfferPeekCarouselState(
                 offers,
-                this.homeSearchAlternativeCarouselOffset,
-                this.homeLatestViewportWidth
+                this.homeSearchAlternativeCarouselOffset
             );
         },
         homeOfferDetailOffer() {
@@ -5101,7 +5107,7 @@ createApp({
                 this.syncMessagesQueryChat(nextChatId);
                 this.loadMessagesForChat(nextChatId, { force: false });
                 nextTick(() => {
-                    this.scrollMessagesThreadToBottom({ force: false });
+                    this.scrollMessagesThreadToBottom({ force: true });
                 });
                 return;
             }
@@ -8000,6 +8006,7 @@ createApp({
                     safeOffset: 0,
                     hasLeftPeek: false,
                     hasRightPeek: false,
+                    trackItems: [],
                     renderItems: []
                 };
             }
@@ -8012,6 +8019,11 @@ createApp({
             const hasRightPeek = safeOffset < maxOffset;
             const fullStart = safeOffset;
             const fullEnd = Math.min(offerCount, fullStart + edgeVisibleCount);
+            const trackItems = normalizedOffers.map((offer) => ({
+                offer,
+                role: 'full',
+                className: 'home_latest_offers__item--full'
+            }));
             const renderItems = [];
 
             for (let index = fullStart; index < fullEnd; index += 1) {
@@ -8028,7 +8040,20 @@ createApp({
                 safeOffset,
                 hasLeftPeek,
                 hasRightPeek,
+                trackItems,
                 renderItems
+            };
+        },
+        buildHomeLatestCarouselStyle(edgeVisibleCount = 0, safeOffset = 0) {
+            const normalizedVisibleCount = Number.isFinite(Number(edgeVisibleCount))
+                ? Math.max(1, Math.round(Number(edgeVisibleCount)))
+                : 1;
+            const normalizedOffset = Number.isFinite(Number(safeOffset))
+                ? Math.max(0, Math.round(Number(safeOffset)))
+                : 0;
+            return {
+                '--home-latest-visible-count': String(normalizedVisibleCount),
+                '--home-latest-offset': String(normalizedOffset)
             };
         },
         navigateHomeSearchMatchingCarousel(direction = 1) {
@@ -12169,6 +12194,12 @@ createApp({
         selectMessagesChat(chatId) {
             const normalizedChatId = this.normalizeProfileUserId(chatId);
             if (!Number.isInteger(normalizedChatId) || normalizedChatId <= 0) {
+                return;
+            }
+            if (normalizedChatId === this.normalizeProfileUserId(this.messagesActiveChatId)) {
+                nextTick(() => {
+                    this.scrollMessagesThreadToBottom({ force: true });
+                });
                 return;
             }
             this.messagesActiveChatId = normalizedChatId;

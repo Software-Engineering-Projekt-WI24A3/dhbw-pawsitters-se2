@@ -76,7 +76,7 @@
 
                     <template v-if="homeSearchMatchingOffers.length">
                         <div class="home_latest_offers__carousel"
-                             :style="{ '--home-latest-visible-count': String(homeSearchMatchingCarouselState.edgeVisibleCount || 1) }"
+                             :style="buildHomeLatestCarouselStyle(homeSearchMatchingCarouselState.edgeVisibleCount, homeSearchMatchingCarouselState.safeOffset)"
                              :class="{
                                  'home_latest_offers__carousel--has-left': homeSearchMatchingCarouselState.hasLeftPeek,
                                  'home_latest_offers__carousel--has-right': homeSearchMatchingCarouselState.hasRightPeek,
@@ -94,10 +94,8 @@
                             </button>
 
                             <div class="home_latest_offers__viewport">
-                                <transition-group name="home_latest_carousel"
-                                                  tag="div"
-                                                  class="home_latest_offers__track">
-                                    <article v-for="item in homeSearchMatchingCarouselState.renderItems"
+                                <div class="home_latest_offers__track">
+                                    <article v-for="item in homeSearchMatchingCarouselState.trackItems"
                                              :key="'home-search-match-offer-' + item.offer.id"
                                              class="home_latest_offers__item"
                                              :data-role="item.role"
@@ -136,7 +134,7 @@
                                             </span>
                                         </button>
                                     </article>
-                                </transition-group>
+                                </div>
                             </div>
 
                             <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
@@ -165,7 +163,7 @@
 
                     <template v-if="homeSearchAlternativeOffers.length">
                         <div class="home_latest_offers__carousel"
-                             :style="{ '--home-latest-visible-count': String(homeSearchAlternativeCarouselState.edgeVisibleCount || 1) }"
+                             :style="buildHomeLatestCarouselStyle(homeSearchAlternativeCarouselState.edgeVisibleCount, homeSearchAlternativeCarouselState.safeOffset)"
                              :class="{
                                  'home_latest_offers__carousel--has-left': homeSearchAlternativeCarouselState.hasLeftPeek,
                                  'home_latest_offers__carousel--has-right': homeSearchAlternativeCarouselState.hasRightPeek,
@@ -183,10 +181,8 @@
                             </button>
 
                             <div class="home_latest_offers__viewport">
-                                <transition-group name="home_latest_carousel"
-                                                  tag="div"
-                                                  class="home_latest_offers__track">
-                                    <article v-for="item in homeSearchAlternativeCarouselState.renderItems"
+                                <div class="home_latest_offers__track">
+                                    <article v-for="item in homeSearchAlternativeCarouselState.trackItems"
                                              :key="'home-search-alt-offer-' + item.offer.id"
                                              class="home_latest_offers__item"
                                              :data-role="item.role"
@@ -225,7 +221,7 @@
                                             </span>
                                         </button>
                                     </article>
-                                </transition-group>
+                                </div>
                             </div>
 
                             <button class="my_offers_carousel__nav my_offers_carousel__nav--next"
