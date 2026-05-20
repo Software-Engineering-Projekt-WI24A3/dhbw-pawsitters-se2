@@ -298,7 +298,10 @@ const HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS = 3;
 const HOME_OFFERS_CAROUSEL_MAX_RENDER_ITEMS = (HOME_OFFERS_CAROUSEL_VISIBLE_RADIUS * 2) + 1;
 const HOME_OFFERS_CAROUSEL_SWIPE_DISTANCE_PX = 56;
 const HOME_OFFERS_CAROUSEL_SWIPE_VELOCITY_PX_PER_MS = 0.42;
+const HOME_OFFERS_CAROUSEL_SWIPE_MIN_DISTANCE_FOR_VELOCITY_PX = 18;
 const HOME_OFFERS_CAROUSEL_SWIPE_AXIS_LOCK_RATIO = 1.15;
+const HOME_OFFERS_PRIMARY_REQUEST_FALLBACK_DELAY_MS = 1400;
+const HOME_OFFERS_FALLBACK_LIMIT = 25;
 const HEADER_SCROLL_PROGRESS_EPSILON = 0.0015;
 const HEADER_SCROLL_PROGRESS_PRECISION = 360;
 const HEADER_SCROLL_PROGRESS_LOW_PERF_PRECISION = 90;
@@ -8310,11 +8313,9 @@ createApp({
             this.startHomeHeroAutoplay();
 
             if (!Array.isArray(this.registerPetChoices) || !this.registerPetChoices.length) {
-                try {
-                    await this.loadRegisterPetChoices();
-                } catch {
+                this.loadRegisterPetChoices().catch(() => {
                     // Home species list gracefully falls back to defaults.
-                }
+                });
             }
 
             await Promise.allSettled([
@@ -8367,6 +8368,81 @@ createApp({
             this.homeOfferLoadRequestId = requestId;
             this.homeViewLoading = true;
             this.homeViewError = '';
+            let fallbackApplied = false;
+            let fallbackPromise = null;
+            let fallbackTimerId = null;
+
+            const normalizeOffersFromPayload = (payload = {}) => Array.isArray(payload?.data)
+                ? payload.data
+                    .map((offer) => this.normalizeMyOffer(offer))
+                    .filter((offer) => Number.isInteger(offer.id) && offer.id > 0)
+                : [];
+
+            const applyOffers = (offers = []) => {
+                this.homeOffers = offers;
+                this.homeOffersLoaded = true;
+                this.homeOffersCarouselIndex = 0;
+                this.prefetchHomeOfferHostCity(this.homeActiveOffer);
+            };
+
+            const loadFallbackOffers = ({ allowIfNotLoading = false } = {}) => {
+                if (fallbackPromise) {
+                    return fallbackPromise;
+                }
+
+                fallbackPromise = (async () => {
+                    if (requestId !== this.homeOfferLoadRequestId) {
+                        return false;
+                    }
+
+                    if (!allowIfNotLoading && !this.homeViewLoading) {
+                        return false;
+                    }
+
+                    const fallbackQuery = new URLSearchParams({
+                        limit: String(HOME_OFFERS_FALLBACK_LIMIT)
+                    });
+                    const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+                    if (Number.isInteger(sessionUserId) && sessionUserId > 0) {
+                        fallbackQuery.set('excludeHostId', String(sessionUserId));
+                    }
+
+                    try {
+                        const response = await apiFetch(`/api/marketplace/offers/latest?${fallbackQuery.toString()}`, {
+                            method: 'GET',
+                            headers: {
+                                Accept: 'application/json'
+                            },
+                            cache: 'no-store'
+                        });
+                        const payload = await response.json().catch(() => ({}));
+
+                        if (requestId !== this.homeOfferLoadRequestId) {
+                            return false;
+                        }
+
+                        if (!response.ok || payload?.success === false) {
+                            return false;
+                        }
+
+                        applyOffers(normalizeOffersFromPayload(payload));
+                        this.homeViewError = '';
+                        this.homeViewLoading = false;
+                        fallbackApplied = true;
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                })();
+
+                return fallbackPromise;
+            };
+
+            if (typeof window !== 'undefined') {
+                fallbackTimerId = window.setTimeout(() => {
+                    loadFallbackOffers();
+                }, HOME_OFFERS_PRIMARY_REQUEST_FALLBACK_DELAY_MS);
+            }
 
             try {
                 const response = await apiFetch('/api/marketplace/offers', {
@@ -8383,29 +8459,30 @@ createApp({
                 }
 
                 if (!response.ok || payload?.success === false) {
-                    this.homeOffers = [];
-                    this.homeViewError = this.homeStrings.loadFailed;
+                    const loadedFallbackOffers = fallbackApplied || await loadFallbackOffers({ allowIfNotLoading: true });
+                    if (!loadedFallbackOffers) {
+                        this.homeOffers = [];
+                        this.homeViewError = this.homeStrings.loadFailed;
+                    }
                     return;
                 }
 
-                const normalizedOffers = Array.isArray(payload?.data)
-                    ? payload.data
-                        .map((offer) => this.normalizeMyOffer(offer))
-                        .filter((offer) => Number.isInteger(offer.id) && offer.id > 0)
-                    : [];
-
-                this.homeOffers = normalizedOffers;
-                this.homeOffersLoaded = true;
-                this.homeOffersCarouselIndex = 0;
-                this.prefetchHomeOfferHostCity(this.homeActiveOffer);
+                applyOffers(normalizeOffersFromPayload(payload));
+                this.homeViewError = '';
             } catch {
                 if (requestId !== this.homeOfferLoadRequestId) {
                     return;
                 }
 
-                this.homeOffers = [];
-                this.homeViewError = this.homeStrings.loadFailed;
+                const loadedFallbackOffers = fallbackApplied || await loadFallbackOffers({ allowIfNotLoading: true });
+                if (!loadedFallbackOffers) {
+                    this.homeOffers = [];
+                    this.homeViewError = this.homeStrings.loadFailed;
+                }
             } finally {
+                if (typeof window !== 'undefined' && fallbackTimerId !== null) {
+                    window.clearTimeout(fallbackTimerId);
+                }
                 if (requestId === this.homeOfferLoadRequestId) {
                     this.homeViewLoading = false;
                 }
@@ -8503,23 +8580,7 @@ createApp({
             }
             return 'home_offers_reel__card--center';
         },
-        resetHomeOffersCarouselSwipeState(targetElement = null) {
-            const activePointerId = Number.isFinite(this.homeOffersSwipePointerId)
-                ? this.homeOffersSwipePointerId
-                : null;
-
-            if (
-                targetElement instanceof Element
-                && activePointerId !== null
-                && typeof targetElement.releasePointerCapture === 'function'
-            ) {
-                try {
-                    targetElement.releasePointerCapture(activePointerId);
-                } catch {
-                    // Ignore release errors when the pointer capture is already cleared.
-                }
-            }
-
+        resetHomeOffersCarouselSwipeState() {
             this.homeOffersSwipeActive = false;
             this.homeOffersSwipePointerId = null;
             this.homeOffersSwipeStartX = 0;
@@ -8545,7 +8606,6 @@ createApp({
             }
 
             const pointerId = Number.isFinite(event.pointerId) ? event.pointerId : null;
-            const targetElement = event.currentTarget instanceof Element ? event.currentTarget : null;
 
             this.homeOffersSwipeActive = true;
             this.homeOffersSwipePointerId = pointerId;
@@ -8555,18 +8615,6 @@ createApp({
             this.homeOffersSwipeLastY = event.clientY;
             this.homeOffersSwipeStartedAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
             this.homeOffersSwipeAxis = '';
-
-            if (
-                targetElement
-                && pointerId !== null
-                && typeof targetElement.setPointerCapture === 'function'
-            ) {
-                try {
-                    targetElement.setPointerCapture(pointerId);
-                } catch {
-                    // Ignore capture errors and continue with normal pointer propagation.
-                }
-            }
         },
         handleHomeOffersCarouselPointerMove(event) {
             if (
@@ -8629,15 +8677,16 @@ createApp({
             const swipeVelocity = absX / elapsedMs;
             const isHorizontalSwipe = this.homeOffersSwipeAxis === 'x'
                 || absX > (absY * HOME_OFFERS_CAROUSEL_SWIPE_AXIS_LOCK_RATIO);
+            const passedVelocityThreshold = absX >= HOME_OFFERS_CAROUSEL_SWIPE_MIN_DISTANCE_FOR_VELOCITY_PX
+                && swipeVelocity >= HOME_OFFERS_CAROUSEL_SWIPE_VELOCITY_PX_PER_MS;
             const passedSwipeThreshold = absX >= HOME_OFFERS_CAROUSEL_SWIPE_DISTANCE_PX
-                || swipeVelocity >= HOME_OFFERS_CAROUSEL_SWIPE_VELOCITY_PX_PER_MS;
+                || passedVelocityThreshold;
 
             if (isHorizontalSwipe && passedSwipeThreshold) {
                 this.navigateHomeOffersCarousel(deltaX < 0 ? 1 : -1);
             }
 
-            const targetElement = event.currentTarget instanceof Element ? event.currentTarget : null;
-            this.resetHomeOffersCarouselSwipeState(targetElement);
+            this.resetHomeOffersCarouselSwipeState();
         },
         handleHomeOffersCarouselPointerCancel(event) {
             if (
@@ -8646,8 +8695,7 @@ createApp({
                     || !Number.isFinite(event?.pointerId)
                     || event.pointerId === this.homeOffersSwipePointerId)
             ) {
-                const targetElement = event?.currentTarget instanceof Element ? event.currentTarget : null;
-                this.resetHomeOffersCarouselSwipeState(targetElement);
+                this.resetHomeOffersCarouselSwipeState();
             }
         },
         getHomeOffersCarouselRelativeOffset(index, totalCount = null) {
