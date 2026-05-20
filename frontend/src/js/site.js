@@ -73,17 +73,18 @@ const HOME_HERO_SLIDES = [
     },
     {
         id: 'helsinki',
-        imageUrl: 'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Helsinki-1.jpg',
+        imageUrl: 'https://traveltomorrow.com/wp-content/uploads/2025/08/a5cc399337d66684_org-scaled.jpg',
         searchQuery: {
             city: 'Helsinki'
         }
     },
     {
         id: 'frankfurt',
-        imageUrl: 'https://images.musement.com/cover/0064/01/frankfurt-old-town_header-6300753.jpeg',
+        imageUrl: 'https://www.rd.com/wp-content/uploads/2019/11/cat-10-e1573844975155-scaled.jpg',
         searchQuery: {
             city: 'Frankfurt am Main',
-            postalCode: '60559'
+            postalCode: '60559',
+            species: ['CAT']
         }
     },
     {
@@ -6562,6 +6563,15 @@ createApp({
             if (normalizedDateRange.end) {
                 query.set('toDate', normalizedDateRange.end);
             }
+
+            const selectedSpecies = (Array.isArray(filters?.species) || filters?.species instanceof Set
+                ? Array.from(filters.species)
+                : [filters?.species])
+                .map((species) => (typeof species === 'string' ? species.trim().toUpperCase() : ''))
+                .filter((species) => /^[A-Z][A-Z0-9_]*$/.test(species));
+            [...new Set(selectedSpecies)].forEach((species) => {
+                query.append('species', species);
+            });
 
             if (Number.isInteger(this.authSessionUserId) && this.authSessionUserId > 0) {
                 query.set('excludeHostId', String(this.authSessionUserId));
