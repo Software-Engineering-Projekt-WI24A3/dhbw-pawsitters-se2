@@ -31,8 +31,6 @@ Im "Pawsitters"-Projekt hat sich der Einsatz von KI als äußerst wertvoller Heb
 
 ---
 
----
-
 # Konkrete KI Prompts
 
 Die folgenden Prompts sind thematisch geordnet. Die ursprünglichen Prompt-Nummern bleiben erhalten, damit die Historie und Verweise nachvollziehbar bleiben. Datumsangaben wurden in den Prompt-Köpfen bewusst entfernt; Zeitstempel innerhalb eingefügter Logs oder API-Antworten bleiben als Originalinhalt erhalten.
@@ -44,9 +42,9 @@ Die folgenden Prompts sind thematisch geordnet. Die ursprünglichen Prompt-Numme
 | Projektstrategie, Grundarchitektur und Basismodell | 1-12 | 12 |
 | API-Grundlagen, Auth, User und Pets | 13-25, 78-79 | 15 |
 | Marketplace, Angebote und Offer-API | 26-38 | 13 |
-| Security, Passwörter und Datenschutz | 66-77, 82, 216 | 14 |
-| Präsentation und Projektdokumentation | 39-41, 80-81, 83, 229-231 | 9 |
-| CI/CD, Docker, Deployment und Datenbankbetrieb | 42-65, 84-147, 217-228 | 100 |
+| Security, Passwörter und Datenschutz | 66-77, 82, 216, 242-244, 246-247 | 19 |
+| Präsentation, Folien und Projektdokumentation | 39-41, 80-81, 83, 229-234, 236-241, 248-250 | 21 |
+| CI/CD, Docker, Deployment, Datenbankbetrieb und Tests | 42-65, 84-147, 217-228, 235, 245, 251 | 103 |
 | Chat, Realtime und Profilbilder | 148-167 | 20 |
 | Host-Profile, Galerie und Gastgeberdaten | 168-181 | 14 |
 | Booking, Verhandlung, Availability und Reviews | 182-215 | 34 |
@@ -55,7 +53,7 @@ Die folgenden Prompts sind thematisch geordnet. Die ursprünglichen Prompt-Numme
 
 Projektstruktur, frühe Architektur, User/Pet-Grundmodell und erste API-Konzepte. Enthaltene Prompts: 1-12.
 
-Prompt 1, Claude Sonnet 4.6: Rolle: Handle als Senior Software Architekt und erfahrener Projektmanager.Kontext: Wir sind ein Team von 3 Studierenden und entwickeln die Java-Plattform „Pawsitters“ mit Spring Boot.Das Ziel ist es, Tierhalter und Gastgeber zusammenzubringen.Aufgabe: Erstelle eine umfassende Projektstrategie, um die maximale Punktzahl in den fünf Bewertungsbereichen (Code, Architektur, Testing, Security, Teamarbeit/CI) zu erreichen.  Erarbeite sowohl ein Konzept wie das projekt zu strukturieren ist, als auch folgendes: Berücksichtige dabei folgende Anforderungen:Arbeitsaufteilung: Schlage eine sinnvolle Rollenverteilung für 3 Personen vor, die sicherstellt, dass alle Beiträge im Repository sichtbar und nachvollziehbar sind. 2. Architektur-Plan: Entwirf eine Schichtenarchitektur (Controller, Service, Repository) und definiere die Kern-Entitäten (User, Pet, Request, Offer). 3. Testing-Strategie: Erstelle einen Plan für die 10 verpflichtenden Unit-Tests und erkläre, wie wir die TEST_DOCUMENTATION.md effizient führen. 4. Security (Shift Left): Entwickle ein Konzept, wie wir „Shift Security Left“ von Anfang an anwenden und welche sensiblen Daten (DSGVO-relevant) besonders geschützt werden müssen. 5. CI/CD & Git: Schlage einen Branching-Workflow vor und definiere eine einfache CI-Pipeline, die bei jedem Push automatisch Tests ausführt. 6. KI-Dokumentation: Erstelle ein System, wie wir die Nutzung von KI-Tools (wie dir) lückenlos in der KI_PROMPTS.md dokumentieren, ohne den Arbeitsfluss zu unterbrechen.Format: Strukturiere die Antwort in Meilensteine (Sprints) und gib konkrete Tipps für die technische Umsetzung.
+Prompt 1, Claude Sonnet 4.6: Rolle: Handle als Senior Software Architekt und erfahrener Projektmanager.Kontext: Wir sind ein Team von 3 Studierenden und entwickeln die Java-Plattform „Pawsitters“ mit Spring Boot.Das Ziel ist es, Tierhalter und Gastgeber zusammenzubringen.Aufgabe: Erstelle eine umfassende Projektstrategie, um die maximale Punktzahl in den fünf Bewertungsbereichen (Code, Architektur, Testing, Security, Teamarbeit/CI) zu erreichen. Erarbeite sowohl ein Konzept wie das projekt zu strukturieren ist, als auch folgendes: Berücksichtige dabei folgende Anforderungen:Arbeitsaufteilung: Schlage eine sinnvolle Rollenverteilung für 3 Personen vor, die sicherstellt, dass alle Beiträge im Repository sichtbar und nachvollziehbar sind. 2. Architektur-Plan: Entwirf eine Schichtenarchitektur (Controller, Service, Repository) und definiere die Kern-Entitäten (User, Pet, Request, Offer). 3. Testing-Strategie: Erstelle einen Plan für die 10 verpflichtenden Unit-Tests und erkläre, wie wir die TEST_DOCUMENTATION.md effizient führen. 4. Security (Shift Left): Entwickle ein Konzept, wie wir „Shift Security Left“ von Anfang an anwenden und welche sensiblen Daten (DSGVO-relevant) besonders geschützt werden müssen. 5. CI/CD & Git: Schlage einen Branching-Workflow vor und definiere eine einfache CI-Pipeline, die bei jedem Push automatisch Tests ausführt. 6. KI-Dokumentation: Erstelle ein System, wie wir die Nutzung von KI-Tools (wie dir) lückenlos in der KI_PROMPTS.md dokumentieren, ohne den Arbeitsfluss zu unterbrechen.Format: Strukturiere die Antwort in Meilensteine (Sprints) und gib konkrete Tipps für die technische Umsetzung.
 
 Prompt 2, Claude Sonnet 4.6: Dieser Fehler tritt im H2 Controller auf, woraus entsteht er und wie beheben wir ihn: Whitelabel Error Page This application has no explicit mapping for /error, so you are seeing this as a fallback. Wed Apr 15 15:12:34 CEST 2026 There was an unexpected error (type=Not Found, status=404).
 
@@ -63,7 +61,7 @@ Prompt 3, Claude Sonnet 4.6: schreib mir getter & setter für den user, sie soll
 
 Prompt 4, Claude Sonnet 4.6: Erarbeite unit tests für die Pets & Users. Frage die in den Klassen gegebenen Daten sorgfältig ab. Erarbeite edge cases, wie doppelte Nutzung einer Mail.
 
-Prompt 5, Claude Sonnet 4.6: Woher entsteht dieser Fehler, Unit Testing, User Service: WARNING: A Java agent has been loaded dynamically (C:\Users\krahl\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.9\byte-buddy-agent-1.14.9.jar) WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning  WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information WARNING: Dynamic loading of agents will be disallowed by default in a future release openJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended org.mockito.exceptions.misusing.UnnecessaryStubbingException:Unnecessary stubbings detected. Clean & maintainable test code requires zero unnecessary code. Following stubbings are unnecessary (click to navigate to relevant line of code)1. -> at com.pawsitters.service.UserServiceTest.whenValidUser_thenUserIsSavedSuccessfully(UserServiceTest.java:34)Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class. at org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:186)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAfterEachCallbacks$12(TestMethodTestDescriptor.java:260)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$13(TestMethodTestDescriptor.java:276)at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$14(TestMethodTestDescriptor.java:276)at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAllAfterMethodsOrCallbacks(TestMethodTestDescriptor.java:275)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAfterEachCallbacks(TestMethodTestDescriptor.java:259)
+Prompt 5, Claude Sonnet 4.6: Woher entsteht dieser Fehler, Unit Testing, User Service: WARNING: A Java agent has been loaded dynamically (C:\Users\krahl\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.9\byte-buddy-agent-1.14.9.jar) WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information WARNING: Dynamic loading of agents will be disallowed by default in a future release openJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended org.mockito.exceptions.misusing.UnnecessaryStubbingException:Unnecessary stubbings detected. Clean & maintainable test code requires zero unnecessary code. Following stubbings are unnecessary (click to navigate to relevant line of code)1. -> at com.pawsitters.service.UserServiceTest.whenValidUser_thenUserIsSavedSuccessfully(UserServiceTest.java:34)Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class. at org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:186)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAfterEachCallbacks$12(TestMethodTestDescriptor.java:260)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$13(TestMethodTestDescriptor.java:276)at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$14(TestMethodTestDescriptor.java:276)at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAllAfterMethodsOrCallbacks(TestMethodTestDescriptor.java:275)at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAfterEachCallbacks(TestMethodTestDescriptor.java:259)
 
 Prompt 6, GPT 5.3 Codex: erweitere die klasse userservice, dass diese user anlegen kann, nach dem user.java schema
 
@@ -79,9 +77,10 @@ Prompt 11, Gemini 3.1: Erstelle eine Definition der Aktuellen API Requests im Op
 
 Prompt 12, Gemini 5.5 (Codex): Analysiere das Projekt. Erstelle ein Konzept für API Responses. Das Grundschema sollte über das Projekt einheitlich sein. Je nach dem können api responses andere anforderungen an die antwort haben, betrachte dies auch. es dürfen keine infos verloren gehen
 
+
 ## API-Grundlagen, Auth, User und Pets
 
-API-Response-Envelope, Authentifizierung, User-/Pet-Endpunkte, lokale API-Fehler und Tests. Enthaltene Prompts: 13-25, 78-79.
+Einheitliche API-Responses, Authentifizierung, Nutzerprofile, Haustiere und frühe Schnittstellenarbeit. Enthaltene Prompts: 13-25, 78-79.
 
 Prompt 13, Codex Desktop (OpenAI): scanne das backend, woher kommt folgender fehler beim build: [ERROR] Failures: [ERROR] AuthIntegrationTest.logoutInvalidatesTokenForSessionCheck:102 Status expected:<200> but was:<403> [ERROR] AuthIntegrationTest.sessionWithInvalidTokenReturnsLoggedInFalse:44 Status expected:<200> but was:<403> [ERROR] AuthIntegrationTest.sessionWithoutTokenReturnsLoggedInFalse:35 Status expected:<200> but was:<403> [INFO] [ERROR] Tests run: 33, Failures: 3, Errors: 0, Skipped: 0 [INFO] [INFO] ------------------------------------------------------------------------ [INFO] BUILD FAILURE [INFO] ------------------------------------------------------------------------ [INFO] Total time: 51.987 s [INFO] Finished at: 2026-05-06T14:56:31+02:00 [INFO] ------------------------------------------------------------------------ [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.0.0:test (default-test) on project pawsitters: There are test failures. [ERROR] [ERROR] Please refer to C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\target\surefire-reports for the individual test results. [ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream. [ERROR] -> [Help 1] [ERROR] [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch. [ERROR] Re-run Maven using the -X switch to enable full debug logging. [ERROR] [ERROR] For more information about the errors and possible solutions, please read the following articles: [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 
@@ -113,9 +112,10 @@ Prompt 78, Codex Desktop (OpenAI): C:\Users\krahl\IdeaProjects\dhbw-pawsitters-s
 
 Prompt 79, Codex Desktop (OpenAI): C:\Users\krahl\IdeaProjects\dhbw-pawsitters-se2\backend\src\main\java\com\pawsitters\security\ApiAccessDeniedHandler.java:3:38 java: Package com.fasterxml.jackson.databind ist nicht vorhanden
 
+
 ## Marketplace, Angebote und Offer-API
 
-Gastgeber-Suche, Marketplace-Filter, Angebote, Publish/Withdraw und zugehörige API-Requests. Enthaltene Prompts: 26-38.
+Marketplace-Logik, Angebote, API-Requests und OpenAPI-Erweiterungen rund um buchbare Leistungen. Enthaltene Prompts: 26-38.
 
 Prompt 26, Codex Desktop (OpenAI): implementiere einen neuen teil der backend api. Beachte zwangsweise die von uns erarbeiteten api standarts, responses etc. zudem sollen die http requests eingefügt werden. folgendes sind die anforderungen: Beschreibung: Als Tierhalter möchte ich eine Übersicht aller Gastgeber sehen und diese nach Kriterien filtern können. Schnittstellen: GET /api/marketplace/hosts GET /api/marketplace/hosts/search GET /api/marketplace/filters Akzeptanzkriterien: Suche nach Tierart und Postleitzahl funktioniert. Filter-Endpunkt liefert dynamisch verfügbare Filter-Optionen.
 
@@ -143,9 +143,10 @@ Prompt 37, Codex Desktop (OpenAI): localhost hat die verbindung abgelehnt
 
 Prompt 38, Codex Desktop (OpenAI): also die console ist auf 8080 erreichbar, aber nach dem einloggen kommt die verbindung ist abgelehnt
 
+
 ## Security, Passwörter und Datenschutz
 
-Passwortvalidierung, NIST/OWASP-Orientierung, Rate Limiting und Security-Dokumentation. Enthaltene Prompts: 66-77, 82, 216.
+Passwortregeln, NIST-nahe Argumentation, Datenschutzformulierungen und Backend-Security-Features. Enthaltene Prompts: 66-77, 82, 216, 242-244, 246-247.
 
 Prompt 66, Codex Desktop (OpenAI): guten morgen, erarbeite mir ein konzept fürs password hashing. dieses soll verschlüsselt in die db gespeichert werden
 
@@ -175,9 +176,20 @@ Prompt 82, Codex Desktop (OpenAI): wie handlen wir derzeit rate limiting
 
 Prompt 216, Codex Desktop (OpenAI): schreibe unter orga/secu-infos eine neue md mit stichpunkten und wichtigen kontext infos zu security maßnahmen aus dem backend sowie frontend, kennzeichne was woher kommt
 
-## Präsentation und Projektdokumentation
+Prompt 242, Codex Desktop (OpenAI): erklär mir nochmal schnel lwarum wir fast nist zertifiziert sind nach passwort
 
-PowerPoint-/Google-Slides-Arbeit, OpenAPI-Folien, Sprecherinfos, Testdokumentation und Projektkennzahlen. Enthaltene Prompts: 39-41, 80-81, 83, 229-231.
+Prompt 243, Codex Desktop (OpenAI): was fehlt uns dahin noch
+
+Prompt 244, Codex Desktop (OpenAI): schauen wir uns folie 43 nochmal an, datensparsamkeit passt mir nicht ganz formuliere das um
+
+Prompt 246, Codex Desktop (OpenAI): können wir das feld auch durch ein anderes security feature ausm backend ersetzen?
+
+Prompt 247, Codex Desktop (OpenAI): ja go
+
+
+## Präsentation, Folien und Projektdokumentation
+
+Foliendeck, OpenAPI-Nachweise, Response-Visualisierung, Justus-Kommentare, Sprechtexte und Projektkennzahlen. Enthaltene Prompts: 39-41, 80-81, 83, 229-234, 236-241, 248-250.
 
 Prompt 39, Codex Desktop (OpenAI): Guten mittag, Erarbeite eine präsentation im powerpoint format. Ungefähre länge round about 25 Minuten. Ziel: Ihr präsentiert euren Kommilitonen und mir euer Konzept und eure methodische Herangehensweise für die Plattform „Pawsitters“. Kennzeichne diagramme in der präsentation mit "test", da wir diese selber erarbeiten. Grundlage: Nutzt als Basis bitte die Projektbeschreibung, die als pdf angehängt ist. folgende themen sollten in der präsentation anhang finden: falls etwas noch nicht implementiert ist lasse es frei. orientiere dich immer anhand des pawsitters projekt das von uns entwickelt wurde: Anforderungen: Welche funktionalen und nicht-funktionalen Anforderungen habt ihr identifiziert und wie seid ihr dabei vorgegangen? Stakeholder: Wer sind eure Haupt-Stakeholder? Architektur & Daten: Welche Architektur habt ihr gewählt (z. B. MVC und/oder Microservices und/oder Schichten und/oder Port/Adapters etc.) und warum? Zeigt euer Klassendiagramme, die Entitäten und erklärt eure Entscheidung für die jeweilige Persistenzschicht. Dazu auch die strukturelle Architekturdiagramme. Schnittstellen: Falls ihr REST-Schnittstellen nutzt: Wie sehen diese aus? Qualität & Testing: Wie sieht eure Teststrategie aus? Wie stellt ihr sicher, dass die Qualität (auch auf Produktion) gewährleistet bleibt? Security: Wie sieht euer Security-Konzept aus und wie wendet ihr das Prinzip „Shift Security Left.“ an? Infrastruktur: Plant ihr den Einsatz von CI/CD-Pipelines oder Container-Technologien (Docker/Kubernetes)? Wie wird die Architektur auf Containers gemappt? KI-Einsatz: Wo bietet KI bei „Pawsitters“ einen echten Mehrwert (über die reine Code-Generierung hinaus) und wo liegen Risiken? Oder bietet KI hier keinen weiteren Mehrwert? Teamarbeit: Wer hat welche Aufgaben übernommen und wie habt ihr die Zusammenarbeit organisiert?
 
@@ -197,9 +209,34 @@ Prompt 230, Codex Desktop (OpenAI): erweitere noch, dass folie 31 eine aktuelle 
 
 Prompt 231, Codex Desktop (OpenAI): PLEASE IMPLEMENT THIS PLAN: # Folien 30-31: REST-API & OpenAPI-Nachweis ## Summary Folie 30 wird zur kompakten API-Landkarte mit allen 10 aktuellen REST-Familien. Folie 31 bekommt einen aktuellen OpenAPI-Auszug aus `dhbw_pawsitters_se2-openapi.yaml`, damit sichtbar wird, dass die Übersicht aus der Spezifikation abgeleitet wurde. ## Key Changes - Folie 30: neue API-Landkarte statt langer Pfadliste. - Konto & Bestand: `Auth (4)`, `Users (10)`, `Pets (5)` - Angebot & Marketplace: `Hosts (4)`, `Availability (4)`, `Offers (8)`, `Marketplace (6)` - Kommunikation & Abschluss: `Chats (9)`, `Bookings (4)`, `Reviews (2)` - Folie 30 zeigt zusätzlich die Kennzahlen: `10 API-Familien`, `56 REST-Operationen`, `/api/*`, `einheitlicher Response-Envelope`. - Folie 31 wird als “OpenAPI-Auszug” aktualisiert: - sichtbarer Code-Ausschnitt mit `openapi: 3.0.3`, `version: 1.3.0`, `tags:` und repräsentativen `paths:` - Fokus auf Nachweis, nicht vollständige Spezifikation - kurzer Hinweis: “Quelle für Swagger UI und API-Landkarte” - Bestehender Deck-Stil bleibt erhalten: gleiche Kopfzeile, Footer, Farben, kompakte Typografie. ## Interface Content Folie 30 Kurztexte: - Auth: Register · Login · Session - Users: Profile · Rollen · Profilbild - Pets: CRUD · Bild-Upload - Hosts: Profil · Galerie · Statistiken - Availability: Einzeltermine · Wiederkehrend - Offers: Entwurf · Publish · Withdraw - Marketplace: Suche · Latest · Filter - Chats: Nachrichten · Vorschlaege · Anhaenge - Bookings: Aktiv · Historie · Abschliessen - Reviews: Bewertung · Host-Feedback Folie 31 Auszug: - `info.title: Pawsitters API` - `info.version: 1.3.0` - `tags`: alle 10 Familien - beispielhafte Pfade aus mehreren Bereichen, z. B. Auth, Marketplace, Chats, Bookings ## Test Plan - Vor Bearbeitung Zieldeck, Folien 30 und 31 und Revision erneut per Connector lesen. - Nach Bearbeitung Readback prüfen: Folie 30 enthält alle 10 Familien und korrekte Counts; Folie 31 zeigt OpenAPI 1.3.0. - Frische LARGE-Thumbnails für beide Folien ziehen und visuell prüfen: keine Überlappung, kein abgeschnittener Code, Footer erhalten. - Counts gegen `backend/src/main/resources/API_Calls/dhbw_pawsitters_se2-openapi.yaml` abgleichen. ## Assumptions - Source of truth ist die OpenAPI-Datei im Repo, gegen Controller plausibilisiert. - Bearbeitet wird das aktive Google-Slides-Deck `Pawsitters`. - Folie 31 zeigt einen repräsentativen, aktuellen Auszug, nicht die komplette YAML-Datei.
 
-## CI/CD, Docker, Deployment und Datenbankbetrieb
+Prompt 232, Codex Desktop (OpenAI): ergänze folie 23 um mehr infos zur struktur der responses, z.b. http fehlercodes
 
-GitHub Actions, Branch-/Merge-Workflow, Docker/Caddy, Serverdeployments, MySQL/XAMPP und Staging-Probleme. Enthaltene Prompts: 42-65, 84-147, 217-228.
+Prompt 233, Codex Desktop (OpenAI): ergänze folie 32 um mehr infos zur struktur der responses, z.b. http fehlercodes. Die Struktur der response soll aber visualisiert bleiben
+
+Prompt 234, Codex Desktop (OpenAI): was macht total in der meta
+
+Prompt 236, Codex Desktop (OpenAI): Validiere die Folien 49 - 51 Inhaltlich, stimmen diese so inhaltlich
+
+Prompt 237, Codex Desktop (OpenAI): okayokay, wir müssen uns noch folie 51 anschauen, docker vs kubernetis. im endeffekt ist es ja nicht a vs b sondern mehr begründete entscheidung warum wir nur docker genommen haben und kein kubernetes
+
+Prompt 238, Codex Desktop (OpenAI): die overhead zeile muss einfacher formuliert werden, die sinvoll auch
+
+Prompt 239, Codex Desktop (OpenAI): das warum fehlt noch
+
+Prompt 240, Codex Desktop (OpenAI): nun müssen wir uns noch um folie 54 kümmern. dies ist eine rein konzeptionelle folie. Das ist future build in. Hier soll der KI einsatz im projekt gewertet werden. ich habe überlegt, dass man einen einsatz wie bei mobile.de machen kann. dort kann man in eine suchleiste seine anforderungen schreiben und eine ki wandelt diese dann in filter um, heißt aus "audi baujahr 2014 klimaanlage" wird audi, baujahr 2014, Ausstattung: klimaanlage. bei uns wär dies der fall für tiere stadt etc
+
+Prompt 241, Codex Desktop (OpenAI): okay, fasse mir infos zusammen, für die folien bei denen im kommentar Justus: steht
+
+Prompt 248, Codex Desktop (OpenAI): okay, sammel mir nochmal die wichtigsten infos zusammen, alle folien die mit Justus: gekennzeichnet sind und Folie 43
+
+Prompt 249, Codex Desktop (OpenAI): folie 32 auch noch
+
+Prompt 250, Codex Desktop (OpenAI): wie viele codezeilen haben wir im projekt
+
+
+## CI/CD, Docker, Deployment, Datenbankbetrieb und Tests
+
+GitHub Actions, Docker, Deployment, Serverbetrieb, MySQL/XAMPP, Smoke Tests und Testzahlen. Enthaltene Prompts: 42-65, 84-147, 217-228, 235, 245, 251.
 
 Prompt 42, Codex Desktop (OpenAI): erarbeite ein konzept für eine cicd pipeline. überdenke dass wir ggf zu docker und kubernetes switchen müssen, wenn ja begründe warum
 
@@ -401,9 +438,16 @@ Prompt 227, Codex Desktop (OpenAI): -18T21:00:19.058+02:00 WARN 27408 --- [ main
 
 Prompt 228, Codex Desktop (OpenAI): passe du das mit der sql an
 
+Prompt 235, Codex Desktop (OpenAI): haben wir in dem projekt cicd oder nur CI
+
+Prompt 245, Codex Desktop (OpenAI): wie viele backend tests haben wir
+
+Prompt 251, Codex Desktop (OpenAI): was macht der smoke test
+
+
 ## Chat, Realtime und Profilbilder
 
-Live-Chat, Nachrichten, Attachments, Profilbild-Uploads, Bildvalidierung und Upload-Responses. Enthaltene Prompts: 148-167.
+Live-Chat, Profilbild-Uploads, Fehlerresponses, Chat-Initialisierung und zugehörige API-Prüfungen. Enthaltene Prompts: 148-167.
 
 Prompt 148, Codex Desktop (OpenAI): Guten Mittag. wir müssen uns nochmal an die Profilbilder ransetzen. Überarbeite die Profilbildlogik, dass sie besser funktioniert. Bitte überarbeite keine Datenbanklogik oder benennungen. Die Profilbilder müssen vom user einfach hochladbar, änderbar und sinnvoll gespeichert sein. Zudem müssen wir uns eine API für Placeholder raussuchen sofern der User kein Profilbild hat
 
@@ -445,9 +489,10 @@ Prompt 166, Codex Desktop (OpenAI): guten morgen. aktuell gehen wir hin und erst
 
 Prompt 167, Codex Desktop (OpenAI): wie machen wir das logisch, wenn a eine nachricht an b schickt, was triggert die aktuallisierung des chats bei b?
 
+
 ## Host-Profile, Galerie und Gastgeberdaten
 
-Gastgeberprofile, Unterkunftsbilder, Host-Statistiken und Galerie-Endpunkte. Enthaltene Prompts: 168-181.
+Gastgeberprofile, Galerie, Host-Requests, Host-Tabellen und Beziehung zu Register-/User-Daten. Enthaltene Prompts: 168-181.
 
 Prompt 168, Codex Desktop (OpenAI): Guten mittag, Beschreibung: Als Gastgeber möchte ich mein Profil mit Erfahrungen und Bildern meiner Unterkunft präsentieren, um attraktiv für Tierhalter zu sein. Schnittstellen: POST /api/hosts GET /api/hosts/{id} GET /api/hosts/{id}/stats POST /api/hosts/{id}/gallery Akzeptanzkriterien: Statistiken zeigen korrekte Durchschnittswerte (Reviews). Galerie-Bilder werden korrekt mit dem Host-Profil verknüpft. implementiere folgende userstory
 
@@ -477,9 +522,10 @@ Prompt 180, Codex Desktop (OpenAI): wodurch retrieve ich die gallery
 
 Prompt 181, Codex Desktop (OpenAI): top, keine bedenke mehr. commite und bereite die merge vor
 
+
 ## Booking, Verhandlung, Availability und Reviews
 
-Chatbasierte Buchungsvorschläge, Buchungsstatus, Kalender-Verfügbarkeiten und Bewertungen. Enthaltene Prompts: 182-215.
+Chatbasierte Buchungsangebote, Verhandlung, Availability, Bookings, Reviews und Statuslogik. Enthaltene Prompts: 182-215.
 
 Prompt 182, Codex Desktop (OpenAI): definiere mir einen plan für das booking einer leistung. es soll innerhalb des chats passieren. ich habe an sowas wie das vinted prinzip gedacht, bei dem man noch verhandeln kann
 
@@ -548,4 +594,3 @@ Prompt 213, Codex Desktop (OpenAI): Guten abend, Beschreibung: Als Nutzer möcht
 Prompt 214, Codex Desktop (OpenAI): hey, aktuell ist die website noch sehr leer, wenig daten usw in der db. könntest du da ein paar api anfragen hinschicken, die offers auf der website erstellen? du kannst dafür die anmeldedaten nehmen die im auth request hinterlegt sind. wir brauchen am besten zeitlich verschiedene über viele verschiedene städte, mit aber auch echten bilder von tieren, dass es visuell gut aussieht
 
 Prompt 215, Codex Desktop (OpenAI): prüfe nach fehlern.
-
