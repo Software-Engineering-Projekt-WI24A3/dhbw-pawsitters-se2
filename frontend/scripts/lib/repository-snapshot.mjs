@@ -1894,8 +1894,7 @@ function mapIssues(rawIssues, identityIndex) {
       id,
       label: COLUMN_LABEL[id],
       cards: (columnMap.get(id) ?? []).sort((left, right) => right.number - left.number)
-    }))
-    .filter((column) => column.cards.length > 0);
+    }));
 
   const assigneeLogins = new Set(cards.flatMap((card) => card.assignees.map((assignee) => assignee.login)));
   const criteriaCount = cards.reduce((total, card) => total + card.criteria.length, 0);
