@@ -25,13 +25,16 @@ public class ReviewService {
     private final HostReviewRepository hostReviewRepository;
     private final BookingProposalRepository bookingProposalRepository;
     private final UserRepository userRepository;
+    private final UserRatingService userRatingService;
 
     public ReviewService(HostReviewRepository hostReviewRepository,
                          BookingProposalRepository bookingProposalRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         UserRatingService userRatingService) {
         this.hostReviewRepository = hostReviewRepository;
         this.bookingProposalRepository = bookingProposalRepository;
         this.userRepository = userRepository;
+        this.userRatingService = userRatingService;
     }
 
     @Transactional
@@ -66,7 +69,7 @@ public class ReviewService {
         review.setComment(normalizeComment(comment));
 
         HostReview savedReview = hostReviewRepository.save(review);
-        recalculateHostRating(host);
+        userRatingService.upsertRating(actor, host, rating);
         return HostReviewResponse.from(savedReview);
     }
 
@@ -111,14 +114,4 @@ public class ReviewService {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 
-    private void recalculateHostRating(User host) {
-        HostReviewRepository.HostReviewStatsProjection stats =
-                hostReviewRepository.calculateStatsByHostId(host.getId());
-        long reviewCount = stats == null || stats.getReviewCount() == null ? 0L : stats.getReviewCount();
-        double averageRating = stats == null || stats.getAverageRating() == null ? 0.0 : stats.getAverageRating();
-
-        host.setNumberOfRatings(Math.toIntExact(reviewCount));
-        host.setRating((float) averageRating);
-        userRepository.save(host);
-    }
 }

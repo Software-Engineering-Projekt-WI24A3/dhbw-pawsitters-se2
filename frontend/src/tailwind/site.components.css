@@ -471,37 +471,123 @@
 
     .profile_rating {
         @apply mt-6 text-center;
+        border-top: 1px solid rgba(17, 17, 19, 0.08);
+        padding-top: 1.25rem;
+    }
+
+    .profile_rating__header {
+        @apply grid justify-items-center gap-2;
+    }
+
+    .profile_rating__average {
+        @apply m-0 text-[clamp(1.55rem,3.2vw,2.15rem)] font-semibold;
+        max-width: 100%;
+        color: rgba(17, 17, 19, 0.94);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
+    }
+
+    .profile_rating__summary {
+        @apply mt-3 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2;
     }
 
     .profile_rating__stars {
-        @apply mt-3 inline-flex items-center justify-center;
+        @apply inline-flex items-center justify-center;
         gap: clamp(0.18rem, 0.7vw, 0.32rem);
         line-height: 0;
     }
 
     .profile_rating__star {
-        position: relative;
-        display: inline-block;
+        @apply inline-flex items-center justify-center;
         width: clamp(1.55rem, 3.2vw, 2.02rem);
         height: clamp(1.55rem, 3.2vw, 2.02rem);
         flex: 0 0 auto;
-        vertical-align: middle;
-    }
-
-    .profile_rating__star-layer {
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-    }
-
-    .profile_rating__star-layer--base {
         color: rgba(17, 17, 19, 0.18);
     }
 
-    .profile_rating__star-layer--fill {
-        width: var(--profile-star-fill, 0%);
-        overflow: hidden;
+    .profile_rating__star--filled {
         color: rgba(244, 174, 27, 0.96);
+    }
+
+    .profile_rating__count {
+        @apply text-xs font-semibold uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(17, 17, 19, 0.52);
+    }
+
+    .profile_rating__control {
+        @apply mt-4 grid justify-items-center gap-2;
+    }
+
+    .profile_rating__prompt,
+    .profile_rating__note {
+        @apply m-0 text-xs font-semibold uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(17, 17, 19, 0.52);
+    }
+
+    .profile_rating__buttons {
+        @apply inline-flex items-center justify-center rounded-full px-2 py-1;
+        gap: clamp(0.08rem, 0.5vw, 0.2rem);
+        border: 1px solid rgba(17, 17, 19, 0.08);
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .profile_rating__button {
+        @apply inline-flex items-center justify-center border-0 bg-transparent p-1 transition duration-200;
+        width: clamp(1.85rem, 4vw, 2.24rem);
+        height: clamp(1.85rem, 4vw, 2.24rem);
+        border-radius: 999px;
+        color: rgba(17, 17, 19, 0.2);
+        cursor: pointer;
+    }
+
+    .profile_rating__button:hover,
+    .profile_rating__button:focus-visible,
+    .profile_rating__button--active {
+        color: rgba(244, 174, 27, 0.98);
+        transform: translateY(-1px) scale(1.04);
+    }
+
+    .profile_rating__button:hover,
+    .profile_rating__button:focus-visible {
+        background: rgba(75, 126, 72, 0.1);
+    }
+
+    .profile_rating__button:focus-visible {
+        @apply outline-none;
+        box-shadow: 0 0 0 3px rgba(75, 126, 72, 0.24);
+    }
+
+    .profile_rating__button:disabled {
+        cursor: wait;
+        opacity: 0.72;
+    }
+
+    .profile_rating__login {
+        @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold uppercase transition duration-200;
+        max-width: 100%;
+        letter-spacing: 0.12em;
+        line-height: 1.35;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.96);
+        background: var(--brand-corporate-green);
+        border: 1px solid rgba(75, 126, 72, 0.35);
+        box-shadow: 0 12px 22px rgba(75, 126, 72, 0.2);
+    }
+
+    .profile_rating__login:hover,
+    .profile_rating__login:focus-visible {
+        transform: translateY(-1px);
+        background: rgba(58, 103, 56, 1);
+    }
+
+    .profile_rating__login:focus-visible {
+        @apply outline-none;
+        box-shadow:
+            0 12px 22px rgba(75, 126, 72, 0.2),
+            0 0 0 3px rgba(75, 126, 72, 0.24);
     }
 
     .profile_rating__star-svg {

@@ -2498,7 +2498,19 @@ const localizedProfileStrings = {
     hostCityFallback: profilePageRoot?.dataset.profileHostCityFallback || '',
     ratingHeadingTemplate: profilePageRoot?.dataset.profileRatingHeadingTemplate || '',
     ratingAriaTemplate: profilePageRoot?.dataset.profileRatingAriaTemplate || '',
-    ratingFirstNameFallback: profilePageRoot?.dataset.profileRatingFirstNameFallback || ''
+    ratingFirstNameFallback: profilePageRoot?.dataset.profileRatingFirstNameFallback || '',
+    ratingAverageTemplate: profilePageRoot?.dataset.profileRatingAverageTemplate || '',
+    ratingEmptyAverage: profilePageRoot?.dataset.profileRatingEmptyAverage || '',
+    ratingCountSingular: profilePageRoot?.dataset.profileRatingCountSingular || '',
+    ratingCountPlural: profilePageRoot?.dataset.profileRatingCountPlural || '',
+    ratingOwnLabel: profilePageRoot?.dataset.profileRatingOwnLabel || '',
+    ratingLoginPrompt: profilePageRoot?.dataset.profileRatingLoginPrompt || '',
+    ratingSelfNote: profilePageRoot?.dataset.profileRatingSelfNote || '',
+    ratingStarActionTemplate: profilePageRoot?.dataset.profileRatingStarActionTemplate || '',
+    ratingSaveSuccessTitle: profilePageRoot?.dataset.profileRatingSaveSuccessTitle || '',
+    ratingSaveSuccessTemplate: profilePageRoot?.dataset.profileRatingSaveSuccessTemplate || '',
+    ratingSaveErrorTitle: profilePageRoot?.dataset.profileRatingSaveErrorTitle || '',
+    ratingSaveErrorMessage: profilePageRoot?.dataset.profileRatingSaveErrorMessage || ''
 };
 const localizedMyPetsStrings = {
     loading: myPetsPageRoot?.dataset.myPetsLoadingLabel || '',
@@ -3158,6 +3170,11 @@ createApp({
                 ? String(document.title || '').trim()
                 : 'Pawsitters',
             profileViewTab: 'information',
+            profileViewOwnRating: null,
+            profileViewRatingHover: null,
+            profileViewRatingSaving: false,
+            profileViewRatingLoading: false,
+            profileViewRatingRequestId: 0,
             myPetsViewLoading: false,
             showMyPetsViewLoadingDots: false,
             myPetsViewError: '',
@@ -4054,16 +4071,82 @@ createApp({
         },
         profileViewRatingAriaLabel() {
             return formatTemplate(this.profileStrings.ratingAriaTemplate, {
-                rating: this.profileViewRatingValue.toFixed(1),
+                rating: this.profileViewFormattedRatingValue,
                 count: this.profileViewRatingCount
             });
         },
-        profileViewRatingStarFills() {
-            const rating = this.profileViewRatingValue;
-            return Array.from({ length: 5 }, (_, index) => {
-                const fill = Math.max(0, Math.min(1, rating - index)) * 100;
-                return Number(fill.toFixed(2));
+        profileViewFormattedRatingValue() {
+            return this.profileViewRatingValue.toLocaleString(document.documentElement.lang || 'de', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
             });
+        },
+        profileRatingOptions() {
+            return [1, 2, 3, 4, 5];
+        },
+        profileViewRatingStars() {
+            const wholeRating = Math.min(5, Math.max(0, Math.round(this.profileViewRatingValue)));
+            return this.profileRatingOptions.map((value) => ({
+                value,
+                filled: value <= wholeRating
+            }));
+        },
+        profileViewRatingAverageLabel() {
+            if (this.profileViewRatingCount <= 0) {
+                return this.profileStrings.ratingEmptyAverage;
+            }
+
+            return formatTemplate(this.profileStrings.ratingAverageTemplate, {
+                rating: this.profileViewFormattedRatingValue
+            });
+        },
+        profileViewRatingCountLabel() {
+            const count = this.profileViewRatingCount;
+            const template = count === 1
+                ? this.profileStrings.ratingCountSingular
+                : this.profileStrings.ratingCountPlural;
+            return formatTemplate(template, { count });
+        },
+        profileViewProfileUserId() {
+            return this.normalizeProfileUserId(this.profileViewUser?.id);
+        },
+        profileViewIsOwnProfile() {
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            const profileUserId = this.profileViewProfileUserId;
+            return Number.isInteger(sessionUserId)
+                && Number.isInteger(profileUserId)
+                && sessionUserId === profileUserId;
+        },
+        profileViewCanRate() {
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            const profileUserId = this.profileViewProfileUserId;
+            return this.authSessionLoggedIn
+                && Number.isInteger(sessionUserId)
+                && sessionUserId > 0
+                && Number.isInteger(profileUserId)
+                && profileUserId > 0
+                && sessionUserId !== profileUserId;
+        },
+        profileViewCanPromptLogin() {
+            const profileUserId = this.profileViewProfileUserId;
+            return !this.authSessionLoggedIn
+                && Number.isInteger(profileUserId)
+                && profileUserId > 0;
+        },
+        profileViewRatingLockedMessage() {
+            if (this.profileViewIsOwnProfile) {
+                return this.profileStrings.ratingSelfNote;
+            }
+
+            return '';
+        },
+        profileViewRatingInputValue() {
+            const hoveredRating = this.normalizeProfileRatingValue(this.profileViewRatingHover);
+            if (hoveredRating !== null) {
+                return hoveredRating;
+            }
+
+            return this.normalizeProfileRatingValue(this.profileViewOwnRating) || 0;
         },
         profileViewAcceptedPetSpecies() {
             const acceptedPetSpecies = Array.isArray(this.profileViewUser?.acceptedPetSpecies)
@@ -5437,6 +5520,10 @@ createApp({
                 if (this.homeSearchHasSubmitted) {
                     this.refreshActiveSearchResults({ scrollToResults: false });
                 }
+            }
+
+            if (profilePageRoot) {
+                this.loadProfileViewerRating();
             }
 
             if (!messagesPageRoot) {
@@ -15222,12 +15309,173 @@ createApp({
                 year: 'numeric'
             }).format(date);
         },
+        normalizeProfileRatingValue(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue)) {
+                return null;
+            }
+
+            const normalizedRating = Math.trunc(numericValue);
+            if (normalizedRating < 1 || normalizedRating > 5) {
+                return null;
+            }
+
+            return normalizedRating;
+        },
+        setProfileRatingPreview(rating) {
+            if (!this.profileViewCanRate || this.profileViewRatingSaving) {
+                return;
+            }
+
+            this.profileViewRatingHover = this.normalizeProfileRatingValue(rating);
+        },
+        clearProfileRatingPreview() {
+            this.profileViewRatingHover = null;
+        },
+        buildProfileRatingButtonLabel(rating) {
+            const normalizedRating = this.normalizeProfileRatingValue(rating) || 0;
+            return formatTemplate(this.profileStrings.ratingStarActionTemplate, {
+                rating: normalizedRating,
+                firstName: this.profileViewRatingFirstName,
+                name: this.profileViewDisplayName || this.profileViewRatingFirstName
+            });
+        },
+        async loadProfileViewerRating() {
+            this.profileViewOwnRating = null;
+            this.profileViewRatingHover = null;
+
+            const profileUserId = this.normalizeProfileUserId(this.profileViewUser?.id ?? this.profileViewRequestedUserId);
+            const sessionUserId = this.normalizeProfileUserId(this.authSessionUserId);
+            if (
+                !profilePageRoot
+                || !Number.isInteger(profileUserId)
+                || profileUserId <= 0
+                || !Number.isInteger(sessionUserId)
+                || sessionUserId <= 0
+                || profileUserId === sessionUserId
+            ) {
+                this.profileViewRatingLoading = false;
+                return;
+            }
+
+            const requestId = this.profileViewRatingRequestId + 1;
+            this.profileViewRatingRequestId = requestId;
+            this.profileViewRatingLoading = true;
+
+            try {
+                const response = await apiFetch(`/api/users/${profileUserId}/ratings/me`, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (requestId !== this.profileViewRatingRequestId) {
+                    return;
+                }
+
+                if (!response.ok || payload?.success === false) {
+                    this.profileViewOwnRating = null;
+                    return;
+                }
+
+                this.profileViewOwnRating = this.normalizeProfileRatingValue(payload?.data?.rating);
+            } catch {
+                if (requestId === this.profileViewRatingRequestId) {
+                    this.profileViewOwnRating = null;
+                }
+            } finally {
+                if (requestId === this.profileViewRatingRequestId) {
+                    this.profileViewRatingLoading = false;
+                }
+            }
+        },
+        async submitProfileRating(rating) {
+            const normalizedRating = this.normalizeProfileRatingValue(rating);
+            const profileUserId = this.normalizeProfileUserId(this.profileViewUser?.id);
+            if (!Number.isInteger(profileUserId) || profileUserId <= 0 || normalizedRating === null) {
+                return;
+            }
+
+            if (!this.authSessionLoggedIn) {
+                this.openLoginModal();
+                return;
+            }
+
+            if (!this.profileViewCanRate || this.profileViewRatingSaving) {
+                return;
+            }
+
+            this.profileViewRatingSaving = true;
+
+            try {
+                const response = await apiFetch(`/api/users/${profileUserId}/ratings`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        rating: normalizedRating
+                    })
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok || payload?.success === false) {
+                    const backendMessage = typeof payload?.message === 'string'
+                        ? payload.message.trim()
+                        : '';
+                    this.pushNotification({
+                        title: this.profileStrings.ratingSaveErrorTitle,
+                        message: backendMessage || this.profileStrings.ratingSaveErrorMessage,
+                        tone: 'warning'
+                    });
+                    return;
+                }
+
+                const savedRating = this.normalizeProfileRatingValue(payload?.data?.rating);
+                const nextAverageRating = Number(payload?.data?.averageRating);
+                const nextRatingCount = Number(payload?.data?.numberOfRatings);
+
+                this.profileViewOwnRating = savedRating;
+                this.profileViewRatingHover = null;
+
+                if (this.profileViewUser && Number.isFinite(nextAverageRating)) {
+                    this.profileViewUser.rating = nextAverageRating;
+                }
+                if (this.profileViewUser && Number.isFinite(nextRatingCount)) {
+                    this.profileViewUser.numberOfRatings = Math.max(0, Math.round(nextRatingCount));
+                }
+
+                this.pushNotification({
+                    title: this.profileStrings.ratingSaveSuccessTitle,
+                    message: formatTemplate(this.profileStrings.ratingSaveSuccessTemplate, {
+                        firstName: this.profileViewRatingFirstName,
+                        name: this.profileViewDisplayName || this.profileViewRatingFirstName,
+                        rating: normalizedRating
+                    }),
+                    tone: 'success'
+                });
+            } catch {
+                this.pushNotification({
+                    title: this.profileStrings.ratingSaveErrorTitle,
+                    message: this.profileStrings.ratingSaveErrorMessage,
+                    tone: 'warning'
+                });
+            } finally {
+                this.profileViewRatingSaving = false;
+            }
+        },
         async loadProfileById(userId) {
             const normalizedUserId = this.normalizeProfileUserId(userId);
             if (!Number.isInteger(normalizedUserId) || normalizedUserId <= 0) {
                 this.profileViewError = this.profileStrings.routeMissing;
                 this.profileViewLoading = false;
                 this.profileViewUser = null;
+                this.profileViewOwnRating = null;
+                this.profileViewRatingHover = null;
                 this.myOffersOffers = [];
                 this.myOffersCarouselIndex = 0;
                 return;
@@ -15237,6 +15485,9 @@ createApp({
             this.profileViewError = '';
             this.profileViewUser = null;
             this.profileViewTab = 'information';
+            this.profileViewOwnRating = null;
+            this.profileViewRatingHover = null;
+            this.profileViewRatingRequestId += 1;
             this.myPetsPets = [];
             this.myPetsCarouselIndex = 0;
             this.myOffersOffers = [];
@@ -15271,6 +15522,7 @@ createApp({
                 this.myPetsPets = Array.isArray(this.profileViewUser?.pets) ? [...this.profileViewUser.pets] : [];
                 this.myPetsCarouselIndex = 0;
                 await this.loadProfileOffersByUserId(normalizedUserId);
+                await this.loadProfileViewerRating();
                 this.applyProfileDocumentTitle(this.profileViewUser);
                 nextTick(() => {
                     this.updateSegmentedIndicators();

@@ -6,9 +6,12 @@ import com.pawsitters.dto.MailExistsResponse;
 import com.pawsitters.dto.RegisterRequest;
 import com.pawsitters.dto.RoleUpdateRequest;
 import com.pawsitters.dto.UserPatchRequest;
+import com.pawsitters.dto.UserRatingRequest;
+import com.pawsitters.dto.UserRatingResponse;
 import com.pawsitters.dto.UserResponse;
 import com.pawsitters.dto.UserUpdateRequest;
 import com.pawsitters.model.User;
+import com.pawsitters.service.UserRatingService;
 import com.pawsitters.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -39,9 +42,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final UserService userService;
+    private final UserRatingService userRatingService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRatingService userRatingService) {
         this.userService = userService;
+        this.userRatingService = userRatingService;
     }
 
     @PostMapping("/register")
@@ -103,6 +108,40 @@ public class UserController {
                 HttpStatus.OK,
                 "Current user retrieved successfully.",
                 UserResponse.from(user),
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @PostMapping("/{id}/ratings")
+    public ResponseEntity<ApiResponse<UserRatingResponse>> rateUser(@PathVariable Long id,
+                                                                    @Valid @RequestBody UserRatingRequest request,
+                                                                    Authentication authentication,
+                                                                    HttpServletRequest servletRequest) {
+        UserRatingResponse rating = userRatingService.rateUser(
+                requireAuthenticatedEmail(authentication),
+                id,
+                request.rating()
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User rating saved successfully.",
+                rating,
+                servletRequest.getRequestURI()
+        ));
+    }
+
+    @GetMapping("/{id}/ratings/me")
+    public ResponseEntity<ApiResponse<UserRatingResponse>> getOwnRatingForUser(@PathVariable Long id,
+                                                                               Authentication authentication,
+                                                                               HttpServletRequest servletRequest) {
+        UserRatingResponse rating = userRatingService.getOwnRatingForUser(
+                requireAuthenticatedEmail(authentication),
+                id
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK,
+                "User rating retrieved successfully.",
+                rating,
                 servletRequest.getRequestURI()
         ));
     }
