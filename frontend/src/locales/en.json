@@ -546,7 +546,19 @@
       "rating": {
         "headingTemplate": "Reviews for {firstName} ({count})",
         "ariaTemplate": "{rating} out of 5 stars from {count} ratings",
-        "firstNameFallback": "this profile"
+        "firstNameFallback": "this profile",
+        "averageTemplate": "{rating} / 5",
+        "emptyAverage": "No ratings yet",
+        "countSingular": "{count} rating",
+        "countPlural": "{count} ratings",
+        "ownLabel": "Your rating",
+        "loginPrompt": "Sign in to rate",
+        "selfNote": "This is your own profile.",
+        "starActionTemplate": "Give {rating} out of 5 stars",
+        "saveSuccessTitle": "Rating saved",
+        "saveSuccessTemplate": "Your rating for {firstName} was saved.",
+        "saveErrorTitle": "Rating not saved",
+        "saveErrorMessage": "Please try again in a moment."
       }
     }
   },

@@ -546,7 +546,19 @@
       "rating": {
         "headingTemplate": "Recenzii pentru {firstName} ({count})",
         "ariaTemplate": "{rating} din 5 stele din {count} evaluări",
-        "firstNameFallback": "acest profil"
+        "firstNameFallback": "acest profil",
+        "averageTemplate": "{rating} / 5",
+        "emptyAverage": "Încă nu există evaluări",
+        "countSingular": "{count} evaluare",
+        "countPlural": "{count} evaluări",
+        "ownLabel": "Evaluarea ta",
+        "loginPrompt": "Autentifică-te pentru a evalua",
+        "selfNote": "Acesta este propriul tău profil.",
+        "starActionTemplate": "Acordă {rating} din 5 stele",
+        "saveSuccessTitle": "Evaluare salvată",
+        "saveSuccessTemplate": "Evaluarea ta pentru {firstName} a fost salvată.",
+        "saveErrorTitle": "Evaluarea nu a fost salvată",
+        "saveErrorMessage": "Te rugăm să încerci din nou imediat."
       }
     }
   },

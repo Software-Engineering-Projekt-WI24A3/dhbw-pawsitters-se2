@@ -19,7 +19,19 @@
                       data-profile-host-city-fallback=#{profile.page.role.hostCityFallback},
                       data-profile-rating-heading-template=#{profile.page.rating.headingTemplate},
                       data-profile-rating-aria-template=#{profile.page.rating.ariaTemplate},
-                      data-profile-rating-first-name-fallback=#{profile.page.rating.firstNameFallback}">
+                      data-profile-rating-first-name-fallback=#{profile.page.rating.firstNameFallback},
+                      data-profile-rating-average-template=#{profile.page.rating.averageTemplate},
+                      data-profile-rating-empty-average=#{profile.page.rating.emptyAverage},
+                      data-profile-rating-count-singular=#{profile.page.rating.countSingular},
+                      data-profile-rating-count-plural=#{profile.page.rating.countPlural},
+                      data-profile-rating-own-label=#{profile.page.rating.ownLabel},
+                      data-profile-rating-login-prompt=#{profile.page.rating.loginPrompt},
+                      data-profile-rating-self-note=#{profile.page.rating.selfNote},
+                      data-profile-rating-star-action-template=#{profile.page.rating.starActionTemplate},
+                      data-profile-rating-save-success-title=#{profile.page.rating.saveSuccessTitle},
+                      data-profile-rating-save-success-template=#{profile.page.rating.saveSuccessTemplate},
+                      data-profile-rating-save-error-title=#{profile.page.rating.saveErrorTitle},
+                      data-profile-rating-save-error-message=#{profile.page.rating.saveErrorMessage}">
         <header class="profile_hero">
             <div class="profile_hero__media">
                 <img class="profile_hero__banner"
@@ -152,26 +164,65 @@
                     </section>
 
                     <section class="profile_rating">
-                        <h3 class="profile_rating__title" v-text="profileViewRatingHeading"></h3>
-                        <div class="profile_rating__stars"
-                             role="img"
-                             :aria-label="profileViewRatingAriaLabel">
-                            <span v-for="(fill, index) in profileViewRatingStarFills"
-                                  :key="'profile-rating-star-' + index"
-                                  class="profile_rating__star"
-                                  :style="{ '--profile-star-fill': (fill + '%') }"
-                                  aria-hidden="true">
-                                <span class="profile_rating__star-layer profile_rating__star-layer--base">
+                        <div class="profile_rating__header">
+                            <h3 class="profile_rating__title" v-text="profileViewRatingHeading"></h3>
+                            <p class="profile_rating__average" v-text="profileViewRatingAverageLabel"></p>
+                        </div>
+
+                        <div class="profile_rating__summary">
+                            <div class="profile_rating__stars"
+                                 role="img"
+                                 :aria-label="profileViewRatingAriaLabel">
+                                <span v-for="star in profileViewRatingStars"
+                                      :key="'profile-rating-star-' + star.value"
+                                      class="profile_rating__star"
+                                      :class="{ 'profile_rating__star--filled': star.filled }"
+                                      aria-hidden="true">
                                     <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
                                         <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
                                     </svg>
                                 </span>
-                                <span class="profile_rating__star-layer profile_rating__star-layer--fill">
-                                    <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
-                                        <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
-                                    </svg>
-                                </span>
-                            </span>
+                            </div>
+                            <span class="profile_rating__count" v-text="profileViewRatingCountLabel"></span>
+                        </div>
+
+                        <div class="profile_rating__control">
+                            <template v-if="profileViewCanRate">
+                                <p class="profile_rating__prompt" v-text="profileStrings.ratingOwnLabel"></p>
+                                <div class="profile_rating__buttons"
+                                     role="radiogroup"
+                                     :aria-label="profileStrings.ratingOwnLabel">
+                                    <button v-for="rating in profileRatingOptions"
+                                            :key="'profile-rating-action-' + rating"
+                                            type="button"
+                                            class="profile_rating__button"
+                                            :class="{ 'profile_rating__button--active': rating <= profileViewRatingInputValue }"
+                                            role="radio"
+                                            :aria-checked="profileViewOwnRating === rating ? 'true' : 'false'"
+                                            :aria-label="buildProfileRatingButtonLabel(rating)"
+                                            :disabled="profileViewRatingSaving"
+                                            @mouseenter="setProfileRatingPreview(rating)"
+                                            @focus="setProfileRatingPreview(rating)"
+                                            @mouseleave="clearProfileRatingPreview()"
+                                            @blur="clearProfileRatingPreview()"
+                                            @click="submitProfileRating(rating)">
+                                        <svg viewBox="0 0 24 24" class="profile_rating__star-svg" focusable="false" aria-hidden="true">
+                                            <path class="profile_rating__star-shape" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.46,13.97L5.82,21L12,17.27Z"></path>
+                                        </svg>
+                                        <span class="sr-only" v-text="buildProfileRatingButtonLabel(rating)"></span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            <button v-else-if="profileViewCanPromptLogin"
+                                    type="button"
+                                    class="profile_rating__login"
+                                    @click="openLoginModal()"
+                                    v-text="profileStrings.ratingLoginPrompt"></button>
+
+                            <p v-else-if="profileViewRatingLockedMessage"
+                               class="profile_rating__note"
+                               v-text="profileViewRatingLockedMessage"></p>
                         </div>
                     </section>
                 </section>

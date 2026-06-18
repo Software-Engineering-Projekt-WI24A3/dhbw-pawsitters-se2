@@ -145,6 +145,66 @@ class UserIntegrationTest {
     }
 
     @Test
+    void authenticatedUsersCanRateOtherPublicProfilesAndUpdateAverage() throws Exception {
+        String targetToken = registerUser("user.rating-target." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
+        Long targetUserId = currentUserId(targetToken);
+        String reviewerToken = registerUser("user.rating-reviewer." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
+        String secondReviewerToken = registerUser("user.rating-second-reviewer." + UUID.randomUUID() + "@test.de", "StrongPhrase123!");
+
+        mockMvc.perform(post("/api/users/{id}/ratings", targetUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("rating", 4))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("AUTH_REQUIRED"));
+
+        mockMvc.perform(post("/api/users/{id}/ratings", targetUserId)
+                        .header("Authorization", "Bearer " + targetToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("rating", 4))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+
+        mockMvc.perform(post("/api/users/{id}/ratings", targetUserId)
+                        .header("Authorization", "Bearer " + reviewerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("rating", 4))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.reviewedUserId").value(targetUserId))
+                .andExpect(jsonPath("$.data.rating").value(4))
+                .andExpect(jsonPath("$.data.averageRating").value(4.0))
+                .andExpect(jsonPath("$.data.numberOfRatings").value(1));
+
+        mockMvc.perform(get("/api/users/{id}/ratings/me", targetUserId)
+                        .header("Authorization", "Bearer " + reviewerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rating").value(4));
+
+        mockMvc.perform(get("/api/users/{id}", targetUserId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rating").value(4.0))
+                .andExpect(jsonPath("$.data.numberOfRatings").value(1));
+
+        mockMvc.perform(post("/api/users/{id}/ratings", targetUserId)
+                        .header("Authorization", "Bearer " + reviewerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("rating", 2))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rating").value(2))
+                .andExpect(jsonPath("$.data.averageRating").value(2.0))
+                .andExpect(jsonPath("$.data.numberOfRatings").value(1));
+
+        mockMvc.perform(post("/api/users/{id}/ratings", targetUserId)
+                        .header("Authorization", "Bearer " + secondReviewerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("rating", 5))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rating").value(5))
+                .andExpect(jsonPath("$.data.averageRating").value(3.5))
+                .andExpect(jsonPath("$.data.numberOfRatings").value(2));
+    }
+
+    @Test
     void usersRegisterEndpointIsPublicAndCreatesUser() throws Exception {
         String email = "user.users-register." + UUID.randomUUID() + "@test.de";
         Map<String, Object> payload = buildRegisterPayload(email, "StrongPhrase123!");
