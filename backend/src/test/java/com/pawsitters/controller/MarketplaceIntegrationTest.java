@@ -188,29 +188,35 @@ class MarketplaceIntegrationTest {
                 "Hamburg",
                 "20095"
         );
+        LocalDate searchStart = LocalDate.now().plusDays(30);
+        LocalDate searchEnd = searchStart.plusDays(3);
+        LocalDate matchingStart = searchStart.minusDays(1);
+        LocalDate matchingEnd = searchEnd.plusDays(1);
+        LocalDate alternativeStart = searchStart.plusDays(30);
+        LocalDate alternativeEnd = alternativeStart.plusDays(6);
 
         createAndPublishOffer(
                 matchingToken,
-                "Bielefeld Hund Juni",
+                "Bielefeld Hund passend",
                 "Bielefeld Mitte",
-                matchingFrom.toString(),
-                matchingTo.toString(),
+                matchingStart.toString(),
+                matchingEnd.toString(),
                 List.of("DOG")
         );
         createAndPublishOffer(
                 alternativeToken,
-                "Bielefeld Hund Juli",
+                "Bielefeld Hund alternativ",
                 "Bielefeld Mitte",
-                alternativeFrom.toString(),
-                alternativeTo.toString(),
+                alternativeStart.toString(),
+                alternativeEnd.toString(),
                 List.of("DOG")
         );
         createAndPublishOffer(
                 differentCityToken,
-                "Hamburg Hund Juni",
+                "Hamburg Hund passend",
                 "Hamburg Zentrum",
-                matchingFrom.toString(),
-                matchingTo.toString(),
+                matchingStart.toString(),
+                matchingEnd.toString(),
                 List.of("DOG")
         );
 
@@ -218,15 +224,15 @@ class MarketplaceIntegrationTest {
                         .param("species", "DOG")
                         .param("city", "Bielefeld")
                         .param("postalCode", "33602")
-                        .param("fromDate", searchFrom.toString())
-                        .param("toDate", searchTo.toString())
+                        .param("fromDate", searchStart.toString())
+                        .param("toDate", searchEnd.toString())
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.matchingOffers", hasSize(1)))
-                .andExpect(jsonPath("$.data.matchingOffers[0].title").value("Bielefeld Hund Juni"))
+                .andExpect(jsonPath("$.data.matchingOffers[0].title").value("Bielefeld Hund passend"))
                 .andExpect(jsonPath("$.data.alternativeDateOffers", hasSize(1)))
-                .andExpect(jsonPath("$.data.alternativeDateOffers[0].title").value("Bielefeld Hund Juli"));
+                .andExpect(jsonPath("$.data.alternativeDateOffers[0].title").value("Bielefeld Hund alternativ"));
     }
 
     private String registerUser(String email) throws Exception {

@@ -10,10 +10,9 @@ test.describe('Repository kanban view', () => {
   test('should render board metrics and matching cards when live issue data exists', async ({ page }) => {
     const snapshot = await loadLiveRepository(page, 'de');
     const firstColumn = snapshot.board.columns[0];
-    const nextColumn = firstColumn
-      ? snapshot.board.columns.find((column) => column.id !== firstColumn.id && column.cards.length > 0)
-        ?? snapshot.board.columns[1]
-      : null;
+    const nextColumn = snapshot.board.columns.find((column) => column.id !== firstColumn.id && column.cards.length > 0)
+      ?? snapshot.board.columns[1]
+      ?? firstColumn;
 
     await page.goto('/repository/kanban');
 
@@ -29,6 +28,11 @@ test.describe('Repository kanban view', () => {
     await expect(page.locator('.board_metric').nth(1)).toContainText(String(snapshot.board.summary.assignedCount));
     await expect(page.locator('.board_metric').nth(2)).toContainText(String(snapshot.board.summary.ownerCount));
     await expect(page.locator('.board_metric').nth(3)).toContainText(String(snapshot.board.summary.criteriaCount));
+    if (snapshot.board.owners.length > 0) {
+      await expect(page.locator('.board_legend .repo_avatar__image').first()).toBeVisible();
+    } else {
+      await expect(page.locator('.board_legend .repo_avatar__image')).toHaveCount(0);
+    }
     await expect(page.locator('.board_showcase')).toHaveCount(1);
     await expect(page.locator('.board_card__description')).toHaveCount(0);
     await expectNoLegacyLoginRouteLinks(page);

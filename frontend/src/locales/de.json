@@ -546,7 +546,19 @@
       "rating": {
         "headingTemplate": "Bewertungen von {firstName} ({count})",
         "ariaTemplate": "{rating} von 5 Sternen bei {count} Bewertungen",
-        "firstNameFallback": "diesem Profil"
+        "firstNameFallback": "diesem Profil",
+        "averageTemplate": "{rating} / 5",
+        "emptyAverage": "Noch keine Bewertungen",
+        "countSingular": "{count} Bewertung",
+        "countPlural": "{count} Bewertungen",
+        "ownLabel": "Deine Bewertung",
+        "loginPrompt": "Einloggen, um zu bewerten",
+        "selfNote": "Das ist dein eigenes Profil.",
+        "starActionTemplate": "{rating} von 5 Sternen vergeben",
+        "saveSuccessTitle": "Bewertung gespeichert",
+        "saveSuccessTemplate": "Deine Bewertung für {firstName} wurde gespeichert.",
+        "saveErrorTitle": "Bewertung nicht gespeichert",
+        "saveErrorMessage": "Bitte versuche es gleich noch einmal."
       }
     }
   },
