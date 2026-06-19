@@ -203,7 +203,7 @@ test.describe('Repository git view', () => {
     expect(firstRecentHash).toBeTruthy();
 
     await commitCards.first().scrollIntoViewIfNeeded();
-    await commitCards.first().click({ force: true });
+    await commitCards.first().locator('.git_commit__message').click();
     await expect(page.locator('.repo_modal__surface--commit')).toBeVisible();
     await expect(commitCards.first()).toHaveClass(/git_graph__card--active/);
 

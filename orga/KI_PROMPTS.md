@@ -1,3 +1,4 @@
+<<<<<<< ours
 # Einsatz von Künstlicher Intelligenz im Projekt "Pawsitters"
 
 Im Rahmen der Entwicklung des "Pawsitters"-Projekts kam Künstliche Intelligenz (KI) in verschiedenen Phasen des Software Development Life Cycles (SDLC) zum Einsatz. Die KI fungierte dabei vorwiegend als Assistenzsystem (z. B. durch Tools wie GitHub Copilot oder dedizierte LLM-Agenten), um Entwicklungsprozesse zu beschleunigen und die Code- sowie Dokumentationsqualität zu unterstützen.
@@ -549,3 +550,371 @@ Prompt 214, Codex Desktop (OpenAI): hey, aktuell ist die website noch sehr leer,
 
 Prompt 215, Codex Desktop (OpenAI): prüfe nach fehlern.
 
+=======
+# KI-Prompts und KI-Einsatz im Pawsitters-Frontend
+
+Diese Datei fasst die im Projekt dokumentierten KI-Chats professionell zusammen. Sie ersetzt bewusst keine technische Dokumentation und listet nicht jeden einzelnen Rohprompt auf. Stattdessen werden die Chatverläufe thematisch verdichtet, sodass nachvollziehbar bleibt, wofür KI eingesetzt wurde und welche Prompt-Muster für das Frontend sinnvoll wiederverwendet werden können.
+
+## Ausgewertete Quellen
+
+| Quelle | Inhalt | Nutzung fuer diese Zusammenfassung |
+| --- | --- | --- |
+| `orga/KI_PROMPTS.md` | Dokumentierte KI-Historie der Prompts 1-215 im aktuellen Branch | Hauptquelle fuer Themen, Arbeitsweise und wiederkehrende Prompt-Muster |
+| Git-Historie, insbesondere `develop:orga/KI_PROMPTS.md` | Ergaenzende Prompts 216-231, u. a. Security, Deployment, OpenAPI- und Praesentationsarbeit | Ergaenzung fehlender historischer Eintraege |
+| `orga/PAWSITTERS_PROJEKTSTRATEGIE.md` | Vorgaben zur KI-Dokumentation und Projektstrategie | Rahmen fuer KI-Nachvollziehbarkeit |
+| `frontend/` | Aktueller Frontend-Stand mit Templates, Vue-Verhalten, Tailwind, i18n, Build-Skripten und Playwright-Tests | Einordnung der Prompts auf den realen Frontend-Kontext |
+
+## Kurzfazit
+
+KI wurde im Pawsitters-Projekt vor allem als Analyse-, Konzeptions-, Implementierungs- und Review-Hilfe genutzt. Fuer das Frontend lag der Schwerpunkt auf UI-Struktur, responsivem Verhalten, Authentifizierungsablaeufen, Marketplace-/Profilansichten, API-Anbindung, Internationalisierung, Build-Prozess und automatisierten Tests. Die besten Prompts waren nicht kleinteilig formuliert, sondern beschrieben Ziel, Kontext, Akzeptanzkriterien, technische Grenzen und gewuenschte Verifikation.
+
+## Frontend-Kontext
+
+Das Frontend ist als eigener Workspace aufgebaut:
+
+- Templates unter `frontend/src/templates/`
+- Vue-Verhalten in `frontend/src/js/site.js`
+- Tailwind-Styles in `frontend/src/tailwind/`
+- Sprachdateien in `frontend/src/locales/`
+- Medien und Icons in `frontend/src/media/`
+- Build-, Serve- und Thymeleaf-Pruefskripte unter `frontend/scripts/`
+- Playwright- und Node-Tests unter `frontend/tests/`
+- Statische Ausgabe in `frontend/dist/`
+
+Die KI-Prompts mussten deshalb nicht nur "eine schoene Website" erzeugen, sondern konsistent mit Build-System, API-Envelope, Auth-Status, statischen Routen, i18n-Schluesseln und E2E-Tests arbeiten.
+
+## Themenlandkarte der konsolidierten Prompts
+
+| Bereich | Verdichteter Inhalt |
+| --- | --- |
+| Frontend-Architektur | Struktur aus Templates, Layouts, Partial-Komponenten, Vue-State, Tailwind-Designsystem und statischem Build verstehen und weiterentwickeln |
+| UI/UX und visuelle Qualitaet | Header, Landingpage, Suche, Karten, Modals, Profilseiten, mobile Darstellung und konsistente Bildsprache verbessern |
+| Authentifizierung | Login, Registrierung, Session-Pruefung, Token-/Cookie-Verhalten, Formularvalidierung und sichtbare Fehlerzustaende integrieren |
+| Marketplace und Suche | Angebote, Gastgeber, Filter, Suchcontainer, Ergebnislisten und Angebotsdetails nutzbar darstellen |
+| Profile, Haustiere, Angebote | Nutzerprofile, eigene Haustiere, eigene Angebote, Uploads und formularbasierte Workflows anbinden |
+| Chat und Booking-Vorbereitung | Backend-Chat, Booking-Proposals, Attachments und spaetere UI-Anforderungen fachlich mitdenken |
+| Internationalisierung | Deutsch, Englisch und Rumaenisch konsistent ueber JSON-Locale-Dateien pflegen |
+| Frontend-Tests | Playwright-Flows, Repository-Seiten, Auth-Flows, Header-Verhalten, Carousel, Suche und Formularablaeufe absichern |
+| CI/CD und Deployment | Frontend-Build, Docker/Nginx-Auslieferung, GitHub Actions, Artefakte und Staging-Checks stabilisieren |
+| Dokumentation und Praesentation | Frontend-Beitrag, API-Nachweis, Security-Aspekte und Teststand fuer Abgabe und Praesentation aufbereiten |
+
+## Wiederverwendbare Master-Prompts
+
+Die folgenden Master-Prompts sind aus der gesamten Chat-Historie abgeleitet. Sie sind so formuliert, dass sie fuer zukuenftige Frontend-Aufgaben direkt nutzbar sind.
+
+### 1. Frontend-Architektur analysieren
+
+```text
+Du bist Senior Frontend Engineer im Projekt "Pawsitters".
+
+Analysiere den bestehenden Frontend-Workspace und erklaere, wie Templates, Layouts, Partials, Vue-Verhalten, Tailwind-Styles, Locale-Dateien, Build-Skripte und Tests zusammenspielen.
+
+Beruecksichtige:
+- `frontend/src/templates/`
+- `frontend/src/js/site.js`
+- `frontend/src/tailwind/`
+- `frontend/src/locales/`
+- `frontend/scripts/`
+- `frontend/tests/`
+
+Ergebnis:
+1. Kurze Architekturuebersicht.
+2. Wichtigste Abhaengigkeiten zwischen Dateien.
+3. Risiken fuer weitere Aenderungen.
+4. Konkrete Empfehlungen, wo eine neue Funktion sauber eingebaut werden sollte.
+```
+
+### 2. UI-Feature sauber implementieren
+
+```text
+Arbeite im bestehenden Pawsitters-Frontend.
+
+Aufgabe:
+Implementiere folgendes UI-Feature: [Feature beschreiben].
+
+Anforderungen:
+1. Nutze bestehende Layout-, Partial- und Tailwind-Konventionen.
+2. Halte die Darstellung responsiv fuer Mobile und Desktop.
+3. Verwende bestehende i18n-Schluessel oder ergaenze sie in `de.json`, `en.json` und `ro.json`.
+4. Vermeide doppelte UI-Strukturen, wenn ein bestehendes Partial erweitert werden kann.
+5. Pruefe, ob Vue-State in `site.js` angepasst werden muss.
+
+Verifikation:
+- `npm run thymeleaf:check`
+- passende Playwright-Tests oder bestehende Tests aktualisieren
+- kurze Beschreibung der getesteten User-Flows
+```
+
+### 3. Landingpage und Startseite verbessern
+
+```text
+Optimiere die Pawsitters-Startseite fuer einen klaren ersten Eindruck und echte Nutzung.
+
+Ziele:
+- Direkt erkennbare Plattform fuer Tierbetreuung.
+- Such-/Entdeckungsfunktion prominent und bedienbar.
+- Angebote oder Gastgeber visuell glaubwuerdig darstellen.
+- Keine Marketing-Fuelltexte, sondern nutzbare Einstiegspunkte.
+
+Beruecksichtige:
+- bestehende Medien unter `frontend/src/media/`
+- Angebotsdaten aus API oder statischer Vorschau
+- responsive Darstellung
+- Performance und stabile Bildgroessen
+
+Ausgabe:
+1. Konkrete Template-/CSS-/JS-Aenderungen.
+2. Neue oder angepasste Locale-Schluessel.
+3. Playwright-Check fuer Startseite, Suche oder Carousel.
+```
+
+### 4. Header, Navigation und Suche stabilisieren
+
+```text
+Verbessere Header, Navigation und Suche im Pawsitters-Frontend.
+
+Anforderungen:
+1. Dropdowns duerfen sich nicht gegenseitig ueberlagern.
+2. Suche muss klar fokussierbar, per Tastatur bedienbar und mobil nutzbar sein.
+3. Auth-Status, Profilnavigation und Logout muessen konsistent dargestellt werden.
+4. Layout darf bei langen Namen, Sprachewechsel oder kleinen Viewports nicht springen.
+
+Tests:
+- Header-Dropdown-Exklusivitaet
+- Sucheingabe und Suchergebnisnavigation
+- Mobile Viewport Smoke-Test
+```
+
+### 5. Authentifizierung im Frontend integrieren
+
+```text
+Integriere Login, Registrierung und Session-Zustand gegen die bestehende Pawsitters-API.
+
+Backend-Kontext:
+- API-Antworten nutzen das einheitliche Envelope: `success`, `status`, `message`, `data`, `error`, `meta`.
+- Auth-Endpunkte liefern Token, Rolle und Sessioninformationen unter `data`.
+
+Frontend-Anforderungen:
+1. Login- und Registrierungsformulare validieren.
+2. API-Fehler nutzerverstaendlich anzeigen.
+3. Session nach Login/Register korrekt aktualisieren.
+4. Geschuetzte Profilbereiche nur im passenden Zustand anzeigen.
+5. Keine sensiblen Daten im DOM, in Logs oder in Locale-Dateien ablegen.
+
+Verifikation:
+- Auth-E2E-Flow fuer Login, Register, Session und Logout.
+- Locale-Test fuer Auth-Texte.
+```
+
+### 6. Marketplace und Angebotsdetails anbinden
+
+```text
+Baue oder verbessere Marketplace-Ansichten fuer Pawsitters.
+
+Funktionen:
+- Angebote und Gastgeber laden.
+- Suche nach Ort, PLZ oder Tierart.
+- Filter anzeigen und anwenden.
+- Angebotsdetails in Modal oder Detailbereich oeffnen.
+- Anfrage/Chat-Start aus einem Angebot vorbereiten.
+
+Constraints:
+- API-Envelope korrekt auswerten.
+- Lade-, Fehler- und Leerzustaende sichtbar behandeln.
+- Karten und Listen muessen mit echten Bildern, langen Titeln und unterschiedlichen Preisen stabil bleiben.
+
+Tests:
+- Home-/Search-Result-Test.
+- Offer-Details-Flow.
+- Fehlerfall bei leerer oder fehlerhafter API-Antwort.
+```
+
+### 7. Profil, Haustiere und eigene Angebote
+
+```text
+Erweitere die Profilbereiche im Pawsitters-Frontend.
+
+Ziel:
+Nutzer sollen Profil, Haustiere und eigene Angebote nachvollziehbar verwalten koennen.
+
+Anforderungen:
+1. Profilinformationen laden, anzeigen und bearbeiten.
+2. Haustiere erstellen, bearbeiten, loeschen und optional Bildpfade anzeigen.
+3. Eigene Angebote erstellen, als Entwurf speichern, veroeffentlichen und zurueckziehen.
+4. Formulare muessen Validierungsfeedback aus der API sauber anzeigen.
+5. Erfolgs- und Fehlerzustaende duerfen den Nutzer nicht im unklaren Zustand lassen.
+
+Verifikation:
+- Playwright-Flow fuer Haustierverwaltung.
+- Playwright-Flow fuer Angebotserstellung.
+- Tests fuer Kartenhintergruende, lange Texte und responsive Darstellung.
+```
+
+### 8. Chat- und Booking-UI vorbereiten
+
+```text
+Entwirf die Frontend-Integration fuer Chat, Attachments und chatbasierte Booking-Proposals.
+
+Backend-Kontext:
+- Chats laufen angebotsbezogen.
+- Nachrichten und Attachments werden ueber REST und spaeter Realtime-Events geliefert.
+- Booking-Proposals besitzen Status wie `PENDING`, `ACCEPTED`, `DECLINED`, `WITHDRAWN`.
+
+Frontend-Ziele:
+1. Nachrichten chronologisch darstellen.
+2. Bildanhaenge sicher und visuell stabil anzeigen.
+3. Booking-Proposals als klare Angebotskarten im Chat darstellen.
+4. Aktionen wie Annehmen, Ablehnen und Zurueckziehen nur rollen- und statusgerecht anzeigen.
+5. Optimistische UI nur verwenden, wenn Fehlerfall sauber zurueckgerollt wird.
+
+Ausgabe:
+- Komponenten-/Template-Plan.
+- Benötigte API-Aufrufe.
+- UI-Zustaende je Proposal-Status.
+- E2E-Testplan.
+```
+
+### 9. Internationalisierung pflegen
+
+```text
+Pruefe und erweitere die Pawsitters-i18n-Dateien.
+
+Sprachen:
+- Deutsch: `frontend/src/locales/de.json`
+- Englisch: `frontend/src/locales/en.json`
+- Rumaenisch: `frontend/src/locales/ro.json`
+
+Anforderungen:
+1. Neue UI-Texte in allen drei Dateien ergaenzen.
+2. Schluesselstruktur konsistent halten.
+3. Keine hart codierten Texte in Templates oder Vue-Code.
+4. Lange Uebersetzungen in Buttons, Karten und Modals beruecksichtigen.
+
+Verifikation:
+- Locale-Key-Vollstaendigkeit pruefen.
+- Playwright- oder Snapshot-Test fuer Sprachwechsel aktualisieren.
+```
+
+### 10. Frontend-Teststrategie erweitern
+
+```text
+Erarbeite und implementiere eine Frontend-Teststrategie fuer folgende Aenderung: [Aenderung beschreiben].
+
+Bestehende Testarten:
+- Thymeleaf-/Template-Check
+- Node-Datentests
+- Playwright-E2E-Tests
+
+Anforderungen:
+1. Kritische User-Flows mit Playwright abdecken.
+2. Reine Daten-/Snapshotlogik mit Node-Tests pruefen.
+3. Responsive oder visuelle Risiken mit passenden Viewports testen.
+4. Tests stabil gegen Timing- und Ladezustandsprobleme schreiben.
+
+Ausgabe:
+- Welche Tests werden angepasst oder neu erstellt?
+- Welche Edge Cases sind relevant?
+- Welche Kommandos muessen gruen sein?
+```
+
+### 11. Frontend-Build und Deployment pruefen
+
+```text
+Pruefe den Pawsitters-Frontend-Build und die Auslieferung ueber Docker/Nginx.
+
+Kontext:
+- Build: `npm run build`
+- Tests: `npm test`
+- Statische Ausgabe: `frontend/dist/`
+- Container: Frontend-Dockerfile mit Nginx
+
+Aufgaben:
+1. Lokalen Build reproduzieren.
+2. Statische Routen und Assets pruefen.
+3. Docker-/Nginx-Konfiguration gegen `dist/` validieren.
+4. CI-Fehler anhand von Logs analysieren.
+5. Ergebnis mit konkreten Fixes und Smoke-Checks dokumentieren.
+
+Erwartete Ausgabe:
+- Root Cause.
+- Geaenderte Dateien.
+- Verifikation mit Build/Test/Smoke-Check.
+```
+
+### 12. Security aus Frontend-Sicht dokumentieren
+
+```text
+Dokumentiere die Security-Aspekte des Pawsitters-Frontends.
+
+Beruecksichtige:
+- Keine sensiblen Daten im Client speichern.
+- Auth-Status und Rollen nur fuer UI-Steuerung nutzen, nicht als Sicherheitsgrenze.
+- API-Fehler nutzerfreundlich, aber ohne technische Details anzeigen.
+- Uploads im Frontend vorpruefen, echte Validierung aber im Backend belassen.
+- Externe Assets und Bildquellen bewusst bewerten.
+- XSS-Risiken durch dynamische Texte vermeiden.
+
+Ausgabe:
+- Stichpunktartige Security-Dokumentation.
+- Klare Trennung zwischen Frontend-Massnahme und Backend-Massnahme.
+- Offene Risiken und sinnvolle naechste Schritte.
+```
+
+### 13. Dokumentation und Praesentation aktualisieren
+
+```text
+Aktualisiere die Projekt- oder Praesentationsdokumentation fuer den Frontend-Anteil von Pawsitters.
+
+Inhalte:
+1. Was wurde im Frontend umgesetzt?
+2. Welche Architektur- und Designentscheidungen wurden getroffen?
+3. Welche Tests sichern die wichtigsten Flows ab?
+4. Welche API-Bereiche werden angebunden?
+5. Welche Grenzen oder offenen Punkte bleiben?
+
+Wichtig:
+- Nur real vorhandene Features dokumentieren.
+- Keine Screenshots, Kennzahlen oder API-Counts erfinden.
+- Git-Historie und aktuelle Dateien als Quelle nutzen.
+```
+
+## Gute Prompt-Bausteine
+
+Diese Bausteine haben sich in den Chats als besonders wirksam erwiesen:
+
+- "Analysiere zuerst den bestehenden Code und halte dich an lokale Patterns."
+- "Nutze das einheitliche API-Envelope und zeige Fehlerzustaende explizit."
+- "Aktualisiere Tests, Locale-Dateien und Dokumentation mit."
+- "Pruefe responsive Verhalten, lange Texte und leere Datenzustaende."
+- "Nenne nach der Umsetzung die konkreten Verifikationsschritte."
+- "Keine neuen Bibliotheken, wenn der bestehende Stack ausreicht."
+- "Keine Secrets, Tokens oder echten Zugangsdaten in Prompts oder Dateien aufnehmen."
+
+## Qualitaetsregeln fuer zukuenftige KI-Nutzung
+
+1. **Kontext vorgeben:** Immer relevante Dateien, Frameworks, API-Konventionen und Ziel-Flow nennen.
+2. **Akzeptanzkriterien formulieren:** Nicht nur "mach schoener", sondern erwartetes Verhalten, Zustaende und Tests definieren.
+3. **Grenzen setzen:** Keine ungewollten Backend-Aenderungen, keine neuen Libraries, keine erfundenen Features.
+4. **Verifikation verlangen:** Build, Tests, Playwright-Flow oder manueller Smoke-Check gehoeren in den Prompt.
+5. **Security beachten:** Keine Zugangsdaten, Tokens, privaten Keys, produktiven Logs oder personenbezogenen Daten an KI geben.
+6. **Review einplanen:** KI-Ergebnisse muessen fachlich, visuell und technisch geprueft werden.
+
+## Abdeckungsnachweis
+
+Die Rohprompts wurden in folgende professionelle Themen verdichtet:
+
+| Rohprompt-Bereich | Zusammenfassung in dieser Datei |
+| --- | --- |
+| Projektstrategie und Architektur | Frontend-Architektur analysieren, Dokumentation aktualisieren |
+| API-Response, Auth, User, Pets | Authentifizierung, Profil, Haustiere, API-Envelope |
+| Marketplace, Offers, Suche | Marketplace und Angebotsdetails, Landingpage |
+| Security, Passwort, Rate Limiting | Security aus Frontend-Sicht dokumentieren |
+| Praesentation und Teamdoku | Dokumentation und Praesentation aktualisieren |
+| CI/CD, Docker, Deployment | Frontend-Build und Deployment pruefen |
+| Chat, Attachments, Booking | Chat- und Booking-UI vorbereiten |
+| Host-Profile, Galerie, Reviews | Profilbereiche, Angebotsdarstellung, Feedback-Kontext |
+| Frontend-Tests und Repository-Seiten | Frontend-Teststrategie erweitern |
+| i18n und UI-Polish | Internationalisierung, Header, Navigation, visuelle Qualitaet |
+
+Damit sind alle im Projektordner und in der lokalen Git-Historie auffindbaren KI-Promptquellen auf einer professionellen, frontend-orientierten Ebene zusammengefasst.
+>>>>>>> theirs
