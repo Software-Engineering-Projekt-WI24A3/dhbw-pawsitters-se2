@@ -166,6 +166,13 @@ class MarketplaceIntegrationTest {
 
     @Test
     void searchOffersSplitsMatchingAndAlternativeDatesByFilters() throws Exception {
+        LocalDate matchingFrom = LocalDate.now().plusMonths(1).plusDays(1);
+        LocalDate matchingTo = matchingFrom.plusDays(6);
+        LocalDate alternativeFrom = matchingFrom.plusMonths(1);
+        LocalDate alternativeTo = alternativeFrom.plusDays(6);
+        LocalDate searchFrom = matchingFrom.plusDays(1);
+        LocalDate searchTo = matchingFrom.plusDays(4);
+
         String matchingToken = registerUser(
                 "marketplace.search.match." + UUID.randomUUID() + "@test.de",
                 "Bielefeld",
@@ -186,24 +193,24 @@ class MarketplaceIntegrationTest {
                 matchingToken,
                 "Bielefeld Hund Juni",
                 "Bielefeld Mitte",
-                "2026-06-12",
-                "2026-06-18",
+                matchingFrom.toString(),
+                matchingTo.toString(),
                 List.of("DOG")
         );
         createAndPublishOffer(
                 alternativeToken,
                 "Bielefeld Hund Juli",
                 "Bielefeld Mitte",
-                "2026-07-12",
-                "2026-07-18",
+                alternativeFrom.toString(),
+                alternativeTo.toString(),
                 List.of("DOG")
         );
         createAndPublishOffer(
                 differentCityToken,
                 "Hamburg Hund Juni",
                 "Hamburg Zentrum",
-                "2026-06-12",
-                "2026-06-18",
+                matchingFrom.toString(),
+                matchingTo.toString(),
                 List.of("DOG")
         );
 
@@ -211,8 +218,8 @@ class MarketplaceIntegrationTest {
                         .param("species", "DOG")
                         .param("city", "Bielefeld")
                         .param("postalCode", "33602")
-                        .param("fromDate", "2026-06-13")
-                        .param("toDate", "2026-06-16")
+                        .param("fromDate", searchFrom.toString())
+                        .param("toDate", searchTo.toString())
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -240,12 +247,13 @@ class MarketplaceIntegrationTest {
     }
 
     private Long createAndPublishOffer(String token, String title) throws Exception {
+        LocalDate availableFrom = LocalDate.now().plusMonths(1);
         return createAndPublishOffer(
                 token,
                 title,
                 "Mannheim",
-                "2026-07-01",
-                "2026-07-03",
+                availableFrom.toString(),
+                availableFrom.plusDays(2).toString(),
                 List.of("DOG")
         );
     }

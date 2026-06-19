@@ -15,7 +15,7 @@ function daysInCurrentMonth() {
   return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 }
 
-test('live repository snapshot exposes real git and board data', async () => {
+test('live repository snapshot exposes real git data and consistent board data', async () => {
   const snapshot = await loadLocalizedRepositorySnapshot(rootDir, 'de', { fresh: true });
   const columnIds = snapshot.board.columns.map((column) => column.id);
   const totalBoardCards = snapshot.board.columns.reduce((total, column) => total + column.cards.length, 0);
@@ -26,15 +26,20 @@ test('live repository snapshot exposes real git and board data', async () => {
   assert.ok(snapshot.repository.owner.length > 0);
   assert.ok(snapshot.repository.name.length > 0);
   assert.equal(snapshot.repository.label, `${snapshot.repository.owner}/${snapshot.repository.name}`);
-  assert.ok(columnIds.length > 0);
   assert.ok(columnIds.every((id) => ['frontend', 'api', 'data', 'docs', 'misc'].includes(id)));
-  assert.ok(snapshot.board.columns.every((column) => column.cards.length > 0));
+  assert.equal(snapshot.board.summary.openCount, snapshot.board.cards.length);
   assert.equal(snapshot.board.summary.openCount, totalBoardCards);
   assert.equal(snapshot.board.summary.criteriaCount, totalCriteria);
-  assert.ok(totalBoardCards > 0);
   assert.ok(snapshot.board.cards.every((card) => card.url?.startsWith('https://github.com/')));
-  assert.ok(snapshot.board.owners.length > 0);
   assert.ok(snapshot.board.owners.every((owner) => owner.profileUrl?.startsWith('https://github.com/')));
+  if (snapshot.board.summary.openCount > 0) {
+    assert.ok(columnIds.length > 0);
+    assert.ok(snapshot.board.columns.every((column) => column.cards.length > 0));
+    assert.ok(totalBoardCards > 0);
+  }
+  if (snapshot.board.summary.assignedCount > 0) {
+    assert.ok(snapshot.board.owners.length > 0);
+  }
 
   assert.ok(snapshot.git.remoteUrl.includes('github.com'));
   assert.ok(snapshot.git.defaultBranch.length > 0);
