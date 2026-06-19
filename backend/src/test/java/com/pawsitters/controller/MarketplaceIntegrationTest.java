@@ -167,7 +167,6 @@ class MarketplaceIntegrationTest {
     @Test
     void searchOffersSplitsMatchingAndAlternativeDatesByFilters() throws Exception {
         LocalDate matchingFrom = LocalDate.now().plusMonths(1).plusDays(1);
-        LocalDate matchingTo = matchingFrom.plusDays(6);
         LocalDate alternativeFrom = matchingFrom.plusMonths(1);
         LocalDate alternativeTo = alternativeFrom.plusDays(6);
         LocalDate searchFrom = matchingFrom.plusDays(1);
