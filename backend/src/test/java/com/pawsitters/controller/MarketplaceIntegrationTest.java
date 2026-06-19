@@ -166,6 +166,9 @@ class MarketplaceIntegrationTest {
 
     @Test
     void searchOffersSplitsMatchingAndAlternativeDatesByFilters() throws Exception {
+        LocalDate matchingFrom = LocalDate.now().plusMonths(1).plusDays(1);
+        LocalDate searchFrom = matchingFrom.plusDays(1);
+
         String matchingToken = registerUser(
                 "marketplace.search.match." + UUID.randomUUID() + "@test.de",
                 "Bielefeld",
@@ -246,12 +249,13 @@ class MarketplaceIntegrationTest {
     }
 
     private Long createAndPublishOffer(String token, String title) throws Exception {
+        LocalDate availableFrom = LocalDate.now().plusMonths(1);
         return createAndPublishOffer(
                 token,
                 title,
                 "Mannheim",
-                "2026-07-01",
-                "2026-07-03",
+                availableFrom.toString(),
+                availableFrom.plusDays(2).toString(),
                 List.of("DOG")
         );
     }
