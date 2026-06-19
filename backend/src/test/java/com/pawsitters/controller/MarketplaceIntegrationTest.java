@@ -168,7 +168,6 @@ class MarketplaceIntegrationTest {
     void searchOffersSplitsMatchingAndAlternativeDatesByFilters() throws Exception {
         LocalDate matchingFrom = LocalDate.now().plusMonths(1).plusDays(1);
         LocalDate searchFrom = matchingFrom.plusDays(1);
-        LocalDate searchTo = matchingFrom.plusDays(4);
 
         String matchingToken = registerUser(
                 "marketplace.search.match." + UUID.randomUUID() + "@test.de",
