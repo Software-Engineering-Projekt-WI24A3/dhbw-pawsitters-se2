@@ -89,20 +89,28 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         shell: bash
         run: |
+          : "${STAGING_HOST:?Set STAGING_HOST in the staging environment}"
+          : "${STAGING_USER:?Set STAGING_USER in the staging environment}"
           : "${JWT_SECRET:?Set JWT_SECRET in the staging environment}"
           : "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the staging environment}"
           : "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the staging environment}"
+          : "${GHCR_USERNAME:?Set GHCR_USERNAME in the staging environment}"
+          : "${GHCR_TOKEN:?Set GHCR_TOKEN in the staging environment with read:packages access}"
 
           {
             printf 'IMAGE_TAG=%q\n' "$IMAGE_TAG"
             printf 'JWT_SECRET=%q\n' "$JWT_SECRET"
             printf 'MYSQL_PASSWORD=%q\n' "$MYSQL_PASSWORD"
             printf 'MYSQL_ROOT_PASSWORD=%q\n' "$MYSQL_ROOT_PASSWORD"
-            printf 'GHCR_USERNAME=%q\n' "$GHCR_USERNAME"
-            printf 'GHCR_TOKEN=%q\n' "$GHCR_TOKEN"
           } > staging.env
 
+          {
+            printf 'GHCR_USERNAME=%q\n' "$GHCR_USERNAME"
+            printf 'GHCR_TOKEN=%q\n' "$GHCR_TOKEN"
+          } > ghcr.env
+
           scp -i ~/.ssh/staging_key staging.env "$STAGING_USER@$STAGING_HOST:~/pawsitters/.env"
+          scp -i ~/.ssh/staging_key ghcr.env "$STAGING_USER@$STAGING_HOST:~/pawsitters/.ghcr.env"
 
           ssh -i ~/.ssh/staging_key "$STAGING_USER@$STAGING_HOST" 'bash -s' <<'REMOTE'
           set -euo pipefail
@@ -110,11 +118,11 @@ jobs:
           cd ~/pawsitters
           set -a
           . ./.env
+          . ./.ghcr.env
           set +a
+          rm -f ./.ghcr.env
 
-          if [ -n "${GHCR_TOKEN:-}" ] && [ -n "${GHCR_USERNAME:-}" ]; then
-            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-          fi
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
           docker compose -f docker-compose.yml pull
           if ! docker compose -f docker-compose.yml up -d --remove-orphans; then
